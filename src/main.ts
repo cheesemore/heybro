@@ -1,3 +1,5 @@
+/** GitHub Pages 等环境的 CSP 会禁止 eval；必须在任何其它 pixi 导入之前执行 */
+import 'pixi.js/unsafe-eval';
 import './style.css';
 import { Application } from 'pixi.js';
 import { GameRoot } from './game/GameRoot';
@@ -19,6 +21,8 @@ async function bootstrap(): Promise<void> {
     autoDensity: true,
     /** 渲染区域随 #app 铺满视口（与 body 100dvh 一致），避免画布只占中间一小块 */
     resizeTo: root,
+    /** 线上环境 WebGPU 偶发不可用；WebGL 兼容性更好 */
+    preference: 'webgl',
   });
 
   root.innerHTML = '';
