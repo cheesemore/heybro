@@ -11,7 +11,6 @@ if (!mount) {
 const root: HTMLDivElement = mount;
 
 const app = new Application();
-const gameRoot = new GameRoot(app);
 
 async function bootstrap(): Promise<void> {
   await app.init({
@@ -27,6 +26,8 @@ async function bootstrap(): Promise<void> {
 
   root.innerHTML = '';
   root.appendChild(app.canvas as HTMLCanvasElement);
+  /** 必须在 init 完成后再挂游戏树，否则封面点击等事件可能无法正确注册 */
+  const gameRoot = new GameRoot(app);
   app.stage.addChild(gameRoot);
 
   const syncGameLayout = (): void => {

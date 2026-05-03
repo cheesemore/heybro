@@ -15,6 +15,7 @@ export class TitleScreen extends Container {
     this.app = app;
 
     const bg = new Graphics();
+    bg.eventMode = 'none';
     bg.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(0x120a1e);
     for (let y = 0; y < GAME_HEIGHT; y += 6) {
       const t = y / GAME_HEIGHT;
@@ -26,6 +27,7 @@ export class TitleScreen extends Container {
     this.addChild(bg);
 
     const crowd = new Graphics();
+    crowd.eventMode = 'none';
     const palette = [
       0xf97316, 0x22d3ee, 0xf472b6, 0xa3e635, 0xfbbf24, 0xc084fc, 0x38bdf8, 0xfb7185,
     ];
@@ -51,6 +53,7 @@ export class TitleScreen extends Container {
     this.addChild(crowd);
 
     const vignette = new Graphics();
+    vignette.eventMode = 'none';
     vignette
       .rect(0, 0, GAME_WIDTH, Math.round(220 * LAYOUT_SCALE))
       .fill({ color: 0x020617, alpha: 0.55 });
@@ -76,6 +79,7 @@ export class TitleScreen extends Container {
         stroke: { color: 0x4c1d95, width: Math.max(3, Math.round(4 * LAYOUT_SCALE)) },
       },
     });
+    logo.eventMode = 'none';
     logo.anchor.set(0.5, 0.5);
     logo.position.set(GAME_WIDTH * 0.5, GAME_HEIGHT * 0.38);
     this.addChild(logo);
@@ -89,6 +93,7 @@ export class TitleScreen extends Container {
         fontWeight: '600',
       },
     });
+    tag.eventMode = 'none';
     tag.anchor.set(0.5, 0);
     tag.position.set(GAME_WIDTH * 0.5, logo.y + Math.round(72 * LAYOUT_SCALE));
     this.addChild(tag);
@@ -102,6 +107,7 @@ export class TitleScreen extends Container {
         fontWeight: '700',
       },
     });
+    hint.eventMode = 'none';
     hint.anchor.set(0.5, 0.5);
     hint.position.set(GAME_WIDTH * 0.5, GAME_HEIGHT * 0.78);
     this.addChild(hint);
@@ -115,13 +121,28 @@ export class TitleScreen extends Container {
         fontWeight: '600',
       },
     });
+    ver.eventMode = 'none';
     ver.position.set(Math.round(20 * LAYOUT_SCALE), Math.round(16 * LAYOUT_SCALE));
     this.addChild(ver);
+
+    /** 全屏可点层（置于最上），避免子节点抢占命中导致无法进入游戏 */
+    let entered = false;
+    const go = (): void => {
+      if (entered) return;
+      entered = true;
+      onEnter();
+    };
+    const tap = new Graphics();
+    tap.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x000000, alpha: 0.001 });
+    tap.eventMode = 'static';
+    tap.cursor = 'pointer';
+    tap.on('pointertap', go);
+    this.addChild(tap);
 
     this.eventMode = 'static';
     this.hitArea = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
     this.cursor = 'pointer';
-    this.on('pointerdown', () => onEnter());
+    this.on('pointertap', go);
 
     this.tickFn = (): void => {
       if (hint.destroyed) return;
