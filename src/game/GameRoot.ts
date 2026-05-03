@@ -10,6 +10,7 @@ import { DraftScreen } from './screens/DraftScreen';
 import { LevelMapScreen } from './screens/LevelMapScreen';
 import { ModalLayer } from './screens/ModalLayer';
 import { StrategyPickScreen } from './screens/StrategyPickScreen';
+import { TitleScreen } from './screens/TitleScreen';
 
 export class GameRoot extends Container {
   readonly run = new RunState();
@@ -23,7 +24,18 @@ export class GameRoot extends Container {
     this.modal = new ModalLayer();
     this.addChild(this.layer);
     this.addChild(this.modal);
-    this.showLevelMap();
+    this.showTitle();
+  }
+
+  /** 封面：点击后进入关卡地图 */
+  private showTitle(): void {
+    this.clearLayer();
+    this.layer.addChild(
+      new TitleScreen(this.app, () => {
+        this.clearLayer();
+        this.showLevelMap();
+      }),
+    );
   }
 
   private clearLayer(): void {
