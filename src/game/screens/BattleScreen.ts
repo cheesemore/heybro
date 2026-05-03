@@ -61,7 +61,8 @@ const METEOR_INTERVAL = 20;
 const METEOR_SPLASH_RADIUS = Math.round(300 * LAYOUT_SCALE);
 
 const FARSEER_CHAIN_INTERVAL = 5;
-const FARSEER_SUMMON_INTERVAL = 20;
+const FARSEER_SUMMON_INTERVAL = 15;
+const FARSEER_SUMMON_COUNT = 6;
 const FARSEER_CHAIN_MAX_JUMPS = 8;
 const FARSEER_CHAIN_DECAY = 0.78;
 const TAUREN_SHOCK_INTERVAL = 5.5;
@@ -220,11 +221,13 @@ export class BattleScreen extends Container {
   private currentEnemyHp = 0;
   private initialAllyHp = 0;
   private currentAllyHp = 0;
-  private bladeSkillT = 0;
-  private farseerChainCd = 0;
-  private farseerSummonCd = 0;
-  private taurenShockCd = 0;
-  private taurenStompCd = 0;
+  /** 剑圣周期技：>2.4 触发，初值保证开场即可转好 */
+  private bladeSkillT = 2.5;
+  /** 开场即视为冷却完毕，首帧可释放 */
+  private farseerChainCd = FARSEER_CHAIN_INTERVAL;
+  private farseerSummonCd = FARSEER_SUMMON_INTERVAL;
+  private taurenShockCd = TAUREN_SHOCK_INTERVAL;
+  private taurenStompCd = TAUREN_STOMP_INTERVAL;
   private ended = false;
   private hudTimer: Text;
   private hudAllyBar: Graphics;
@@ -1619,10 +1622,10 @@ export class BattleScreen extends Container {
   private castFarseerSummonGrunts(boss: SimUnit): void {
     const alive = this.alive('enemy').length;
     const room = Math.max(0, BOSS_SUMMON_ENEMY_CAP - alive);
-    const n = Math.min(12, room);
+    const n = Math.min(FARSEER_SUMMON_COUNT, room);
     const baseY = boss.y + Math.round(88 * LAYOUT_SCALE);
     for (let k = 0; k < n; k++) {
-      const angle = (k / 12) * Math.PI * 2 + boss.unitId * 0.37;
+      const angle = (k / FARSEER_SUMMON_COUNT) * Math.PI * 2 + boss.unitId * 0.37;
       const rad = Math.round(96 * LAYOUT_SCALE) + (k % 4) * Math.round(24 * LAYOUT_SCALE);
       const wx = boss.x + Math.cos(angle) * rad * 0.5;
       const wy = baseY + Math.sin(angle) * rad * 0.35;
