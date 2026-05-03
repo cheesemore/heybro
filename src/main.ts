@@ -10,24 +10,48 @@ if (!mount) {
 }
 const root: HTMLDivElement = mount;
 
+function showFatal(message: string, err?: unknown): void {
+  const detail =
+    err instanceof Error ? `${err.message}\n\n${err.stack ?? ''}` : err != null ? String(err) : '';
+  const pre = document.createElement('pre');
+  pre.style.cssText =
+    'margin:16px;padding:12px;color:#fecaca;background:#1c1917;border-radius:8px;white-space:pre-wrap;font:14px/1.45 ui-monospace,Consolas,system-ui;max-height:85vh;overflow:auto';
+  pre.textContent = [message, detail].filter(Boolean).join('\n\n');
+  root.replaceChildren(pre);
+}
+
+window.addEventListener('error', (ev) => {
+  showFatal('运行时错误（未捕获）', ev.error ?? ev.message);
+});
+window.addEventListener('unhandledrejection', (ev) => {
+  showFatal('异步错误（未处理的 Promise）', ev.reason);
+});
+
 const app = new Application();
 
 async function bootstrap(): Promise<void> {
+  /**
+   * 使用 window 而非 #app 作为 resize 目标：部分环境下首帧 #app 的 getBoundingClientRect 为 0，
+   * 会导致 renderer 为 0×0、画面全透明/空白且控制台无报错。
+   */
   await app.init({
     background: '#070b14',
     antialias: true,
     resolution: Math.min(window.devicePixelRatio ?? 1, 2.5),
     autoDensity: true,
-    /** 渲染区域随 #app 铺满视口（与 body 100dvh 一致），避免画布只占中间一小块 */
-    resizeTo: root,
-    /** 线上环境 WebGPU 偶发不可用；WebGL 兼容性更好 */
+    resizeTo: window,
     preference: 'webgl',
   });
 
-  root.innerHTML = '';
-  root.appendChild(app.canvas as HTMLCanvasElement);
-  /** 必须在 init 完成后再挂游戏树，否则封面点击等事件可能无法正确注册 */
-  const gameRoot = new GameRoot(app);
+  root.replaceChildren(app.canvas as HTMLCanvasElement);
+
+  let gameRoot: GameRoot;
+  try {
+    gameRoot = new GameRoot(app);
+  } catch (e) {
+    showFatal('创建游戏场景失败', e);
+    return;
+  }
   app.stage.addChild(gameRoot);
 
   const syncGameLayout = (): void => {
@@ -40,6 +64,14 @@ async function bootstrap(): Promise<void> {
 
   app.renderer.on('resize', syncGameLayout);
   syncGameLayout();
+  requestAnimationFrame(() => {
+    app.resize();
+    syncGameLayout();
+    requestAnimationFrame(() => {
+      app.resize();
+      syncGameLayout();
+    });
+  });
 
   window.addEventListener('orientationchange', () => app.resize());
   window.visualViewport?.addEventListener('resize', () => app.resize());
@@ -47,5 +79,5 @@ async function bootstrap(): Promise<void> {
 
 bootstrap().catch((err) => {
   console.error(err);
-  root.textContent = '游戏启动失败，请查看控制台。';
+  showFatal('游戏启动失败（bootstrap）', err);
 });
