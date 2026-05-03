@@ -25,13 +25,10 @@ body {
 #app {
   position: fixed;
   inset: 0;
-  /* 用视口单位兜底，避免少数环境下 100% 链式高度为 0 导致画布不可见 */
-  width: 100vw;
-  min-width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 100%;
+  width: 100%;
+  height: 100%;
   display: block;
+  /* 铺满视口；画布由 Pixi resizeTo 拉满本容器 */
   padding: 0;
   overflow: hidden;
 }

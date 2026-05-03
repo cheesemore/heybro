@@ -1,2 +1,0 @@
-node scripts/bump-build.mjs
-git add src/game/version.ts

@@ -25,7 +25,7 @@ export type EnemyPaintKind =
   | 'boss_blademaster';
 
 /**
- * 程序化绘制我方兵种：与封面 TitleScreen 一致的「圆角身 + 圆脸 + 豆眼」小人。
+ * 程序化绘制我方兵种：「圆角身 + 圆脸 + 豆眼」小人风格。
  * 原点在脚底略上，面向右。配色参考 WoW / DBM 习惯：战士土色、法师蓝、牧师白、弓手绿、圣骑粉。
  */
 export function paintAllyBody(g: Graphics, kind: AllyClass): void {
