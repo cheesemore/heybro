@@ -1,0 +1,42 @@
+{
+  "warrior": {
+    "name": "战士",
+    "maxHp": 520,
+    "atk": 15,
+    "attackSpeed": 0.55,
+    "range": 42,
+    "moveSpeed": 560
+  },
+  "mage": {
+    "name": "法师",
+    "maxHp": 196,
+    "atk": 38,
+    "attackSpeed": 0.9,
+    "range": 330,
+    "moveSpeed": 480
+  },
+  "priest": {
+    "name": "牧师",
+    "maxHp": 360,
+    "atk": 16,
+    "attackSpeed": 0.65,
+    "range": 260,
+    "moveSpeed": 500
+  },
+  "archer": {
+    "name": "射手",
+    "maxHp": 224,
+    "atk": 30,
+    "attackSpeed": 0.75,
+    "range": 390,
+    "moveSpeed": 520
+  },
+  "knight": {
+    "name": "骑士",
+    "maxHp": 640,
+    "atk": 18,
+    "attackSpeed": 0.5,
+    "range": 38,
+    "moveSpeed": 510
+  }
+}

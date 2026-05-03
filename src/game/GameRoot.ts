@@ -1,0 +1,145 @@
+import { Application, Container } from 'pixi.js';
+import { GAME_HEIGHT, GAME_WIDTH } from './constants';
+import type { BattleOutcome } from './types';
+import { RunState } from './runState';
+import { ROUNDS } from './roundConfig';
+import { resolveAftermath } from './aftermath';
+import { applyRewardChapter } from './strategyApply';
+import { BattleScreen } from './screens/BattleScreen';
+import { DraftScreen } from './screens/DraftScreen';
+import { LevelMapScreen } from './screens/LevelMapScreen';
+import { ModalLayer } from './screens/ModalLayer';
+import { StrategyPickScreen } from './screens/StrategyPickScreen';
+
+export class GameRoot extends Container {
+  readonly run = new RunState();
+  private readonly app: Application;
+  private readonly layer = new Container();
+  private readonly modal: ModalLayer;
+
+  constructor(app: Application) {
+    super();
+    this.app = app;
+    this.modal = new ModalLayer();
+    this.addChild(this.layer);
+    this.addChild(this.modal);
+    this.showLevelMap();
+  }
+
+  private clearLayer(): void {
+    for (const c of [...this.layer.children]) {
+      c.destroy({ children: true });
+    }
+  }
+
+  showLevelMap(): void {
+    this.clearLayer();
+    const map = new LevelMapScreen(this.run, {
+      onEnterRound: () => this.enterCurrentRound(),
+      onResetDemo: () => {
+        this.run.resetRun();
+        this.showLevelMap();
+      },
+    });
+    this.layer.addChild(map);
+  }
+
+  /** 从地图进入当前回合：抉择 / 奖励 / 或选牌战斗 */
+  private enterCurrentRound(): void {
+    if (this.run.isGameLost()) {
+      this.modal.alert('游戏结束：生命值已耗尽', () => this.showLevelMap());
+      return;
+    }
+    if (this.run.isGameWon()) {
+      this.modal.alert('恭喜通关 3-8！', () => this.showLevelMap());
+      return;
+    }
+    const meta = ROUNDS[this.run.currentRoundIndex];
+    if (!meta) {
+      this.showLevelMap();
+      return;
+    }
+    this.run.beginRoundEconomy();
+
+    const demonLines = this.run.applyDemonContractRoundStart();
+    const proceed = (): void => {
+      if (meta.kind === 'strategy') {
+        this.clearLayer();
+        this.layer.addChild(
+          new StrategyPickScreen(meta.chapter, this.run, (choiceLines) => {
+            const econ = this.run.grantRoundEndEconomy(meta, null).join('\n');
+            this.run.currentRoundIndex += 1;
+            this.modal.alert([...choiceLines, '', '── 回合收入 ──', econ].join('\n'), () => this.showLevelMap());
+          }),
+        );
+        return;
+      }
+      if (meta.kind === 'reward') {
+        const rewardLines = applyRewardChapter(this.run, meta.chapter);
+        const econ = this.run.grantRoundEndEconomy(meta, null).join('\n');
+        this.run.currentRoundIndex += 1;
+        this.modal.alert([...rewardLines, '', '── 回合收入 ──', econ].join('\n'), () => this.showLevelMap());
+        return;
+      }
+      this.openDraftCombat();
+    };
+
+    if (demonLines.length) {
+      this.modal.alert(demonLines.join('\n'), proceed);
+    } else {
+      proceed();
+    }
+  }
+
+  private openDraftCombat(): void {
+    this.clearLayer();
+    const draft = new DraftScreen(this.app, this.run, () => this.afterDraft());
+    this.layer.addChild(draft);
+  }
+
+  private afterDraft(): void {
+    const idx = this.run.currentRoundIndex;
+    const meta = ROUNDS[idx];
+    if (!meta) {
+      this.showLevelMap();
+      return;
+    }
+    this.clearLayer();
+    const battle = new BattleScreen(this.app, this.run, meta, (outcome) =>
+      this.afterBattle(outcome),
+    );
+    this.layer.addChild(battle);
+  }
+
+  private afterBattle(outcome: BattleOutcome): void {
+    const idx = this.run.currentRoundIndex;
+    const metaDone = ROUNDS[idx]!;
+    const res = resolveAftermath(idx, outcome.perfect, outcome.enemyHpRatioRemaining);
+    this.run.playerHp += res.playerHpDelta;
+    this.run.currentRoundIndex += 1;
+    const tail = [...res.lines, `当前生命：${this.run.playerHp}`].join('\n');
+    if (this.run.playerHp <= 0) {
+      this.modal.alert(`战斗结算\n${tail}\n\n失败：生命值小于等于 0`, () => this.showLevelMap());
+      return;
+    }
+    const econ = this.run.grantRoundEndEconomy(metaDone, outcome).join('\n');
+    const full = `${tail}\n\n── 回合收入 ──\n${econ}`;
+    if (this.run.isGameWon()) {
+      this.modal.alert(`战斗结算\n${full}\n\n胜利：通关 3-8`, () => this.showLevelMap());
+      return;
+    }
+    this.modal.alert(`战斗结算\n${full}`, () => this.showLevelMap());
+  }
+
+  /**
+   * contain：在**实际画布/视口**（screenW×screenH，CSS 像素）内等比放大逻辑分辨率（GAME_*），
+   * 居中且不超框。screenW/H 必须与 Pixi renderer.screen 一致。
+   */
+  layoutStage(screenW: number, screenH: number): void {
+    const sx = screenW / GAME_WIDTH;
+    const sy = screenH / GAME_HEIGHT;
+    const s = Math.min(sx, sy);
+    this.scale.set(s);
+    this.position.set((screenW - GAME_WIDTH * s) / 2, (screenH - GAME_HEIGHT * s) / 2);
+  }
+}
