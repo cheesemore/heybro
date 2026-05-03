@@ -24,48 +24,95 @@ export type EnemyPaintKind =
   | 'boss_tauren'
   | 'boss_blademaster';
 
-/** 程序化绘制我方兵种（原点在脚底略上，面向右） */
+/**
+ * 程序化绘制我方兵种：与封面 TitleScreen 一致的「圆角身 + 圆脸 + 豆眼」小人。
+ * 原点在脚底略上，面向右。配色参考 WoW / DBM 习惯：战士土色、法师蓝、牧师白、弓手绿、圣骑粉。
+ */
 export function paintAllyBody(g: Graphics, kind: AllyClass): void {
   g.clear();
   const outline = { width: 1.5, color: 0x0f172a, alpha: 0.55 };
+
+  const paintDudeHead = (skin: number): void => {
+    g.circle(0, -44, 11).fill(skin).stroke(outline);
+    g.circle(-4, -46, 2.2).fill(0x1e293b);
+    g.circle(4, -46, 2.2).fill(0x1e293b);
+  };
+
   switch (kind) {
     case 'warrior': {
-      g.roundRect(-22, -38, 14, 34, 3).fill(0x60a5fa).stroke(outline);
-      g.roundRect(-8, -40, 26, 38, 6).fill(0x1d4ed8).stroke(outline);
-      g.roundRect(-4, -52, 16, 14, 4).fill(0x93c5fd).stroke(outline);
-      g.moveTo(18, -28).lineTo(34, -36).lineTo(32, -32).lineTo(18, -22).fill({ color: 0xe2e8f0 }).stroke(outline);
-      g.rect(16, -30, 3, 22).fill(0xcbd5e1).stroke(outline);
+      const leather = 0xa16207;
+      const leatherDeep = 0x854d0e;
+      const strap = 0x713f12;
+      g.roundRect(-14, -36, 28, 32, 7).fill(leather).stroke(outline);
+      g.roundRect(-12, -32, 24, 8, 3).fill(leatherDeep).stroke(outline);
+      g.rect(-12, -28, 24, 3).fill(strap).stroke(outline);
+      paintDudeHead(0xfde6c7);
+      /* 左盾 */
+      g.roundRect(-24, -34, 10, 22, 2).fill(0x57534e).stroke(outline);
+      g.roundRect(-22, -30, 6, 12, 1).fill(0xa8a29e).stroke(outline);
+      g.moveTo(-19, -26).lineTo(-19, -22).stroke({ width: 1.2, color: 0x44403c, alpha: 0.9 });
+      /* 右剑 */
+      g.moveTo(15, -18).lineTo(32, -40).stroke({ width: 2.4, color: 0xe7e5e4, alpha: 1 });
+      g.roundRect(28, -44, 5, 8, 1).fill(0x94a3b8).stroke(outline);
       break;
     }
     case 'mage': {
-      g.poly([-2, -58, 18, -42, -22, -42]).fill(0x7c3aed).stroke(outline);
-      g.ellipse(0, -22, 18, 26).fill(0x4c1d95).stroke(outline);
-      g.rect(-3, -8, 6, 20).fill(0xa78bfa).stroke(outline);
-      g.circle(14, -48, 5).fill(0xfde047).stroke(outline);
-      g.moveTo(10, -40).lineTo(10, 8).stroke({ width: 2, color: 0xfbbf24, alpha: 0.9 });
+      const robe = 0x1e3a8a;
+      const robeLight = 0x2563eb;
+      g.roundRect(-14, -36, 28, 32, 7).fill(robe).stroke(outline);
+      g.roundRect(-11, -33, 22, 10, 3).fill(robeLight).stroke(outline);
+      paintDudeHead(0xffedd5);
+      /* 法杖 + 顶端水晶 */
+      g.moveTo(17, -4).lineTo(17, -56).stroke({ width: 2.2, color: 0x64748b, alpha: 1 });
+      g.circle(17, -58, 5).fill(0x38bdf8).stroke(outline);
+      g.poly([17, -63, 21, -55, 13, -55]).fill(0x7dd3fc).stroke(outline);
       break;
     }
     case 'priest': {
-      g.roundRect(-16, -42, 32, 44, 8).fill(0xf8fafc).stroke(outline);
-      g.roundRect(-10, -50, 20, 12, 4).fill(0xe2e8f0).stroke(outline);
-      g.moveTo(0, -36).lineTo(0, -18).stroke({ width: 2.5, color: 0xfbbf24, alpha: 0.95 });
-      g.moveTo(-8, -28).lineTo(8, -28).stroke({ width: 2.5, color: 0xfbbf24, alpha: 0.95 });
-      g.circle(0, -12, 6).fill({ color: 0x38bdf8, alpha: 0.35 }).stroke({ width: 1, color: 0x38bdf8 });
+      g.roundRect(-14, -36, 28, 32, 7).fill(0xf8fafc).stroke(outline);
+      g.roundRect(-11, -33, 22, 18, 4).fill({ color: 0xffffff, alpha: 0.98 }).stroke(outline);
+      paintDudeHead(0xfffef5);
+      /* 十字杖（右手侧） */
+      g.moveTo(16, -4).lineTo(16, -54).stroke({ width: 2.2, color: 0xc4a035, alpha: 1 });
+      g.moveTo(10, -32).lineTo(22, -32).stroke({ width: 2.6, color: 0xfbbf24, alpha: 1 });
+      g.circle(16, -54, 3.2).fill(0xfef9c3).stroke(outline);
       break;
     }
     case 'archer': {
-      g.ellipse(0, -24, 14, 22).fill(0x0f766e).stroke(outline);
-      g.circle(0, -46, 9).fill(0x5eead4).stroke(outline);
-      g.arc(8, -30, 28, -2.1, -0.8, false).stroke({ width: 2.5, color: 0xfbbf24, alpha: 0.9 });
-      g.rect(-18, -26, 6, 14).fill(0x134e4a).stroke(outline);
+      const tunic = 0x166534;
+      const tunicHi = 0x15803d;
+      g.roundRect(-14, -36, 28, 32, 7).fill(tunic).stroke(outline);
+      g.roundRect(-11, -33, 22, 10, 3).fill(tunicHi).stroke(outline);
+      paintDudeHead(0xd9f99d);
+      /* 弓身 + 弦 */
+      g.arc(5, -28, 22, -1.05, 0.15, false).stroke({ width: 2.2, color: 0x86efac, alpha: 1 });
+      g.moveTo(-12, -26).lineTo(24, -30).stroke({ width: 1.2, color: 0xbbf7d0, alpha: 0.85 });
+      /* 箭 */
+      g.moveTo(20, -28).lineTo(36, -28).stroke({ width: 1.8, color: 0xfde68a, alpha: 1 });
+      g.moveTo(34, -28).lineTo(31, -30.5).lineTo(31, -25.5).fill(0xfef08a).stroke(outline);
       break;
     }
     case 'knight': {
-      g.roundRect(-18, -36, 36, 36, 5).fill(0x475569).stroke(outline);
-      g.roundRect(-12, -50, 24, 18, 5).fill(0x94a3b8).stroke(outline);
-      g.moveTo(-28, -20).lineTo(-52, -18).lineTo(-50, -14).lineTo(-26, -12).fill(0xe2e8f0).stroke(outline);
-      g.rect(-50, -20, 4, 10).fill(0xcbd5e1).stroke(outline);
-      g.circle(-8, -58, 6).fill(0xf1f5f9).stroke(outline);
+      /* 坐骑：略矮、偏右，人在上 — DBM 圣骑粉 + 金边 */
+      const horse = 0x57534e;
+      const horseDark = 0x44403c;
+      g.ellipse(-2, -14, 28, 13).fill(horse).stroke(outline);
+      g.circle(-24, -18, 7).fill(horseDark).stroke(outline);
+      g.moveTo(-18, -10).lineTo(-18, -1).stroke({ width: 2, color: 0x292524, alpha: 0.9 });
+      g.moveTo(10, -10).lineTo(10, -1).stroke({ width: 2, color: 0x292524, alpha: 0.9 });
+      g.ellipse(-26, -16, 4, 3).fill(0x292524).stroke(outline);
+      /* 骑手粉甲 */
+      const palPink = 0xf472b6;
+      const palLight = 0xfbcfe8;
+      g.roundRect(-11, -40, 22, 24, 6).fill(palPink).stroke(outline);
+      g.roundRect(-9, -38, 18, 6, 2).fill(0xfbbf24).stroke(outline);
+      g.roundRect(-7, -30, 14, 4, 2).fill(palLight).stroke(outline);
+      g.circle(0, -50, 10).fill(0xfff1f2).stroke(outline);
+      g.circle(-3.2, -52, 2).fill(0x1e293b);
+      g.circle(3.2, -52, 2).fill(0x1e293b);
+      /* 骑枪 */
+      g.moveTo(12, -34).lineTo(38, -46).stroke({ width: 2, color: 0xfde68a, alpha: 1 });
+      g.circle(36, -46, 2.5).fill(0xfef08a).stroke(outline);
       break;
     }
     default:
@@ -546,14 +593,14 @@ export function buildProjectileGraphic(style: ProjectileVisualStyle): Graphics {
   const o = { width: 1.2, color: 0x020617, alpha: 0.45 };
   switch (style) {
     case 'ally_mage':
-      g.circle(0, 0, 7).fill(0xe9d5ff).stroke(o);
-      g.poly([0, -9, 6, 0, 0, 9, -6, 0]).fill(0xfde047).stroke(o);
+      g.circle(0, 0, 7).fill(0x60a5fa).stroke(o);
+      g.poly([0, -9, 6, 0, 0, 9, -6, 0]).fill(0x38bdf8).stroke(o);
       break;
     case 'ally_archer':
-      g.moveTo(10, 0).lineTo(-8, -4).lineTo(-8, 4).closePath().fill(0x5eead4).stroke(o);
+      g.moveTo(10, 0).lineTo(-8, -4).lineTo(-8, 4).closePath().fill(0x4ade80).stroke(o);
       break;
     case 'ally_priest':
-      g.circle(0, 0, 8).fill({ color: 0xfef9c3, alpha: 0.95 }).stroke(o);
+      g.circle(0, 0, 8).fill({ color: 0xf8fafc, alpha: 0.98 }).stroke(o);
       g.moveTo(0, -6).lineTo(0, 6).stroke({ width: 1.5, color: 0xfbbf24, alpha: 0.9 });
       g.moveTo(-5, 0).lineTo(5, 0).stroke({ width: 1.5, color: 0xfbbf24, alpha: 0.9 });
       break;
