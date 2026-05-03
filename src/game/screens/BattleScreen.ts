@@ -16,7 +16,7 @@ import { battleRoundIndex, bossDisplayName } from '../roundConfig';
 import {
   allBondStacks,
   classBondHpAtkMultiplier,
-  hasBond12,
+  hasBondUltimate,
   priestBondTeamMultiplier,
   RANGED_ATTACK_RANGE_THRESHOLD,
 } from '../battleBonds';
@@ -171,7 +171,7 @@ type SimUnit = {
   knightCooldown?: number;
   knightChargeTargetId?: number | null;
   knightBond12?: boolean;
-  /** 12 骑羁绊：尚可用一次免死冲锋 */
+  /** 十五层骑羁绊：尚可用一次免死冲锋 */
   knightDeathDenyLeft?: number;
   invulnerable?: boolean;
   /** 战士盾反闪一下 */
@@ -233,7 +233,7 @@ export class BattleScreen extends Container {
   private bondArcher12 = false;
   private bondKnight12 = false;
   private readonly bondStacks: ReturnType<typeof allBondStacks>;
-  /** 12 法羁绊：开场满冷却 */
+  /** 十五层法羁绊：开场满冷却 */
   private meteorCd = 999;
 
   private readonly unitLayer = new Container();
@@ -261,11 +261,11 @@ export class BattleScreen extends Container {
     this.onEnd = onEnd;
 
     this.bondStacks = allBondStacks(run.board);
-    this.bondWarrior12 = hasBond12(this.bondStacks.warrior);
-    this.bondMage12 = hasBond12(this.bondStacks.mage);
-    this.bondPriest12 = hasBond12(this.bondStacks.priest);
-    this.bondArcher12 = hasBond12(this.bondStacks.archer);
-    this.bondKnight12 = hasBond12(this.bondStacks.knight);
+    this.bondWarrior12 = hasBondUltimate(this.bondStacks.warrior);
+    this.bondMage12 = hasBondUltimate(this.bondStacks.mage);
+    this.bondPriest12 = hasBondUltimate(this.bondStacks.priest);
+    this.bondArcher12 = hasBondUltimate(this.bondStacks.archer);
+    this.bondKnight12 = hasBondUltimate(this.bondStacks.knight);
     this.meteorCd = this.bondMage12 ? METEOR_INTERVAL : 999;
 
     this.timeLimit =
@@ -632,13 +632,6 @@ export class BattleScreen extends Container {
     }
   }
 
-  private scaledStackHpAtk(stacks: number, def: (typeof ALLY_DEFS)[AllyClass]): { hp: number; atk: number } {
-    const s = Math.max(1, stacks);
-    const hp = Math.round(def.maxHp * (1 + 0.22 * (s - 1)));
-    const atk = Math.round(def.atk * (1 + 0.14 * (s - 1)));
-    return { hp, atk };
-  }
-
   /**
    * 备战 slot 0–8 对应我方九宫格中心（与 Draft 一致：col 左→右，row 0 上→2 下；
    * row 越大 y 越大，越靠近战场中部/敌侧，即下排为「前排」）。
@@ -684,14 +677,12 @@ export class BattleScreen extends Container {
       const stacks = Math.min(cell.stacks, BOARD_CELL_MAX_STACKS);
       const classM = classBondHpAtkMultiplier(this.bondStacks[cell.kind]);
       const mult = classM * priestM;
-      const { hp: hp0, atk: atk0 } = this.scaledStackHpAtk(stacks, def);
       const ab = artifactBuffsForAllySlot(this.run, slot);
 
       const n = Math.max(1, stacks);
-      const totalHp = Math.round(hp0 * mult * ab.hpMult);
-      const totalAtk = Math.round(atk0 * mult * ab.atkMult);
-      const eachHp = Math.max(1, Math.round(totalHp / n));
-      const eachAtk = Math.max(1, Math.round(totalAtk / n));
+      /** 每层数对应场上一个独立模型；每个模型满血满攻，不平分格内总池 */
+      const eachHp = Math.max(1, Math.round(def.maxHp * mult * ab.hpMult));
+      const eachAtk = Math.max(1, Math.round(def.atk * mult * ab.atkMult));
 
       let range = def.range;
       if (cell.kind === 'archer' && this.bondArcher12) range += 150;
@@ -782,11 +773,8 @@ export class BattleScreen extends Container {
     for (const wave of meta.enemies) {
       if (wave.type === 'boss' && wave.bossId) {
         const b = BOSS_DEFS[wave.bossId];
-        const g = ENEMY_DEFS.grunt;
-        const baseHp = g.baseMaxHp * 20;
-        const baseAtk = g.baseAtk * 2;
-        const hp = scaledEnemyHp(chapter, ri, baseHp);
-        const atk = scaledEnemyAtk(chapter, ri, baseAtk);
+        const hp = scaledEnemyHp(chapter, ri, b.baseMaxHp * 10);
+        const atk = scaledEnemyAtk(chapter, ri, b.baseAtk);
         const bj = this.scatterOffset(ri * 3 + 101);
         const u = this.makeUnit(
           'enemy',
@@ -800,9 +788,6 @@ export class BattleScreen extends Container {
           `${bossDisplayName(wave.bossId)}`,
           { bossId: wave.bossId },
         );
-        const bossHpMult = wave.bossId === 'blademaster' ? 3 : 2;
-        u.hp = Math.round(u.hp * bossHpMult);
-        u.maxHp = u.hp;
         out.push(u);
         continue;
       }

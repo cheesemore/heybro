@@ -127,19 +127,19 @@ type ScalingConfig = {
 const scaling = scalingJson as ScalingConfig;
 
 /**
- * 敌方生命/攻击共用倍率（相对表底 `baseMaxHp` / `baseAtk`）。
- * 全局关索引 0=1-1 … 23=3-8；里程碑：1-8 总生命 +50%（×1.5），2-8 +150%（×2.5），3-8 +300%（×4），
- * 章内线性插值；攻击与生命同倍率。
+ * 敌方生命/攻击共用进度倍率（相对表底 `baseMaxHp` / `baseAtk`）。
+ * 全局关索引 0=1-1 … 23=3-8：1-1 为 1×，线性至 1-8 为 2×（200%）、2-8 为 5×（500%）、3-8 为 10×（1000%）；
+ * 中间普通关在同段内线性插值。
  */
-export function enemyStatMultiplier(roundIndex: number): number {
+export function enemyStatProgressCurve(roundIndex: number): number {
   const ri = Math.max(0, Math.min(23, roundIndex));
   if (ri <= 7) {
-    return 1 + (0.5 * ri) / 7;
+    return 1 + ri / 7;
   }
   if (ri <= 15) {
-    return 1.5 + (1.0 * (ri - 8)) / 7;
+    return 2 + (3 * (ri - 7)) / 8;
   }
-  return 2.5 + (1.5 * (ri - 16)) / 7;
+  return 5 + (5 * (ri - 15)) / 8;
 }
 
 function chapterMult(chapter: 1 | 2 | 3, kind: 'hp' | 'atk'): number {
@@ -152,14 +152,14 @@ function chapterMult(chapter: 1 | 2 | 3, kind: 'hp' | 'atk'): number {
 
 /**
  * 全局战斗回合索引 0=1-1 … 23=3-8，与 roundConfig 中关卡顺序一致。
- * 倍率见 `enemyStatMultiplier`，再乘 `scaling.json` 章节系数。
+ * 倍率见 `enemyStatProgressCurve`，再乘 `scaling.json` 章节系数。
  */
 export function scaledEnemyHp(chapter: 1 | 2 | 3, roundIndex: number, base: number): number {
-  const m = enemyStatMultiplier(roundIndex) * chapterMult(chapter, 'hp');
+  const m = enemyStatProgressCurve(roundIndex) * chapterMult(chapter, 'hp');
   return Math.round(base * m);
 }
 
 export function scaledEnemyAtk(chapter: 1 | 2 | 3, roundIndex: number, base: number): number {
-  const m = enemyStatMultiplier(roundIndex) * chapterMult(chapter, 'atk');
+  const m = enemyStatProgressCurve(roundIndex) * chapterMult(chapter, 'atk');
   return Math.round(base * m);
 }

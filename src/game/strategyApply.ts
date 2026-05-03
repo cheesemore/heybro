@@ -1,4 +1,5 @@
-import { ALLY_CLASSES, BOARD_CELL_MAX_STACKS, ROGUE_PICK_AFTER_FIRST_COST } from './constants';
+import { ALLY_CLASSES, BOARD_CELL_MAX_STACKS, ROGUE_PICK_AFTER_FIRST_COST, ROGUE_REFRESH_TRIO_COST } from './constants';
+import { stacksOnBoard } from './battleBonds';
 import { applyPick } from './draftLogic';
 import type { RunState } from './runState';
 import { ALLY_DEFS } from './unitDefs';
@@ -395,4 +396,26 @@ export function applyRewardChapter(run: RunState, chapter: 1 | 2 | 3): string[] 
 export function roguePickCostAfterFirst(run: RunState, kind: AllyClass): number {
   const d = run.allyPickDiscountGold[kind] ?? 0;
   return Math.max(0, ROGUE_PICK_AFTER_FIRST_COST - d);
+}
+
+/**
+ * 肉鸽三选一：单卡金币价（首次本回合选牌为 0）。
+ * 棋盘上该兵种**总层数**（所有格子相加）>10 时本卡价 ×2，>20 时再 ×2（相对折扣后底价共最高 ×4）。
+ */
+export function roguePickGoldCost(run: RunState, kind: AllyClass, picksThisRound: number): number {
+  if (picksThisRound === 0) return 0;
+  let c = roguePickCostAfterFirst(run, kind);
+  const n = stacksOnBoard(run.board, kind);
+  if (n > 20) c *= 4;
+  else if (n > 10) c *= 2;
+  return c;
+}
+
+/**
+ * 刷新三选一金币：当**当前三张**里任一兵种在棋盘上总层数 >20 时，刷新价 ×2。
+ */
+export function rogueRefreshGoldCost(run: RunState, choices: readonly AllyClass[]): number {
+  let c = ROGUE_REFRESH_TRIO_COST;
+  if (choices.some((k) => stacksOnBoard(run.board, k) > 20)) c *= 2;
+  return c;
 }

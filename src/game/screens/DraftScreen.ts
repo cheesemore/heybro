@@ -1,6 +1,7 @@
 import type { Application, FederatedPointerEvent } from 'pixi.js';
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import {
+  BOARD_CELL_MAX_STACKS,
   GAME_HEIGHT,
   GAME_WIDTH,
   LAYOUT_SCALE,
@@ -10,7 +11,7 @@ import {
 import { allBondStacks } from '../battleBonds';
 import { ALLY_CLASSES } from '../constants';
 import { applyPick, boardHasAnyUnit, randomThreeFromFive } from '../draftLogic';
-import { roguePickCostAfterFirst } from '../strategyApply';
+import { roguePickGoldCost, rogueRefreshGoldCost } from '../strategyApply';
 import type { ArtifactKind } from '../strategyTypes';
 import { ROUNDS } from '../roundConfig';
 import { ALLY_DEFS } from '../unitDefs';
@@ -43,10 +44,10 @@ function artifactMark(k: ArtifactKind): string {
 
 type DragMode = 'unit' | 'artifact' | null;
 
-/** 羁绊档位：0 无，1≥3，2≥6，3≥9，4≥12 */
+/** 羁绊档位：0 无，1≥3，2≥6，3≥10，4≥15 */
 function bondTierIndex(totalStacks: number): number {
-  if (totalStacks >= 12) return 4;
-  if (totalStacks >= 9) return 3;
+  if (totalStacks >= 15) return 4;
+  if (totalStacks >= 10) return 3;
   if (totalStacks >= 6) return 2;
   if (totalStacks >= 3) return 1;
   return 0;
@@ -54,8 +55,8 @@ function bondTierIndex(totalStacks: number): number {
 
 /** 备战格内兵种名颜色：按全棋盘该职业层数总和 */
 function bondNameFill(totalStacks: number): number {
-  if (totalStacks >= 12) return 0xf97316;
-  if (totalStacks >= 9) return 0xc084fc;
+  if (totalStacks >= 15) return 0xf97316;
+  if (totalStacks >= 10) return 0xc084fc;
   if (totalStacks >= 6) return 0x60a5fa;
   if (totalStacks >= 3) return 0x4ade80;
   return 0xe2e8f0;
@@ -188,7 +189,7 @@ export class DraftScreen extends Container {
 
     const wrapW = GAME_WIDTH - PAD_X * 2 - TEXT_INSET;
     const rule = new Text({
-      text: `上方三选一：5 兵种随机 3 张，点 1 张加入备战。\n首次选牌免费；之后每次 ${ROGUE_PICK_AFTER_FIRST_COST} 金。刷新三选一 ${ROGUE_REFRESH_TRIO_COST} 金。`,
+      text: `上方三选一：5 兵种随机 3 张，点 1 张加入备战（单格叠层上限 ${BOARD_CELL_MAX_STACKS}）。\n首次选牌免费；之后基础 ${ROGUE_PICK_AFTER_FIRST_COST} 金/张（有折扣的兵种更低）。棋盘同兵种总层数 >10 时该张价格 ×2，>20 再 ×2；若当前三张里某兵种总层数 >20，刷新三选一金也 ×2。\n刷新基础 ${ROGUE_REFRESH_TRIO_COST} 金，卡面与按钮显示实价。`,
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(20 * LAYOUT_SCALE),
@@ -333,9 +334,9 @@ export class DraftScreen extends Container {
     if (this.picksThisRound === 0) {
       this.pickHint.text = `本轮已选 0 次 · 首次选牌免费（折扣兵种后续更便宜）`;
     } else {
-      const c0 = roguePickCostAfterFirst(this.run, this.choices[0]!);
-      const c1 = roguePickCostAfterFirst(this.run, this.choices[1]!);
-      const c2 = roguePickCostAfterFirst(this.run, this.choices[2]!);
+      const c0 = roguePickGoldCost(this.run, this.choices[0]!, this.picksThisRound);
+      const c1 = roguePickGoldCost(this.run, this.choices[1]!, this.picksThisRound);
+      const c2 = roguePickGoldCost(this.run, this.choices[2]!, this.picksThisRound);
       this.pickHint.text = `本轮已选 ${this.picksThisRound} 次 · 当前三张费用：${c0} / ${c1} / ${c2} 金`;
     }
   }
@@ -367,9 +368,23 @@ export class DraftScreen extends Container {
         .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x475569, alpha: 0.9 });
       card.addChild(bg);
 
+      const goldCost = roguePickGoldCost(this.run, kind, this.picksThisRound);
+      const priceLab = new Text({
+        text: goldCost === 0 ? '免费' : `${goldCost} 金`,
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontSize: Math.round(19 * LAYOUT_SCALE),
+          fill: goldCost === 0 ? 0x86efac : 0xfbbf24,
+          fontWeight: '700',
+        },
+      });
+      priceLab.anchor.set(0.5, 0);
+      priceLab.position.set(cardW / 2, Math.round(10 * LAYOUT_SCALE));
+      card.addChild(priceLab);
+
       const portraitScale = Math.min(cardW * 0.78, Math.round(198 * LAYOUT_SCALE)) / 108;
       const portrait = createAllyPortraitGraphic(kind, portraitScale);
-      portrait.position.set(cardW / 2, cardH * 0.32);
+      portrait.position.set(cardW / 2, cardH * 0.34);
       card.addChild(portrait);
 
       const padX = Math.round(10 * LAYOUT_SCALE);
@@ -400,7 +415,7 @@ export class DraftScreen extends Container {
   private pickChoice(index: number): void {
     this.tip.text = '';
     const kind = this.choices[index]!;
-    const cost = this.picksThisRound === 0 ? 0 : roguePickCostAfterFirst(this.run, kind);
+    const cost = roguePickGoldCost(this.run, kind, this.picksThisRound);
     if (cost > 0 && this.run.gold < cost) {
       this.tip.text = `金币不足，需要 ${cost} 金才能选这张牌。`;
       this.positionTipAboveRow1(this.controlRowYs().row1Y);
@@ -606,16 +621,17 @@ export class DraftScreen extends Container {
 
     const gap = Math.round(12 * LAYOUT_SCALE);
     const half = (GAME_WIDTH - PAD_X * 2 - gap) / 2;
+    const refreshCost = rogueRefreshGoldCost(this.run, this.choices);
 
     mkBtn(
-      `刷新三选一（${ROGUE_REFRESH_TRIO_COST} 金）`,
+      `刷新三选一（${refreshCost} 金）`,
       PAD_X,
       row1Y,
       half,
-      this.run.gold >= ROGUE_REFRESH_TRIO_COST,
+      this.run.gold >= refreshCost,
       () => {
-        if (this.run.gold < ROGUE_REFRESH_TRIO_COST) return;
-        this.run.gold -= ROGUE_REFRESH_TRIO_COST;
+        if (this.run.gold < refreshCost) return;
+        this.run.gold -= refreshCost;
         this.rollChoices();
         this.refreshHud();
         this.drawTrio();

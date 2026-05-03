@@ -13,8 +13,8 @@ export const ROGUE_PICK_AFTER_FIRST_COST = 10;
 
 export const INITIAL_GOLD = 20;
 
-/** 备战单格兵种叠层上限（无上限不现实；需要上限时为 20） */
-export const BOARD_CELL_MAX_STACKS = 20;
+/** 备战单格兵种叠层上限 */
+export const BOARD_CELL_MAX_STACKS = 30;
 
 /** 每回合结束固定金币 */
 export const ROUND_END_FIXED_GOLD = 10;
