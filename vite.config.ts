@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite';
 
-/** 生产构建用于 https://cheesemore.github.io/heybro/ ；本地 dev 仍为根路径 `/` */
+/**
+ * 生产用相对路径，避免「子目录部署 / 根目录部署 / 访问时少写尾斜杠」导致脚本 404 白屏。
+ * 本地 `vite dev` 仍用 `/`。
+ */
 export default defineConfig(({ command }) => ({
-  base: command === 'build' ? '/heybro/' : '/',
+  base: command === 'build' ? './' : '/',
 }));
