@@ -20,9 +20,11 @@ import { createAllyPortraitGraphic } from '../battleVisuals';
 import { SynergyOverlay } from './SynergyOverlay';
 
 const PAD_X = Math.round(20 * LAYOUT_SCALE);
+/** 正文区比全宽略收，避免贴边裁切与换行异常 */
+const TEXT_INSET = Math.round(14 * LAYOUT_SCALE);
 const HEADER_Y = Math.round(20 * LAYOUT_SCALE);
 const TRIO_Y = Math.round(248 * LAYOUT_SCALE);
-const CARD_GAP = Math.round(14 * LAYOUT_SCALE);
+const CARD_GAP = Math.round(18 * LAYOUT_SCALE);
 
 function artifactMark(k: ArtifactKind): string {
   switch (k) {
@@ -121,19 +123,24 @@ export class DraftScreen extends Container {
     this.addChild(band);
 
     const meta = ROUNDS[this.run.currentRoundIndex]!;
+    const bondW = Math.round(188 * LAYOUT_SCALE);
+    const headerWrap = GAME_WIDTH - PAD_X * 2 - bondW - Math.round(12 * LAYOUT_SCALE);
     const header = new Text({
       text: `回合 ${meta.label} · 肉鸽选牌`,
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(38 * LAYOUT_SCALE),
+        fontSize: Math.round(34 * LAYOUT_SCALE),
         fill: 0xf8fafc,
         fontWeight: '700',
+        lineHeight: Math.round(42 * LAYOUT_SCALE),
+        wordWrap: true,
+        wordWrapWidth: Math.max(120, headerWrap),
+        breakWords: true,
       },
     });
     header.position.set(PAD_X, HEADER_Y);
     this.addChild(header);
 
-    const bondW = Math.round(188 * LAYOUT_SCALE);
     const bondH = Math.round(46 * LAYOUT_SCALE);
     const bondBtn = new Container();
     bondBtn.eventMode = 'static';
@@ -179,15 +186,17 @@ export class DraftScreen extends Container {
     this.goldText.position.set(PAD_X, Math.round(82 * LAYOUT_SCALE));
     this.addChild(this.goldText);
 
+    const wrapW = GAME_WIDTH - PAD_X * 2 - TEXT_INSET;
     const rule = new Text({
       text: `上方三选一：5 兵种随机 3 张，点 1 张加入备战。\n首次选牌免费；之后每次 ${ROGUE_PICK_AFTER_FIRST_COST} 金。刷新三选一 ${ROGUE_REFRESH_TRIO_COST} 金。`,
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(22 * LAYOUT_SCALE),
+        fontSize: Math.round(20 * LAYOUT_SCALE),
         fill: 0x94a3b8,
-        lineHeight: Math.round(30 * LAYOUT_SCALE),
+        lineHeight: Math.round(28 * LAYOUT_SCALE),
         wordWrap: true,
-        wordWrapWidth: GAME_WIDTH - PAD_X * 2,
+        wordWrapWidth: wrapW,
+        breakWords: true,
       },
     });
     rule.position.set(PAD_X, Math.round(118 * LAYOUT_SCALE));
@@ -197,8 +206,12 @@ export class DraftScreen extends Container {
       text: '',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(24 * LAYOUT_SCALE),
+        fontSize: Math.round(21 * LAYOUT_SCALE),
         fill: 0xbae6fd,
+        lineHeight: Math.round(28 * LAYOUT_SCALE),
+        wordWrap: true,
+        wordWrapWidth: wrapW,
+        breakWords: true,
       },
     });
     this.pickHint.position.set(PAD_X, Math.round(200 * LAYOUT_SCALE));
@@ -218,13 +231,15 @@ export class DraftScreen extends Container {
     this.addChild(boardBand);
 
     const boardTitle = new Text({
-      text: '备战九宫 · 拖动有兵格子与其它格换位；左上角紫圈为神器，点按紫圈可拖动神器换位（影响战斗加成）',
+      text: '备战九宫：有兵格可拖动换位。左上紫圈为神器，点按紫圈可拖神器换位（影响战斗加成）。',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(22 * LAYOUT_SCALE),
+        fontSize: Math.round(19 * LAYOUT_SCALE),
         fill: 0xcbd5e1,
+        lineHeight: Math.round(27 * LAYOUT_SCALE),
         wordWrap: true,
-        wordWrapWidth: GAME_WIDTH - PAD_X * 2,
+        wordWrapWidth: wrapW,
+        breakWords: true,
       },
     });
     boardTitle.position.set(PAD_X, Math.round(568 * LAYOUT_SCALE));
@@ -234,11 +249,15 @@ export class DraftScreen extends Container {
       text: '',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(20 * LAYOUT_SCALE),
+        fontSize: Math.round(19 * LAYOUT_SCALE),
         fill: 0xfca5a5,
+        lineHeight: Math.round(26 * LAYOUT_SCALE),
+        wordWrap: true,
+        wordWrapWidth: wrapW,
+        breakWords: true,
       },
     });
-    this.tip.position.set(PAD_X, Math.round(982 * LAYOUT_SCALE));
+    this.tip.position.x = PAD_X;
     this.addChild(this.tip);
 
     this.refreshHud();
@@ -253,19 +272,39 @@ export class DraftScreen extends Container {
   }
 
   private cardMetrics(): { cardW: number; cardH: number; originX: number } {
-    const inner = GAME_WIDTH - PAD_X * 2 - CARD_GAP * 2;
+    const inner = GAME_WIDTH - PAD_X * 2 - CARD_GAP * 2 - TEXT_INSET;
     const cardW = Math.floor(inner / 3);
-    const cardH = Math.round(292 * LAYOUT_SCALE);
-    const originX = PAD_X + (GAME_WIDTH - PAD_X * 2 - (cardW * 3 + CARD_GAP * 2)) / 2;
+    const cardH = Math.round(278 * LAYOUT_SCALE);
+    const originX = PAD_X + TEXT_INSET / 2 + (GAME_WIDTH - PAD_X * 2 - TEXT_INSET - (cardW * 3 + CARD_GAP * 2)) / 2;
     return { cardW, cardH, originX };
   }
 
+  /** 底部两排按钮的纵向位置（与 drawControls 一致） */
+  private controlRowYs(): { row1Y: number; row2Y: number; btnH: number } {
+    const btnH = Math.round(58 * LAYOUT_SCALE);
+    const bottomPad = Math.round(28 * LAYOUT_SCALE);
+    const row2Y = GAME_HEIGHT - bottomPad - btnH;
+    const rowGap = Math.round(14 * LAYOUT_SCALE);
+    const row1Y = row2Y - btnH - rowGap;
+    return { row1Y, row2Y, btnH };
+  }
+
+  private positionTipAboveRow1(row1Y: number): void {
+    const tipGap = Math.round(10 * LAYOUT_SCALE);
+    this.tip.position.x = PAD_X;
+    if (!this.tip.text) {
+      this.tip.position.y = row1Y - tipGap;
+      return;
+    }
+    this.tip.position.y = row1Y - tipGap - this.tip.height;
+  }
+
   private boardSlotRect(i: number): { x: number; y: number; w: number; h: number } {
-    const cell = Math.round(116 * LAYOUT_SCALE);
-    const gap = Math.round(14 * LAYOUT_SCALE);
+    const cell = Math.round(108 * LAYOUT_SCALE);
+    const gap = Math.round(16 * LAYOUT_SCALE);
     const gridW = cell * 3 + gap * 2;
     const originX = PAD_X + (GAME_WIDTH - PAD_X * 2 - gridW) / 2;
-    const originY = Math.round(612 * LAYOUT_SCALE);
+    const originY = Math.round(626 * LAYOUT_SCALE);
     const col = i % 3;
     const row = Math.floor(i / 3);
     return {
@@ -328,23 +367,28 @@ export class DraftScreen extends Container {
         .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x475569, alpha: 0.9 });
       card.addChild(bg);
 
-      const portrait = createAllyPortraitGraphic(kind, Math.min(cardW, Math.round(220 * LAYOUT_SCALE)) / 108);
-      portrait.position.set(cardW / 2, cardH * 0.34);
+      const portraitScale = Math.min(cardW * 0.78, Math.round(198 * LAYOUT_SCALE)) / 108;
+      const portrait = createAllyPortraitGraphic(kind, portraitScale);
+      portrait.position.set(cardW / 2, cardH * 0.32);
       card.addChild(portrait);
 
+      const padX = Math.round(10 * LAYOUT_SCALE);
       const t = new Text({
-        text: `${def.name}\nHP ${def.maxHp} · 攻 ${def.atk} · 速 ${def.moveSpeed}`,
+        text: `${def.name}\nHP${def.maxHp} 攻${def.atk}\n速${def.moveSpeed}`,
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(21 * LAYOUT_SCALE),
+          fontSize: Math.round(17 * LAYOUT_SCALE),
           fill: 0xcbd5e1,
           align: 'center',
-          lineHeight: Math.round(28 * LAYOUT_SCALE),
+          lineHeight: Math.round(22 * LAYOUT_SCALE),
           fontWeight: '600',
+          wordWrap: true,
+          wordWrapWidth: Math.max(40, cardW - padX * 2),
+          breakWords: true,
         },
       });
       t.anchor.set(0.5, 1);
-      t.position.set(cardW / 2, cardH - Math.round(16 * LAYOUT_SCALE));
+      t.position.set(cardW / 2, cardH - Math.round(12 * LAYOUT_SCALE));
       card.addChild(t);
 
       const idx = i;
@@ -359,10 +403,12 @@ export class DraftScreen extends Container {
     const cost = this.picksThisRound === 0 ? 0 : roguePickCostAfterFirst(this.run, kind);
     if (cost > 0 && this.run.gold < cost) {
       this.tip.text = `金币不足，需要 ${cost} 金才能选这张牌。`;
+      this.positionTipAboveRow1(this.controlRowYs().row1Y);
       return;
     }
     if (!applyPick(this.run.board, kind)) {
       this.tip.text = '备战区已满且没有该兵种空位，无法上场新兵种。';
+      this.positionTipAboveRow1(this.controlRowYs().row1Y);
       return;
     }
     if (cost > 0) this.run.gold -= cost;
@@ -483,8 +529,8 @@ export class DraftScreen extends Container {
       }
       const slot = this.run.board[i];
       if (slot) {
-        const portrait = createAllyPortraitGraphic(slot.kind, 0.34 * LAYOUT_SCALE);
-        portrait.position.set(b.w / 2, b.h * 0.4);
+        const portrait = createAllyPortraitGraphic(slot.kind, Math.min(0.3 * LAYOUT_SCALE, b.w / 360));
+        portrait.position.set(b.w / 2, b.h * 0.38);
         wrap.addChild(portrait);
         if (upgradedKinds.has(slot.kind)) {
           this.playSlotBondGlow(wrap, b.w, b.h);
@@ -495,15 +541,18 @@ export class DraftScreen extends Container {
         text: slot ? `${ALLY_DEFS[slot.kind].name}\n×${slot.stacks}` : '空',
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: slot ? Math.round(19 * LAYOUT_SCALE) : Math.round(22 * LAYOUT_SCALE),
+          fontSize: slot ? Math.round(16 * LAYOUT_SCALE) : Math.round(19 * LAYOUT_SCALE),
           fill: slot ? bondNameFill(bondTotal) : 0x475569,
           align: 'center',
-          lineHeight: Math.round(24 * LAYOUT_SCALE),
+          lineHeight: Math.round(21 * LAYOUT_SCALE),
           fontWeight: slot ? '600' : '400',
+          wordWrap: true,
+          wordWrapWidth: Math.max(32, b.w - Math.round(8 * LAYOUT_SCALE)),
+          breakWords: true,
         },
       });
       t.anchor.set(0.5, 1);
-      t.position.set(b.w / 2, b.h - Math.round(10 * LAYOUT_SCALE));
+      t.position.set(b.w / 2, b.h - Math.round(8 * LAYOUT_SCALE));
       wrap.addChild(t);
       const idx = i;
       wrap.on('pointerdown', (e: FederatedPointerEvent) => {
@@ -526,7 +575,7 @@ export class DraftScreen extends Container {
     for (const c of [...this.children]) {
       if ((c as { userData?: string }).userData === 'ctrl') c.destroy();
     }
-    const btnH = Math.round(64 * LAYOUT_SCALE);
+    const { row1Y, row2Y, btnH } = this.controlRowYs();
     const mkBtn = (label: string, x: number, y: number, w: number, enabled: boolean, fn: () => void): void => {
       const g = new Graphics();
       g.roundRect(0, 0, w, btnH, Math.round(14 * LAYOUT_SCALE)).fill(enabled ? 0x1d4ed8 : 0x334155);
@@ -539,9 +588,14 @@ export class DraftScreen extends Container {
         text: label,
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(20 * LAYOUT_SCALE),
+          fontSize: Math.round(18 * LAYOUT_SCALE),
           fill: 0xffffff,
           fontWeight: '600',
+          lineHeight: Math.round(24 * LAYOUT_SCALE),
+          wordWrap: true,
+          wordWrapWidth: Math.max(40, w - Math.round(16 * LAYOUT_SCALE)),
+          align: 'center',
+          breakWords: true,
         },
       });
       t.anchor.set(0.5);
@@ -550,9 +604,7 @@ export class DraftScreen extends Container {
       this.addChild(g, t);
     };
 
-    const row1Y = Math.round(1008 * LAYOUT_SCALE);
-    const row2Y = Math.round(1090 * LAYOUT_SCALE);
-    const gap = 12;
+    const gap = Math.round(12 * LAYOUT_SCALE);
     const half = (GAME_WIDTH - PAD_X * 2 - gap) / 2;
 
     mkBtn(
@@ -574,6 +626,8 @@ export class DraftScreen extends Container {
     mkBtn('跳过选牌（保留金币）', PAD_X + half + gap, row1Y, half, true, () => this.tryFinish(true));
 
     mkBtn('结束选牌并继续', PAD_X, row2Y, GAME_WIDTH - PAD_X * 2, true, () => this.tryFinish(false));
+
+    this.positionTipAboveRow1(row1Y);
   }
 
   private tryFinish(allowEmpty: boolean): void {
@@ -582,10 +636,12 @@ export class DraftScreen extends Container {
     const nextIsBattle: boolean = meta.kind === 'normal' || meta.kind === 'boss';
     if (!allowEmpty && !boardHasAnyUnit(this.run.board)) {
       this.tip.text = '请至少布置一个兵种后再进入战斗。';
+      this.positionTipAboveRow1(this.controlRowYs().row1Y);
       return;
     }
     if (allowEmpty && nextIsBattle && !boardHasAnyUnit(this.run.board)) {
       this.tip.text = '战斗关无法在无兵力时跳过选牌，请至少选择一种兵种。';
+      this.positionTipAboveRow1(this.controlRowYs().row1Y);
       return;
     }
     document.removeEventListener('pointerup', this.onDocPointerUp);

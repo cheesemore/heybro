@@ -152,6 +152,8 @@ type SimUnit = {
   attackIntervalBase?: number;
   range: number;
   speed: number;
+  /** 未减速前的移动速度（用于暗矛减速等） */
+  speedBase: number;
   cd: number;
   dead: boolean;
   root: Container;
@@ -194,6 +196,8 @@ type SimUnit = {
   shamanBloodlustCd?: number;
   /** 亡灵勇士：突击仅能使用一次 */
   dreadAssaultUsed?: boolean;
+  /** 暗矛击退：移动速度 -50%，剩余秒数 */
+  moveSlowT?: number;
 };
 
 export class BattleScreen extends Container {
@@ -447,6 +451,13 @@ export class BattleScreen extends Container {
     return Math.max(0.12, base / mult);
   }
 
+  private syncUnitMoveSpeed(u: SimUnit): void {
+    if (u.dead) return;
+    if (u.speedBase == null) u.speedBase = u.speed;
+    const slow = (u.moveSlowT ?? 0) > 0 ? 0.5 : 1;
+    u.speed = u.speedBase * slow;
+  }
+
   private clampAllyWorldPos(u: SimUnit): void {
     u.x = Math.max(KNOCKBACK_PAD_X, Math.min(GAME_WIDTH - KNOCKBACK_PAD_X, u.x));
     u.y = Math.max(ARENA_Y_MIN, Math.min(ARENA_Y_MAX, u.y));
@@ -466,9 +477,19 @@ export class BattleScreen extends Container {
 
   private maybeDarkspearKnockback(attacker: SimUnit, target: SimUnit): void {
     if (attacker.side !== 'enemy' || attacker.enemyPaint !== 'darkspear' || target.side !== 'ally' || target.dead) return;
-    if (Math.random() >= 0.2) return;
+    if (Math.random() >= 0.1) return;
     this.knockbackAllyFromPoint(target, attacker.x, attacker.y, Math.round(100 * LAYOUT_SCALE));
-    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y - 20, 44, 0x14b8a6, 0.36));
+    target.stunT = Math.max(target.stunT ?? 0, 1);
+    target.moveSlowT = 5;
+    this.syncUnitMoveSpeed(target);
+    this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x, target.y));
+    this.slashes.push(spawnDualShotSlash(this.fxLayer, target.x, target.y));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y - 18, 52, 0x2dd4bf, 0.42));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y - 20, 76, 0x0d9488, 0.5));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y - 14, 34, 0xf0fdfa, 0.32));
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, target.x, target.y - HP_BAR_OFFSET_Y - 48, '击退', 'magic'),
+    );
   }
 
   private abominationCleaveFollowup(attacker: SimUnit, primary: SimUnit): void {
@@ -885,6 +906,7 @@ export class BattleScreen extends Container {
       attackIntervalBase: attackSpeed,
       range,
       speed: moveSpeed * BATTLE_MOVE_SPEED_MULT,
+      speedBase: moveSpeed * BATTLE_MOVE_SPEED_MULT,
       cd: 0,
       dead: false,
       root,
@@ -1742,6 +1764,11 @@ export class BattleScreen extends Container {
       if (u.dead) continue;
       if (u.hp > u.maxHp) u.hp = u.maxHp;
 
+      if ((u.moveSlowT ?? 0) > 0) {
+        u.moveSlowT = Math.max(0, (u.moveSlowT ?? 0) - dt);
+      }
+      this.syncUnitMoveSpeed(u);
+
       if ((u.stunT ?? 0) > 0) {
         u.stunT = Math.max(0, (u.stunT ?? 0) - dt);
         if (u.allyKind === 'knight' && (u.knightState === 'charge' || u.knightState === 'death_charge')) {
@@ -1802,6 +1829,8 @@ export class BattleScreen extends Container {
         u.body.tint = 0xfde047;
       } else if ((u.bloodlustT ?? 0) > 0 && u.side === 'enemy') {
         u.body.tint = 0xf9a8d4;
+      } else if ((u.moveSlowT ?? 0) > 0 && u.side === 'ally') {
+        u.body.tint = 0x5eead4;
       } else {
         u.body.tint = 0xffffff;
       }

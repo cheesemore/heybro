@@ -1,3 +1,4 @@
+import type { FederatedPointerEvent, FederatedWheelEvent } from 'pixi.js';
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { allBondStacks } from '../battleBonds';
@@ -20,6 +21,9 @@ const BODY = 0xe2e8f0;
 const TAB_ON = 0x38bdf8;
 const TAB_OFF = 0x94a3b8;
 
+/** 判定为滚动后，忽略同一次手势内的档位 chip 误触 */
+const SCROLL_SLOP_PX = 12;
+
 type TabId = 'bond' | 'strategy';
 
 export class SynergyOverlay extends Container {
@@ -27,6 +31,8 @@ export class SynergyOverlay extends Container {
   private readonly body: Container;
   private readonly detailLayer: Container;
   private readonly listLayer: Container;
+  private readonly scrollViewport: Container;
+  private readonly scrollMaskG: Graphics;
   private readonly tabBond: Container;
   private readonly tabStrat: Container;
   private readonly tabBondG: Graphics;
@@ -36,9 +42,23 @@ export class SynergyOverlay extends Container {
   private detailHead: Text;
   private detailDesc: Text;
   private readonly innerW: number;
-  private readonly maxListH: number;
+  /** 列表区可视高度 */
+  private readonly viewportH: number;
   private readonly run: RunState;
   private readonly onDismiss: () => void;
+
+  private scrollY = 0;
+  private scrollMax = 0;
+  private scrollDragActive = false;
+  private scrollDragPointerId: number | null = null;
+  private scrollDragStartClientY = 0;
+  private scrollDragStartScroll = 0;
+  /** 本段 pointer 序列中是否发生过明显垂直滚动 */
+  private scrollGestureForTap = false;
+  /** 滚动结束后吃掉下一次 chip 的 tap，避免误开详情 */
+  private blockNextChipTap = false;
+  private readonly boundDocPointerMove: (e: PointerEvent) => void;
+  private readonly boundDocPointerUp: (e: PointerEvent) => void;
 
   constructor(run: RunState, onDismiss: () => void) {
     super();
@@ -46,6 +66,9 @@ export class SynergyOverlay extends Container {
     this.onDismiss = onDismiss;
     this.eventMode = 'static';
     this.hitArea = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+    this.boundDocPointerMove = this.onDocPointerMove.bind(this);
+    this.boundDocPointerUp = this.onDocPointerUp.bind(this);
 
     const dim = new Graphics();
     dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x020617, alpha: 0.78 });
@@ -58,7 +81,10 @@ export class SynergyOverlay extends Container {
     const px = (GAME_WIDTH - pw) / 2;
     const py = (GAME_HEIGHT - ph) / 2;
     this.innerW = pw - Math.round(56 * LAYOUT_SCALE);
-    this.maxListH = ph - Math.round(220 * LAYOUT_SCALE);
+
+    const closeH = Math.round(56 * LAYOUT_SCALE);
+    const closeW = Math.round(240 * LAYOUT_SCALE);
+    const closeTopY = py + ph - closeH - Math.round(22 * LAYOUT_SCALE);
 
     const panel = new Graphics();
     panel.roundRect(0, 0, pw, ph, Math.round(20 * LAYOUT_SCALE)).fill(0x111827);
@@ -131,14 +157,47 @@ export class SynergyOverlay extends Container {
     this.addChild(this.tabBond, this.tabStrat);
 
     const bodyTop = tabY + tabH + Math.round(18 * LAYOUT_SCALE);
+    this.viewportH = Math.max(
+      Math.round(220 * LAYOUT_SCALE),
+      closeTopY - bodyTop - Math.round(14 * LAYOUT_SCALE),
+    );
+
     this.body = new Container();
     this.body.position.set(px + Math.round(24 * LAYOUT_SCALE), bodyTop);
+    this.body.eventMode = 'static';
+    this.body.on('pointerdown', (e: FederatedPointerEvent) => {
+      if (this.detailLayer.visible) return;
+      if (!this.scrollViewport.visible) return;
+      const lp = e.getLocalPosition(this.scrollViewport);
+      if (lp.x < 0 || lp.x > this.innerW || lp.y < 0 || lp.y > this.viewportH) return;
+      this.beginListScrollDrag(e);
+    });
+    this.body.on('wheel', (e: FederatedWheelEvent) => {
+      if (this.detailLayer.visible) return;
+      if (!this.scrollViewport.visible) return;
+      const lp = e.getLocalPosition(this.scrollViewport);
+      if (lp.x < 0 || lp.x > this.innerW || lp.y < 0 || lp.y > this.viewportH) return;
+      e.preventDefault();
+      const step = e.deltaY * (e.deltaMode === 1 ? 16 : 1);
+      this.setScrollY(this.scrollY + step);
+    });
     this.addChild(this.body);
 
+    this.scrollMaskG = new Graphics();
+    this.scrollMaskG.rect(0, 0, this.innerW, this.viewportH).fill({ color: 0xffffff });
+
+    this.scrollViewport = new Container();
+    this.scrollViewport.eventMode = 'static';
+    this.scrollViewport.cursor = 'grab';
+    this.scrollViewport.hitArea = new Rectangle(0, 0, this.innerW, this.viewportH);
+    this.scrollViewport.addChild(this.scrollMaskG);
+    this.scrollViewport.mask = this.scrollMaskG;
     this.listLayer = new Container();
+    this.scrollViewport.addChild(this.listLayer);
+    this.body.addChild(this.scrollViewport);
+
     this.detailLayer = new Container();
     this.detailLayer.visible = false;
-    this.body.addChild(this.listLayer);
     this.body.addChild(this.detailLayer);
 
     const back = new Container();
@@ -165,6 +224,7 @@ export class SynergyOverlay extends Container {
     back.on('pointertap', (e) => {
       e.stopPropagation();
       this.detailLayer.visible = false;
+      this.scrollViewport.visible = true;
       this.listLayer.visible = true;
     });
     this.detailLayer.addChild(back);
@@ -198,15 +258,13 @@ export class SynergyOverlay extends Container {
     this.detailDesc.position.set(0, Math.round(108 * LAYOUT_SCALE));
     this.detailLayer.addChild(this.detailDesc);
 
-    const closeH = Math.round(56 * LAYOUT_SCALE);
-    const closeW = Math.round(240 * LAYOUT_SCALE);
     const closeG = new Graphics();
     closeG
       .roundRect(0, 0, closeW, closeH, Math.round(14 * LAYOUT_SCALE))
       .fill(0x2563eb);
     closeG.eventMode = 'static';
     closeG.cursor = 'pointer';
-    closeG.position.set(px + (pw - closeW) / 2, py + ph - closeH - Math.round(22 * LAYOUT_SCALE));
+    closeG.position.set(px + (pw - closeW) / 2, closeTopY);
     closeG.on('pointertap', (e) => {
       e.stopPropagation();
       this.dismiss();
@@ -229,6 +287,53 @@ export class SynergyOverlay extends Container {
     this.fillList(fs, fsSmall, lh);
   }
 
+  private beginListScrollDrag(e: FederatedPointerEvent): void {
+    if (this.scrollMax <= 0) return;
+    this.endListScrollDrag();
+    this.scrollDragActive = true;
+    this.scrollGestureForTap = false;
+    this.scrollDragPointerId = e.pointerId;
+    this.scrollDragStartClientY = e.client.y;
+    this.scrollDragStartScroll = this.scrollY;
+    document.addEventListener('pointermove', this.boundDocPointerMove, { passive: true });
+    document.addEventListener('pointerup', this.boundDocPointerUp, { passive: true });
+    document.addEventListener('pointercancel', this.boundDocPointerUp, { passive: true });
+  }
+
+  private onDocPointerMove(e: PointerEvent): void {
+    if (!this.scrollDragActive || e.pointerId !== this.scrollDragPointerId) return;
+    const dy = e.clientY - this.scrollDragStartClientY;
+    if (Math.abs(dy) > SCROLL_SLOP_PX) this.scrollGestureForTap = true;
+    this.setScrollY(this.scrollDragStartScroll - dy);
+  }
+
+  private onDocPointerUp(e: PointerEvent): void {
+    if (!this.scrollDragActive || e.pointerId !== this.scrollDragPointerId) return;
+    if (this.scrollGestureForTap) this.blockNextChipTap = true;
+    this.scrollGestureForTap = false;
+    this.endListScrollDrag();
+  }
+
+  private endListScrollDrag(): void {
+    this.scrollDragActive = false;
+    this.scrollDragPointerId = null;
+    document.removeEventListener('pointermove', this.boundDocPointerMove);
+    document.removeEventListener('pointerup', this.boundDocPointerUp);
+    document.removeEventListener('pointercancel', this.boundDocPointerUp);
+  }
+
+  private setScrollY(y: number): void {
+    this.scrollY = Math.max(0, Math.min(this.scrollMax, y));
+    this.listLayer.position.y = -this.scrollY;
+  }
+
+  private updateScrollBounds(contentHeight: number): void {
+    this.scrollMax = Math.max(0, contentHeight - this.viewportH);
+    this.scrollViewport.cursor = this.scrollMax > 0 ? 'grab' : 'default';
+    if (this.scrollY > this.scrollMax) this.setScrollY(this.scrollMax);
+    else this.listLayer.position.y = -this.scrollY;
+  }
+
   private paintTabs(tabW: number, tabH: number): void {
     const draw = (g: Graphics, on: boolean) => {
       g.clear();
@@ -248,7 +353,11 @@ export class SynergyOverlay extends Container {
     if (this.tab === id) return;
     this.tab = id;
     this.detailLayer.visible = false;
-    this.listLayer.visible = true;
+    this.scrollViewport.visible = true;
+    this.scrollY = 0;
+    this.listLayer.position.y = 0;
+    this.scrollGestureForTap = false;
+    this.blockNextChipTap = false;
     this.paintTabs(Math.round(200 * LAYOUT_SCALE), Math.round(48 * LAYOUT_SCALE));
     const fs = Math.round(24 * LAYOUT_SCALE);
     const fsSmall = Math.round(20 * LAYOUT_SCALE);
@@ -257,6 +366,7 @@ export class SynergyOverlay extends Container {
   }
 
   private dismiss(): void {
+    this.endListScrollDrag();
     this.onDismiss();
     this.destroy({ children: true });
   }
@@ -264,14 +374,19 @@ export class SynergyOverlay extends Container {
   private showTierDetail(kind: AllyClass, tier: BondTierThreshold): void {
     this.listLayer.visible = false;
     this.detailLayer.visible = true;
+    this.scrollViewport.visible = false;
     this.detailHead.text = `${allyBondDisplayName(kind)} · ${bondTierChipLabel(tier)}`;
     this.detailDesc.text = bondTierFullDesc(kind, tier);
   }
 
   private fillList(fs: number, fsSmall: number, lh: number): void {
+    this.endListScrollDrag();
     this.listLayer.removeChildren();
     this.listLayer.visible = true;
-    this.listLayer.scale.set(1);
+    this.listLayer.position.set(0, 0);
+    this.scrollY = 0;
+    this.scrollGestureForTap = false;
+    this.blockNextChipTap = false;
     let y = 0;
 
     if (this.tab === 'strategy') {
@@ -290,7 +405,7 @@ export class SynergyOverlay extends Container {
         });
         t.position.set(0, y);
         this.listLayer.addChild(t);
-        this.clampListScale(y + t.height);
+        this.updateScrollBounds(y + t.height);
         return;
       }
       for (const p of picks) {
@@ -324,7 +439,7 @@ export class SynergyOverlay extends Container {
         this.listLayer.addChild(body);
         y += body.height + Math.round(22 * LAYOUT_SCALE);
       }
-      this.clampListScale(y);
+      this.updateScrollBounds(y);
       return;
     }
 
@@ -343,6 +458,9 @@ export class SynergyOverlay extends Container {
           fontSize: fsSmall,
           fill: BODY,
           fontWeight: '600',
+          wordWrap: true,
+          wordWrapWidth: this.innerW,
+          lineHeight: lh,
         },
       });
       line.position.set(0, y);
@@ -381,6 +499,10 @@ export class SynergyOverlay extends Container {
         const ti = tier;
         chip.on('pointertap', (e) => {
           e.stopPropagation();
+          if (this.blockNextChipTap) {
+            this.blockNextChipTap = false;
+            return;
+          }
           this.showTierDetail(k, ti);
         });
         row.addChild(chip);
@@ -398,6 +520,8 @@ export class SynergyOverlay extends Container {
         fontSize: fs,
         fill: 0xc7d2fe,
         fontWeight: '700',
+        wordWrap: true,
+        wordWrapWidth: this.innerW,
       },
     });
     artHead.position.set(0, y);
@@ -434,14 +558,11 @@ export class SynergyOverlay extends Container {
       y += t.height;
     }
 
-    this.clampListScale(y);
+    this.updateScrollBounds(y);
   }
 
-  private clampListScale(contentHeight: number): void {
-    if (contentHeight > this.maxListH && contentHeight > 1) {
-      this.listLayer.scale.set(Math.min(1, this.maxListH / contentHeight));
-    } else {
-      this.listLayer.scale.set(1);
-    }
+  override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
+    this.endListScrollDrag();
+    super.destroy(options);
   }
 }
