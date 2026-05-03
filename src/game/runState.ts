@@ -4,6 +4,7 @@ import {
   INITIAL_GOLD,
   INTEREST_BANK_CAP,
   INTEREST_MAX_GOLD,
+  PLAYER_MAX_HP,
   PLAYER_START_HP,
   ROUND_END_FIXED_GOLD,
   WIN_STREAK_BONUS_CAP,
@@ -157,5 +158,10 @@ export class RunState {
 
   isGameLost(): boolean {
     return this.playerHp <= 0;
+  }
+
+  /** 将玩家生命限制在 [0, PLAYER_MAX_HP]（回血类效果后调用） */
+  clampPlayerHpToMax(): void {
+    if (this.playerHp > PLAYER_MAX_HP) this.playerHp = PLAYER_MAX_HP;
   }
 }

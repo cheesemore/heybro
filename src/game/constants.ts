@@ -6,6 +6,8 @@ export const GAME_HEIGHT = 1920;
 export const LAYOUT_SCALE = GAME_WIDTH / 720;
 
 export const PLAYER_START_HP = 100;
+/** 玩家生命上限（完美通关 +2、策略回血等不可超过） */
+export const PLAYER_MAX_HP = 100;
 /** 进入选牌前不再发「回合开始」固定金，收入在回合结束时结算（见 ROUND_END_*） */
 export const ROUND_START_GOLD = 0;
 export const ROGUE_REFRESH_TRIO_COST = 5;

@@ -22,6 +22,7 @@ export type RoundMeta = {
 };
 
 export type BattleOutcome = {
+  /** 全歼敌方且我方无任何单位阵亡时为 true（仅此结算 +2 玩家生命，且受生命上限） */
   perfect: boolean;
   /** 0..1 敌方剩余总血量比例（相对战斗开始时敌方总血量） */
   enemyHpRatioRemaining: number;

@@ -300,8 +300,9 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
 
     case 'c3_turn_tide':
       run.playerHp += 50;
+      run.clampPlayerHpToMax();
       run.gold += 30;
-      lines.push(`扭转乾坤：+50 生命（${run.playerHp}），+30 金`);
+      lines.push(`扭转乾坤：+50 生命（不超过上限，当前 ${run.playerHp}），+30 金`);
       break;
     case 'c3_desperate': {
       const lost = Math.max(0, run.playerHp - 1);

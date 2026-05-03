@@ -1925,7 +1925,8 @@ export class BattleScreen extends Container {
     const timeout = this.timeLeft <= 0;
 
     if (enemiesDead) {
-      this.finish({ perfect: true, enemyHpRatioRemaining: 0, elapsed: this.elapsed });
+      const anyAllyFallen = this.units.some((u) => u.side === 'ally' && u.dead);
+      this.finish({ perfect: !anyAllyFallen, enemyHpRatioRemaining: 0, elapsed: this.elapsed });
       return;
     }
     if (alliesDead || timeout) {

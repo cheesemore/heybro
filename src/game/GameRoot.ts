@@ -116,6 +116,7 @@ export class GameRoot extends Container {
     const metaDone = ROUNDS[idx]!;
     const res = resolveAftermath(idx, outcome.perfect, outcome.enemyHpRatioRemaining);
     this.run.playerHp += res.playerHpDelta;
+    this.run.clampPlayerHpToMax();
     this.run.currentRoundIndex += 1;
     const tail = [...res.lines, `当前生命：${this.run.playerHp}`].join('\n');
     if (this.run.playerHp <= 0) {
