@@ -128,7 +128,7 @@ const scaling = scalingJson as ScalingConfig;
 
 /**
  * 敌方生命/攻击共用进度倍率（相对表底 `baseMaxHp` / `baseAtk`）。
- * 全局关索引 0=1-1 … 23=3-8：1-1 为 1×，线性至 1-8 为 2×（200%）、2-8 为 5×（500%）、3-8 为 10×（1000%）；
+ * 全局关索引 0=1-1 … 23=3-8：1-1 为 1×，线性至 1-8 为 2×（200%）、2-8 为 4×（400%）、3-8 为 6.5×（650%）；
  * 中间普通关在同段内线性插值。
  */
 export function enemyStatProgressCurve(roundIndex: number): number {
@@ -137,9 +137,9 @@ export function enemyStatProgressCurve(roundIndex: number): number {
     return 1 + ri / 7;
   }
   if (ri <= 15) {
-    return 2 + (3 * (ri - 7)) / 8;
+    return 2 + (2 * (ri - 7)) / 8;
   }
-  return 5 + (5 * (ri - 15)) / 8;
+  return 4 + (2.5 * (ri - 15)) / 8;
 }
 
 function chapterMult(chapter: 1 | 2 | 3, kind: 'hp' | 'atk'): number {

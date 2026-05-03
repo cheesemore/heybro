@@ -413,6 +413,44 @@ export function tickRayBurstFx(list: RayBurstFx[], dt: number): void {
   }
 }
 
+/** 牛头酋长冲击波：狭长光束，随时间淡出 */
+export type ShockwaveBeamFx = { g: Graphics; t: number; max: number };
+
+export function spawnTaurenShockwaveBeam(
+  layer: Container,
+  x0: number,
+  y0: number,
+  dirX: number,
+  dirY: number,
+  length: number,
+  halfWidth: number,
+): ShockwaveBeamFx {
+  const g = new Graphics();
+  const ang = Math.atan2(dirY, dirX);
+  g.roundRect(0, -halfWidth, length, halfWidth * 2, halfWidth * 0.32)
+    .fill({ color: 0xea580c, alpha: 0.58 })
+    .stroke({ width: Math.max(2, halfWidth * 0.12), color: 0xfbbf24, alpha: 0.88 });
+  g.roundRect(length * 0.04, -halfWidth * 0.55, length * 0.88, halfWidth * 1.1, halfWidth * 0.18)
+    .fill({ color: 0xfef08a, alpha: 0.38 });
+  g.position.set(x0, y0);
+  g.rotation = ang;
+  layer.addChild(g);
+  return { g, t: 0, max: 0.52 };
+}
+
+export function tickShockwaveBeamFx(list: ShockwaveBeamFx[], dt: number): void {
+  for (let i = list.length - 1; i >= 0; i--) {
+    const b = list[i]!;
+    b.t += dt;
+    const k = b.t / b.max;
+    b.g.alpha = Math.max(0, 1 - k * 1.08);
+    if (b.t >= b.max) {
+      b.g.destroy();
+      list.splice(i, 1);
+    }
+  }
+}
+
 /** 受击火星：短促放射线 + 亮心 */
 export type HitSparkBurst = { g: Graphics; t: number; max: number };
 

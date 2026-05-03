@@ -28,6 +28,7 @@ import type {
   MeteorAnim,
   RayBurstFx,
   RingPulse,
+  ShockwaveBeamFx,
   SlashFx,
 } from '../battleVisuals';
 import type { ProjectileVisualStyle } from '../battleVisuals';
@@ -44,11 +45,13 @@ import {
   spawnRingPulse,
   spawnGroundBurnPatch,
   spawnHitSparkBurst,
+  spawnTaurenShockwaveBeam,
   tickFloatEntries,
   tickHitSparkBursts,
   tickMeteorAnims,
   tickRayBurstFx,
   tickRingPulses,
+  tickShockwaveBeamFx,
   tickSlashFx,
 } from '../battleVisuals';
 import { SynergyOverlay } from './SynergyOverlay';
@@ -63,8 +66,11 @@ const FARSEER_CHAIN_MAX_JUMPS = 8;
 const FARSEER_CHAIN_DECAY = 0.78;
 const TAUREN_SHOCK_INTERVAL = 5.5;
 const TAUREN_STOMP_INTERVAL = 7.5;
-/** 牛头冲击波：以首领为圆心的伤害范围（较原全屏改为大范围圆，便于「强化范围」表现） */
-const TAUREN_SHOCK_RADIUS = Math.round(780 * LAYOUT_SCALE);
+/** 牛头冲击波：沿直线延伸，伤害随距离线性衰减（模仿 WC3）；顶点系数为原 0.95 的 1/4 */
+const TAUREN_SHOCK_LENGTH = Math.round(780 * LAYOUT_SCALE);
+const TAUREN_SHOCK_HALF_WIDTH = Math.round(70 * LAYOUT_SCALE);
+const TAUREN_SHOCK_LINE_COEFF = 0.95 / 4;
+const TAUREN_STOMP_COEFF = 0.42 / 4;
 const TAUREN_STOMP_RADIUS = Math.round(680 * LAYOUT_SCALE);
 const TAUREN_STOMP_STUN_SEC = 2.6;
 const BOSS_SUMMON_ENEMY_CAP = 34;
@@ -244,6 +250,7 @@ export class BattleScreen extends Container {
   private meteors: MeteorAnim[] = [];
   private slashes: SlashFx[] = [];
   private healBursts: RayBurstFx[] = [];
+  private shockBeams: ShockwaveBeamFx[] = [];
   private projectiles: BattleProjectile[] = [];
   private hitSparks: HitSparkBurst[] = [];
   private catapultBurns: Array<{
@@ -1076,7 +1083,7 @@ export class BattleScreen extends Container {
     let dmg = u.atk;
     let enemyTag: DamageCtx['damageTag'] | undefined;
     if (u.side === 'enemy' && u.bossId === 'blademaster' && Math.random() < 0.35) {
-      dmg *= 2;
+      dmg *= 1.5;
       enemyTag = 'crit';
     }
     u.cd = Math.max(0.25, this.effectiveAttackInterval(u));
@@ -1629,22 +1636,43 @@ export class BattleScreen extends Container {
   }
 
   private castTaurenShockwave(boss: SimUnit): void {
-    const r = TAUREN_SHOCK_RADIUS;
-    for (const a of this.alive('ally')) {
-      if (Math.hypot(a.x - boss.x, a.y - boss.y) <= r) {
-        this.applyDamage(a, Math.max(1, Math.round(boss.atk * 0.95)), { attacker: boss, damageTag: 'magic' });
-      }
+    const L = TAUREN_SHOCK_LENGTH;
+    const halfW = TAUREN_SHOCK_HALF_WIDTH;
+    const bx = boss.x;
+    const by = boss.y;
+    const tgt = this.nearestAlly(boss);
+    let dx = tgt ? tgt.x - bx : GAME_WIDTH * 0.5 - bx;
+    let dy = tgt ? tgt.y - by : (ARENA_Y_MIN + ARENA_Y_MAX) * 0.5 - by;
+    const d0 = Math.hypot(dx, dy);
+    if (d0 < 1e-3) {
+      dx = 1;
+      dy = 0;
+    } else {
+      dx /= d0;
+      dy /= d0;
     }
-    this.ringFx.push(spawnRingPulse(this.fxLayer, boss.x, boss.y - 20, Math.round(r * 0.42), 0xf97316, 0.45));
-    this.ringFx.push(spawnRingPulse(this.fxLayer, boss.x, boss.y - 22, Math.round(r * 0.52), 0xfbbf24, 0.5));
-    this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, boss.x, boss.y));
+    for (const a of this.alive('ally')) {
+      const vx = a.x - bx;
+      const vy = a.y - by;
+      const along = vx * dx + vy * dy;
+      if (along < 0 || along > L) continue;
+      const perp = Math.abs(vx * dy - vy * dx);
+      if (perp > halfW + this.hitRadius(a) * 0.85) continue;
+      const falloff = 1 - along / L;
+      const dmg = Math.max(1, Math.round(boss.atk * TAUREN_SHOCK_LINE_COEFF * falloff));
+      this.applyDamage(a, dmg, { attacker: boss, damageTag: 'magic' });
+    }
+    this.shockBeams.push(spawnTaurenShockwaveBeam(this.fxLayer, bx, by, dx, dy, L, halfW));
+    this.hitSparks.push(
+      spawnHitSparkBurst(this.fxLayer, bx + dx * (L * 0.38), by + dy * (L * 0.38)),
+    );
   }
 
   private castTaurenStomp(boss: SimUnit): void {
     const r = TAUREN_STOMP_RADIUS;
     for (const a of this.alive('ally')) {
       if (Math.hypot(a.x - boss.x, a.y - boss.y) > r) continue;
-      this.applyDamage(a, Math.max(1, Math.round(boss.atk * 0.42)), { attacker: boss });
+      this.applyDamage(a, Math.max(1, Math.round(boss.atk * TAUREN_STOMP_COEFF)), { attacker: boss });
       a.stunT = Math.max(a.stunT ?? 0, TAUREN_STOMP_STUN_SEC);
     }
     this.ringFx.push(spawnRingPulse(this.fxLayer, boss.x, boss.y - 14, Math.round(r * 0.38), 0xc4b5fd, 0.5));
@@ -1681,14 +1709,14 @@ export class BattleScreen extends Container {
       this.bladeSkillT += dt;
       if (this.bladeSkillT > 2.4) {
         this.bladeSkillT = 0;
-        for (const a of this.alive('ally')) this.applyDamage(a, boss.atk * 0.55, { attacker: boss });
+        for (const a of this.alive('ally')) this.applyDamage(a, boss.atk * 0.275, { attacker: boss });
         if (this.alive('enemy').length < 14) {
           const c = this.makeUnit(
             'enemy',
             boss.x + 70 * LAYOUT_SCALE,
             boss.y + 40 * LAYOUT_SCALE,
-            Math.round(boss.maxHp * 0.18),
-            Math.round(boss.atk * 0.35),
+            Math.round(boss.maxHp * 0.09),
+            Math.round(boss.atk * 0.175),
             boss.attackInterval * 1.1,
             boss.range,
             boss.speed * 1.05,
@@ -1737,6 +1765,7 @@ export class BattleScreen extends Container {
     this.tickMeteor(dt);
     tickFloatEntries(this.floatWords, dt);
     tickRingPulses(this.ringFx, dt);
+    tickShockwaveBeamFx(this.shockBeams, dt);
     tickHitSparkBursts(this.hitSparks, dt);
     this.tickShamanBloodlustAll(dt);
     this.tickCatapultBurns(dt);
