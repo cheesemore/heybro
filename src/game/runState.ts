@@ -38,7 +38,7 @@ export class RunState {
   archerCritDamageMult = 1.5;
   knightVsBossDamageMult = 1;
 
-  /** 肉鸽九宫神器槽（可与兵种同格索引） */
+  /** 肉鸽九宫神器槽（与 board 同索引一格仅能有其一：无兵且无神器才为空） */
   artifactBySlot: (ArtifactKind | null)[] = Array.from({ length: 9 }, () => null);
 
   battleTimeBonusSec = 0;

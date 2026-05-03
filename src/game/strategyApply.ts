@@ -187,13 +187,17 @@ export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string
   },
 };
 
-function firstEmptyArtifactSlot(run: RunState): number {
-  const i = run.artifactBySlot.findIndex((a) => a === null);
-  return i < 0 ? 0 : i;
+/** 神器与兵种各占一格：仅「无兵且无神器」的格子可自动放入新神器 */
+function firstSlotFreeForArtifact(run: RunState): number {
+  for (let i = 0; i < 9; i++) {
+    if (run.board[i] === null && run.artifactBySlot[i] === null) return i;
+  }
+  return -1;
 }
 
 function placeArtifact(run: RunState, kind: ArtifactKind): void {
-  const i = firstEmptyArtifactSlot(run);
+  const i = firstSlotFreeForArtifact(run);
+  if (i < 0) return;
   run.artifactBySlot[i] = kind;
 }
 
@@ -212,27 +216,27 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
   const lines: string[] = [];
   switch (id as StrategyC1Id | StrategyC2Id | StrategyC3Id) {
     case 'c1_warrior_first':
-      applyPick(run.board, 'warrior');
+      applyPick(run.board, run.artifactBySlot, 'warrior');
       run.allyPickDiscountGold.warrior = (run.allyPickDiscountGold.warrior ?? 0) + 2;
       lines.push('已获得战士，战士选牌 -2 金');
       break;
     case 'c1_mage_first':
-      applyPick(run.board, 'mage');
+      applyPick(run.board, run.artifactBySlot, 'mage');
       run.allyPickDiscountGold.mage = (run.allyPickDiscountGold.mage ?? 0) + 2;
       lines.push('已获得法师，法师选牌 -2 金');
       break;
     case 'c1_priest_first':
-      applyPick(run.board, 'priest');
+      applyPick(run.board, run.artifactBySlot, 'priest');
       run.allyPickDiscountGold.priest = (run.allyPickDiscountGold.priest ?? 0) + 2;
       lines.push('已获得牧师，牧师选牌 -2 金');
       break;
     case 'c1_archer_first':
-      applyPick(run.board, 'archer');
+      applyPick(run.board, run.artifactBySlot, 'archer');
       run.allyPickDiscountGold.archer = (run.allyPickDiscountGold.archer ?? 0) + 2;
       lines.push('已获得射手，射手选牌 -2 金');
       break;
     case 'c1_knight_first':
-      applyPick(run.board, 'knight');
+      applyPick(run.board, run.artifactBySlot, 'knight');
       run.allyPickDiscountGold.knight = (run.allyPickDiscountGold.knight ?? 0) + 2;
       lines.push('已获得骑士，骑士选牌 -2 金');
       break;
@@ -244,7 +248,7 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
       break;
     case 'c1_random_deploy':
       for (const k of randomDistinctClasses(3)) {
-        applyPick(run.board, k);
+        applyPick(run.board, run.artifactBySlot, k);
         lines.push(`部署 ${ALLY_DEFS[k].name}`);
       }
       break;
@@ -313,7 +317,7 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
     }
     case 'c3_random_enhance':
       for (const k of randomDistinctClasses(5)) {
-        applyPick(run.board, k);
+        applyPick(run.board, run.artifactBySlot, k);
         lines.push(`获得 ${ALLY_DEFS[k].name}`);
       }
       break;
@@ -388,7 +392,7 @@ export function applyRewardChapter(run: RunState, chapter: 1 | 2 | 3): string[] 
   const n = randomIntInclusive(uLo, uHi);
   for (let i = 0; i < n; i++) {
     const k = ALLY_CLASSES[Math.floor(Math.random() * ALLY_CLASSES.length)]!;
-    applyPick(run.board, k);
+    applyPick(run.board, run.artifactBySlot, k);
     lines.push(`随机角色：${ALLY_DEFS[k].name}`);
   }
   return lines;

@@ -514,7 +514,7 @@ export class SynergyOverlay extends Container {
 
     y += Math.round(8 * LAYOUT_SCALE);
     const artHead = new Text({
-      text: '神器（备战格子中的紫圈）',
+      text: '神器（备战九宫一格，与兵种互斥，可拖动换位）',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: fs,

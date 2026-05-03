@@ -1,4 +1,4 @@
-import type { Application, FederatedPointerEvent } from 'pixi.js';
+import type { Application } from 'pixi.js';
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import {
   BOARD_CELL_MAX_STACKS,
@@ -24,7 +24,13 @@ const PAD_X = Math.round(20 * LAYOUT_SCALE);
 /** 正文区比全宽略收，避免贴边裁切与换行异常 */
 const TEXT_INSET = Math.round(14 * LAYOUT_SCALE);
 const HEADER_Y = Math.round(20 * LAYOUT_SCALE);
-const TRIO_Y = Math.round(248 * LAYOUT_SCALE);
+const TRIO_CARD_H = Math.round(278 * LAYOUT_SCALE);
+/** 三选一卡片区顶端（下移后为规则区留出空间） */
+const TRIO_TOP = Math.round(268 * LAYOUT_SCALE);
+/** 三选一与备战之间的长说明区 */
+const DETAIL_RULE_Y = TRIO_TOP + TRIO_CARD_H + Math.round(16 * LAYOUT_SCALE);
+/** 九宫格左上角 Y */
+const BOARD_GRID_TOP = DETAIL_RULE_Y + Math.round(124 * LAYOUT_SCALE);
 const CARD_GAP = Math.round(18 * LAYOUT_SCALE);
 
 function artifactMark(k: ArtifactKind): string {
@@ -42,7 +48,22 @@ function artifactMark(k: ArtifactKind): string {
   }
 }
 
-type DragMode = 'unit' | 'artifact' | null;
+function artifactName(k: ArtifactKind): string {
+  switch (k) {
+    case 'holy_grail':
+      return '圣杯';
+    case 'shelter':
+      return '庇护';
+    case 'cross_star':
+      return '十字星';
+    case 'revenge_spirit':
+      return '复仇之魂';
+    default:
+      return '神器';
+  }
+}
+
+type DragMode = 'slot' | null;
 
 /** 羁绊档位：0 无，1≥3，2≥6，3≥10，4≥15 */
 function bondTierIndex(totalStacks: number): number {
@@ -79,20 +100,16 @@ export class DraftScreen extends Container {
 
   private readonly onDocPointerUp = (ev: PointerEvent): void => {
     const j = this.hitSlotFromClient(ev.clientX, ev.clientY);
-    if (this.dragMode === 'unit' && this.dragFromSlot !== null) {
-      if (j !== null && j !== this.dragFromSlot) {
-        const a = this.run.board[this.dragFromSlot];
-        const b = this.run.board[j];
-        this.run.board[this.dragFromSlot] = b;
-        this.run.board[j] = a;
-      }
-    } else if (this.dragMode === 'artifact' && this.dragFromSlot !== null) {
-      if (j !== null && j !== this.dragFromSlot) {
-        const a = this.run.artifactBySlot[this.dragFromSlot];
-        const b = this.run.artifactBySlot[j];
-        this.run.artifactBySlot[this.dragFromSlot] = b;
-        this.run.artifactBySlot[j] = a;
-      }
+    if (this.dragMode === 'slot' && this.dragFromSlot !== null && j !== null && j !== this.dragFromSlot) {
+      const i = this.dragFromSlot;
+      const bu = this.run.board[i];
+      const bj = this.run.board[j];
+      const au = this.run.artifactBySlot[i];
+      const aj = this.run.artifactBySlot[j];
+      this.run.board[i] = bj;
+      this.run.board[j] = bu;
+      this.run.artifactBySlot[i] = aj;
+      this.run.artifactBySlot[j] = au;
     }
     this.dragMode = null;
     this.dragFromSlot = null;
@@ -104,6 +121,23 @@ export class DraftScreen extends Container {
     this.app = app;
     this.run = run;
     this.onFinished = onFinished;
+
+    /** 旧版允许同格叠神器+兵；新版互斥，迁入最近的双空格 */
+    for (let i = 0; i < 9; i++) {
+      if (run.board[i] !== null && run.artifactBySlot[i] !== null) {
+        const k = run.artifactBySlot[i];
+        run.artifactBySlot[i] = null;
+        let placed = false;
+        for (let j = 0; j < 9; j++) {
+          if (run.board[j] === null && run.artifactBySlot[j] === null) {
+            run.artifactBySlot[j] = k;
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) run.artifactBySlot[i] = k;
+      }
+    }
 
     const deepBg = new Graphics();
     deepBg.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(0x030712);
@@ -188,63 +222,59 @@ export class DraftScreen extends Container {
     this.addChild(this.goldText);
 
     const wrapW = GAME_WIDTH - PAD_X * 2 - TEXT_INSET;
-    const rule = new Text({
-      text: `上方三选一：5 兵种随机 3 张，点 1 张加入备战（单格叠层上限 ${BOARD_CELL_MAX_STACKS}）。\n首次选牌免费；之后基础 ${ROGUE_PICK_AFTER_FIRST_COST} 金/张（有折扣的兵种更低）。棋盘同兵种总层数 >10 时该张价格 ×2，>20 再 ×2；若当前三张里某兵种总层数 >20，刷新三选一金也 ×2。\n刷新基础 ${ROGUE_REFRESH_TRIO_COST} 金，卡面与按钮显示实价。`,
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(20 * LAYOUT_SCALE),
-        fill: 0x94a3b8,
-        lineHeight: Math.round(28 * LAYOUT_SCALE),
-        wordWrap: true,
-        wordWrapWidth: wrapW,
-        breakWords: true,
-      },
-    });
-    rule.position.set(PAD_X, Math.round(118 * LAYOUT_SCALE));
-    this.addChild(rule);
-
-    this.pickHint = new Text({
-      text: '',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(21 * LAYOUT_SCALE),
-        fill: 0xbae6fd,
-        lineHeight: Math.round(28 * LAYOUT_SCALE),
-        wordWrap: true,
-        wordWrapWidth: wrapW,
-        breakWords: true,
-      },
-    });
-    this.pickHint.position.set(PAD_X, Math.round(200 * LAYOUT_SCALE));
-    this.addChild(this.pickHint);
-
-    const boardBand = new Graphics();
-    boardBand
-      .roundRect(
-        PAD_X,
-        Math.round(556 * LAYOUT_SCALE),
-        GAME_WIDTH - PAD_X * 2,
-        Math.round(418 * LAYOUT_SCALE),
-        Math.round(16 * LAYOUT_SCALE),
-      )
-      .fill({ color: 0x0b1220, alpha: 0.75 })
-      .stroke({ width: Math.max(1, Math.round(1 * LAYOUT_SCALE)), color: 0x1e293b });
-    this.addChild(boardBand);
-
-    const boardTitle = new Text({
-      text: '备战九宫：有兵格可拖动换位。左上紫圈为神器，点按紫圈可拖神器换位（影响战斗加成）。',
+    const shortRule = new Text({
+      text: `上方三选一：5 兵种随机 3 张，点一张加入备战（单格叠层上限 ${BOARD_CELL_MAX_STACKS}）。卡面数字为选牌价；首次选牌免费。`,
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(19 * LAYOUT_SCALE),
-        fill: 0xcbd5e1,
+        fill: 0x94a3b8,
         lineHeight: Math.round(27 * LAYOUT_SCALE),
         wordWrap: true,
         wordWrapWidth: wrapW,
         breakWords: true,
       },
     });
-    boardTitle.position.set(PAD_X, Math.round(568 * LAYOUT_SCALE));
-    this.addChild(boardTitle);
+    shortRule.position.set(PAD_X, Math.round(112 * LAYOUT_SCALE));
+    this.addChild(shortRule);
+
+    this.pickHint = new Text({
+      text: '',
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.round(20 * LAYOUT_SCALE),
+        fill: 0xbae6fd,
+        lineHeight: Math.round(27 * LAYOUT_SCALE),
+        wordWrap: true,
+        wordWrapWidth: wrapW,
+        breakWords: true,
+      },
+    });
+    this.pickHint.position.set(PAD_X, TRIO_TOP - Math.round(48 * LAYOUT_SCALE));
+    this.addChild(this.pickHint);
+
+    const detailRule = new Text({
+      text: `定价细则：之后每次选牌基础 ${ROGUE_PICK_AFTER_FIRST_COST} 金/张（有折扣的兵种更低）。棋盘上该兵种总层数 >10 时本张价格 ×2，>20 再 ×2；若当前三张里某兵种总层数 >20，刷新三选一（基础 ${ROGUE_REFRESH_TRIO_COST} 金）价格也 ×2。卡面与按钮均为实价。\n备战九宫：兵种与神器各占一格、不可重叠；点按有内容的格并拖到另一格，可与另一格整体交换（含神器，影响战斗内加成位置）。`,
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.round(18 * LAYOUT_SCALE),
+        fill: 0x94a3b8,
+        lineHeight: Math.round(26 * LAYOUT_SCALE),
+        wordWrap: true,
+        wordWrapWidth: wrapW,
+        breakWords: true,
+      },
+    });
+    detailRule.position.set(PAD_X, DETAIL_RULE_Y);
+    this.addChild(detailRule);
+
+    const boardBandH = Math.round(400 * LAYOUT_SCALE);
+    const boardBandY = BOARD_GRID_TOP - Math.round(14 * LAYOUT_SCALE);
+    const boardBand = new Graphics();
+    boardBand
+      .roundRect(PAD_X, boardBandY, GAME_WIDTH - PAD_X * 2, boardBandH, Math.round(16 * LAYOUT_SCALE))
+      .fill({ color: 0x0b1220, alpha: 0.75 })
+      .stroke({ width: Math.max(1, Math.round(1 * LAYOUT_SCALE)), color: 0x1e293b });
+    this.addChild(boardBand);
 
     this.tip = new Text({
       text: '',
@@ -305,7 +335,7 @@ export class DraftScreen extends Container {
     const gap = Math.round(16 * LAYOUT_SCALE);
     const gridW = cell * 3 + gap * 2;
     const originX = PAD_X + (GAME_WIDTH - PAD_X * 2 - gridW) / 2;
-    const originY = Math.round(626 * LAYOUT_SCALE);
+    const originY = BOARD_GRID_TOP;
     const col = i % 3;
     const row = Math.floor(i / 3);
     return {
@@ -350,7 +380,7 @@ export class DraftScreen extends Container {
       if ((c as { userData?: string }).userData === 'trio-cell') c.destroy();
     }
     const { cardW, cardH, originX } = this.cardMetrics();
-    const y = TRIO_Y;
+    const y = TRIO_TOP;
     for (let i = 0; i < 3; i++) {
       const kind = this.choices[i]!;
       const x = originX + i * (cardW + CARD_GAP);
@@ -379,12 +409,12 @@ export class DraftScreen extends Container {
         },
       });
       priceLab.anchor.set(0.5, 0);
-      priceLab.position.set(cardW / 2, Math.round(10 * LAYOUT_SCALE));
+      priceLab.position.set(cardW / 2, Math.round(8 * LAYOUT_SCALE));
       card.addChild(priceLab);
 
       const portraitScale = Math.min(cardW * 0.78, Math.round(198 * LAYOUT_SCALE)) / 108;
       const portrait = createAllyPortraitGraphic(kind, portraitScale);
-      portrait.position.set(cardW / 2, cardH * 0.34);
+      portrait.position.set(cardW / 2, cardH * 0.44);
       card.addChild(portrait);
 
       const padX = Math.round(10 * LAYOUT_SCALE);
@@ -421,7 +451,7 @@ export class DraftScreen extends Container {
       this.positionTipAboveRow1(this.controlRowYs().row1Y);
       return;
     }
-    if (!applyPick(this.run.board, kind)) {
+    if (!applyPick(this.run.board, this.run.artifactBySlot, kind)) {
       this.tip.text = '备战区已满且没有该兵种空位，无法上场新兵种。';
       this.positionTipAboveRow1(this.controlRowYs().row1Y);
       return;
@@ -435,16 +465,11 @@ export class DraftScreen extends Container {
     this.drawControls();
   }
 
-  private beginUnitDrag(slotIndex: number): void {
+  /** 交换两格的「兵种 + 神器」整体（一格仅能有其一） */
+  private beginSlotDrag(slotIndex: number): void {
+    if (!this.run.board[slotIndex] && !this.run.artifactBySlot[slotIndex]) return;
     document.removeEventListener('pointerup', this.onDocPointerUp);
-    this.dragMode = 'unit';
-    this.dragFromSlot = slotIndex;
-    document.addEventListener('pointerup', this.onDocPointerUp, { once: true });
-  }
-
-  private beginArtifactDrag(slotIndex: number): void {
-    document.removeEventListener('pointerup', this.onDocPointerUp);
-    this.dragMode = 'artifact';
+    this.dragMode = 'slot';
     this.dragFromSlot = slotIndex;
     document.addEventListener('pointerup', this.onDocPointerUp, { once: true });
   }
@@ -517,32 +542,34 @@ export class DraftScreen extends Container {
       wrap.position.set(b.x, b.y);
       (wrap as Container & { userData?: string }).userData = 'board-slot';
       wrap.eventMode = 'static';
-      wrap.cursor = this.run.board[i] ? 'grab' : 'default';
+      wrap.cursor = this.run.board[i] || this.run.artifactBySlot[i] ? 'grab' : 'default';
       const g = new Graphics();
       g.roundRect(0, 0, b.w, b.h, Math.round(14 * LAYOUT_SCALE))
         .fill(0x0f172a)
         .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x334155 });
       wrap.addChild(g);
       const art = this.run.artifactBySlot[i];
-      if (art) {
-        const badge = new Graphics();
-        const br = Math.round(22 * LAYOUT_SCALE);
-        badge.circle(br, br, br).fill(0x4f46e5).stroke({ width: 2, color: 0xc7d2fe });
-        wrap.addChild(badge);
+      const slot = this.run.board[i];
+      if (art && !slot) {
+        const artBg = new Graphics();
+        artBg
+          .roundRect(b.w * 0.12, b.h * 0.12, b.w * 0.76, b.h * 0.52, Math.round(12 * LAYOUT_SCALE))
+          .fill({ color: 0x312e81, alpha: 0.92 })
+          .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0xa5b4fc });
+        wrap.addChild(artBg);
         const am = new Text({
           text: artifactMark(art),
           style: {
             fontFamily: 'system-ui, sans-serif',
-            fontSize: Math.round(20 * LAYOUT_SCALE),
+            fontSize: Math.round(28 * LAYOUT_SCALE),
             fill: 0xffffff,
             fontWeight: '800',
           },
         });
-        am.anchor.set(0.5);
-        am.position.set(br, br);
+        am.anchor.set(0.5, 0.5);
+        am.position.set(b.w / 2, b.h * 0.36);
         wrap.addChild(am);
       }
-      const slot = this.run.board[i];
       if (slot) {
         const portrait = createAllyPortraitGraphic(slot.kind, Math.min(0.3 * LAYOUT_SCALE, b.w / 360));
         portrait.position.set(b.w / 2, b.h * 0.38);
@@ -552,15 +579,20 @@ export class DraftScreen extends Container {
         }
       }
       const bondTotal = slot ? nextStacks[slot.kind] : 0;
+      const label = slot
+        ? `${ALLY_DEFS[slot.kind].name}\n×${slot.stacks}`
+        : art
+          ? `${artifactName(art)}\n神器`
+          : '空';
       const t = new Text({
-        text: slot ? `${ALLY_DEFS[slot.kind].name}\n×${slot.stacks}` : '空',
+        text: label,
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: slot ? Math.round(16 * LAYOUT_SCALE) : Math.round(19 * LAYOUT_SCALE),
-          fill: slot ? bondNameFill(bondTotal) : 0x475569,
+          fontSize: slot || art ? Math.round(15 * LAYOUT_SCALE) : Math.round(19 * LAYOUT_SCALE),
+          fill: slot ? bondNameFill(bondTotal) : art ? 0xc7d2fe : 0x475569,
           align: 'center',
-          lineHeight: Math.round(21 * LAYOUT_SCALE),
-          fontWeight: slot ? '600' : '400',
+          lineHeight: Math.round(20 * LAYOUT_SCALE),
+          fontWeight: slot || art ? '600' : '400',
           wordWrap: true,
           wordWrapWidth: Math.max(32, b.w - Math.round(8 * LAYOUT_SCALE)),
           breakWords: true,
@@ -570,16 +602,8 @@ export class DraftScreen extends Container {
       t.position.set(b.w / 2, b.h - Math.round(8 * LAYOUT_SCALE));
       wrap.addChild(t);
       const idx = i;
-      wrap.on('pointerdown', (e: FederatedPointerEvent) => {
-        const lp = e.getLocalPosition(wrap);
-        const az = Math.round(48 * LAYOUT_SCALE);
-        if (this.run.artifactBySlot[idx] && lp.x < az && lp.y < az) {
-          this.beginArtifactDrag(idx);
-          return;
-        }
-        if (this.run.board[idx]) {
-          this.beginUnitDrag(idx);
-        }
+      wrap.on('pointerdown', () => {
+        if (this.run.board[idx] || this.run.artifactBySlot[idx]) this.beginSlotDrag(idx);
       });
       this.addChild(wrap);
     }
@@ -619,15 +643,14 @@ export class DraftScreen extends Container {
       this.addChild(g, t);
     };
 
-    const gap = Math.round(12 * LAYOUT_SCALE);
-    const half = (GAME_WIDTH - PAD_X * 2 - gap) / 2;
+    const btnW = GAME_WIDTH - PAD_X * 2;
     const refreshCost = rogueRefreshGoldCost(this.run, this.choices);
 
     mkBtn(
       `刷新三选一（${refreshCost} 金）`,
       PAD_X,
       row1Y,
-      half,
+      btnW,
       this.run.gold >= refreshCost,
       () => {
         if (this.run.gold < refreshCost) return;
@@ -639,24 +662,17 @@ export class DraftScreen extends Container {
       },
     );
 
-    mkBtn('跳过选牌（保留金币）', PAD_X + half + gap, row1Y, half, true, () => this.tryFinish(true));
-
-    mkBtn('结束选牌并继续', PAD_X, row2Y, GAME_WIDTH - PAD_X * 2, true, () => this.tryFinish(false));
+    mkBtn('结束选牌并继续', PAD_X, row2Y, btnW, true, () => this.tryFinish());
 
     this.positionTipAboveRow1(row1Y);
   }
 
-  private tryFinish(allowEmpty: boolean): void {
+  private tryFinish(): void {
     this.tip.text = '';
     const meta = ROUNDS[this.run.currentRoundIndex]!;
     const nextIsBattle: boolean = meta.kind === 'normal' || meta.kind === 'boss';
-    if (!allowEmpty && !boardHasAnyUnit(this.run.board)) {
+    if (nextIsBattle && !boardHasAnyUnit(this.run.board)) {
       this.tip.text = '请至少布置一个兵种后再进入战斗。';
-      this.positionTipAboveRow1(this.controlRowYs().row1Y);
-      return;
-    }
-    if (allowEmpty && nextIsBattle && !boardHasAnyUnit(this.run.board)) {
-      this.tip.text = '战斗关无法在无兵力时跳过选牌，请至少选择一种兵种。';
       this.positionTipAboveRow1(this.controlRowYs().row1Y);
       return;
     }
