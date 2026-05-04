@@ -16,7 +16,7 @@ export class RunState {
   gold = INITIAL_GOLD;
   currentRoundIndex = 0;
   board: BoardCell[] = Array.from({ length: 9 }, () => null);
-  /** 仅普通战/首领战后完美通关累加；抉择/奖励不关不断 */
+  /** 仅普通战/首领战后战斗胜利（敌方全灭）累加；抉择/奖励不关不断 */
   winStreak = 0;
 
   /** 肉鸽选牌：指定兵种每次选牌费用减少（金） */
@@ -107,7 +107,7 @@ export class RunState {
 
   /**
    * 回合结束发钱：利息（持有金每 10 块 +1，仅统计前 50 块，利息最多 5）+ 固定回合结束金；
-   * 若本关为普通战或首领且战斗完美通关，连胜+1 并按连胜场次给钱（单场最多 5）。
+   * 若本关为普通战或首领且战斗胜利（敌方全灭），连胜+1 并按连胜场次给钱（单场最多 5）。
    * 抉择/奖励：只发利息与固定金，不改连胜。
    */
   grantRoundEndEconomy(meta: RoundMeta, battleOutcome: BattleOutcome | null): string[] {
@@ -138,9 +138,9 @@ export class RunState {
         this.winStreak += 1;
         const bonus = Math.min(this.winStreak, WIN_STREAK_BONUS_CAP);
         this.gold += bonus;
-        lines.push(`战斗完美通关 · 连胜 ${this.winStreak}，额外 +${bonus} 金（本场封顶 ${WIN_STREAK_BONUS_CAP}）`);
+        lines.push(`战斗胜利（敌方全灭）· 连胜 ${this.winStreak}，额外 +${bonus} 金（本场封顶 ${WIN_STREAK_BONUS_CAP}）`);
       } else {
-        lines.push(`未完美通关：无连胜奖励，连胜保持为 ${this.winStreak}（仅在普通战/首领完美通关时累加与发钱）`);
+        lines.push(`战斗未胜利（敌方未全灭）：无连胜奖励，连胜保持为 ${this.winStreak}`);
       }
     }
 

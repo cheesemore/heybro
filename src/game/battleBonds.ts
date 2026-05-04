@@ -43,7 +43,7 @@ export function hasBondUltimate(count: number): boolean {
   return count >= 15;
 }
 
-/** 极巨化羁绊：层数总和 ≥25 时激活（入场随机 3 个该职业单位） */
+/** 极巨化羁绊（红）：层数总和 ≥21 时激活（入场随机 3 个该职业单位） */
 export function hasBondMega(count: number): boolean {
-  return count >= 25;
+  return count >= 21;
 }

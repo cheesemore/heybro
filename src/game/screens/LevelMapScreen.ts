@@ -1,6 +1,7 @@
 import { Circle, Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
-import { formatNextBattlePreview } from '../nextBattlePreview';
+import { paintEnemyBody } from '../battleVisuals';
+import { battlePreviewPortraitEntries, formatNextBattlePreview } from '../nextBattlePreview';
 import { ROUNDS } from '../roundConfig';
 import type { RoundMeta } from '../types';
 import type { RunState } from '../runState';
@@ -61,7 +62,7 @@ export class LevelMapScreen extends Container {
     const rowBaseY = Math.round(200 * LAYOUT_SCALE);
     const rowGap = Math.round(268 * LAYOUT_SCALE);
     const gridOriginX = (GAME_WIDTH - 7 * colStep) / 2;
-    const nextIdx = this.run.currentRoundIndex + 1;
+    const curIdx = this.run.currentRoundIndex;
     for (let i = 0; i < ROUNDS.length; i++) {
       const meta = ROUNDS[i]!;
       const chapter = meta.chapter - 1;
@@ -78,17 +79,17 @@ export class LevelMapScreen extends Container {
         .fill(color)
         .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x0f172a });
       g.position.set(cx, cy);
-      const canPreviewNext =
-        i === nextIdx &&
-        nextIdx < ROUNDS.length &&
+      const canPreviewCurrentBattle =
+        i === curIdx &&
+        curIdx < ROUNDS.length &&
         (meta.kind === 'normal' || meta.kind === 'boss');
-      if (canPreviewNext) {
+      if (canPreviewCurrentBattle) {
         g.eventMode = 'static';
         g.cursor = 'pointer';
         g.hitArea = new Circle(0, 0, nodeRadius + Math.round(8 * LAYOUT_SCALE));
         g.on('pointertap', (e) => {
           e.stopPropagation();
-          this.openNextBattlePreview(meta);
+          this.openCurrentBattlePreview(meta);
         });
       }
       this.addChild(g);
@@ -123,7 +124,7 @@ export class LevelMapScreen extends Container {
         this.addChild(m);
       }
 
-      if (canPreviewNext) {
+      if (canPreviewCurrentBattle) {
         const hintPv = new Text({
           text: '点选详情',
           style: {
@@ -140,7 +141,7 @@ export class LevelMapScreen extends Container {
     }
 
     const legend = new Text({
-      text: '绿色：已完成  橙色：当前  灰色：未解锁\nB=首领 策=抉择 奖=奖励\n下一关为战斗/首领时，可点其圆点查看敌方情报',
+      text: '绿色：已完成  橙色：当前  灰色：未解锁\nB=首领 策=抉择 奖=奖励\n当前关为战斗/首领时，可点橙色圆点查看敌方情报与立绘',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(20 * LAYOUT_SCALE),
@@ -226,20 +227,20 @@ export class LevelMapScreen extends Container {
   }
 
   override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
-    this.closeNextBattlePreview();
+    this.closeBattlePreview();
     super.destroy(options);
   }
 
-  private closeNextBattlePreview(): void {
+  private closeBattlePreview(): void {
     if (!this.previewLayer) return;
     this.removeChild(this.previewLayer);
     this.previewLayer.destroy({ children: true });
     this.previewLayer = null;
   }
 
-  /** 下一关为普通战斗或首领时，从关卡圆点打开 */
-  private openNextBattlePreview(meta: RoundMeta): void {
-    this.closeNextBattlePreview();
+  /** 当前（橙色）关卡为普通战斗或首领时，从圆点打开 */
+  private openCurrentBattlePreview(meta: RoundMeta): void {
+    this.closeBattlePreview();
     const layer = new Container();
     layer.eventMode = 'static';
     layer.hitArea = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -248,25 +249,17 @@ export class LevelMapScreen extends Container {
     const dim = new Graphics();
     dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x020617, alpha: 0.84 });
     dim.eventMode = 'static';
-    dim.on('pointertap', () => this.closeNextBattlePreview());
+    dim.on('pointertap', () => this.closeBattlePreview());
     layer.addChild(dim);
 
     const pad = Math.round(28 * LAYOUT_SCALE);
     const panelW = Math.min(GAME_WIDTH - pad * 2, Math.round(980 * LAYOUT_SCALE));
     const px = (GAME_WIDTH - panelW) / 2;
-    const py = Math.round(120 * LAYOUT_SCALE);
-    const panelH = Math.min(GAME_HEIGHT - py - Math.round(100 * LAYOUT_SCALE), Math.round(1320 * LAYOUT_SCALE));
-
-    const panel = new Graphics();
-    panel.roundRect(0, 0, panelW, panelH, Math.round(18 * LAYOUT_SCALE)).fill(0x111827);
-    panel.stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x334155 });
-    panel.eventMode = 'static';
-    panel.position.set(px, py);
-    panel.on('pointertap', (e) => e.stopPropagation());
-    layer.addChild(panel);
+    const py = Math.round(100 * LAYOUT_SCALE);
+    const wrapW = panelW - pad * 2;
 
     const title = new Text({
-      text: '下一关敌方情报',
+      text: '本关敌方情报',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(30 * LAYOUT_SCALE),
@@ -274,10 +267,56 @@ export class LevelMapScreen extends Container {
         fontWeight: '700',
       },
     });
-    title.position.set(px + pad, py + Math.round(22 * LAYOUT_SCALE));
+    title.position.set(px + pad, py + Math.round(20 * LAYOUT_SCALE));
     layer.addChild(title);
 
-    const wrapW = panelW - pad * 2;
+    const portraitTop = py + Math.round(64 * LAYOUT_SCALE);
+    const cardW = Math.round(172 * LAYOUT_SCALE);
+    const cardH = Math.round(196 * LAYOUT_SCALE);
+    const cardGap = Math.round(12 * LAYOUT_SCALE);
+    const entries = battlePreviewPortraitEntries(meta);
+    let nx = 0;
+    let rowY = 0;
+    for (const ent of entries) {
+      if (nx + cardW > wrapW && nx > 0) {
+        nx = 0;
+        rowY += cardH + cardGap;
+      }
+      const card = new Container();
+      card.position.set(px + pad + nx, portraitTop + rowY);
+      const cardBg = new Graphics();
+      cardBg
+        .roundRect(0, 0, cardW, cardH, Math.round(14 * LAYOUT_SCALE))
+        .fill(0x0f172a)
+        .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x334155 });
+      card.addChild(cardBg);
+      const bodyG = new Graphics();
+      paintEnemyBody(bodyG, ent.paint);
+      const sc = 0.74 * LAYOUT_SCALE;
+      bodyG.scale.set(sc);
+      bodyG.position.set(cardW / 2, cardH - Math.round(12 * LAYOUT_SCALE));
+      card.addChild(bodyG);
+      const cap = new Text({
+        text: `${ent.title} ×${ent.count}`,
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontSize: Math.round(16 * LAYOUT_SCALE),
+          fill: 0xbae6fd,
+          fontWeight: '600',
+          align: 'center',
+          wordWrap: true,
+          wordWrapWidth: Math.max(40, cardW - Math.round(10 * LAYOUT_SCALE)),
+          breakWords: true,
+        },
+      });
+      cap.anchor.set(0.5, 1);
+      cap.position.set(cardW / 2, Math.round(22 * LAYOUT_SCALE));
+      card.addChild(cap);
+      layer.addChild(card);
+      nx += cardW + cardGap;
+    }
+    const portraitBlockH = entries.length ? rowY + cardH : 0;
+
     const body = new Text({
       text: formatNextBattlePreview(meta),
       style: {
@@ -290,13 +329,27 @@ export class LevelMapScreen extends Container {
         breakWords: true,
       },
     });
-    body.position.set(px + pad, py + Math.round(72 * LAYOUT_SCALE));
+    const textY = portraitTop + portraitBlockH + (entries.length ? Math.round(18 * LAYOUT_SCALE) : Math.round(8 * LAYOUT_SCALE));
+    body.position.set(px + pad, textY);
     layer.addChild(body);
 
     const closeW = Math.round(220 * LAYOUT_SCALE);
     const closeH = Math.round(52 * LAYOUT_SCALE);
     const closeX = px + (panelW - closeW) / 2;
-    const closeY = py + panelH - closeH - Math.round(20 * LAYOUT_SCALE);
+    const bodyH = Math.max(body.height, Math.round(24 * LAYOUT_SCALE));
+    const closeY = textY + bodyH + Math.round(22 * LAYOUT_SCALE);
+    const panelH = Math.min(
+      GAME_HEIGHT - Math.round(48 * LAYOUT_SCALE) - py,
+      Math.max(Math.round(320 * LAYOUT_SCALE), closeY + closeH + Math.round(28 * LAYOUT_SCALE) - py),
+    );
+
+    const panel = new Graphics();
+    panel.roundRect(0, 0, panelW, panelH, Math.round(18 * LAYOUT_SCALE)).fill(0x111827);
+    panel.stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x334155 });
+    panel.eventMode = 'static';
+    panel.position.set(px, py);
+    panel.on('pointertap', (e) => e.stopPropagation());
+    layer.addChildAt(panel, 1);
     const closeG = new Graphics();
     closeG.roundRect(0, 0, closeW, closeH, Math.round(14 * LAYOUT_SCALE)).fill(0x2563eb);
     closeG.eventMode = 'static';
@@ -304,7 +357,7 @@ export class LevelMapScreen extends Container {
     closeG.position.set(closeX, closeY);
     closeG.on('pointertap', (e) => {
       e.stopPropagation();
-      this.closeNextBattlePreview();
+      this.closeBattlePreview();
     });
     layer.addChild(closeG);
     const closeT = new Text({

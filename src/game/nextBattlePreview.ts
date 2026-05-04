@@ -1,7 +1,42 @@
-import type { EnemyClass, RoundMeta } from './types';
+import type { EnemyPaintKind } from './battleVisuals';
+import type { BossId, EnemyClass, RoundMeta } from './types';
 import { ENEMY_DEFS, BOSS_DEFS, scaledEnemyAtk, scaledEnemyHp } from './unitDefs';
 import { battleRoundIndex, bossDisplayName } from './roundConfig';
 import { RANGED_ATTACK_RANGE_THRESHOLD } from './battleBonds';
+
+export type BattlePreviewPortraitEntry = {
+  paint: EnemyPaintKind;
+  count: number;
+  title: string;
+};
+
+function bossIdToEnemyPaint(id: BossId): EnemyPaintKind {
+  if (id === 'farseer') return 'boss_farseer';
+  if (id === 'tauren') return 'boss_tauren';
+  return 'boss_blademaster';
+}
+
+/** 关卡预览：每种出战敌（含首领）一条，用于绘制战场同款立绘 */
+export function battlePreviewPortraitEntries(meta: RoundMeta): BattlePreviewPortraitEntry[] {
+  const out: BattlePreviewPortraitEntry[] = [];
+  for (const w of meta.enemies) {
+    if (w.type === 'boss' && w.bossId) {
+      out.push({
+        paint: bossIdToEnemyPaint(w.bossId),
+        count: w.count,
+        title: bossDisplayName(w.bossId),
+      });
+    } else {
+      const type = w.type as EnemyClass;
+      out.push({
+        paint: type as EnemyPaintKind,
+        count: w.count,
+        title: ENEMY_DEFS[type].name,
+      });
+    }
+  }
+  return out;
+}
 
 const ENEMY_TRAIT: Record<EnemyClass, string> = {
   grunt: '标准近战，无特殊机制。',
@@ -27,7 +62,7 @@ function statLine(chapter: 1 | 2 | 3, ri: number, type: EnemyClass): string {
 }
 
 /**
- * 关卡地图「下一关」预览用：怪物名称、样貌说明、数量、数值、特性。
+ * 关卡地图战斗预览用：名称、数量、数值、特性（样貌由界面单独绘制）。
  */
 export function formatNextBattlePreview(meta: RoundMeta): string {
   const { chapter, sub } = meta;
@@ -43,7 +78,6 @@ export function formatNextBattlePreview(meta: RoundMeta): string {
       const atk = scaledEnemyAtk(chapter, ri, b.baseAtk);
       const name = bossDisplayName(w.bossId);
       lines.push(`【${name}】×${w.count}`);
-      lines.push(`样貌：大型首领立绘（章节首领）。`);
       lines.push(`数值：HP ${hp} · 攻 ${atk} · 攻速 ${b.attackSpeed.toFixed(2)} · 射程 ${b.range}`);
       lines.push(`特性：首领技能组 — ${b.skills.join('、')}。`);
       lines.push('');
@@ -52,7 +86,6 @@ export function formatNextBattlePreview(meta: RoundMeta): string {
     const type = w.type as EnemyClass;
     const d = ENEMY_DEFS[type];
     lines.push(`【${d.name}】×${w.count}`);
-    lines.push(`样貌：战场程序化兵种立绘（与「${d.name}」配色一致）。`);
     lines.push(`数值（单兵）：${statLine(chapter, ri, type)}`);
     lines.push(`特性：${ENEMY_TRAIT[type]}`);
     lines.push('');

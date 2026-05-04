@@ -69,10 +69,10 @@ const FARSEER_CHAIN_MAX_JUMPS = 8;
 const FARSEER_CHAIN_DECAY = 0.78;
 const TAUREN_SHOCK_INTERVAL = 5.5;
 const TAUREN_STOMP_INTERVAL = 7.5;
-/** 牛头冲击波：沿直线延伸，伤害随距离线性衰减（模仿 WC3）；顶点系数为原 0.95 的 1/4 */
+/** 牛头冲击波：沿直线延伸，伤害随距离线性衰减（模仿 WC3）；顶点系数为原 0.95 的 1/4，再 ×2 为当前威力 */
 const TAUREN_SHOCK_LENGTH = Math.round(780 * LAYOUT_SCALE);
 const TAUREN_SHOCK_HALF_WIDTH = Math.round(70 * LAYOUT_SCALE);
-const TAUREN_SHOCK_LINE_COEFF = 0.95 / 4;
+const TAUREN_SHOCK_LINE_COEFF = (0.95 / 4) * 2;
 const TAUREN_STOMP_COEFF = 0.42 / 4;
 const TAUREN_STOMP_RADIUS = Math.round(680 * LAYOUT_SCALE);
 const TAUREN_STOMP_STUN_SEC = 2.6;
@@ -209,6 +209,8 @@ type SimUnit = {
   dreadAssaultUsed?: boolean;
   /** 暗矛击退：移动速度 -50%，剩余秒数 */
   moveSlowT?: number;
+  /** 牛头人酋长：首次被打至 0 血触发「重生」后已消耗 */
+  taurenRebirthConsumed?: boolean;
 };
 
 export class BattleScreen extends Container {
@@ -533,6 +535,25 @@ export class BattleScreen extends Container {
     );
   }
 
+  /** 牛头人酋长专属：「重生」满血特效 */
+  private procTaurenRebirthVfx(u: SimUnit): void {
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, u.x, u.y - HP_BAR_OFFSET_Y - 78, '重生', 'heal'),
+    );
+    const cols = [0xfef08a, 0xfbbf24, 0x22c55e, 0x38bdf8, 0xe9d5ff] as const;
+    for (let k = 0; k < 6; k++) {
+      this.ringFx.push(
+        spawnRingPulse(this.fxLayer, u.x, u.y - 18 - k * 4, 64 + k * 38, cols[k % cols.length]!, 0.42 + k * 0.05),
+      );
+    }
+    this.ringFx.push(spawnRingPulse(this.fxLayer, u.x, u.y - 26, 220, 0xfacc15, 0.28));
+    for (let i = 0; i < 4; i++) {
+      this.hitSparks.push(
+        spawnHitSparkBurst(this.fxLayer, u.x + (Math.random() - 0.5) * 40 * LAYOUT_SCALE, u.y + (Math.random() - 0.5) * 30 * LAYOUT_SCALE),
+      );
+    }
+  }
+
   private abominationCleaveFollowup(attacker: SimUnit, primary: SimUnit): void {
     if (attacker.enemyPaint !== 'abomination' || attacker.dead || primary.dead) return;
     const extras = this.alive('ally')
@@ -758,7 +779,7 @@ export class BattleScreen extends Container {
     return out;
   }
 
-  /** 二十五层羁绊：每种职业层数≥25 时，该职业随机 3 个入场单位极巨化（体型、攻击、生命翻倍） */
+  /** 二十一极巨化羁绊：每种职业层数≥21 时，该职业随机 3 个入场单位极巨化（体型、攻击、生命翻倍） */
   private applyBond25Mega(allies: SimUnit[]): void {
     for (const kind of ALLY_CLASSES) {
       if (!hasBondMega(this.bondStacks[kind])) continue;
@@ -846,7 +867,7 @@ export class BattleScreen extends Container {
           Math.round(340 * LAYOUT_SCALE) + bj.jy * 0.25,
           hp,
           atk,
-          b.attackSpeed,
+          b.attackSpeed * 0.5,
           b.range,
           b.moveSpeed,
           `${bossDisplayName(wave.bossId)}`,
@@ -1363,9 +1384,17 @@ export class BattleScreen extends Container {
     target.hp -= amt;
     target.hp = Math.min(target.maxHp, Math.max(0, target.hp));
     if (target.hp <= 0) {
-      target.hp = 0;
-      target.dead = true;
-      target.root.visible = false;
+      if (target.bossId === 'tauren' && !target.taurenRebirthConsumed) {
+        target.taurenRebirthConsumed = true;
+        target.hp = target.maxHp;
+        target.dead = false;
+        target.root.visible = true;
+        this.procTaurenRebirthVfx(target);
+      } else {
+        target.hp = 0;
+        target.dead = true;
+        target.root.visible = false;
+      }
     }
     this.recomputeEnemyHp();
 
@@ -1996,8 +2025,7 @@ export class BattleScreen extends Container {
     const timeout = this.timeLeft <= 0;
 
     if (enemiesDead) {
-      const anyAllyFallen = this.units.some((u) => u.side === 'ally' && u.dead);
-      this.finish({ perfect: !anyAllyFallen, enemyHpRatioRemaining: 0, elapsed: this.elapsed });
+      this.finish({ perfect: true, enemyHpRatioRemaining: 0, elapsed: this.elapsed });
       return;
     }
     if (alliesDead || timeout) {

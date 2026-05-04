@@ -379,7 +379,7 @@ export class SynergyOverlay extends Container {
     this.scrollViewport.visible = false;
     this.detailHead.text = `${allyBondDisplayName(kind)} · ${bondTierChipLabel(tier)}`;
     this.detailDesc.text = bondTierFullDesc(kind, tier);
-    const red = tier === 25;
+    const red = tier === 21;
     this.detailHead.style.fill = red ? BOND_RED : GOLD;
     this.detailDesc.style.fill = red ? 0xfca5a5 : BODY;
   }
@@ -482,7 +482,7 @@ export class SynergyOverlay extends Container {
           rowH += chipH + chipGap;
         }
         const active = bondTierActive(n, tier);
-        const redTier = tier === 25;
+        const redTier = tier === 21;
         const chip = new Container();
         chip.position.set(cx, rowH - chipH);
         chip.eventMode = 'static';

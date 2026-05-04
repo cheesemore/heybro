@@ -65,9 +65,9 @@ function artifactName(k: ArtifactKind): string {
 
 type DragMode = 'slot' | null;
 
-/** 羁绊档位：0 无，1≥3，2≥6，3≥10，4≥15，5≥25 */
+/** 羁绊档位：0 无，1≥3，2≥6，3≥10，4≥15，5≥21（极巨化·红） */
 function bondTierIndex(totalStacks: number): number {
-  if (totalStacks >= 25) return 5;
+  if (totalStacks >= 21) return 5;
   if (totalStacks >= 15) return 4;
   if (totalStacks >= 10) return 3;
   if (totalStacks >= 6) return 2;
@@ -77,7 +77,7 @@ function bondTierIndex(totalStacks: number): number {
 
 /** 备战格内兵种名颜色：按全棋盘该职业层数总和 */
 function bondNameFill(totalStacks: number): number {
-  if (totalStacks >= 25) return 0xef4444;
+  if (totalStacks >= 21) return 0xef4444;
   if (totalStacks >= 15) return 0xf97316;
   if (totalStacks >= 10) return 0xc084fc;
   if (totalStacks >= 6) return 0x60a5fa;
