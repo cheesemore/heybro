@@ -1,6 +1,7 @@
 import { Application, Container, Graphics, Text } from 'pixi.js';
 import type { Ticker } from 'pixi.js';
 import {
+  ALLY_CLASSES,
   BATTLE_MOVE_SPEED_MULT,
   BOARD_CELL_MAX_STACKS,
   BOSS_BATTLE_SECONDS,
@@ -16,6 +17,7 @@ import { battleRoundIndex, bossDisplayName } from '../roundConfig';
 import {
   allBondStacks,
   classBondHpAtkMultiplier,
+  hasBondMega,
   hasBondUltimate,
   priestBondTeamMultiplier,
   RANGED_ATTACK_RANGE_THRESHOLD,
@@ -144,6 +146,8 @@ type DamageCtx = {
   showFloat?: boolean;
   /** 战士生命共享：防止均摊递归 */
   skipWarriorShare?: boolean;
+  /** 近战单位普通攻击（非技能弹道/溅射）；用于概率击退 */
+  meleeBasic?: boolean;
 };
 
 type SimUnit = {
@@ -331,7 +335,9 @@ export class BattleScreen extends Container {
     this.addChild(hint);
 
     this.addChild(this.unitLayer);
-    this.units = [...this.spawnAllies(), ...this.spawnEnemies(meta)];
+    const alliesSpawned = this.spawnAllies();
+    this.applyBond25Mega(alliesSpawned);
+    this.units = [...alliesSpawned, ...this.spawnEnemies(meta)];
     this.jitterChaosSpawnPositions();
     this.applyRevengeSpiritOpening();
     this.applyUnitCollisionSeparation(5);
@@ -472,6 +478,31 @@ export class BattleScreen extends Container {
     u.x = Math.max(KNOCKBACK_PAD_X, Math.min(GAME_WIDTH - KNOCKBACK_PAD_X, u.x));
     u.y = Math.max(ARENA_Y_MIN, Math.min(ARENA_Y_MAX, u.y));
     u.root.position.set(u.x, u.y);
+  }
+
+  private clampEnemyWorldPos(u: SimUnit): void {
+    const padX = Math.round(38 * LAYOUT_SCALE);
+    u.x = Math.max(padX, Math.min(GAME_WIDTH - padX, u.x));
+    u.y = Math.max(Math.round(195 * LAYOUT_SCALE), Math.min(Math.round(1100 * LAYOUT_SCALE), u.y));
+    u.root.position.set(u.x, u.y);
+  }
+
+  /** 受击者沿远离攻击者方向被推开（首领受击者不触发；由调用方判断） */
+  private knockbackTargetFromAttacker(target: SimUnit, attacker: SimUnit, dist: number): void {
+    if (target.dead || (target.invulnerable && target.side === 'ally')) return;
+    const dx = target.x - attacker.x;
+    const dy = target.y - attacker.y;
+    const d = Math.hypot(dx, dy) || 1;
+    target.x += (dx / d) * dist;
+    target.y += (dy / d) * dist;
+    if (target.side === 'ally') this.clampAllyWorldPos(target);
+    else this.clampEnemyWorldPos(target);
+    if (Math.random() < 0.55) {
+      this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x, target.y));
+    }
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, target.x, target.y - HP_BAR_OFFSET_Y - 36, '击退', 'magic'),
+    );
   }
 
   /** 将友方沿远离 (ox,oy) 方向推开 dist 像素（已夹场边） */
@@ -725,6 +756,29 @@ export class BattleScreen extends Container {
       }
     }
     return out;
+  }
+
+  /** 二十五层羁绊：每种职业层数≥25 时，该职业随机 3 个入场单位极巨化（体型、攻击、生命翻倍） */
+  private applyBond25Mega(allies: SimUnit[]): void {
+    for (const kind of ALLY_CLASSES) {
+      if (!hasBondMega(this.bondStacks[kind])) continue;
+      const pool = allies.filter((u) => u.allyKind === kind);
+      if (!pool.length) continue;
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = pool[i]!;
+        pool[i] = pool[j]!;
+        pool[j] = t;
+      }
+      const n = Math.min(3, pool.length);
+      for (let k = 0; k < n; k++) {
+        const u = pool[k]!;
+        u.atk = Math.max(1, Math.round(u.atk * 2));
+        u.maxHp = Math.max(1, Math.round(u.maxHp * 2));
+        u.hp = Math.min(u.maxHp, Math.round(u.hp * 2));
+        u.root.scale.set(2);
+      }
+    }
   }
 
   /** 绝命乱斗：敌我初始站位随机 */
@@ -1116,7 +1170,7 @@ export class BattleScreen extends Container {
         this.dealAllyHit(u, target, dmgF);
         this.maybeDoubleShotArcher(u, target, u.atk);
       } else {
-        this.applyDamage(target, dmgF, { attacker: u, damageTag: enemyTag });
+        this.applyDamage(target, dmgF, { attacker: u, damageTag: enemyTag, meleeBasic: true });
         if (u.enemyPaint === 'abomination') {
           this.abominationCleaveFollowup(u, target);
         }
@@ -1319,6 +1373,19 @@ export class BattleScreen extends Container {
     if (ctx?.attacker && !target.dead && ctx.attacker.side === 'enemy' && target.side === 'ally') {
       this.maybeDarkspearKnockback(ctx.attacker, target);
     }
+    if (
+      lost > 0 &&
+      ctx?.meleeBasic &&
+      ctx.damageTag !== 'magic' &&
+      ctx.attacker &&
+      !ctx.attacker.dead &&
+      !target.bossId &&
+      ctx.attacker.range < RANGED_ATTACK_RANGE_THRESHOLD &&
+      Math.random() < 0.2
+    ) {
+      const kb = Math.round((20 + Math.random() * 30) * LAYOUT_SCALE);
+      this.knockbackTargetFromAttacker(target, ctx.attacker, kb);
+    }
     if (lost > 0 && showFloat) {
       const kind =
         ctx?.damageTag === 'crit' ? 'crit' : ctx?.damageTag === 'magic' ? 'magic' : 'damage';
@@ -1372,6 +1439,7 @@ export class BattleScreen extends Container {
       ...ctx,
       attacker: u,
       damageTag,
+      meleeBasic: !this.isRangedAttacker(u),
     });
     if (Math.random() < 0.55) {
       this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x, target.y));
@@ -1521,7 +1589,7 @@ export class BattleScreen extends Container {
             this.applyDamage(t, dmg, { attacker: a });
           });
         } else {
-          this.applyDamage(targetEnemy, dmg, { attacker: u });
+          this.applyDamage(targetEnemy, dmg, { attacker: u, meleeBasic: !this.isRangedAttacker(u) });
           u.atkLungeT = 0.15;
           u.atkLungeDx = dx / dist;
           u.atkLungeDy = dy / dist;

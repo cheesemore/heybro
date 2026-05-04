@@ -65,8 +65,9 @@ function artifactName(k: ArtifactKind): string {
 
 type DragMode = 'slot' | null;
 
-/** 羁绊档位：0 无，1≥3，2≥6，3≥10，4≥15 */
+/** 羁绊档位：0 无，1≥3，2≥6，3≥10，4≥15，5≥25 */
 function bondTierIndex(totalStacks: number): number {
+  if (totalStacks >= 25) return 5;
   if (totalStacks >= 15) return 4;
   if (totalStacks >= 10) return 3;
   if (totalStacks >= 6) return 2;
@@ -76,6 +77,7 @@ function bondTierIndex(totalStacks: number): number {
 
 /** 备战格内兵种名颜色：按全棋盘该职业层数总和 */
 function bondNameFill(totalStacks: number): number {
+  if (totalStacks >= 25) return 0xef4444;
   if (totalStacks >= 15) return 0xf97316;
   if (totalStacks >= 10) return 0xc084fc;
   if (totalStacks >= 6) return 0x60a5fa;
@@ -451,11 +453,19 @@ export class DraftScreen extends Container {
       this.positionTipAboveRow1(this.controlRowYs().row1Y);
       return;
     }
-    if (!applyPick(this.run.board, this.run.artifactBySlot, kind)) {
+    const slot = applyPick(this.run.board, this.run.artifactBySlot, kind);
+    if (slot === null) {
       this.tip.text = '备战区已满且没有该兵种空位，无法上场新兵种。';
       this.positionTipAboveRow1(this.controlRowYs().row1Y);
       return;
     }
+    const { cardW, cardH, originX } = this.cardMetrics();
+    const fromX = originX + index * (cardW + CARD_GAP) + cardW / 2;
+    const fromY = TRIO_TOP + cardH / 2;
+    const br = this.boardSlotRect(slot);
+    const toX = br.x + br.w / 2;
+    const toY = br.y + br.h / 2;
+    this.playPickToBoardParticles(fromX, fromY, toX, toY);
     if (cost > 0) this.run.gold -= cost;
     this.picksThisRound += 1;
     this.rollChoices();
@@ -463,6 +473,38 @@ export class DraftScreen extends Container {
     this.drawTrio();
     this.drawBoard();
     this.drawControls();
+  }
+
+  /** 选牌落入九宫格时的流光粒子 */
+  private playPickToBoardParticles(fromX: number, fromY: number, toX: number, toY: number): void {
+    const n = 18;
+    const colors = [0x38bdf8, 0x7dd3fc, 0xc4b5fd, 0xfbbf24];
+    for (let i = 0; i < n; i++) {
+      const g = new Graphics();
+      const r = (2.2 + Math.random() * 4.2) * LAYOUT_SCALE;
+      g.circle(0, 0, r).fill({ color: colors[i % colors.length]!, alpha: 0.92 });
+      const sx = fromX + (Math.random() - 0.5) * 28 * LAYOUT_SCALE;
+      const sy = fromY + (Math.random() - 0.5) * 22 * LAYOUT_SCALE;
+      g.position.set(sx, sy);
+      this.addChild(g);
+      const delayMs = Math.random() * 80;
+      const durMs = 380 + Math.random() * 140;
+      let acc = -delayMs;
+      const onTick = (): void => {
+        acc += this.app.ticker.deltaMS;
+        if (acc < 0) return;
+        const p = Math.min(1, acc / durMs);
+        const e = 1 - (1 - p) ** 3;
+        g.position.set(sx + (toX - sx) * e, sy + (toY - sy) * e);
+        g.alpha = 1 - p * 0.35;
+        g.scale.set(1 + 0.35 * Math.sin(p * Math.PI));
+        if (p >= 1) {
+          this.app.ticker.remove(onTick);
+          g.destroy();
+        }
+      };
+      this.app.ticker.add(onTick);
+    }
   }
 
   /** 交换两格的「兵种 + 神器」整体（一格仅能有其一） */

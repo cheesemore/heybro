@@ -2,6 +2,7 @@
  * 数值配置来源：`src/game/config/` 下 JSON。
  */
 import { ALLY_CLASSES, ENEMY_CLASSES, GLOBAL_UNIT_ATK_MULT } from './constants';
+import { RANGED_ATTACK_RANGE_THRESHOLD } from './battleBonds';
 import alliesJson from './config/allies.json';
 import bossesJson from './config/bosses.json';
 import enemiesJson from './config/enemies.json';
@@ -115,6 +116,23 @@ export const BOSS_DEFS: Record<BossId, BossDef> = assertRecord(
   for (const id of BOSS_IDS) {
     const d = BOSS_DEFS[id];
     d.baseAtk = Math.max(1, Math.round(d.baseAtk * m));
+  }
+}
+
+/** 敌我近战（射程 < 远程阈值）非首领：在表值与全局倍率之后再 ×1.2 基础攻击 */
+const MELEE_BASE_ATK_BONUS = 1.2;
+{
+  for (const k of ALLY_CLASSES) {
+    const d = ALLY_DEFS[k];
+    if (d.range < RANGED_ATTACK_RANGE_THRESHOLD) {
+      d.atk = Math.max(1, Math.round(d.atk * MELEE_BASE_ATK_BONUS));
+    }
+  }
+  for (const k of ENEMY_CLASSES) {
+    const d = ENEMY_DEFS[k];
+    if (d.range < RANGED_ATTACK_RANGE_THRESHOLD) {
+      d.baseAtk = Math.max(1, Math.round(d.baseAtk * MELEE_BASE_ATK_BONUS));
+    }
   }
 }
 

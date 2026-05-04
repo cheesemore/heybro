@@ -1,6 +1,8 @@
-import { Container, Graphics, Text } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
+import { formatNextBattlePreview } from '../nextBattlePreview';
 import { ROUNDS } from '../roundConfig';
+import type { RoundMeta } from '../types';
 import type { RunState } from '../runState';
 
 type Handlers = {
@@ -11,6 +13,7 @@ type Handlers = {
 export class LevelMapScreen extends Container {
   private readonly run: RunState;
   private readonly h: Handlers;
+  private previewLayer: Container | null = null;
 
   constructor(run: RunState, h: Handlers) {
     super();
@@ -58,6 +61,7 @@ export class LevelMapScreen extends Container {
     const rowBaseY = Math.round(200 * LAYOUT_SCALE);
     const rowGap = Math.round(268 * LAYOUT_SCALE);
     const gridOriginX = (GAME_WIDTH - 7 * colStep) / 2;
+    const nextIdx = this.run.currentRoundIndex + 1;
     for (let i = 0; i < ROUNDS.length; i++) {
       const meta = ROUNDS[i]!;
       const chapter = meta.chapter - 1;
@@ -74,6 +78,19 @@ export class LevelMapScreen extends Container {
         .fill(color)
         .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x0f172a });
       g.position.set(cx, cy);
+      const canPreviewNext =
+        i === nextIdx &&
+        nextIdx < ROUNDS.length &&
+        (meta.kind === 'normal' || meta.kind === 'boss');
+      if (canPreviewNext) {
+        g.eventMode = 'static';
+        g.cursor = 'pointer';
+        g.hitArea = new Circle(0, 0, nodeRadius + Math.round(8 * LAYOUT_SCALE));
+        g.on('pointertap', (e) => {
+          e.stopPropagation();
+          this.openNextBattlePreview(meta);
+        });
+      }
       this.addChild(g);
 
       const t = new Text({
@@ -105,10 +122,25 @@ export class LevelMapScreen extends Container {
         m.position.set(cx, cy);
         this.addChild(m);
       }
+
+      if (canPreviewNext) {
+        const hintPv = new Text({
+          text: '点选详情',
+          style: {
+            fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+            fontSize: Math.round(14 * LAYOUT_SCALE),
+            fill: 0x93c5fd,
+            fontWeight: '600',
+          },
+        });
+        hintPv.anchor.set(0.5, 0);
+        hintPv.position.set(cx, cy + nodeRadius + Math.round(6 * LAYOUT_SCALE));
+        this.addChild(hintPv);
+      }
     }
 
     const legend = new Text({
-      text: '绿色：已完成  橙色：当前  灰色：未解锁\nB=首领 策=抉择 奖=奖励',
+      text: '绿色：已完成  橙色：当前  灰色：未解锁\nB=首领 策=抉择 奖=奖励\n下一关为战斗/首领时，可点其圆点查看敌方情报',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(20 * LAYOUT_SCALE),
@@ -191,5 +223,103 @@ export class LevelMapScreen extends Container {
       gold.text = `金币：${this.run.gold}`;
     };
     refreshHud();
+  }
+
+  override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
+    this.closeNextBattlePreview();
+    super.destroy(options);
+  }
+
+  private closeNextBattlePreview(): void {
+    if (!this.previewLayer) return;
+    this.removeChild(this.previewLayer);
+    this.previewLayer.destroy({ children: true });
+    this.previewLayer = null;
+  }
+
+  /** 下一关为普通战斗或首领时，从关卡圆点打开 */
+  private openNextBattlePreview(meta: RoundMeta): void {
+    this.closeNextBattlePreview();
+    const layer = new Container();
+    layer.eventMode = 'static';
+    layer.hitArea = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    this.previewLayer = layer;
+
+    const dim = new Graphics();
+    dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x020617, alpha: 0.84 });
+    dim.eventMode = 'static';
+    dim.on('pointertap', () => this.closeNextBattlePreview());
+    layer.addChild(dim);
+
+    const pad = Math.round(28 * LAYOUT_SCALE);
+    const panelW = Math.min(GAME_WIDTH - pad * 2, Math.round(980 * LAYOUT_SCALE));
+    const px = (GAME_WIDTH - panelW) / 2;
+    const py = Math.round(120 * LAYOUT_SCALE);
+    const panelH = Math.min(GAME_HEIGHT - py - Math.round(100 * LAYOUT_SCALE), Math.round(1320 * LAYOUT_SCALE));
+
+    const panel = new Graphics();
+    panel.roundRect(0, 0, panelW, panelH, Math.round(18 * LAYOUT_SCALE)).fill(0x111827);
+    panel.stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x334155 });
+    panel.eventMode = 'static';
+    panel.position.set(px, py);
+    panel.on('pointertap', (e) => e.stopPropagation());
+    layer.addChild(panel);
+
+    const title = new Text({
+      text: '下一关敌方情报',
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.round(30 * LAYOUT_SCALE),
+        fill: 0xf8fafc,
+        fontWeight: '700',
+      },
+    });
+    title.position.set(px + pad, py + Math.round(22 * LAYOUT_SCALE));
+    layer.addChild(title);
+
+    const wrapW = panelW - pad * 2;
+    const body = new Text({
+      text: formatNextBattlePreview(meta),
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.round(20 * LAYOUT_SCALE),
+        fill: 0xe2e8f0,
+        lineHeight: Math.round(30 * LAYOUT_SCALE),
+        wordWrap: true,
+        wordWrapWidth: wrapW,
+        breakWords: true,
+      },
+    });
+    body.position.set(px + pad, py + Math.round(72 * LAYOUT_SCALE));
+    layer.addChild(body);
+
+    const closeW = Math.round(220 * LAYOUT_SCALE);
+    const closeH = Math.round(52 * LAYOUT_SCALE);
+    const closeX = px + (panelW - closeW) / 2;
+    const closeY = py + panelH - closeH - Math.round(20 * LAYOUT_SCALE);
+    const closeG = new Graphics();
+    closeG.roundRect(0, 0, closeW, closeH, Math.round(14 * LAYOUT_SCALE)).fill(0x2563eb);
+    closeG.eventMode = 'static';
+    closeG.cursor = 'pointer';
+    closeG.position.set(closeX, closeY);
+    closeG.on('pointertap', (e) => {
+      e.stopPropagation();
+      this.closeNextBattlePreview();
+    });
+    layer.addChild(closeG);
+    const closeT = new Text({
+      text: '关 闭',
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.round(22 * LAYOUT_SCALE),
+        fill: 0xffffff,
+        fontWeight: '600',
+      },
+    });
+    closeT.anchor.set(0.5);
+    closeT.position.set(closeX + closeW / 2, closeY + closeH / 2);
+    layer.addChild(closeT);
+
+    this.addChild(layer);
   }
 }

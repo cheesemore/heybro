@@ -18,6 +18,8 @@ import type { RunState } from '../runState';
 const GOLD = 0xfbbf24;
 const MUTED = 0x64748b;
 const BODY = 0xe2e8f0;
+const BOND_RED = 0xf87171;
+const BOND_RED_MUTED = 0x9f1239;
 const TAB_ON = 0x38bdf8;
 const TAB_OFF = 0x94a3b8;
 
@@ -377,6 +379,9 @@ export class SynergyOverlay extends Container {
     this.scrollViewport.visible = false;
     this.detailHead.text = `${allyBondDisplayName(kind)} · ${bondTierChipLabel(tier)}`;
     this.detailDesc.text = bondTierFullDesc(kind, tier);
+    const red = tier === 25;
+    this.detailHead.style.fill = red ? BOND_RED : GOLD;
+    this.detailDesc.style.fill = red ? 0xfca5a5 : BODY;
   }
 
   private fillList(fs: number, fsSmall: number, lh: number): void {
@@ -470,17 +475,25 @@ export class SynergyOverlay extends Container {
       const row = new Container();
       row.position.set(0, y);
       let cx = 0;
+      let rowH = chipH;
       for (const tier of BOND_TIER_THRESHOLDS) {
+        if (cx > 0 && cx + chipW > this.innerW) {
+          cx = 0;
+          rowH += chipH + chipGap;
+        }
         const active = bondTierActive(n, tier);
+        const redTier = tier === 25;
         const chip = new Container();
-        chip.position.set(cx, 0);
+        chip.position.set(cx, rowH - chipH);
         chip.eventMode = 'static';
         chip.cursor = 'pointer';
         const g = new Graphics();
-        g.roundRect(0, 0, chipW, chipH, Math.round(10 * LAYOUT_SCALE)).fill(active ? 0x422006 : 0x1e293b);
+        const fillOn = redTier ? 0x450a0a : 0x422006;
+        const strokeOn = redTier ? 0xef4444 : 0xf59e0b;
+        g.roundRect(0, 0, chipW, chipH, Math.round(10 * LAYOUT_SCALE)).fill(active ? fillOn : 0x1e293b);
         g.stroke({
           width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)),
-          color: active ? 0xf59e0b : 0x334155,
+          color: active ? strokeOn : 0x334155,
         });
         chip.addChild(g);
         const lab = new Text({
@@ -488,7 +501,7 @@ export class SynergyOverlay extends Container {
           style: {
             fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
             fontSize: Math.round(16 * LAYOUT_SCALE),
-            fill: active ? GOLD : MUTED,
+            fill: active ? (redTier ? BOND_RED : GOLD) : redTier ? BOND_RED_MUTED : MUTED,
             fontWeight: '700',
           },
         });
@@ -509,7 +522,7 @@ export class SynergyOverlay extends Container {
         cx += chipW + chipGap;
       }
       this.listLayer.addChild(row);
-      y += chipH + Math.round(20 * LAYOUT_SCALE);
+      y += rowH + Math.round(20 * LAYOUT_SCALE);
     }
 
     y += Math.round(8 * LAYOUT_SCALE);

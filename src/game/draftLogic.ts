@@ -15,26 +15,27 @@ export function canAcceptPick(
   return false;
 }
 
+/** 选牌成功时返回落点九宫格索引（叠层时为该兵种所在格） */
 export function applyPick(
   board: BoardCell[],
   artifactBySlot: readonly (ArtifactKind | null)[],
   kind: AllyClass,
-): boolean {
-  if (!canAcceptPick(board, artifactBySlot, kind)) return false;
+): number | null {
+  if (!canAcceptPick(board, artifactBySlot, kind)) return null;
   const existing = board.findIndex((c) => c?.kind === kind);
   if (existing >= 0) {
     const cell = board[existing]!;
     board[existing] = { kind, stacks: Math.min(BOARD_CELL_MAX_STACKS, cell.stacks + 1) };
-    return true;
+    return existing;
   }
   const empties: number[] = [];
   for (let i = 0; i < 9; i++) {
     if (board[i] === null && artifactBySlot[i] === null) empties.push(i);
   }
-  if (!empties.length) return false;
+  if (!empties.length) return null;
   const idx = empties[Math.floor(Math.random() * empties.length)]!;
   board[idx] = { kind, stacks: 1 };
-  return true;
+  return idx;
 }
 
 function shuffleInPlace<T>(arr: T[]): void {
