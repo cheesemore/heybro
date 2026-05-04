@@ -11,20 +11,24 @@ if (!mount) {
 const root: HTMLDivElement = mount;
 
 const app = new Application();
-const gameRoot = new GameRoot(app);
 
 async function bootstrap(): Promise<void> {
+  /**
+   * 须先 init 再创建 GameRoot（内含封面点击），否则事件/画布顺序异常。
+   * resizeTo 用 window，避免首帧 #app 为 0 高导致渲染分辨率为 0。
+   */
   await app.init({
     background: '#070b14',
     antialias: true,
     resolution: Math.min(window.devicePixelRatio ?? 1, 2.5),
     autoDensity: true,
-    resizeTo: root,
+    resizeTo: window,
     preference: 'webgl',
   });
 
-  root.innerHTML = '';
-  root.appendChild(app.canvas as HTMLCanvasElement);
+  root.replaceChildren(app.canvas as HTMLCanvasElement);
+
+  const gameRoot = new GameRoot(app);
   app.stage.addChild(gameRoot);
 
   const syncGameLayout = (): void => {
@@ -37,6 +41,14 @@ async function bootstrap(): Promise<void> {
 
   app.renderer.on('resize', syncGameLayout);
   syncGameLayout();
+  requestAnimationFrame(() => {
+    app.resize();
+    syncGameLayout();
+    requestAnimationFrame(() => {
+      app.resize();
+      syncGameLayout();
+    });
+  });
 
   window.addEventListener('orientationchange', () => app.resize());
   window.visualViewport?.addEventListener('resize', () => app.resize());
