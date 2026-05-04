@@ -1,8 +1,10 @@
 name: Deploy GitHub Pages
 
+# 推送 main 自动构建 dist 并发布；也可在 Actions 里手动 Run workflow
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -21,14 +23,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
+
+      - name: Install & build
+        run: |
+          npm ci
+          npm run build
+
+      # 防止误把「源码 index」当产物发布：打包后的入口不应再引用 /src/main.ts
+      - name: Verify dist is a Vite build (not raw TS entry)
+        run: |
+          if grep -q '/src/main.ts' dist/index.html; then
+            echo 'ERROR: dist/index.html still references /src/main.ts — build output looks wrong.'
+            exit 1
+          fi
+          echo 'OK: dist/index.html does not reference raw TypeScript entry.'
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+
       - id: deployment
+        name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
