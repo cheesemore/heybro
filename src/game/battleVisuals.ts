@@ -564,6 +564,45 @@ export function tickGroundBurnPatches(list: GroundBurnPatch[], dt: number): void
   }
 }
 
+/** 单位死亡时留在地面的血迹，持续渐隐后移除 */
+export type BloodStainFx = { g: Graphics; t: number; max: number };
+
+export function spawnBloodStain(layer: Container, x: number, y: number, side: 'ally' | 'enemy'): BloodStainFx {
+  const s = LAYOUT_SCALE;
+  const g = new Graphics();
+  g.position.set(x, y + Math.round(10 * s));
+  const deep = side === 'ally' ? 0x991b1b : 0x3f0f12;
+  const pool = side === 'ally' ? 0xb91c1c : 0x5c0a0a;
+  const splats: [number, number, number, number, number][] = [
+    [0, 0, 24, 11, 0.58],
+    [-16, -4, 14, 8, 0.48],
+    [14, 3, 12, 7, 0.44],
+    [-8, 7, 11, 6, 0.4],
+    [5, -8, 9, 5, 0.36],
+  ];
+  for (const [ox, oy, rw, rh, a] of splats) {
+    g.ellipse(ox * s, oy * s, rw * s, rh * s).fill({ color: deep, alpha: a });
+  }
+  g.ellipse(0, 1 * s, 18 * s, 8 * s).fill({ color: pool, alpha: 0.42 });
+  g.ellipse(0, 0, 20 * s, 9 * s).stroke({ width: Math.max(1, 1.5 * s), color: 0x450a0a, alpha: 0.38 });
+  layer.addChildAt(g, 0);
+  return { g, t: 0, max: 4.8 };
+}
+
+export function tickBloodStains(list: BloodStainFx[], dt: number): void {
+  for (let i = list.length - 1; i >= 0; i--) {
+    const b = list[i]!;
+    b.t += dt;
+    const k = Math.min(1, b.t / b.max);
+    b.g.alpha = Math.max(0, 1 - k * k * 1.05);
+    b.g.scale.set(1 + k * 0.07);
+    if (b.t >= b.max || b.g.alpha <= 0.008) {
+      b.g.destroy();
+      list.splice(i, 1);
+    }
+  }
+}
+
 export function createKnightAura(): Graphics {
   const g = new Graphics();
   g.circle(0, -22, 36).stroke({ width: 3, color: 0xfacc15, alpha: 0.78 });

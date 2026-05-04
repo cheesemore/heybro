@@ -23,6 +23,7 @@ import {
   RANGED_ATTACK_RANGE_THRESHOLD,
 } from '../battleBonds';
 import type {
+  BloodStainFx,
   EnemyPaintKind,
   FloatEntry,
   GroundBurnPatch,
@@ -45,9 +46,11 @@ import {
   spawnHealBurst,
   spawnMeteorAnim,
   spawnRingPulse,
+  spawnBloodStain,
   spawnGroundBurnPatch,
   spawnHitSparkBurst,
   spawnTaurenShockwaveBeam,
+  tickBloodStains,
   tickFloatEntries,
   tickHitSparkBursts,
   tickMeteorAnims,
@@ -69,10 +72,10 @@ const FARSEER_CHAIN_MAX_JUMPS = 8;
 const FARSEER_CHAIN_DECAY = 0.78;
 const TAUREN_SHOCK_INTERVAL = 5.5;
 const TAUREN_STOMP_INTERVAL = 7.5;
-/** 牛头冲击波：沿直线延伸，伤害随距离线性衰减（模仿 WC3）；顶点系数为原 0.95 的 1/4，再 ×2 为当前威力 */
+/** 牛头冲击波：沿直线延伸，伤害随距离线性衰减；不附带眩晕（仅踩地板晕人）。系数 = 原 0.95/4 ×2（首领加强）×1.5（本次再加强） */
 const TAUREN_SHOCK_LENGTH = Math.round(780 * LAYOUT_SCALE);
 const TAUREN_SHOCK_HALF_WIDTH = Math.round(70 * LAYOUT_SCALE);
-const TAUREN_SHOCK_LINE_COEFF = (0.95 / 4) * 2;
+const TAUREN_SHOCK_LINE_COEFF = (0.95 / 4) * 2 * 1.5;
 const TAUREN_STOMP_COEFF = 0.42 / 4;
 const TAUREN_STOMP_RADIUS = Math.round(680 * LAYOUT_SCALE);
 const TAUREN_STOMP_STUN_SEC = 2.6;
@@ -209,7 +212,7 @@ type SimUnit = {
   dreadAssaultUsed?: boolean;
   /** 暗矛击退：移动速度 -50%，剩余秒数 */
   moveSlowT?: number;
-  /** 牛头人酋长：首次被打至 0 血触发「重生」后已消耗 */
+  /** 牛头人酋长：首次致命伤触发「重生」（先锁 1 血再满血）后已消耗 */
   taurenRebirthConsumed?: boolean;
 };
 
@@ -268,6 +271,7 @@ export class BattleScreen extends Container {
     acc: number;
     r: number;
   }> = [];
+  private bloodStains: BloodStainFx[] = [];
 
   constructor(app: Application, run: RunState, meta: RoundMeta, onEnd: (outcome: BattleOutcome) => void) {
     super();
@@ -1381,19 +1385,22 @@ export class BattleScreen extends Container {
       }
     }
 
-    target.hp -= amt;
-    target.hp = Math.min(target.maxHp, Math.max(0, target.hp));
-    if (target.hp <= 0) {
-      if (target.bossId === 'tauren' && !target.taurenRebirthConsumed) {
-        target.taurenRebirthConsumed = true;
-        target.hp = target.maxHp;
-        target.dead = false;
-        target.root.visible = true;
-        this.procTaurenRebirthVfx(target);
-      } else {
+    const rawAfter = target.hp - amt;
+    if (target.bossId === 'tauren' && !target.taurenRebirthConsumed && rawAfter <= 0) {
+      /** 重生：先锁 1 血再满血，避免 hp 经过 0 与「敌全灭」等判定产生竞态 */
+      target.taurenRebirthConsumed = true;
+      target.hp = 1;
+      this.procTaurenRebirthVfx(target);
+      target.hp = target.maxHp;
+      target.dead = false;
+      target.root.visible = true;
+    } else {
+      target.hp = Math.min(target.maxHp, Math.max(0, rawAfter));
+      if (target.hp <= 0) {
         target.hp = 0;
         target.dead = true;
         target.root.visible = false;
+        this.bloodStains.push(spawnBloodStain(this.fxLayer, target.x, target.y, target.side));
       }
     }
     this.recomputeEnemyHp();
@@ -1760,6 +1767,7 @@ export class BattleScreen extends Container {
       if (perp > halfW + this.hitRadius(a) * 0.85) continue;
       const falloff = 1 - along / L;
       const dmg = Math.max(1, Math.round(boss.atk * TAUREN_SHOCK_LINE_COEFF * falloff));
+      /** 冲击波：仅伤害，不施加眩晕（与踩地板区分） */
       this.applyDamage(a, dmg, { attacker: boss, damageTag: 'magic' });
     }
     this.shockBeams.push(spawnTaurenShockwaveBeam(this.fxLayer, bx, by, dx, dy, L, halfW));
@@ -1866,6 +1874,7 @@ export class BattleScreen extends Container {
     tickFloatEntries(this.floatWords, dt);
     tickRingPulses(this.ringFx, dt);
     tickShockwaveBeamFx(this.shockBeams, dt);
+    tickBloodStains(this.bloodStains, dt);
     tickHitSparkBursts(this.hitSparks, dt);
     this.tickShamanBloodlustAll(dt);
     this.tickCatapultBurns(dt);
