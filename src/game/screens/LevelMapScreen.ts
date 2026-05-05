@@ -2,14 +2,43 @@ import { Circle, Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { paintEnemyBody } from '../battleVisuals';
 import { battlePreviewPortraitEntries, formatNextBattlePreview } from '../nextBattlePreview';
+import { bookChapterStrengthPercent } from '../bookChapterConfig';
 import { ROUNDS } from '../roundConfig';
-import type { RoundMeta } from '../types';
+import { getResolvedRoundMeta } from '../roundResolve';
+import { rewardChapterPreviewSummary, strategyChapterPreviewSummary } from '../strategyApply';
 import type { RunState } from '../runState';
 
 type Handlers = {
   onEnterRound: () => void;
-  onResetDemo: () => void;
+  /** 二次确认后重置本章进度并回到章节选择 */
+  onRequestExitChapter: () => void;
 };
+
+/** 压缩后的 16 关节点坐标（三行：5+5+6） */
+function roundNodePosition(i: number): { cx: number; cy: number } {
+  const colStep = Math.round(70 * LAYOUT_SCALE);
+  const rowBaseY = Math.round(118 * LAYOUT_SCALE);
+  const rowGap = Math.round(132 * LAYOUT_SCALE);
+  let row = 0;
+  let col = 0;
+  if (i < 5) {
+    row = 0;
+    col = i;
+  } else if (i < 10) {
+    row = 1;
+    col = i - 5;
+  } else {
+    row = 2;
+    col = i - 10;
+  }
+  const nInRow = row === 2 ? 6 : 5;
+  const rowWidth = (nInRow - 1) * colStep;
+  const gridOriginX = (GAME_WIDTH - rowWidth) / 2;
+  return {
+    cx: gridOriginX + col * colStep,
+    cy: rowBaseY + row * rowGap,
+  };
+}
 
 export class LevelMapScreen extends Container {
   private readonly run: RunState;
@@ -22,53 +51,52 @@ export class LevelMapScreen extends Container {
     this.h = h;
 
     const pad = Math.round(28 * LAYOUT_SCALE);
+    const rowGap = Math.round(132 * LAYOUT_SCALE);
+    const rowBaseY = Math.round(118 * LAYOUT_SCALE);
 
+    const ch = this.run.bookChapterId;
+    const strPct = bookChapterStrengthPercent(ch);
     const title = new Text({
-      text: 'HeyBro · 竖版自走棋 Demo',
+      text: `HeyBro · 第 ${ch} 章（强度 ${strPct}%）`,
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(40 * LAYOUT_SCALE),
+        fontSize: Math.round(34 * LAYOUT_SCALE),
         fill: 0xf8fafc,
         fontWeight: '700',
+        wordWrap: true,
+        wordWrapWidth: GAME_WIDTH - pad * 2,
       },
     });
-    title.position.set(pad, Math.round(24 * LAYOUT_SCALE));
+    title.position.set(pad, Math.round(20 * LAYOUT_SCALE));
     this.addChild(title);
 
     const hp = new Text({
       text: '',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(28 * LAYOUT_SCALE),
+        fontSize: Math.round(26 * LAYOUT_SCALE),
         fill: 0x93c5fd,
       },
     });
-    hp.position.set(pad, Math.round(82 * LAYOUT_SCALE));
+    hp.position.set(pad, Math.round(78 * LAYOUT_SCALE));
     this.addChild(hp);
 
     const gold = new Text({
       text: '',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(26 * LAYOUT_SCALE),
+        fontSize: Math.round(24 * LAYOUT_SCALE),
         fill: 0xfbbf24,
       },
     });
-    gold.position.set(Math.round(400 * LAYOUT_SCALE), Math.round(82 * LAYOUT_SCALE));
+    gold.position.set(Math.round(380 * LAYOUT_SCALE), Math.round(78 * LAYOUT_SCALE));
     this.addChild(gold);
 
-    const nodeRadius = Math.round(30 * LAYOUT_SCALE);
-    const colStep = Math.round(86 * LAYOUT_SCALE);
-    const rowBaseY = Math.round(200 * LAYOUT_SCALE);
-    const rowGap = Math.round(268 * LAYOUT_SCALE);
-    const gridOriginX = (GAME_WIDTH - 7 * colStep) / 2;
+    const nodeRadius = Math.round(24 * LAYOUT_SCALE);
     const curIdx = this.run.currentRoundIndex;
     for (let i = 0; i < ROUNDS.length; i++) {
       const meta = ROUNDS[i]!;
-      const chapter = meta.chapter - 1;
-      const sub = meta.sub - 1;
-      const cx = gridOriginX + sub * colStep;
-      const cy = rowBaseY + chapter * rowGap;
+      const { cx, cy } = roundNodePosition(i);
 
       const g = new Graphics();
       let color = 0x334155;
@@ -89,7 +117,7 @@ export class LevelMapScreen extends Container {
         g.hitArea = new Circle(0, 0, nodeRadius + Math.round(8 * LAYOUT_SCALE));
         g.on('pointertap', (e) => {
           e.stopPropagation();
-          this.openCurrentBattlePreview(meta);
+          this.openCurrentBattlePreview(i);
         });
       }
       this.addChild(g);
@@ -98,7 +126,7 @@ export class LevelMapScreen extends Container {
         text: meta.label,
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(19 * LAYOUT_SCALE),
+          fontSize: Math.round(17 * LAYOUT_SCALE),
           fill: 0xe2e8f0,
           fontWeight: '600',
         },
@@ -114,7 +142,7 @@ export class LevelMapScreen extends Container {
           text: mark,
           style: {
             fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-            fontSize: Math.round(17 * LAYOUT_SCALE),
+            fontSize: Math.round(15 * LAYOUT_SCALE),
             fill: 0xfef3c7,
             fontWeight: '700',
           },
@@ -129,37 +157,72 @@ export class LevelMapScreen extends Container {
           text: '点选详情',
           style: {
             fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-            fontSize: Math.round(14 * LAYOUT_SCALE),
+            fontSize: Math.round(12 * LAYOUT_SCALE),
             fill: 0x93c5fd,
             fontWeight: '600',
           },
         });
         hintPv.anchor.set(0.5, 0);
-        hintPv.position.set(cx, cy + nodeRadius + Math.round(6 * LAYOUT_SCALE));
+        hintPv.position.set(cx, cy + nodeRadius + Math.round(4 * LAYOUT_SCALE));
         this.addChild(hintPv);
       }
     }
 
     const legend = new Text({
-      text: '绿色：已完成  橙色：当前  灰色：未解锁\nB=首领 策=抉择 奖=奖励\n当前关为战斗/首领时，可点橙色圆点查看敌方情报与立绘',
+      text: '绿=已完成 · 橙=当前 · 灰=未解锁　B 首领 · 策 抉择 · 奖 奖励',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(20 * LAYOUT_SCALE),
+        fontSize: Math.round(17 * LAYOUT_SCALE),
         fill: 0x94a3b8,
-        lineHeight: Math.round(28 * LAYOUT_SCALE),
+        lineHeight: Math.round(24 * LAYOUT_SCALE),
       },
     });
-    legend.position.set(pad, Math.min(GAME_HEIGHT - Math.round(220 * LAYOUT_SCALE), rowBaseY + 3 * rowGap + Math.round(36 * LAYOUT_SCALE)));
+    legend.position.set(pad, rowBaseY + 3 * rowGap + Math.round(22 * LAYOUT_SCALE));
     this.addChild(legend);
 
-    const canEnter = this.run.currentRoundIndex < ROUNDS.length && !this.run.isGameLost();
-    const enterW = Math.round(520 * LAYOUT_SCALE);
+    const nextTop = legend.y + legend.height + Math.round(14 * LAYOUT_SCALE);
+    this.addChild(this.buildNextRoundPanel(pad, nextTop));
+
     const enterH = Math.round(72 * LAYOUT_SCALE);
+    const enterW = Math.round(520 * LAYOUT_SCALE);
+    const exitW = Math.round(200 * LAYOUT_SCALE);
+    const btnGap = Math.round(18 * LAYOUT_SCALE);
+    const bottomY = GAME_HEIGHT - Math.round(132 * LAYOUT_SCALE);
+    const totalW = exitW + btnGap + enterW;
+    const startX = (GAME_WIDTH - totalW) / 2;
+
+    const exitG = new Graphics();
+    exitG
+      .roundRect(0, 0, exitW, enterH, Math.round(14 * LAYOUT_SCALE))
+      .fill(0xb91c1c)
+      .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x7f1d1d });
+    exitG.eventMode = 'static';
+    exitG.cursor = 'pointer';
+    exitG.position.set(startX, bottomY);
+    exitG.on('pointertap', () => this.h.onRequestExitChapter());
+    this.addChild(exitG);
+
+    const exitLab = new Text({
+      text: '退出',
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.round(26 * LAYOUT_SCALE),
+        fill: 0xffffff,
+        fontWeight: '700',
+      },
+    });
+    exitLab.anchor.set(0.5);
+    exitLab.position.set(startX + exitW / 2, bottomY + enterH / 2);
+    this.addChild(exitLab);
+
+    const canEnter = this.run.currentRoundIndex < ROUNDS.length && !this.run.isGameLost();
     const enter = new Graphics();
-    enter.roundRect(0, 0, enterW, enterH, Math.round(16 * LAYOUT_SCALE)).fill(canEnter ? 0x2563eb : 0x475569);
+    enter
+      .roundRect(0, 0, enterW, enterH, Math.round(16 * LAYOUT_SCALE))
+      .fill(canEnter ? 0x2563eb : 0x475569);
     enter.eventMode = canEnter ? 'static' : 'passive';
     enter.cursor = canEnter ? 'pointer' : 'default';
-    enter.position.set((GAME_WIDTH - enterW) / 2, GAME_HEIGHT - Math.round(148 * LAYOUT_SCALE));
+    enter.position.set(startX + exitW + btnGap, bottomY);
     if (canEnter) {
       enter.on('pointertap', () => this.h.onEnterRound());
     }
@@ -177,11 +240,11 @@ export class LevelMapScreen extends Container {
             : '选牌';
     const enterLabel =
       this.run.currentRoundIndex >= ROUNDS.length
-        ? this.run.playerHp > 0
-          ? '已通关 3-8'
+        ? this.run.playerHp > 0 && !this.run.bookChapterRunFailed
+          ? '已通关本章'
           : '流程结束'
         : this.run.isGameLost()
-          ? '已失败（可重置）'
+          ? '已失败'
           : `进入 ${ROUNDS[this.run.currentRoundIndex]!.label}（${actionWord}）`;
     const enterText = new Text({
       text: enterLabel,
@@ -193,37 +256,159 @@ export class LevelMapScreen extends Container {
       },
     });
     enterText.anchor.set(0.5);
-    enterText.position.set(GAME_WIDTH / 2, enter.y + enterH / 2);
+    enterText.position.set(enter.x + enterW / 2, bottomY + enterH / 2);
     this.addChild(enterText);
-
-    const resetW = Math.round(200 * LAYOUT_SCALE);
-    const resetH = Math.round(52 * LAYOUT_SCALE);
-    const reset = new Graphics();
-    reset.roundRect(0, 0, resetW, resetH, Math.round(12 * LAYOUT_SCALE)).fill(0x111827);
-    reset.stroke({ width: Math.max(1, Math.round(1 * LAYOUT_SCALE)), color: 0x334155 });
-    reset.eventMode = 'static';
-    reset.cursor = 'pointer';
-    reset.position.set(GAME_WIDTH - resetW - Math.round(20 * LAYOUT_SCALE), Math.round(32 * LAYOUT_SCALE));
-    reset.on('pointertap', () => this.h.onResetDemo());
-    this.addChild(reset);
-
-    const resetText = new Text({
-      text: '重置 Demo',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(22 * LAYOUT_SCALE),
-        fill: 0xe2e8f0,
-      },
-    });
-    resetText.anchor.set(0.5);
-    resetText.position.set(reset.x + resetW / 2, reset.y + resetH / 2);
-    this.addChild(resetText);
 
     const refreshHud = (): void => {
       hp.text = `生命：${this.run.playerHp}`;
       gold.text = `金币：${this.run.gold}`;
     };
     refreshHud();
+  }
+
+  private buildNextRoundPanel(pad: number, topY: number): Container {
+    const block = new Container();
+    block.position.set(pad, topY);
+    const bw = GAME_WIDTH - pad * 2;
+    const bottomReserve = Math.round(132 * LAYOUT_SCALE) + Math.round(88 * LAYOUT_SCALE);
+    const bh = Math.max(Math.round(200 * LAYOUT_SCALE), GAME_HEIGHT - topY - bottomReserve);
+
+    const bg = new Graphics();
+    bg
+      .roundRect(0, 0, bw, bh, Math.round(16 * LAYOUT_SCALE))
+      .fill({ color: 0x0c1222, alpha: 0.96 })
+      .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x334155 });
+    block.addChild(bg);
+
+    const idx = this.run.currentRoundIndex;
+    const headStyle = {
+      fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+      fontSize: Math.round(22 * LAYOUT_SCALE),
+      fill: 0xe2e8f0,
+      fontWeight: '700' as const,
+    };
+    const bodyStyle = {
+      fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+      fontSize: Math.round(18 * LAYOUT_SCALE),
+      fill: 0xcbd5e1,
+      lineHeight: Math.round(26 * LAYOUT_SCALE),
+      wordWrap: true,
+      wordWrapWidth: bw - Math.round(36 * LAYOUT_SCALE),
+      breakWords: true,
+    };
+
+    if (idx >= ROUNDS.length || this.run.isGameLost()) {
+      const t = new Text({
+        text: '下一关预览',
+        style: headStyle,
+      });
+      t.position.set(Math.round(18 * LAYOUT_SCALE), Math.round(14 * LAYOUT_SCALE));
+      block.addChild(t);
+      const msg =
+        idx >= ROUNDS.length
+          ? '本章流程已结束。'
+          : this.run.playerHp <= 0
+            ? '本章已失败（生命耗尽）。可使用下方「退出」返回章节选择。'
+            : '本章已失败。可使用下方「退出」返回章节选择。';
+      const b = new Text({ text: msg, style: bodyStyle });
+      b.position.set(Math.round(18 * LAYOUT_SCALE), Math.round(48 * LAYOUT_SCALE));
+      block.addChild(b);
+      return block;
+    }
+
+    const base = ROUNDS[idx]!;
+    const meta = getResolvedRoundMeta(this.run, idx, base);
+    const label = new Text({
+      text: `下一关 · ${meta.label}`,
+      style: headStyle,
+    });
+    label.position.set(Math.round(18 * LAYOUT_SCALE), Math.round(14 * LAYOUT_SCALE));
+    block.addChild(label);
+
+    if (meta.kind === 'strategy') {
+      const b = new Text({
+        text: strategyChapterPreviewSummary(meta.chapter),
+        style: bodyStyle,
+      });
+      b.position.set(Math.round(18 * LAYOUT_SCALE), Math.round(48 * LAYOUT_SCALE));
+      block.addChild(b);
+      return block;
+    }
+
+    if (meta.kind === 'reward') {
+      const b = new Text({
+        text: rewardChapterPreviewSummary(meta.chapter),
+        style: bodyStyle,
+      });
+      b.position.set(Math.round(18 * LAYOUT_SCALE), Math.round(48 * LAYOUT_SCALE));
+      block.addChild(b);
+      return block;
+    }
+
+    /* normal / boss */
+    const entries = battlePreviewPortraitEntries(meta);
+    const miniW = Math.round(100 * LAYOUT_SCALE);
+    const miniH = Math.round(112 * LAYOUT_SCALE);
+    const miniGap = Math.round(10 * LAYOUT_SCALE);
+    const rowY = Math.round(46 * LAYOUT_SCALE);
+    let nx = Math.round(18 * LAYOUT_SCALE);
+    for (const ent of entries) {
+      const card = new Container();
+      card.position.set(nx, rowY);
+      const cbg = new Graphics();
+      cbg
+        .roundRect(0, 0, miniW, miniH, Math.round(12 * LAYOUT_SCALE))
+        .fill(0x0f172a)
+        .stroke({ width: Math.max(1, Math.round(1 * LAYOUT_SCALE)), color: 0x475569 });
+      card.addChild(cbg);
+      const bodyG = new Graphics();
+      paintEnemyBody(bodyG, ent.paint);
+      const sc = 0.42 * LAYOUT_SCALE;
+      bodyG.scale.set(sc);
+      bodyG.position.set(miniW / 2, miniH - Math.round(8 * LAYOUT_SCALE));
+      card.addChild(bodyG);
+      const cap = new Text({
+        text: `${ent.title}×${ent.count}`,
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontSize: Math.round(13 * LAYOUT_SCALE),
+          fill: 0xbae6fd,
+          fontWeight: '600',
+          align: 'center',
+          wordWrap: true,
+          wordWrapWidth: miniW - Math.round(6 * LAYOUT_SCALE),
+          breakWords: true,
+        },
+      });
+      cap.anchor.set(0.5, 1);
+      cap.position.set(miniW / 2, Math.round(18 * LAYOUT_SCALE));
+      card.addChild(cap);
+      block.addChild(card);
+      nx += miniW + miniGap;
+    }
+
+    const hint = new Text({
+      text: '点击下方区域查看数值与技能详情',
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.round(15 * LAYOUT_SCALE),
+        fill: 0x38bdf8,
+        fontWeight: '600',
+      },
+    });
+    hint.position.set(Math.round(18 * LAYOUT_SCALE), rowY + miniH + Math.round(10 * LAYOUT_SCALE));
+    block.addChild(hint);
+
+    const tapY = Math.round(40 * LAYOUT_SCALE);
+    block.eventMode = 'static';
+    block.cursor = 'pointer';
+    block.hitArea = new Rectangle(0, tapY, bw, bh - tapY);
+    block.on('pointertap', (e) => {
+      e.stopPropagation();
+      this.openCurrentBattlePreview(idx);
+    });
+
+    return block;
   }
 
   override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
@@ -238,8 +423,10 @@ export class LevelMapScreen extends Container {
     this.previewLayer = null;
   }
 
-  /** 当前（橙色）关卡为普通战斗或首领时，从圆点打开 */
-  private openCurrentBattlePreview(meta: RoundMeta): void {
+  /** 战斗/首领：完整敌方情报弹层 */
+  private openCurrentBattlePreview(roundIndex: number): void {
+    const base = ROUNDS[roundIndex]!;
+    const meta = getResolvedRoundMeta(this.run, roundIndex, base);
     this.closeBattlePreview();
     const layer = new Container();
     layer.eventMode = 'static';
@@ -317,8 +504,9 @@ export class LevelMapScreen extends Container {
     }
     const portraitBlockH = entries.length ? rowY + cardH : 0;
 
+    const bookM = this.run.bookChapterStrengthMult();
     const body = new Text({
-      text: formatNextBattlePreview(meta),
+      text: formatNextBattlePreview(meta, roundIndex, bookM),
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(20 * LAYOUT_SCALE),

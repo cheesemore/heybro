@@ -14,8 +14,9 @@ import { applyPick, boardHasAnyUnit, randomThreeFromFive } from '../draftLogic';
 import { roguePickGoldCost, rogueRefreshGoldCost } from '../strategyApply';
 import type { ArtifactKind } from '../strategyTypes';
 import { ROUNDS } from '../roundConfig';
+import { getResolvedRoundMeta } from '../roundResolve';
 import { ALLY_DEFS } from '../unitDefs';
-import type { AllyClass } from '../types';
+import type { AllyClass, RoundMeta } from '../types';
 import type { RunState } from '../runState';
 import { createAllyPortraitGraphic } from '../battleVisuals';
 import { SynergyOverlay } from './SynergyOverlay';
@@ -89,6 +90,7 @@ export class DraftScreen extends Container {
   private readonly app: Application;
   private readonly run: RunState;
   private readonly onFinished: () => void;
+  private readonly roundMeta: RoundMeta;
   private choices: AllyClass[] = randomThreeFromFive();
   private picksThisRound = 0;
   private dragMode: DragMode = null;
@@ -123,6 +125,8 @@ export class DraftScreen extends Container {
     this.app = app;
     this.run = run;
     this.onFinished = onFinished;
+    const ri = run.currentRoundIndex;
+    this.roundMeta = getResolvedRoundMeta(run, ri, ROUNDS[ri]!);
 
     /** 旧版允许同格叠神器+兵；新版互斥，迁入最近的双空格 */
     for (let i = 0; i < 9; i++) {
@@ -159,7 +163,7 @@ export class DraftScreen extends Container {
       .fill({ color: 0x111827, alpha: 0.85 });
     this.addChild(band);
 
-    const meta = ROUNDS[this.run.currentRoundIndex]!;
+    const meta = this.roundMeta;
     const bondW = Math.round(188 * LAYOUT_SCALE);
     const headerWrap = GAME_WIDTH - PAD_X * 2 - bondW - Math.round(12 * LAYOUT_SCALE);
     const header = new Text({
@@ -711,7 +715,7 @@ export class DraftScreen extends Container {
 
   private tryFinish(): void {
     this.tip.text = '';
-    const meta = ROUNDS[this.run.currentRoundIndex]!;
+    const meta = this.roundMeta;
     const nextIsBattle: boolean = meta.kind === 'normal' || meta.kind === 'boss';
     if (nextIsBattle && !boardHasAnyUnit(this.run.board)) {
       this.tip.text = '请至少布置一个兵种后再进入战斗。';

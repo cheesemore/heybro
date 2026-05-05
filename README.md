@@ -9,6 +9,8 @@ npm ci
 npm run dev
 ```
 
+开发或预览服务器启动后，在浏览器打开 **`/character-prompts/`** 或 **`/character-prompts/index.html`**（例如 `http://localhost:5173/character-prompts/` ，端口以终端为准）可浏览并一键复制 50 套角色生图提示词：**第一步**单张 **王者荣耀式** 带景立绘；**第二步**（以立绘为参考）**4×4** 小人精灵表（待机 / 行走 / 攻击 / 倒下）。数据见 [`public/character-prompts/manifest.json`](public/character-prompts/manifest.json)，改 [`prompt-template.txt`](public/character-prompts/prompt-template.txt)、[`sprite-sheet-template.txt`](public/character-prompts/sprite-sheet-template.txt) 或 [`scripts/characterSetsData.mjs`](scripts/characterSetsData.mjs) 后执行 `npm run build:character-prompts` 或随 `npm run build` 自动重新生成。（说明：旧版 Vite dev 曾把 `/character-prompts/` 误指到游戏首页，已在 [`vite.config.ts`](vite.config.ts) 用中间件修正。）
+
 ## GitHub Pages（避免「能打开但白屏」）
 
 仓库根目录的 `index.html` 里有：

@@ -171,7 +171,7 @@ export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string
   },
   c3_boss_hunter: {
     title: '首领特攻',
-    desc: '对 3-8 首领造成伤害 +30%。',
+    desc: '对本章首领战首领造成伤害 +30%。',
   },
   c3_super_double: {
     title: '超级加倍',
@@ -330,8 +330,8 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
       lines.push('恶魔契约已缔结');
       break;
     case 'c3_boss_hunter':
-      run.bossDamageBonusVs38 = 0.3;
-      lines.push('首领特攻：对 3-8 首领 +30% 伤害');
+      run.bossDamageBonusVsFinalBoss = 0.3;
+      lines.push('首领特攻：对本章首领 +30% 伤害');
       break;
     case 'c3_super_double': {
       const occ = run.board
@@ -361,6 +361,28 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
       lines.push('未知策略');
   }
   return lines;
+}
+
+/** 地图「下一关」预览：奖励关金币与随机兵种数量范围（与 `applyRewardChapter` 一致） */
+export function rewardChapterPreviewSummary(chapter: 1 | 2 | 3): string {
+  if (chapter === 1) {
+    return '第 1 篇奖励关：金币 +10～+20；随机获得 1～2 个兵种（每种各入棋盘若干层）。';
+  }
+  if (chapter === 2) {
+    return '第 2 篇奖励关：金币 +20～+30；随机获得 1～3 个兵种。';
+  }
+  return '第 3 篇奖励关：金币 +30～+40；随机获得 2～4 个兵种。';
+}
+
+/** 地图「下一关」预览：策略关说明 */
+export function strategyChapterPreviewSummary(chapter: 1 | 2 | 3): string {
+  if (chapter === 1) {
+    return '策略抉择（第 1 篇）：随机抽取 3 张第一章策略，三选一；立即生效并影响整局经济与兵种偏好等。';
+  }
+  if (chapter === 2) {
+    return '策略抉择（第 2 篇）：随机 3 张第二章策略，三选一；多为羁绊、神器与战斗时长类加成。';
+  }
+  return '策略抉择（第 3 篇）：随机 3 张第三章策略，三选一；含高风险、首领特化等选项。';
 }
 
 /** 奖励关：按章节发金币与随机兵种 */

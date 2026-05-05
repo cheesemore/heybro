@@ -1,5 +1,6 @@
 import type { AllyClass, BattleOutcome, BoardCell, RoundMeta } from './types';
 import type { ArtifactKind } from './strategyTypes';
+import { bookChapterStrengthPercent } from './bookChapterConfig';
 import {
   INITIAL_GOLD,
   INTEREST_BANK_CAP,
@@ -11,6 +12,14 @@ import {
 } from './constants';
 import { ROUNDS } from './roundConfig';
 
+/** 预留外部永久养成入口：默认 1，不参与首领「生命转最终加成」逻辑 */
+export type ExternalGrowthSnapshot = {
+  /** 永久伤害乘区（与关卡内加成叠乘） */
+  permanentDamageMult: number;
+  /** 永久生命乘区 */
+  permanentMaxHpMult: number;
+};
+
 export class RunState {
   playerHp = PLAYER_START_HP;
   gold = INITIAL_GOLD;
@@ -18,6 +27,15 @@ export class RunState {
   board: BoardCell[] = Array.from({ length: 9 }, () => null);
   /** 仅普通战/首领战后战斗胜利（敌方全灭）累加；抉择/奖励不关不断 */
   winStreak = 0;
+
+  /** 外部章节 1..30：在章节选择界面确定，重置单章进度时保留 */
+  bookChapterId = 1;
+  /** 首领战败等导致的本章失败（与生命耗尽并列） */
+  bookChapterRunFailed = false;
+
+  /** 首领战：由进入首领关时的生命换算的额外乘区（仅本场首领战） */
+  bossHpDerivedFinalAtkMult = 1;
+  bossHpDerivedFinalHpMult = 1;
 
   /** 肉鸽选牌：指定兵种每次选牌费用减少（金） */
   allyPickDiscountGold: Partial<Record<AllyClass, number>> = {};
@@ -44,8 +62,8 @@ export class RunState {
   battleTimeBonusSec = 0;
 
   demonContract = false;
-  /** 3-3 首领特攻：对 3-8 首领造成伤害提升 */
-  bossDamageBonusVs38 = 0;
+  /** 策略「首领特攻」：对本章首领造成伤害提升（比例，如 0.3 = +30%） */
+  bossDamageBonusVsFinalBoss = 0;
 
   damageDealtMultAllies = 1;
   damageTakenMultAllies = 1;
@@ -54,8 +72,18 @@ export class RunState {
   /** 绝命乱斗：我方全局额外暴击率 */
   chaoticAllyCritBonus = 0;
 
-  /** 已在 1-3 / 2-3 / 3-3 抉择的策略（用于备战与战斗内查看原文） */
+  /** 已在 1-2 / 2-2 / 3-2 抉择的策略（用于备战与战斗内查看原文） */
   strategyPicks: { id: string; title: string; desc: string }[] = [];
+
+  /** 永久养成占位：未来从存档注入 */
+  externalGrowth: ExternalGrowthSnapshot = {
+    permanentDamageMult: 1,
+    permanentMaxHpMult: 1,
+  };
+
+  bookChapterStrengthMult(): number {
+    return bookChapterStrengthPercent(this.bookChapterId) / 100;
+  }
 
   resetRun(): void {
     this.playerHp = PLAYER_START_HP;
@@ -63,6 +91,9 @@ export class RunState {
     this.currentRoundIndex = 0;
     this.board = Array.from({ length: 9 }, () => null);
     this.winStreak = 0;
+    this.bookChapterRunFailed = false;
+    this.bossHpDerivedFinalAtkMult = 1;
+    this.bossHpDerivedFinalHpMult = 1;
     this.allyPickDiscountGold = {};
     this.interestBankCapOverride = null;
     this.interestMaxGoldOverride = null;
@@ -78,7 +109,7 @@ export class RunState {
     this.artifactBySlot = Array.from({ length: 9 }, () => null);
     this.battleTimeBonusSec = 0;
     this.demonContract = false;
-    this.bossDamageBonusVs38 = 0;
+    this.bossDamageBonusVsFinalBoss = 0;
     this.damageDealtMultAllies = 1;
     this.damageTakenMultAllies = 1;
     this.chaoticBattle = false;
@@ -153,11 +184,11 @@ export class RunState {
   }
 
   isGameWon(): boolean {
-    return this.currentRoundIndex >= ROUNDS.length && this.playerHp > 0;
+    return this.currentRoundIndex >= ROUNDS.length && this.playerHp > 0 && !this.bookChapterRunFailed;
   }
 
   isGameLost(): boolean {
-    return this.playerHp <= 0;
+    return this.playerHp <= 0 || this.bookChapterRunFailed;
   }
 
   /** 将玩家生命限制在 [0, PLAYER_MAX_HP]（回血类效果后调用） */

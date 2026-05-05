@@ -39,7 +39,7 @@ export const BATTLE_MOVE_SPEED_MULT = 0.7;
 export const GLOBAL_UNIT_ATK_MULT = 2;
 
 export const ALLY_CLASSES = ['warrior', 'mage', 'priest', 'archer', 'knight'] as const;
-/** 普通敌方兵种（12 种）；数值以兽人步兵为近战锚点，远程普遍血量更低。首领单独在 bosses.json。 */
+/** 普通敌方兵种（12 种）；表底以兽人步兵为强度锚点（HP×有效攻击/攻击间隔），远程与特技档另有预算修正。首领见 bosses.json。 */
 export const ENEMY_CLASSES = [
   'grunt',
   'dread_warrior',

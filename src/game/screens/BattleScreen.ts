@@ -13,7 +13,7 @@ import {
 import type { AllyClass, BattleOutcome, BossId, RoundMeta } from '../types';
 import type { RunState } from '../runState';
 import { ALLY_DEFS, BOSS_DEFS, ENEMY_DEFS, scaledEnemyAtk, scaledEnemyHp } from '../unitDefs';
-import { battleRoundIndex, bossDisplayName } from '../roundConfig';
+import { bossDisplayName } from '../roundConfig';
 import {
   allBondStacks,
   classBondHpAtkMultiplier,
@@ -747,8 +747,12 @@ export class BattleScreen extends Container {
 
       const n = Math.max(1, stacks);
       /** 每层数对应场上一个独立模型；每个模型满血满攻，不平分格内总池 */
-      const eachHp = Math.max(1, Math.round(def.maxHp * mult * ab.hpMult));
-      const eachAtk = Math.max(1, Math.round(def.atk * mult * ab.atkMult));
+      const bossHpM = this.meta.kind === 'boss' ? this.run.bossHpDerivedFinalHpMult : 1;
+      const bossAtkM = this.meta.kind === 'boss' ? this.run.bossHpDerivedFinalAtkMult : 1;
+      const growHp = this.run.externalGrowth.permanentMaxHpMult;
+      const growAtk = this.run.externalGrowth.permanentDamageMult;
+      const eachHp = Math.max(1, Math.round(def.maxHp * mult * ab.hpMult * bossHpM * growHp));
+      const eachAtk = Math.max(1, Math.round(def.atk * mult * ab.atkMult * bossAtkM * growAtk));
 
       let range = def.range;
       if (cell.kind === 'archer' && this.bondArcher12) range += 150;
@@ -857,13 +861,14 @@ export class BattleScreen extends Container {
   private spawnEnemies(meta: RoundMeta): SimUnit[] {
     const out: SimUnit[] = [];
     let slot = 0;
-    const { chapter, sub } = meta;
-    const ri = battleRoundIndex(chapter, sub);
+    const { chapter } = meta;
+    const ri = this.run.currentRoundIndex;
+    const bookM = this.run.bookChapterStrengthMult();
     for (const wave of meta.enemies) {
       if (wave.type === 'boss' && wave.bossId) {
         const b = BOSS_DEFS[wave.bossId];
-        const hp = scaledEnemyHp(chapter, ri, b.baseMaxHp * 10);
-        const atk = scaledEnemyAtk(chapter, ri, b.baseAtk);
+        const hp = scaledEnemyHp(chapter, ri, b.baseMaxHp * 10, bookM);
+        const atk = scaledEnemyAtk(chapter, ri, b.baseAtk, bookM);
         const bj = this.scatterOffset(ri * 3 + 101);
         const u = this.makeUnit(
           'enemy',
@@ -883,8 +888,8 @@ export class BattleScreen extends Container {
       const type = wave.type as keyof typeof ENEMY_DEFS;
       const def = ENEMY_DEFS[type];
       for (let k = 0; k < wave.count; k++) {
-        const hp = scaledEnemyHp(chapter, ri, def.baseMaxHp);
-        const atk = scaledEnemyAtk(chapter, ri, def.baseAtk);
+        const hp = scaledEnemyHp(chapter, ri, def.baseMaxHp, bookM);
+        const atk = scaledEnemyAtk(chapter, ri, def.baseAtk, bookM);
         const cols = 8;
         const col = slot % cols;
         const row = Math.floor(slot / cols);
@@ -1331,13 +1336,8 @@ export class BattleScreen extends Container {
       if ((target.raiderLeapBuffT ?? 0) > 0 && target.enemyPaint === 'raider') {
         amt *= 0.5;
       }
-      if (
-        target.bossId &&
-        this.run.bossDamageBonusVs38 > 0 &&
-        this.meta.chapter === 3 &&
-        this.meta.sub === 8
-      ) {
-        amt *= 1 + this.run.bossDamageBonusVs38;
+      if (target.bossId && this.run.bossDamageBonusVsFinalBoss > 0 && this.meta.kind === 'boss') {
+        amt *= 1 + this.run.bossDamageBonusVsFinalBoss;
       }
     }
     if (target.side === 'ally' && ctx?.attacker?.side === 'enemy') {
@@ -1679,11 +1679,12 @@ export class BattleScreen extends Container {
   }
 
   private spawnScaledGruntEnemy(worldX: number, worldY: number, seed: number): SimUnit {
-    const { chapter, sub } = this.meta;
-    const ri = battleRoundIndex(chapter, sub);
+    const { chapter } = this.meta;
+    const ri = this.run.currentRoundIndex;
+    const bookM = this.run.bookChapterStrengthMult();
     const def = ENEMY_DEFS.grunt;
-    const hp = scaledEnemyHp(chapter, ri, def.baseMaxHp);
-    const atk = scaledEnemyAtk(chapter, ri, def.baseAtk);
+    const hp = scaledEnemyHp(chapter, ri, def.baseMaxHp, bookM);
+    const atk = scaledEnemyAtk(chapter, ri, def.baseAtk, bookM);
     const ej = this.scatterOffset(seed);
     return this.makeUnit(
       'enemy',

@@ -9,89 +9,89 @@
   },
   "dread_warrior": {
     "name": "亡灵勇士",
-    "baseMaxHp": 228,
+    "baseMaxHp": 223,
     "baseAtk": 11,
-    "attackSpeed": 0.58,
+    "attackSpeed": 0.64,
     "range": 44,
     "moveSpeed": 488
   },
   "raider": {
     "name": "狼骑兵",
-    "baseMaxHp": 143,
-    "baseAtk": 9,
+    "baseMaxHp": 202,
+    "baseAtk": 11,
     "attackSpeed": 0.58,
     "range": 42,
     "moveSpeed": 590
   },
   "beserker": {
     "name": "狂战士",
-    "baseMaxHp": 192,
-    "baseAtk": 15,
-    "attackSpeed": 0.52,
+    "baseMaxHp": 250,
+    "baseAtk": 9,
+    "attackSpeed": 0.54,
     "range": 42,
     "moveSpeed": 525
   },
   "kodo": {
     "name": "科多兽",
-    "baseMaxHp": 518,
-    "baseAtk": 8,
-    "attackSpeed": 0.98,
+    "baseMaxHp": 321,
+    "baseAtk": 15,
+    "attackSpeed": 1.02,
     "range": 48,
     "moveSpeed": 285
   },
   "ultralisk": {
     "name": "雷兽",
-    "baseMaxHp": 534,
-    "baseAtk": 14,
-    "attackSpeed": 0.78,
+    "baseMaxHp": 408,
+    "baseAtk": 13,
+    "attackSpeed": 0.86,
     "range": 56,
     "moveSpeed": 315
   },
   "abomination": {
     "name": "憎恶",
-    "baseMaxHp": 364,
+    "baseMaxHp": 317,
     "baseAtk": 10,
-    "attackSpeed": 0.8,
+    "attackSpeed": 0.84,
     "range": 50,
     "moveSpeed": 355
   },
   "headhunter": {
     "name": "兽人猎头者",
-    "baseMaxHp": 174,
-    "baseAtk": 12,
-    "attackSpeed": 0.76,
+    "baseMaxHp": 268,
+    "baseAtk": 14,
+    "attackSpeed": 0.78,
     "range": 235,
     "moveSpeed": 488
   },
   "darkspear": {
     "name": "暗矛猎手",
-    "baseMaxHp": 164,
-    "baseAtk": 6,
+    "baseMaxHp": 262,
+    "baseAtk": 12,
     "attackSpeed": 0.74,
     "range": 248,
     "moveSpeed": 498
   },
   "shaman": {
     "name": "萨满祭司",
-    "baseMaxHp": 182,
-    "baseAtk": 10,
-    "attackSpeed": 1.05,
+    "baseMaxHp": 212,
+    "baseAtk": 17,
+    "attackSpeed": 0.98,
     "range": 218,
     "moveSpeed": 420
   },
   "batrider": {
     "name": "蝙蝠骑士",
-    "baseMaxHp": 150,
-    "baseAtk": 11,
-    "attackSpeed": 0.7,
+    "baseMaxHp": 222,
+    "baseAtk": 13,
+    "attackSpeed": 0.68,
     "range": 228,
     "moveSpeed": 550
   },
   "catapult": {
     "name": "投石车",
-    "baseMaxHp": 108,
-    "baseAtk": 18,
-    "attackSpeed": 1.35,
+    "baseMaxHp": 233,
+    "baseAtk": 24,
+    "attackSpeed": 1.52,
     "range": 295,
     "moveSpeed": 265
   }

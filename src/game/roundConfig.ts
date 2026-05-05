@@ -1,105 +1,36 @@
-import { ENEMY_CLASSES } from './constants';
-import type { BossId, EnemyClass, RoundKind, RoundMeta } from './types';
-
-function label(ch: 1 | 2 | 3, sub: number): string {
-  return `${ch}-${sub}`;
-}
+import type { BossId, RoundMeta } from './types';
 
 function mk(
+  label: string,
   chapter: 1 | 2 | 3,
   sub: number,
-  kind: RoundKind,
-  enemies: RoundMeta['enemies'],
+  kind: RoundMeta['kind'],
 ): RoundMeta {
-  return { label: label(chapter, sub), chapter, sub, kind, enemies };
+  return { label, chapter, sub, kind, enemies: [] };
 }
 
-/** 全局战斗回合索引：0 = 1-1，23 = 3-8 */
-export function battleRoundIndex(chapter: 1 | 2 | 3, sub: number): number {
-  return (chapter - 1) * 8 + (sub - 1);
-}
-
-/** 普通关总敌人数：首关 4，之后每全局关 +2 */
-function normalEnemyTotal(roundIndex: number): number {
-  return 4 + 2 * roundIndex;
-}
-
-/** 每关随机 3 种不同敌人（从 12 种里取），数量按总兵力拆分；每关最多 3 种。 */
-function pickThreeEnemyKinds(roundIndex: number, chapter: 1 | 2 | 3): [EnemyClass, EnemyClass, EnemyClass] {
-  const n = ENEMY_CLASSES.length;
-  const picked: EnemyClass[] = [];
-  let k = (roundIndex * 17 + chapter * 13 + 5) % n;
-  for (let tries = 0; picked.length < 3 && tries < n * 3; tries++) {
-    const t = ENEMY_CLASSES[k % n]!;
-    if (!picked.includes(t)) picked.push(t);
-    k = (k * 5 + 11) % n;
-  }
-  while (picked.length < 3) {
-    for (const t of ENEMY_CLASSES) {
-      if (!picked.includes(t)) {
-        picked.push(t);
-        break;
-      }
-    }
-  }
-  return [picked[0]!, picked[1]!, picked[2]!];
-}
-
-function normalWave(roundIndex: number, chapter: 1 | 2 | 3): RoundMeta['enemies'] {
-  const total = normalEnemyTotal(roundIndex);
-  const kinds = pickThreeEnemyKinds(roundIndex, chapter);
-
-  let c0 = Math.max(1, Math.round(total * 0.52));
-  let c1 = Math.max(1, Math.round(total * 0.3));
-  let c2 = total - c0 - c1;
-  if (c2 < 1) {
-    c2 = 1;
-    c1 = Math.max(1, total - c0 - c2);
-  }
-  if (c0 + c1 + c2 > total) {
-    let over = c0 + c1 + c2 - total;
-    while (over > 0 && c0 > 1) {
-      c0--;
-      over--;
-    }
-    while (over > 0 && c1 > 1) {
-      c1--;
-      over--;
-    }
-  }
-  while (c0 + c1 + c2 < total) c0++;
-
-  const out: RoundMeta['enemies'] = [];
-  if (c0 > 0) out.push({ type: kinds[0], count: c0 });
-  if (c1 > 0) out.push({ type: kinds[1], count: c1 });
-  if (c2 > 0) out.push({ type: kinds[2], count: c2 });
-  return out;
-}
-
-/** 24 关：1-1..1-8, 2-1..2-8, 3-1..3-8 */
-export const ROUNDS: RoundMeta[] = [];
-
-for (let chapter = 1 as 1 | 2 | 3; chapter <= 3; chapter++) {
-  for (let sub = 1; sub <= 8; sub++) {
-    const idx = battleRoundIndex(chapter, sub);
-    const kind: RoundKind =
-      sub === 3 ? 'strategy' : sub === 7 ? 'reward' : sub === 8 ? 'boss' : 'normal';
-    if (kind === 'boss') {
-      const bossId: BossId = chapter === 1 ? 'farseer' : chapter === 2 ? 'tauren' : 'blademaster';
-      ROUNDS.push(mk(chapter, sub, 'boss', [{ type: 'boss', count: 1, bossId }]));
-    } else if (kind === 'strategy' || kind === 'reward') {
-      ROUNDS.push(mk(chapter, sub, kind, []));
-    } else {
-      ROUNDS.push(mk(chapter, sub, 'normal', normalWave(idx, chapter)));
-    }
-  }
-}
-
-export function defeatDamageMultiplier(roundIndex: number): number {
-  if (roundIndex >= 8 && roundIndex <= 15) return 2;
-  if (roundIndex >= 16) return 3;
-  return 1;
-}
+/**
+ * 单条世界线内 16 关：1-1..1-5、2-1..2-5、3-1..3-6（末关首领）。
+ * 敌阵在运行时按「外部章节」池与 seed 解析，见 `roundResolve.ts`。
+ */
+export const ROUNDS: RoundMeta[] = [
+  mk('1-1', 1, 1, 'normal'),
+  mk('1-2', 1, 2, 'strategy'),
+  mk('1-3', 1, 3, 'normal'),
+  mk('1-4', 1, 4, 'normal'),
+  mk('1-5', 1, 5, 'reward'),
+  mk('2-1', 2, 1, 'normal'),
+  mk('2-2', 2, 2, 'strategy'),
+  mk('2-3', 2, 3, 'normal'),
+  mk('2-4', 2, 4, 'normal'),
+  mk('2-5', 2, 5, 'reward'),
+  mk('3-1', 3, 1, 'normal'),
+  mk('3-2', 3, 2, 'strategy'),
+  mk('3-3', 3, 3, 'normal'),
+  mk('3-4', 3, 4, 'normal'),
+  mk('3-5', 3, 5, 'reward'),
+  mk('3-6', 3, 6, 'boss'),
+];
 
 export function bossDisplayName(id: BossId): string {
   switch (id) {
@@ -112,4 +43,11 @@ export function bossDisplayName(id: BossId): string {
     default:
       return id;
   }
+}
+
+/** 战败扣血倍率：第二篇起 2×，第三篇起 3×（按 16 关进度） */
+export function defeatDamageMultiplier(roundIndex: number): number {
+  if (roundIndex >= 10) return 3;
+  if (roundIndex >= 5) return 2;
+  return 1;
 }

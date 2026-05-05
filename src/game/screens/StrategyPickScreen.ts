@@ -22,7 +22,7 @@ export class StrategyPickScreen extends Container {
     this.addChild(deepBg);
 
     const idx = run.currentRoundIndex;
-    const label = ROUNDS[idx]?.label ?? `${chapter}-3`;
+    const label = ROUNDS[idx]?.label ?? `${chapter}-2`;
 
     const header = new Text({
       text: `${label} · 策略抉择（三选一）`,

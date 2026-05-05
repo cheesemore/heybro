@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HeyBro 角色提示词库</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <h1>角色提示词库</h1>
+      <p class="sub">
+        共 50 套（战士 / 法师 / 牧师 / 射手 / 骑士各 10）。<strong>第一步</strong>用「立绘提示词」生成<strong>单张完整带景立绘</strong>；<strong>第二步</strong>再以该立绘为参考，用「小人序列表」生成
+        <strong>4×4</strong> 精灵表（待机 / 行走 / 攻击 / 倒下，每行 4 帧，纯右侧面）。数据来自
+        <code>manifest.json</code>，改
+        <code>prompt-template.txt</code>、<code>sprite-sheet-template.txt</code> 或
+        <code>scripts/characterSetsData.mjs</code> 后请运行
+        <code>npm run build:character-prompts</code> 重新生成。
+      </p>
+    </header>
+
+    <section class="toolbar">
+      <label class="search">
+        <span>搜索</span>
+        <input type="search" id="q" placeholder="名字、职业、摘要、标签…" autocomplete="off" />
+      </label>
+      <nav class="tabs" id="tabs" aria-label="职业筛选"></nav>
+    </section>
+
+    <p id="status" class="status" role="status"></p>
+    <main id="grid" class="grid"></main>
+
+    <template id="card-tpl">
+      <article class="card">
+        <header class="card-head">
+          <h2 class="name"></h2>
+          <div class="meta"></div>
+          <div class="tags"></div>
+        </header>
+        <section class="summary-block">
+          <h3>设定介绍</h3>
+          <p class="summary"></p>
+        </section>
+        <section class="prompt-block splash-block">
+          <div class="prompt-head">
+            <h3>立绘提示词（单图）</h3>
+            <button type="button" class="copy copy-splash">复制</button>
+          </div>
+          <pre class="prompt prompt-splash"></pre>
+        </section>
+        <section class="prompt-block sprite-block">
+          <div class="prompt-head">
+            <h3>小人序列表（第二步 · 须配合上一步立绘）</h3>
+            <button type="button" class="copy copy-sprite">复制</button>
+          </div>
+          <pre class="prompt prompt-sprite"></pre>
+        </section>
+      </article>
+    </template>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

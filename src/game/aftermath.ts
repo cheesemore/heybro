@@ -1,13 +1,11 @@
-import { battleRoundIndex, defeatDamageMultiplier } from './roundConfig';
+import { defeatDamageMultiplier } from './roundConfig';
 
 export type Aftermath = { playerHpDelta: number; lines: string[] };
 
-/** 未全歼敌方（未达成「完美」）时，在原有战败扣血之外的额外惩罚；2-1 起 10，3-1 起 15 */
+/** 未全歼敌方时的额外惩罚：第二篇起 10，第三篇起 15（按 16 关进度） */
 export function imperfectClearExtraPenalty(roundIndex: number): number {
-  const ri21 = battleRoundIndex(3, 1);
-  const ri11 = battleRoundIndex(2, 1);
-  if (roundIndex >= ri21) return 15;
-  if (roundIndex >= ri11) return 10;
+  if (roundIndex >= 10) return 15;
+  if (roundIndex >= 5) return 10;
   return 5;
 }
 

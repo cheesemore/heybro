@@ -1,7 +1,7 @@
 import type { EnemyPaintKind } from './battleVisuals';
 import type { BossId, EnemyClass, RoundMeta } from './types';
 import { ENEMY_DEFS, BOSS_DEFS, scaledEnemyAtk, scaledEnemyHp } from './unitDefs';
-import { battleRoundIndex, bossDisplayName } from './roundConfig';
+import { bossDisplayName } from './roundConfig';
 import { RANGED_ATTACK_RANGE_THRESHOLD } from './battleBonds';
 
 export type BattlePreviewPortraitEntry = {
@@ -53,20 +53,21 @@ const ENEMY_TRAIT: Record<EnemyClass, string> = {
   catapult: '远程；攻击附带地面燃烧区域。',
 };
 
-function statLine(chapter: 1 | 2 | 3, ri: number, type: EnemyClass): string {
+function statLine(chapter: 1 | 2 | 3, ri: number, type: EnemyClass, bookM: number): string {
   const d = ENEMY_DEFS[type];
-  const hp = scaledEnemyHp(chapter, ri, d.baseMaxHp);
-  const atk = scaledEnemyAtk(chapter, ri, d.baseAtk);
+  const hp = scaledEnemyHp(chapter, ri, d.baseMaxHp, bookM);
+  const atk = scaledEnemyAtk(chapter, ri, d.baseAtk, bookM);
   const rng = d.range >= RANGED_ATTACK_RANGE_THRESHOLD ? '远程' : '近战';
   return `HP ${hp} · 攻 ${atk} · 攻速 ${d.attackSpeed.toFixed(2)} · 射程 ${d.range}（${rng}）· 移速 ${d.moveSpeed}`;
 }
 
 /**
  * 关卡地图战斗预览用：名称、数量、数值、特性（样貌由界面单独绘制）。
+ * @param scaleRoundIndex 与 ROUNDS 下标一致（0 … 15）
  */
-export function formatNextBattlePreview(meta: RoundMeta): string {
-  const { chapter, sub } = meta;
-  const ri = battleRoundIndex(chapter, sub);
+export function formatNextBattlePreview(meta: RoundMeta, scaleRoundIndex: number, bookStrengthMult: number): string {
+  const { chapter } = meta;
+  const ri = scaleRoundIndex;
   const lines: string[] = [];
   lines.push(`关卡 ${meta.label}（${meta.kind === 'boss' ? '首领战' : '普通战斗'}）`);
   lines.push('');
@@ -74,8 +75,8 @@ export function formatNextBattlePreview(meta: RoundMeta): string {
   for (const w of meta.enemies) {
     if (w.type === 'boss' && w.bossId) {
       const b = BOSS_DEFS[w.bossId];
-      const hp = scaledEnemyHp(chapter, ri, b.baseMaxHp * 10);
-      const atk = scaledEnemyAtk(chapter, ri, b.baseAtk);
+      const hp = scaledEnemyHp(chapter, ri, b.baseMaxHp * 10, bookStrengthMult);
+      const atk = scaledEnemyAtk(chapter, ri, b.baseAtk, bookStrengthMult);
       const name = bossDisplayName(w.bossId);
       lines.push(`【${name}】×${w.count}`);
       lines.push(`数值：HP ${hp} · 攻 ${atk} · 攻速 ${b.attackSpeed.toFixed(2)} · 射程 ${b.range}`);
@@ -86,7 +87,7 @@ export function formatNextBattlePreview(meta: RoundMeta): string {
     const type = w.type as EnemyClass;
     const d = ENEMY_DEFS[type];
     lines.push(`【${d.name}】×${w.count}`);
-    lines.push(`数值（单兵）：${statLine(chapter, ri, type)}`);
+    lines.push(`数值（单兵）：${statLine(chapter, ri, type, bookStrengthMult)}`);
     lines.push(`特性：${ENEMY_TRAIT[type]}`);
     lines.push('');
   }
