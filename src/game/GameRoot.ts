@@ -14,6 +14,7 @@ import { ModalLayer } from './screens/ModalLayer';
 import { StrategyPickScreen } from './screens/StrategyPickScreen';
 import { TitleScreen } from './screens/TitleScreen';
 import { markChapterFullyCleared } from './chapterProgressStorage';
+import { preloadEnemyTextures } from './enemyBodyFactory';
 
 export class GameRoot extends Container {
   readonly run = new RunState();
@@ -51,36 +52,42 @@ export class GameRoot extends Container {
    * @param fromMap 从关卡地图返回时为 true（返回键回到地图）；从标题进入为 false（返回键回封面）
    */
   private showChapterSelect(fromMap: boolean): void {
-    this.clearLayer();
-    this.layer.addChild(
-      new ChapterSelectScreen(
-        (chapterId) => {
-          this.run.bookChapterId = chapterId;
-          this.run.resetRun();
-          this.showLevelMap();
-        },
-        () => {
-          if (fromMap) this.showLevelMap();
-          else this.showTitle();
-        },
-      ),
-    );
+    void (async () => {
+      await preloadEnemyTextures();
+      this.clearLayer();
+      this.layer.addChild(
+        new ChapterSelectScreen(
+          (chapterId) => {
+            this.run.bookChapterId = chapterId;
+            this.run.resetRun();
+            this.showLevelMap();
+          },
+          () => {
+            if (fromMap) this.showLevelMap();
+            else this.showTitle();
+          },
+        ),
+      );
+    })();
   }
 
   showLevelMap(): void {
-    this.clearLayer();
-    const map = new LevelMapScreen(this.run, {
-      onEnterRound: () => this.enterCurrentRound(),
-      onRequestExitChapter: () => {
-        this.modal.alert('确定要退出本章吗？\n\n未通关进度将不会保存（视为放弃挑战）。', () => {
-          this.modal.alert('请再次确认：是否退出到章节选择？', () => {
-            this.run.resetRun();
-            this.showChapterSelect(true);
+    void (async () => {
+      await preloadEnemyTextures();
+      this.clearLayer();
+      const map = new LevelMapScreen(this.run, {
+        onEnterRound: () => this.enterCurrentRound(),
+        onRequestExitChapter: () => {
+          this.modal.alert('确定要退出本章吗？\n\n未通关进度将不会保存（视为放弃挑战）。', () => {
+            this.modal.alert('请再次确认：是否退出到章节选择？', () => {
+              this.run.resetRun();
+              this.showChapterSelect(true);
+            });
           });
-        });
-      },
-    });
-    this.layer.addChild(map);
+        },
+      });
+      this.layer.addChild(map);
+    })();
   }
 
   /** 从地图进入当前回合：抉择 / 奖励 / 或选牌战斗 */
@@ -158,16 +165,19 @@ export class GameRoot extends Container {
   }
 
   private afterDraft(): void {
-    const idx = this.run.currentRoundIndex;
-    const base = ROUNDS[idx];
-    if (!base) {
-      this.showLevelMap();
-      return;
-    }
-    const meta = getResolvedRoundMeta(this.run, idx, base);
-    this.clearLayer();
-    const battle = new BattleScreen(this.app, this.run, meta, (outcome) => this.afterBattle(outcome));
-    this.layer.addChild(battle);
+    void (async () => {
+      await preloadEnemyTextures();
+      const idx = this.run.currentRoundIndex;
+      const base = ROUNDS[idx];
+      if (!base) {
+        this.showLevelMap();
+        return;
+      }
+      const meta = getResolvedRoundMeta(this.run, idx, base);
+      this.clearLayer();
+      const battle = new BattleScreen(this.app, this.run, meta, (outcome) => this.afterBattle(outcome));
+      this.layer.addChild(battle);
+    })();
   }
 
   private afterBattle(outcome: BattleOutcome): void {

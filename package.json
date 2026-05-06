@@ -7,9 +7,16 @@
     "dev": "vite",
     "build": "npm run build:character-prompts && tsc && vite build",
     "build:character-prompts": "node scripts/build-character-manifest.mjs",
+    "enemy:art": "node scripts/enemy-art-pipeline.mjs",
+    "enemy:art:grunt": "node scripts/enemy-art-pipeline.mjs --id grunt",
+    "enemy:art:all": "node scripts/enemy-art-pipeline.mjs --all",
+    "enemy:import-png": "node scripts/process-imported-enemy-png.mjs",
+    "enemy:placeholder-grunt": "node scripts/write-placeholder-grunt.mjs",
+    "enemy:placeholders:all": "node scripts/write-all-enemy-placeholders.mjs",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "sharp": "^0.34.5",
     "typescript": "~6.0.2",
     "vite": "^8.0.10"
   },

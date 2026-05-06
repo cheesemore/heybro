@@ -9,6 +9,38 @@ npm ci
 npm run dev
 ```
 
+## 敌方贴图（全兵种，可选）
+
+贴图路径：**[`public/assets/enemies/<EnemyPaintKind>.png`](public/assets/enemies/)**（文件名与 [`battleVisuals.ts`](src/game/battleVisuals.ts) 中 `EnemyPaintKind` 一致，如 `grunt.png`、`boss_farseer.png`）。风格提示词见 [`scripts/enemy-art-style.mjs`](scripts/enemy-art-style.mjs) 与 [`scripts/enemy-art-subjects.mjs`](scripts/enemy-art-subjects.mjs)。
+
+### 生成（OpenAI，需 Key）
+
+1. `.env.local` 中设置 `OPENAI_API_KEY`。
+2. **`npm run enemy:art -- --id grunt`** 生成单张；**`npm run enemy:art:all`** 按表生成全部（调用多次 API，注意费用）。
+3. 流水线：`dall-e-3` 1024 → `sharp` **trim** + **最长边 ≤128px** + 高压缩 PNG。**禁止**对资源做「先缩到 32 再放大」类不可逆实验。
+
+### 导入已有 PNG（无 OpenAI）
+
+将任意大图放到本机路径后执行：
+
+`npm run enemy:import-png -- <输入图路径> <paintId>`
+
+例：`npm run enemy:import-png -- C:/path/in.png grunt`
+
+### 游戏内启用
+
+- **推荐**：`.env.local` 中 **`VITE_ENEMY_TEXTURES=true`**，重启 `npm run dev`。会为每种兵种尝试加载对应 PNG；**缺文件则该兵种仍用矢量**。
+- **兼容旧配置**：仅 **`VITE_ENEMY_GRUNT_TEXTURE=true`** 且未开 `VITE_ENEMY_TEXTURES` 时，只预加载 `grunt.png`。
+
+### 还原
+
+关上述开关，并删除 `public/assets/enemies/` 下不需要的 PNG（或整目录只留 `.gitkeep`），即恢复全矢量绘制。
+
+### 占位
+
+- **`npm run enemy:placeholder-grunt`**：仅 `grunt.png`。
+- **`npm run enemy:placeholders:all`**：为 [`scripts/enemy-art-subjects.mjs`](scripts/enemy-art-subjects.mjs) 中全部 paint id 各写一张**色块占位**（无 API，用于立刻验证 `VITE_ENEMY_TEXTURES`）。
+
 开发或预览服务器启动后，在浏览器打开 **`/character-prompts/`** 或 **`/character-prompts/index.html`**（例如 `http://localhost:5173/character-prompts/` ，端口以终端为准）可浏览并一键复制 50 套角色生图提示词：**第一步**单张 **王者荣耀式** 带景立绘；**第二步**（以立绘为参考）**4×4** 小人精灵表（待机 / 行走 / 攻击 / 倒下）。数据见 [`public/character-prompts/manifest.json`](public/character-prompts/manifest.json)，改 [`prompt-template.txt`](public/character-prompts/prompt-template.txt)、[`sprite-sheet-template.txt`](public/character-prompts/sprite-sheet-template.txt) 或 [`scripts/characterSetsData.mjs`](scripts/characterSetsData.mjs) 后执行 `npm run build:character-prompts` 或随 `npm run build` 自动重新生成。（说明：旧版 Vite dev 曾把 `/character-prompts/` 误指到游戏首页，已在 [`vite.config.ts`](vite.config.ts) 用中间件修正。）
 
 ## GitHub Pages（避免「能打开但白屏」）

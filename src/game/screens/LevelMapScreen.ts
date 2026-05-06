@@ -1,6 +1,6 @@
 import { Circle, Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
-import { paintEnemyBody } from '../battleVisuals';
+import { createEnemyBodyDisplay } from '../enemyBodyFactory';
 import { battlePreviewPortraitEntries, formatNextBattlePreview } from '../nextBattlePreview';
 import { bookChapterStrengthPercent } from '../bookChapterConfig';
 import { ROUNDS } from '../roundConfig';
@@ -361,10 +361,8 @@ export class LevelMapScreen extends Container {
         .fill(0x0f172a)
         .stroke({ width: Math.max(1, Math.round(1 * LAYOUT_SCALE)), color: 0x475569 });
       card.addChild(cbg);
-      const bodyG = new Graphics();
-      paintEnemyBody(bodyG, ent.paint);
-      const sc = 0.42 * LAYOUT_SCALE;
-      bodyG.scale.set(sc);
+      const bodyG = createEnemyBodyDisplay(ent.paint, 'mapMini');
+      if (bodyG instanceof Graphics) bodyG.scale.set(0.42 * LAYOUT_SCALE);
       bodyG.position.set(miniW / 2, miniH - Math.round(8 * LAYOUT_SCALE));
       card.addChild(bodyG);
       const cap = new Text({
@@ -477,10 +475,8 @@ export class LevelMapScreen extends Container {
         .fill(0x0f172a)
         .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x334155 });
       card.addChild(cardBg);
-      const bodyG = new Graphics();
-      paintEnemyBody(bodyG, ent.paint);
-      const sc = 0.74 * LAYOUT_SCALE;
-      bodyG.scale.set(sc);
+      const bodyG = createEnemyBodyDisplay(ent.paint, 'mapPreviewModal');
+      if (bodyG instanceof Graphics) bodyG.scale.set(0.74 * LAYOUT_SCALE);
       bodyG.position.set(cardW / 2, cardH - Math.round(12 * LAYOUT_SCALE));
       card.addChild(bodyG);
       const cap = new Text({

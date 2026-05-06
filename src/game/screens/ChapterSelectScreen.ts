@@ -1,6 +1,6 @@
 import { Container, FederatedWheelEvent, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
-import { paintEnemyBody } from '../battleVisuals';
+import { createEnemyBodyDisplay } from '../enemyBodyFactory';
 import { battlePreviewPortraitEntries, formatNextBattlePreview } from '../nextBattlePreview';
 import { bossIdForBookChapter, bookChapterStrengthPercent, enemyPoolForBookChapter } from '../bookChapterConfig';
 import { getCurrentChallengeChapterId, isAllChaptersFullyCleared } from '../chapterProgressStorage';
@@ -427,10 +427,8 @@ export class ChapterSelectScreen extends Container {
           .fill(0x0f172a)
           .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x334155 });
         c.addChild(cardBg);
-        const bodyG = new Graphics();
-        paintEnemyBody(bodyG, ent.paint);
-        const sc = 0.66 * LAYOUT_SCALE;
-        bodyG.scale.set(sc);
+        const bodyG = createEnemyBodyDisplay(ent.paint, 'chapterMini');
+        if (bodyG instanceof Graphics) bodyG.scale.set(0.66 * LAYOUT_SCALE);
         bodyG.position.set(cardW / 2, cardH - Math.round(10 * LAYOUT_SCALE));
         c.addChild(bodyG);
         const cap = new Text({

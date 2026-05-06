@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Text } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, Text } from 'pixi.js';
 import type { Ticker } from 'pixi.js';
 import {
   ALLY_CLASSES,
@@ -40,7 +40,6 @@ import {
   createKnightAura,
   HP_BAR_OFFSET_Y,
   paintAllyBody,
-  paintEnemyBody,
   spawnDualShotSlash,
   spawnFloatNumber,
   spawnHealBurst,
@@ -60,6 +59,7 @@ import {
   tickSlashFx,
 } from '../battleVisuals';
 import { SynergyOverlay } from './SynergyOverlay';
+import { createEnemyBodyDisplay } from '../enemyBodyFactory';
 
 const MAGE_SPLASH_RADIUS = Math.round(50 * LAYOUT_SCALE);
 const METEOR_INTERVAL = 20;
@@ -171,7 +171,7 @@ type SimUnit = {
   cd: number;
   dead: boolean;
   root: Container;
-  body: Graphics;
+  body: Graphics | Sprite;
   hpText: Text;
   aura?: Graphics;
   bossId?: BossId;
@@ -944,16 +944,22 @@ export class BattleScreen extends Container {
       root.addChild(aura);
     }
 
-    const body = new Graphics();
+    let body: Graphics | Sprite;
     if (side === 'ally' && opts.allyKind) {
-      paintAllyBody(body, opts.allyKind);
+      const g = new Graphics();
+      paintAllyBody(g, opts.allyKind);
+      g.scale.set(LAYOUT_SCALE);
+      body = g;
     } else if (side === 'enemy') {
       const ep = opts.bossId ? this.bossEnemyPaint(opts.bossId) : opts.enemyPaint ?? 'grunt';
-      paintEnemyBody(body, ep);
+      body = createEnemyBodyDisplay(ep, 'battle');
+      if (body instanceof Graphics) body.scale.set(LAYOUT_SCALE);
     } else {
-      body.circle(0, -22, 20).fill(0x94a3b8).stroke({ width: 2, color: 0x0f172a, alpha: 0.5 });
+      const g = new Graphics();
+      g.circle(0, -22, 20).fill(0x94a3b8).stroke({ width: 2, color: 0x0f172a, alpha: 0.5 });
+      g.scale.set(LAYOUT_SCALE);
+      body = g;
     }
-    body.scale.set(LAYOUT_SCALE);
     root.addChild(body);
 
     const hpText = new Text({
