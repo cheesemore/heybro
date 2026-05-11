@@ -1,5 +1,6 @@
 {
   "grunt": {
+    "hitRadius": 44,
     "name": "兽人步兵",
     "baseMaxHp": 270,
     "baseAtk": 11,
@@ -8,6 +9,7 @@
     "moveSpeed": 505
   },
   "dread_warrior": {
+    "hitRadius": 44,
     "name": "亡灵勇士",
     "baseMaxHp": 223,
     "baseAtk": 11,
@@ -16,6 +18,7 @@
     "moveSpeed": 488
   },
   "raider": {
+    "hitRadius": 44,
     "name": "狼骑兵",
     "baseMaxHp": 202,
     "baseAtk": 11,
@@ -24,6 +27,7 @@
     "moveSpeed": 590
   },
   "beserker": {
+    "hitRadius": 44,
     "name": "狂战士",
     "baseMaxHp": 250,
     "baseAtk": 9,
@@ -32,6 +36,7 @@
     "moveSpeed": 525
   },
   "kodo": {
+    "hitRadius": 44,
     "name": "科多兽",
     "baseMaxHp": 321,
     "baseAtk": 15,
@@ -40,6 +45,7 @@
     "moveSpeed": 285
   },
   "ultralisk": {
+    "hitRadius": 44,
     "name": "雷兽",
     "baseMaxHp": 408,
     "baseAtk": 13,
@@ -48,6 +54,7 @@
     "moveSpeed": 315
   },
   "abomination": {
+    "hitRadius": 44,
     "name": "憎恶",
     "baseMaxHp": 317,
     "baseAtk": 10,
@@ -56,6 +63,7 @@
     "moveSpeed": 355
   },
   "headhunter": {
+    "hitRadius": 44,
     "name": "兽人猎头者",
     "baseMaxHp": 268,
     "baseAtk": 14,
@@ -64,6 +72,7 @@
     "moveSpeed": 488
   },
   "darkspear": {
+    "hitRadius": 44,
     "name": "暗矛猎手",
     "baseMaxHp": 262,
     "baseAtk": 12,
@@ -72,6 +81,7 @@
     "moveSpeed": 498
   },
   "shaman": {
+    "hitRadius": 44,
     "name": "萨满祭司",
     "baseMaxHp": 212,
     "baseAtk": 17,
@@ -80,6 +90,7 @@
     "moveSpeed": 420
   },
   "batrider": {
+    "hitRadius": 44,
     "name": "蝙蝠骑士",
     "baseMaxHp": 222,
     "baseAtk": 13,
@@ -88,6 +99,7 @@
     "moveSpeed": 550
   },
   "catapult": {
+    "hitRadius": 44,
     "name": "投石车",
     "baseMaxHp": 233,
     "baseAtk": 24,

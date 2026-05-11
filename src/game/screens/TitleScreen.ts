@@ -9,8 +9,9 @@ import { COVER_VERSION_LABEL } from '../version';
 export class TitleScreen extends Container {
   private readonly app: Application;
   private tickFn: (() => void) | null = null;
+  private uiTestKeyCleanup: (() => void) | null = null;
 
-  constructor(app: Application, onEnter: () => void) {
+  constructor(app: Application, onEnter: () => void, onUiTestBattle?: () => void) {
     super();
     this.app = app;
 
@@ -125,6 +126,29 @@ export class TitleScreen extends Container {
     ver.position.set(Math.round(20 * LAYOUT_SCALE), Math.round(16 * LAYOUT_SCALE));
     this.addChild(ver);
 
+    if (import.meta.env.DEV && onUiTestBattle) {
+      const devHint = new Text({
+        text: 'DEV：按 U 进入「UI技能测试」战场',
+        style: {
+          fontFamily: 'ui-monospace, Consolas, monospace',
+          fontSize: Math.round(18 * LAYOUT_SCALE),
+          fill: 0xfbbf24,
+          fontWeight: '600',
+        },
+      });
+      devHint.eventMode = 'none';
+      devHint.alpha = 0.92;
+      devHint.position.set(Math.round(20 * LAYOUT_SCALE), Math.round(52 * LAYOUT_SCALE));
+      this.addChild(devHint);
+      const onKey = (ev: KeyboardEvent): void => {
+        if (ev.repeat || ev.code !== 'KeyU') return;
+        ev.preventDefault();
+        onUiTestBattle();
+      };
+      window.addEventListener('keydown', onKey);
+      this.uiTestKeyCleanup = () => window.removeEventListener('keydown', onKey);
+    }
+
     let entered = false;
     const go = (): void => {
       if (entered) return;
@@ -154,6 +178,10 @@ export class TitleScreen extends Container {
     if (this.tickFn) {
       this.app.ticker.remove(this.tickFn);
       this.tickFn = null;
+    }
+    if (this.uiTestKeyCleanup) {
+      this.uiTestKeyCleanup();
+      this.uiTestKeyCleanup = null;
     }
     super.destroy(options);
   }

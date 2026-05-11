@@ -2,9 +2,6 @@ import { Container, Graphics, Text } from 'pixi.js';
 import { LAYOUT_SCALE } from './constants';
 import type { AllyClass } from './types';
 
-/** 头顶血条相对角色中心的向上偏移（随逻辑分辨率缩放） */
-export const HP_BAR_OFFSET_Y = Math.round(52 * LAYOUT_SCALE);
-
 export type EnemyPaintKind =
   | 'grunt'
   | 'dread_warrior'
@@ -603,18 +600,21 @@ export function tickBloodStains(list: BloodStainFx[], dt: number): void {
   }
 }
 
-export function createKnightAura(): Graphics {
+/** @param centerYPx 与我方圆盘中心 Y（战场坐标，脚点在 0）一致 */
+export function createKnightAura(centerYPx: number): Graphics {
   const g = new Graphics();
-  g.circle(0, -22, 36).stroke({ width: 3, color: 0xfacc15, alpha: 0.78 });
-  g.circle(0, -22, 30).stroke({ width: 2, color: 0xfef9c3, alpha: 0.5 });
-  return g;
-}
-
-/** 选牌卡、备战格等用的我方立绘（与战场同源 `paintAllyBody`） */
-export function createAllyPortraitGraphic(kind: AllyClass, scale: number): Graphics {
-  const g = new Graphics();
-  paintAllyBody(g, kind);
-  g.scale.set(scale);
+  const ro = Math.round(36 * LAYOUT_SCALE);
+  const ri = Math.round(30 * LAYOUT_SCALE);
+  g.circle(0, centerYPx, ro).stroke({
+    width: Math.max(2, Math.round(3 * LAYOUT_SCALE)),
+    color: 0xfacc15,
+    alpha: 0.78,
+  });
+  g.circle(0, centerYPx, ri).stroke({
+    width: Math.max(1, Math.round(2 * LAYOUT_SCALE)),
+    color: 0xfef9c3,
+    alpha: 0.5,
+  });
   return g;
 }
 
@@ -669,4 +669,32 @@ export function buildProjectileGraphic(style: ProjectileVisualStyle): Graphics {
   }
   g.scale.set(LAYOUT_SCALE);
   return g;
+}
+
+/** 死亡飞出时的微粒拖尾 */
+export type TinySparkFx = { g: Graphics; t: number; max: number };
+
+export function spawnDeathTrailSpark(layer: Container, x: number, y: number): TinySparkFx {
+  const g = new Graphics();
+  const pal = [0xfef08a, 0xfbbf24, 0xa7f3d0, 0xc4b5fd, 0xfbcfe8] as const;
+  const c = pal[Math.floor(Math.random() * pal.length)]!;
+  const rr = (1.8 + Math.random() * 3.8) * LAYOUT_SCALE;
+  g.circle(0, 0, rr).fill({ color: c, alpha: 0.92 });
+  g.position.set(x + (Math.random() - 0.5) * 14 * LAYOUT_SCALE, y + (Math.random() - 0.5) * 14 * LAYOUT_SCALE);
+  layer.addChild(g);
+  return { g, t: 0, max: 0.1 + Math.random() * 0.07 };
+}
+
+export function tickTinySparks(list: TinySparkFx[], dt: number): void {
+  for (let i = list.length - 1; i >= 0; i--) {
+    const s = list[i]!;
+    s.t += dt;
+    const k = s.t / s.max;
+    s.g.alpha = Math.max(0, 1 - k * 1.05);
+    s.g.scale.set(1 + k * 0.55);
+    if (s.t >= s.max) {
+      s.g.destroy();
+      list.splice(i, 1);
+    }
+  }
 }

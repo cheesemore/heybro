@@ -3,24 +3,44 @@ import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { createEnemyBodyDisplay } from '../enemyBodyFactory';
 import { battlePreviewPortraitEntries, formatNextBattlePreview } from '../nextBattlePreview';
 import { bossIdForBookChapter, bookChapterStrengthPercent, enemyPoolForBookChapter } from '../bookChapterConfig';
-import { getCurrentChallengeChapterId, isAllChaptersFullyCleared } from '../chapterProgressStorage';
+import {
+  getChapterStarFilledCount,
+  getCurrentChallengeChapterId,
+  getTotalStarFilledCount,
+  isAllChaptersFullyCleared,
+  maxTotalStars,
+} from '../chapterProgressStorage';
 import { bossDisplayName } from '../roundConfig';
 import type { EnemyClass, RoundMeta } from '../types';
 import { ENEMY_DEFS } from '../unitDefs';
+import { clampMapPreviewTokenDiameter, enemyTokenDiameterForVariant } from '../unitCircleTokens';
+import { fitChapterBottomButtonRow } from '../layoutFit';
 
 /**
- * 章节入口：线性解锁，中央仅展示当前可挑战章节；底部「家园 | 挑战 | 强化」。
+ * 章节入口：线性解锁，中央仅展示当前可挑战章节；底部「家园 | 挑战 | 英雄」。
  */
 export class ChapterSelectScreen extends Container {
   private readonly onPickChapter: (chapterId: number) => void;
   private readonly onBack: () => void;
+  private readonly onStrengthen?: () => void;
+  /** 隐藏测试：整章按指定星级记入通关（当前界面中央章节） */
+  private readonly onDebugChapterClear?: (chapterId: number, star: 1 | 2 | 3) => void;
   private readonly targetChapterId: number;
   private detailLayer: Container | null = null;
+  private cheatPanel: Container | null = null;
+  private keyHandler: ((ev: KeyboardEvent) => void) | null = null;
 
-  constructor(onPickChapter: (chapterId: number) => void, onBack: () => void) {
+  constructor(
+    onPickChapter: (chapterId: number) => void,
+    onBack: () => void,
+    onStrengthen?: () => void,
+    onDebugChapterClear?: (chapterId: number, star: 1 | 2 | 3) => void,
+  ) {
     super();
     this.onPickChapter = onPickChapter;
     this.onBack = onBack;
+    this.onStrengthen = onStrengthen;
+    this.onDebugChapterClear = onDebugChapterClear;
     this.targetChapterId = getCurrentChallengeChapterId();
 
     const pad = Math.round(24 * LAYOUT_SCALE);
@@ -56,6 +76,35 @@ export class ChapterSelectScreen extends Container {
     });
     sub.position.set(pad, Math.round(86 * LAYOUT_SCALE));
     this.addChild(sub);
+
+    const totalStars = getTotalStarFilledCount();
+    const maxStars = maxTotalStars();
+    const prevLines: string[] = [];
+    for (let c = 1; c < targetId; c++) {
+      const f = getChapterStarFilledCount(c);
+      prevLines.push(`第${c}章  ${'★'.repeat(f)}${'☆'.repeat(3 - f)}`);
+    }
+    const starBlockText =
+      `总星级 ${totalStars}/${maxStars}\n\n` +
+      (targetId > 1
+        ? `已完成章节：\n${prevLines.join('\n')}\n\n`
+        : '尚无已完成章节；通关第1章后可在此查看前面章节的星级。\n\n') +
+      '规则：每场战斗通关后按剩余生命记星（100=3，≥60=2，否则=1），每关只保留历史最高；章节三颗星取各战斗关的最低档。';
+
+    const starBlock = new Text({
+      text: starBlockText,
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.round(17 * LAYOUT_SCALE),
+        fill: 0xa5b4fc,
+        lineHeight: Math.round(24 * LAYOUT_SCALE),
+        wordWrap: true,
+        wordWrapWidth: GAME_WIDTH - pad * 2 - Math.round(180 * LAYOUT_SCALE),
+        breakWords: true,
+      },
+    });
+    starBlock.position.set(pad, Math.round(118 * LAYOUT_SCALE));
+    this.addChild(starBlock);
 
     const backW = Math.round(160 * LAYOUT_SCALE);
     const backH = Math.round(50 * LAYOUT_SCALE);
@@ -93,7 +142,7 @@ export class ChapterSelectScreen extends Container {
     const cardW = Math.min(Math.round(920 * LAYOUT_SCALE), GAME_WIDTH - pad * 2);
     const cardH = Math.round(468 * LAYOUT_SCALE);
     const cardX = (GAME_WIDTH - cardW) / 2;
-    const cardY = Math.round(168 * LAYOUT_SCALE);
+    const cardY = Math.round(210 * LAYOUT_SCALE);
 
     const card = new Container();
     card.position.set(cardX, cardY);
@@ -130,6 +179,21 @@ export class ChapterSelectScreen extends Container {
     str.position.set(Math.round(28 * LAYOUT_SCALE), Math.round(84 * LAYOUT_SCALE));
     card.addChild(str);
 
+    const chStars = getChapterStarFilledCount(targetId);
+    const starStrip = new Text({
+      text: `${'★'.repeat(chStars)}${'☆'.repeat(3 - chStars)}`,
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.round(28 * LAYOUT_SCALE),
+        fill: 0xfde047,
+        fontWeight: '800',
+        letterSpacing: Math.round(4 * LAYOUT_SCALE),
+      },
+    });
+    starStrip.anchor.set(1, 0);
+    starStrip.position.set(cardW - Math.round(28 * LAYOUT_SCALE), Math.round(78 * LAYOUT_SCALE));
+    card.addChild(starStrip);
+
     if (allDone) {
       const badge = new Text({
         text: '全章已通关 · 可重复挑战',
@@ -161,7 +225,7 @@ export class ChapterSelectScreen extends Container {
     card.addChild(pool);
 
     const bossLine = new Text({
-      text: `首领：${bossName}（出现于本章 3-6，按章节轮换）`,
+      text: `首领：${bossName}（出现于本章 3-6，按章节轮换）· 首领战不因生命加成属性；未击破首领时照常结算生命，耗尽则失败，否则可再战`,
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(20 * LAYOUT_SCALE),
@@ -221,23 +285,25 @@ export class ChapterSelectScreen extends Container {
 
     this.addChild(card);
 
-    const sideW = Math.round(200 * LAYOUT_SCALE);
+    const padForRow = Math.round(24 * LAYOUT_SCALE);
     const sideH = Math.round(76 * LAYOUT_SCALE);
-    const midW = Math.round(420 * LAYOUT_SCALE);
     const midH = Math.round(88 * LAYOUT_SCALE);
-    const btnGap = Math.round(16 * LAYOUT_SCALE);
-    const rowW = sideW + btnGap + midW + btnGap + sideW;
-    const rowX = (GAME_WIDTH - rowW) / 2;
+    const { sideW, midW, btnGap, rowX } = fitChapterBottomButtonRow(
+      padForRow,
+      Math.round(200 * LAYOUT_SCALE),
+      Math.round(420 * LAYOUT_SCALE),
+      Math.round(16 * LAYOUT_SCALE),
+    );
     const rowY = GAME_HEIGHT - Math.round(200 * LAYOUT_SCALE);
 
-    const mkSide = (x: number, label: string): void => {
+    const mkSide = (x: number, label: string, onTap?: () => void): void => {
       const g = new Graphics();
       g.roundRect(0, 0, sideW, sideH, Math.round(14 * LAYOUT_SCALE)).fill(0x1e293b);
       g.stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x475569 });
-      g.eventMode = 'static';
-      g.cursor = 'pointer';
+      g.eventMode = onTap ? 'static' : 'passive';
+      g.cursor = onTap ? 'pointer' : 'default';
       g.position.set(x, rowY + (midH - sideH) / 2);
-      g.on('pointertap', () => {});
+      if (onTap) g.on('pointertap', () => onTap());
       this.addChild(g);
       const t = new Text({
         text: label,
@@ -254,7 +320,7 @@ export class ChapterSelectScreen extends Container {
     };
 
     mkSide(rowX, '家园');
-    mkSide(rowX + sideW + btnGap + midW + btnGap, '强化');
+    mkSide(rowX + sideW + btnGap + midW + btnGap, '英雄', () => this.onStrengthen?.());
 
     const chG = new Graphics();
     chG.roundRect(0, 0, midW, midH, Math.round(18 * LAYOUT_SCALE)).fill(0xfacc15);
@@ -279,7 +345,7 @@ export class ChapterSelectScreen extends Container {
     this.addChild(chT);
 
     const foot = new Text({
-      text: '「家园」「强化」功能开发中',
+      text: '「家园」功能开发中',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(16 * LAYOUT_SCALE),
@@ -289,11 +355,81 @@ export class ChapterSelectScreen extends Container {
     foot.anchor.set(0.5, 1);
     foot.position.set(GAME_WIDTH / 2, GAME_HEIGHT - Math.round(28 * LAYOUT_SCALE));
     this.addChild(foot);
+
+    if (this.onDebugChapterClear) {
+      this.sortableChildren = true;
+      this.keyHandler = (ev: KeyboardEvent): void => {
+        if (ev.repeat || ev.code !== 'KeyU') return;
+        ev.preventDefault();
+        this.toggleChapterCheatPanel();
+      };
+      window.addEventListener('keydown', this.keyHandler);
+    }
   }
 
-  override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
-    this.closeChapterDetailOverlay();
-    super.destroy(options);
+  /** 按 U 切换；不展示快捷键说明 */
+  private toggleChapterCheatPanel(): void {
+    if (!this.onDebugChapterClear) return;
+    if (this.cheatPanel) {
+      this.cheatPanel.destroy({ children: true });
+      this.cheatPanel = null;
+      return;
+    }
+    const root = new Container();
+    root.zIndex = 9000;
+    root.eventMode = 'static';
+
+    const panelW = Math.round(200 * LAYOUT_SCALE);
+    const inset = Math.round(14 * LAYOUT_SCALE);
+    const btnH = Math.round(46 * LAYOUT_SCALE);
+    const gap = Math.round(10 * LAYOUT_SCALE);
+    const totalH = inset * 2 + btnH * 3 + gap * 2;
+
+    root.position.set(GAME_WIDTH - panelW - Math.round(18 * LAYOUT_SCALE), Math.round(88 * LAYOUT_SCALE));
+
+    const plate = new Graphics();
+    plate
+      .roundRect(0, 0, panelW, totalH, Math.round(14 * LAYOUT_SCALE))
+      .fill({ color: 0x0f172a, alpha: 0.96 })
+      .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x334155 });
+    root.addChild(plate);
+
+    const mkBtn = (label: string, star: 1 | 2 | 3, y: number): void => {
+      const g = new Graphics();
+      g.roundRect(inset, y, panelW - inset * 2, btnH, Math.round(10 * LAYOUT_SCALE))
+        .fill(0x1e293b)
+        .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x475569 });
+      g.eventMode = 'static';
+      g.cursor = 'pointer';
+      const cid = this.targetChapterId;
+      g.on('pointertap', (e) => {
+        e.stopPropagation();
+        this.onDebugChapterClear?.(cid, star);
+      });
+      root.addChild(g);
+      const t = new Text({
+        text: label,
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontSize: Math.round(17 * LAYOUT_SCALE),
+          fill: 0xe2e8f0,
+          fontWeight: '700',
+        },
+      });
+      t.anchor.set(0.5);
+      t.position.set(panelW / 2, y + btnH / 2);
+      root.addChild(t);
+    };
+
+    let y = inset;
+    mkBtn('1星通关本章', 1, y);
+    y += btnH + gap;
+    mkBtn('2星通关本章', 2, y);
+    y += btnH + gap;
+    mkBtn('3星通关本章', 3, y);
+
+    this.cheatPanel = root;
+    this.addChild(root);
   }
 
   private closeChapterDetailOverlay(): void {
@@ -427,8 +563,15 @@ export class ChapterSelectScreen extends Container {
           .fill(0x0f172a)
           .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x334155 });
         c.addChild(cardBg);
-        const bodyG = createEnemyBodyDisplay(ent.paint, 'chapterMini');
-        if (bodyG instanceof Graphics) bodyG.scale.set(0.66 * LAYOUT_SCALE);
+        const bodyG = createEnemyBodyDisplay(
+          ent.paint,
+          'chapterMini',
+          clampMapPreviewTokenDiameter(
+            enemyTokenDiameterForVariant('chapterMini', ent.paint.startsWith('boss_')),
+            cardW,
+            cardH,
+          ),
+        );
         bodyG.position.set(cardW / 2, cardH - Math.round(10 * LAYOUT_SCALE));
         c.addChild(bodyG);
         const cap = new Text({
@@ -555,5 +698,18 @@ export class ChapterSelectScreen extends Container {
     layer.addChild(closeT);
 
     this.addChild(layer);
+  }
+
+  override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
+    if (this.keyHandler) {
+      window.removeEventListener('keydown', this.keyHandler);
+      this.keyHandler = null;
+    }
+    if (this.cheatPanel) {
+      this.cheatPanel.destroy({ children: true });
+      this.cheatPanel = null;
+    }
+    this.closeChapterDetailOverlay();
+    super.destroy(options);
   }
 }

@@ -7,6 +7,8 @@ import { ROUNDS } from '../roundConfig';
 import { getResolvedRoundMeta } from '../roundResolve';
 import { rewardChapterPreviewSummary, strategyChapterPreviewSummary } from '../strategyApply';
 import type { RunState } from '../runState';
+import { clampMapPreviewTokenDiameter, enemyTokenDiameterForVariant } from '../unitCircleTokens';
+import { fitMapBottomEnterRow } from '../layoutFit';
 
 type Handlers = {
   onEnterRound: () => void;
@@ -184,12 +186,13 @@ export class LevelMapScreen extends Container {
     this.addChild(this.buildNextRoundPanel(pad, nextTop));
 
     const enterH = Math.round(72 * LAYOUT_SCALE);
-    const enterW = Math.round(520 * LAYOUT_SCALE);
-    const exitW = Math.round(200 * LAYOUT_SCALE);
-    const btnGap = Math.round(18 * LAYOUT_SCALE);
+    const { leftW: exitW, rightW: enterW, btnGap, startX } = fitMapBottomEnterRow(
+      pad,
+      Math.round(200 * LAYOUT_SCALE),
+      Math.round(520 * LAYOUT_SCALE),
+      Math.round(18 * LAYOUT_SCALE),
+    );
     const bottomY = GAME_HEIGHT - Math.round(132 * LAYOUT_SCALE);
-    const totalW = exitW + btnGap + enterW;
-    const startX = (GAME_WIDTH - totalW) / 2;
 
     const exitG = new Graphics();
     exitG
@@ -253,6 +256,10 @@ export class LevelMapScreen extends Container {
         fontSize: Math.round(26 * LAYOUT_SCALE),
         fill: 0xffffff,
         fontWeight: '700',
+        wordWrap: true,
+        wordWrapWidth: Math.max(80, enterW - Math.round(20 * LAYOUT_SCALE)),
+        breakWords: true,
+        align: 'center',
       },
     });
     enterText.anchor.set(0.5);
@@ -307,9 +314,7 @@ export class LevelMapScreen extends Container {
       const msg =
         idx >= ROUNDS.length
           ? '本章流程已结束。'
-          : this.run.playerHp <= 0
-            ? '本章已失败（生命耗尽）。可使用下方「退出」返回章节选择。'
-            : '本章已失败。可使用下方「退出」返回章节选择。';
+          : '本章已失败（生命耗尽）。可使用下方「退出」返回章节选择。';
       const b = new Text({ text: msg, style: bodyStyle });
       b.position.set(Math.round(18 * LAYOUT_SCALE), Math.round(48 * LAYOUT_SCALE));
       block.addChild(b);
@@ -361,8 +366,15 @@ export class LevelMapScreen extends Container {
         .fill(0x0f172a)
         .stroke({ width: Math.max(1, Math.round(1 * LAYOUT_SCALE)), color: 0x475569 });
       card.addChild(cbg);
-      const bodyG = createEnemyBodyDisplay(ent.paint, 'mapMini');
-      if (bodyG instanceof Graphics) bodyG.scale.set(0.42 * LAYOUT_SCALE);
+      const bodyG = createEnemyBodyDisplay(
+        ent.paint,
+        'mapMini',
+        clampMapPreviewTokenDiameter(
+          enemyTokenDiameterForVariant('mapMini', ent.paint.startsWith('boss_')),
+          miniW,
+          miniH,
+        ),
+      );
       bodyG.position.set(miniW / 2, miniH - Math.round(8 * LAYOUT_SCALE));
       card.addChild(bodyG);
       const cap = new Text({
@@ -475,8 +487,15 @@ export class LevelMapScreen extends Container {
         .fill(0x0f172a)
         .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x334155 });
       card.addChild(cardBg);
-      const bodyG = createEnemyBodyDisplay(ent.paint, 'mapPreviewModal');
-      if (bodyG instanceof Graphics) bodyG.scale.set(0.74 * LAYOUT_SCALE);
+      const bodyG = createEnemyBodyDisplay(
+        ent.paint,
+        'mapPreviewModal',
+        clampMapPreviewTokenDiameter(
+          enemyTokenDiameterForVariant('mapPreviewModal', ent.paint.startsWith('boss_')),
+          cardW,
+          cardH,
+        ),
+      );
       bodyG.position.set(cardW / 2, cardH - Math.round(12 * LAYOUT_SCALE));
       card.addChild(bodyG);
       const cap = new Text({

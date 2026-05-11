@@ -1,5 +1,6 @@
 {
   "farseer": {
+    "hitRadius": 84,
     "name": "先知",
     "baseMaxHp": 1680,
     "baseAtk": 27,
@@ -9,6 +10,7 @@
     "skills": ["闪电链", "召唤兽人步兵"]
   },
   "tauren": {
+    "hitRadius": 84,
     "name": "牛头人酋长",
     "baseMaxHp": 2560,
     "baseAtk": 34,
@@ -18,6 +20,7 @@
     "skills": ["冲击波", "踩地板"]
   },
   "blademaster": {
+    "hitRadius": 84,
     "name": "剑圣",
     "baseMaxHp": 2080,
     "baseAtk": 44,

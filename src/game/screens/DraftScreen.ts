@@ -18,10 +18,15 @@ import { getResolvedRoundMeta } from '../roundResolve';
 import { ALLY_DEFS } from '../unitDefs';
 import type { AllyClass, RoundMeta } from '../types';
 import type { RunState } from '../runState';
-import { createAllyPortraitGraphic } from '../battleVisuals';
+import { createDraftAllyToken, createDraftHeroToken } from '../unitCircleTokens';
+import { getDeployedHeroIds, maxHeroDeploySlots } from '../heroMetaStorage';
+import { getHeroDef } from '../heroRegistry';
 import { SynergyOverlay } from './SynergyOverlay';
 
 const PAD_X = Math.round(20 * LAYOUT_SCALE);
+/** 选牌页右侧英雄竖条宽度（与九宫格并排） */
+const HERO_RAIL_W = Math.round(118 * LAYOUT_SCALE);
+const HERO_RAIL_GAP = Math.round(14 * LAYOUT_SCALE);
 /** 正文区比全宽略收，避免贴边裁切与换行异常 */
 const TEXT_INSET = Math.round(14 * LAYOUT_SCALE);
 const HEADER_Y = Math.round(20 * LAYOUT_SCALE);
@@ -336,19 +341,25 @@ export class DraftScreen extends Container {
     this.tip.position.y = row1Y - tipGap - this.tip.height;
   }
 
-  private boardSlotRect(i: number): { x: number; y: number; w: number; h: number } {
+  private boardGridMetrics(): { originX: number; originY: number; cell: number; gap: number; gridW: number } {
     const cell = Math.round(108 * LAYOUT_SCALE);
     const gap = Math.round(16 * LAYOUT_SCALE);
     const gridW = cell * 3 + gap * 2;
-    const originX = PAD_X + (GAME_WIDTH - PAD_X * 2 - gridW) / 2;
+    const totalW = gridW + HERO_RAIL_GAP + HERO_RAIL_W;
+    const originX = PAD_X + (GAME_WIDTH - PAD_X * 2 - totalW) / 2;
     const originY = BOARD_GRID_TOP;
+    return { originX, originY, cell, gap, gridW };
+  }
+
+  private boardSlotRect(i: number): { x: number; y: number; w: number; h: number } {
+    const m = this.boardGridMetrics();
     const col = i % 3;
     const row = Math.floor(i / 3);
     return {
-      x: originX + col * (cell + gap),
-      y: originY + row * (cell + gap),
-      w: cell,
-      h: cell,
+      x: m.originX + col * (m.cell + m.gap),
+      y: m.originY + row * (m.cell + m.gap),
+      w: m.cell,
+      h: m.cell,
     };
   }
 
@@ -418,9 +429,9 @@ export class DraftScreen extends Container {
       priceLab.position.set(cardW / 2, Math.round(8 * LAYOUT_SCALE));
       card.addChild(priceLab);
 
-      const portraitScale = Math.min(cardW * 0.78, Math.round(198 * LAYOUT_SCALE)) / 108;
-      const portrait = createAllyPortraitGraphic(kind, portraitScale);
-      portrait.position.set(cardW / 2, cardH * 0.44);
+      const portraitDiameter = Math.min(cardW * 0.72, Math.round(168 * LAYOUT_SCALE));
+      const portrait = createDraftAllyToken(kind, portraitDiameter);
+      portrait.position.set(cardW / 2, cardH * 0.44 + portraitDiameter / 2);
       card.addChild(portrait);
 
       const padX = Math.round(10 * LAYOUT_SCALE);
@@ -580,7 +591,8 @@ export class DraftScreen extends Container {
     const bondFlash = upgradedKinds.size > 0;
 
     for (const c of [...this.children]) {
-      if ((c as { userData?: string }).userData === 'board-slot') c.destroy();
+      const u = (c as { userData?: string }).userData;
+      if (u === 'board-slot' || u === 'hero-rail') c.destroy();
     }
     for (let i = 0; i < 9; i++) {
       const b = this.boardSlotRect(i);
@@ -617,8 +629,9 @@ export class DraftScreen extends Container {
         wrap.addChild(am);
       }
       if (slot) {
-        const portrait = createAllyPortraitGraphic(slot.kind, Math.min(0.3 * LAYOUT_SCALE, b.w / 360));
-        portrait.position.set(b.w / 2, b.h * 0.38);
+        const portraitDiameter = Math.min(b.w * 0.62, Math.round(112 * LAYOUT_SCALE));
+        const portrait = createDraftAllyToken(slot.kind, portraitDiameter);
+        portrait.position.set(b.w / 2, b.h * 0.38 + portraitDiameter / 2);
         wrap.addChild(portrait);
         if (upgradedKinds.has(slot.kind)) {
           this.playSlotBondGlow(wrap, b.w, b.h);
@@ -653,7 +666,70 @@ export class DraftScreen extends Container {
       });
       this.addChild(wrap);
     }
+    this.drawHeroRail();
     if (bondFlash) this.flashBondButton();
+  }
+
+  /** 右侧竖条：已上阵英雄（仅展示，不可拖拽） */
+  private drawHeroRail(): void {
+    const m = this.boardGridMetrics();
+    const cap = maxHeroDeploySlots();
+    const dep = getDeployedHeroIds();
+    const railX = m.originX + m.gridW + HERO_RAIL_GAP;
+    const slotH = Math.round((m.cell * 3 + m.gap * 2) / 3);
+    const gapY = Math.round(8 * LAYOUT_SCALE);
+    for (let s = 0; s < cap; s++) {
+      const wrap = new Container();
+      wrap.position.set(railX, m.originY + s * (slotH + gapY));
+      (wrap as Container & { userData?: string }).userData = 'hero-rail';
+      const g = new Graphics();
+      g.roundRect(0, 0, HERO_RAIL_W, slotH, Math.round(12 * LAYOUT_SCALE))
+        .fill(0x0f172a)
+        .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x4c1d95 });
+      wrap.addChild(g);
+      const hid = dep[s];
+      if (hid) {
+        const def = getHeroDef(hid);
+        if (def) {
+          const dia = Math.min(HERO_RAIL_W * 0.72, slotH * 0.62);
+          const portrait = createDraftHeroToken(hid, def.allyClass, dia);
+          portrait.position.set(HERO_RAIL_W / 2, slotH * 0.42 + dia / 2);
+          wrap.addChild(portrait);
+          const lab = new Text({
+            text: `英雄\n${def.name}`,
+            style: {
+              fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+              fontSize: Math.round(12 * LAYOUT_SCALE),
+              fill: 0xe9d5ff,
+              align: 'center',
+              lineHeight: Math.round(16 * LAYOUT_SCALE),
+              wordWrap: true,
+              wordWrapWidth: HERO_RAIL_W - 6,
+            },
+          });
+          lab.anchor.set(0.5, 1);
+          lab.position.set(HERO_RAIL_W / 2, slotH - Math.round(4 * LAYOUT_SCALE));
+          wrap.addChild(lab);
+        }
+      } else {
+        const t = new Text({
+          text: cap === 0 ? '栏位\n未解锁' : '空\n栏位',
+          style: {
+            fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+            fontSize: Math.round(13 * LAYOUT_SCALE),
+            fill: 0x64748b,
+            align: 'center',
+            lineHeight: Math.round(18 * LAYOUT_SCALE),
+            wordWrap: true,
+            wordWrapWidth: HERO_RAIL_W - 4,
+          },
+        });
+        t.anchor.set(0.5, 0.5);
+        t.position.set(HERO_RAIL_W / 2, slotH / 2);
+        wrap.addChild(t);
+      }
+      this.addChild(wrap);
+    }
   }
 
   private drawControls(): void {

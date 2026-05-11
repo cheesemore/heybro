@@ -19,6 +19,8 @@ export type RoundMeta = {
   kind: RoundKind;
   /** 战斗关配置；非战斗关为空 */
   enemies: Array<{ type: EnemyClass | 'boss'; count: number; bossId?: BossId }>;
+  /** 开发：复合特效测试战（封面 DEV 入口），不影响正式关卡表 */
+  uiTestBattle?: boolean;
 };
 
 export type BattleOutcome = {

@@ -27,19 +27,25 @@ npm run dev
 
 例：`npm run enemy:import-png -- C:/path/in.png grunt`
 
-### 游戏内启用
+### 圆形半身像（gpt-image-2 / 中转，与盟友流程一致）
 
-- **推荐**：`.env.local` 中 **`VITE_ENEMY_TEXTURES=true`**，重启 `npm run dev`。会为每种兵种尝试加载对应 PNG；**缺文件则该兵种仍用矢量**。
-- **兼容旧配置**：仅 **`VITE_ENEMY_GRUNT_TEXTURE=true`** 且未开 `VITE_ENEMY_TEXTURES` 时，只预加载 `grunt.png`。
+1. 在 `gptimage/secrets_openai.txt` 写入 Key（或设置 `OPENAI_API_KEY`），并 `pip install pillow`（裁圆用）。
+2. **出图（不写入游戏目录）**：执行 **`npm run enemy:portraits:batch`** → 方图 **`gptimage/out_enemies_square/<id>.png`**，圆图 **`gptimage/out_enemies_circle/<id>.png`**（裁圆会覆盖 staging 内同名文件）。文生图 / 裁圆失败会自动重试（默认各 **3** 次，**`--max-attempts N`** 可调），仍失败则跳过该 id。**`--force`** 只影响是否重调大模型覆盖方图。
+3. **校验通过后发布到游戏**：**`npm run enemy:portraits:publish`**（或 `python gptimage/publish_enemy_portraits_to_game.py`），从 `out_enemies_circle` **覆盖复制**到 **`public/assets/enemies/`**（默认一律覆盖已存在 PNG；若需跳过已存在则加脚本参数 **`--skip-existing`**）。
+4. **`--skip-generate`**：不调接口；仍对方图裁圆写入 `out_enemies_circle`。
+
+### 游戏内显示
+
+有对应 PNG 时，战斗与地图代币**自动**在圆内显示贴图；缺文件则回退为灰盘 / 浅红盘 +「敌」「首」字。**不再依赖** `VITE_ENEMY_TEXTURES`（该开关及 `VITE_ENEMY_GRUNT_TEXTURE` 已废弃，仅为兼容保留导出）。
 
 ### 还原
 
-关上述开关，并删除 `public/assets/enemies/` 下不需要的 PNG（或整目录只留 `.gitkeep`），即恢复全矢量绘制。
+删除 `public/assets/enemies/` 下不需要的 PNG（或整目录只留 `.gitkeep`），即恢复全矢量绘制。
 
 ### 占位
 
 - **`npm run enemy:placeholder-grunt`**：仅 `grunt.png`。
-- **`npm run enemy:placeholders:all`**：为 [`scripts/enemy-art-subjects.mjs`](scripts/enemy-art-subjects.mjs) 中全部 paint id 各写一张**色块占位**（无 API，用于立刻验证 `VITE_ENEMY_TEXTURES`）。
+- **`npm run enemy:placeholders:all`**：为 [`scripts/enemy-art-subjects.mjs`](scripts/enemy-art-subjects.mjs) 中全部 paint id 各写一张**色块占位**（无 API，用于立刻验证资源路径）。
 
 开发或预览服务器启动后，在浏览器打开 **`/character-prompts/`** 或 **`/character-prompts/index.html`**（例如 `http://localhost:5173/character-prompts/` ，端口以终端为准）可浏览并一键复制 50 套角色生图提示词：**第一步**单张 **王者荣耀式** 带景立绘；**第二步**（以立绘为参考）**4×4** 小人精灵表（待机 / 行走 / 攻击 / 倒下）。数据见 [`public/character-prompts/manifest.json`](public/character-prompts/manifest.json)，改 [`prompt-template.txt`](public/character-prompts/prompt-template.txt)、[`sprite-sheet-template.txt`](public/character-prompts/sprite-sheet-template.txt) 或 [`scripts/characterSetsData.mjs`](scripts/characterSetsData.mjs) 后执行 `npm run build:character-prompts` 或随 `npm run build` 自动重新生成。（说明：旧版 Vite dev 曾把 `/character-prompts/` 误指到游戏首页，已在 [`vite.config.ts`](vite.config.ts) 用中间件修正。）
 

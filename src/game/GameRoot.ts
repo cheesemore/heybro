@@ -11,10 +11,18 @@ import { DraftScreen } from './screens/DraftScreen';
 import { ChapterSelectScreen } from './screens/ChapterSelectScreen';
 import { LevelMapScreen } from './screens/LevelMapScreen';
 import { ModalLayer } from './screens/ModalLayer';
+import { StrengthenScreen } from './screens/StrengthenScreen';
 import { StrategyPickScreen } from './screens/StrategyPickScreen';
 import { TitleScreen } from './screens/TitleScreen';
-import { markChapterFullyCleared } from './chapterProgressStorage';
+import {
+  cheatChapterFullClearWithStar,
+  markChapterFullyCleared,
+  recordCombatRoundBestStar,
+} from './chapterProgressStorage';
 import { preloadEnemyTextures } from './enemyBodyFactory';
+import { preloadAllyPortraitTextures } from './allyPortraitAssets';
+import { preloadHeroPortraitTextures } from './heroPortraitAssets';
+import { seedUiTestRunBoard, UI_TEST_ROUND_META } from './uiTestBattle';
 
 export class GameRoot extends Container {
   readonly run = new RunState();
@@ -35,11 +43,30 @@ export class GameRoot extends Container {
   private showTitle(): void {
     this.clearLayer();
     this.layer.addChild(
-      new TitleScreen(this.app, () => {
-        this.clearLayer();
-        this.showChapterSelect(false);
-      }),
+      new TitleScreen(
+        this.app,
+        () => {
+          this.clearLayer();
+          this.showChapterSelect(false);
+        },
+        import.meta.env.DEV ? () => this.openUiTestBattle() : undefined,
+      ),
     );
+  }
+
+  /** 开发：复合 UI 特效测试（不计入正式进度） */
+  private openUiTestBattle(): void {
+    void (async () => {
+      await preloadAllyPortraitTextures();
+      await preloadEnemyTextures();
+      const testRun = new RunState();
+      seedUiTestRunBoard(testRun);
+      this.clearLayer();
+      const battle = new BattleScreen(this.app, testRun, UI_TEST_ROUND_META, () => {
+        this.modal.alert('UI 技能测试结束', () => this.showTitle());
+      });
+      this.layer.addChild(battle);
+    })();
   }
 
   private clearLayer(): void {
@@ -53,6 +80,7 @@ export class GameRoot extends Container {
    */
   private showChapterSelect(fromMap: boolean): void {
     void (async () => {
+      await preloadAllyPortraitTextures();
       await preloadEnemyTextures();
       this.clearLayer();
       this.layer.addChild(
@@ -66,13 +94,34 @@ export class GameRoot extends Container {
             if (fromMap) this.showLevelMap();
             else this.showTitle();
           },
+          () => this.showStrengthenScreen(fromMap),
+          (chapterId, star) => {
+            cheatChapterFullClearWithStar(chapterId, star);
+            this.modal.alert(
+              `测试：第 ${chapterId} 章已记为通关（全部战斗关 ${star}★，已写入本地存档）`,
+              () => this.showChapterSelect(fromMap),
+            );
+          },
         ),
       );
     })();
   }
 
-  showLevelMap(): void {
+  private showStrengthenScreen(fromChapterFlow: boolean): void {
     void (async () => {
+      await preloadHeroPortraitTextures().catch(() => {});
+      this.clearLayer();
+      this.layer.addChild(
+        new StrengthenScreen(this.app, this.modal, () => {
+          this.showChapterSelect(fromChapterFlow);
+        }),
+      );
+    })();
+  }
+
+  private showLevelMap(): void {
+    void (async () => {
+      await preloadAllyPortraitTextures();
       await preloadEnemyTextures();
       this.clearLayer();
       const map = new LevelMapScreen(this.run, {
@@ -94,7 +143,7 @@ export class GameRoot extends Container {
   private enterCurrentRound(): void {
     if (this.run.isGameLost()) {
       const msg =
-        this.run.playerHp <= 0 ? '游戏结束：生命值已耗尽' : '本章通关失败（首领战败或规则失败）。';
+        this.run.playerHp <= 0 ? '游戏结束：生命值已耗尽' : '本章通关失败（规则失败等）。';
       this.modal.alert(msg, () => this.showLevelMap());
       return;
     }
@@ -129,25 +178,8 @@ export class GameRoot extends Container {
         this.modal.alert([...rewardLines, '', '── 回合收入 ──', econ].join('\n'), () => this.showLevelMap());
         return;
       }
-      if (meta.kind === 'boss') {
-        const hp0 = this.run.playerHp;
-        const add = hp0 * 0.003;
-        this.run.bossHpDerivedFinalAtkMult = 1 + add;
-        this.run.bossHpDerivedFinalHpMult = 1 + add;
-        const lines = [
-          '首领战即将开始',
-          '',
-          `当前生命：${hp0}`,
-          '规则：每 1 点生命提供 0.3%「最终攻击加成」与 0.3%「最终生命加成」（额外乘区，仅由生命值换算）。',
-          '',
-          `最终攻击乘区：×${this.run.bossHpDerivedFinalAtkMult.toFixed(4)}`,
-          `最终生命乘区：×${this.run.bossHpDerivedFinalHpMult.toFixed(4)}`,
-          '',
-          '提示：首领战败或生命降至 0 均视为本章通关失败。',
-        ];
-        this.modal.alert(lines.join('\n'), () => this.openDraftCombat());
-        return;
-      }
+      this.run.bossHpDerivedFinalAtkMult = 1;
+      this.run.bossHpDerivedFinalHpMult = 1;
       this.openDraftCombat();
     };
 
@@ -159,13 +191,18 @@ export class GameRoot extends Container {
   }
 
   private openDraftCombat(): void {
-    this.clearLayer();
-    const draft = new DraftScreen(this.app, this.run, () => this.afterDraft());
-    this.layer.addChild(draft);
+    void (async () => {
+      await preloadAllyPortraitTextures();
+      await preloadEnemyTextures();
+      this.clearLayer();
+      const draft = new DraftScreen(this.app, this.run, () => this.afterDraft());
+      this.layer.addChild(draft);
+    })();
   }
 
   private afterDraft(): void {
     void (async () => {
+      await preloadAllyPortraitTextures();
       await preloadEnemyTextures();
       const idx = this.run.currentRoundIndex;
       const base = ROUNDS[idx];
@@ -184,19 +221,32 @@ export class GameRoot extends Container {
     const idx = this.run.currentRoundIndex;
     const metaDone = ROUNDS[idx]!;
     const cleared = outcome.enemyHpRatioRemaining <= 0.0001;
+    const isCombat = metaDone.kind === 'normal' || metaDone.kind === 'boss';
 
     this.run.bossHpDerivedFinalAtkMult = 1;
     this.run.bossHpDerivedFinalHpMult = 1;
 
     if (metaDone.kind === 'boss' && !cleared) {
-      this.run.bookChapterRunFailed = true;
-      this.modal.alert('首领战败\n\n本章通关失败。', () => this.showLevelMap());
+      const res = resolveAftermath(idx, outcome.perfect, outcome.enemyHpRatioRemaining);
+      this.run.playerHp += res.playerHpDelta;
+      this.run.clampPlayerHpToMax();
+      const tail = [...res.lines, `当前生命：${this.run.playerHp}`].join('\n');
+      const econ = this.run.grantRoundEndEconomy(metaDone, outcome).join('\n');
+      const full = `${tail}\n\n── 回合收入 ──\n${econ}`;
+      if (this.run.playerHp <= 0) {
+        this.modal.alert(`首领未击退\n${full}\n\n生命值耗尽，本章失败。`, () => this.showLevelMap());
+        return;
+      }
+      this.modal.alert(`首领未击退\n${full}\n\n生命未耗尽，可从地图再次挑战首领。`, () => this.showLevelMap());
       return;
     }
 
     const res = resolveAftermath(idx, outcome.perfect, outcome.enemyHpRatioRemaining);
     this.run.playerHp += res.playerHpDelta;
     this.run.clampPlayerHpToMax();
+    if (cleared && isCombat) {
+      recordCombatRoundBestStar(this.run.bookChapterId, idx, this.run.playerHp);
+    }
     this.run.currentRoundIndex += 1;
     const tail = [...res.lines, `当前生命：${this.run.playerHp}`].join('\n');
     if (this.run.playerHp <= 0) {

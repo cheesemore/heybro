@@ -10,6 +10,8 @@ import scalingJson from './config/scaling.json';
 import type { AllyClass, BossId, EnemyClass } from './types';
 
 export type AllyDef = {
+  /** 战场碰撞/代币半径用的设计像素（逻辑宽度基准 720），再乘 `LAYOUT_SCALE` */
+  hitRadius: number;
   name: string;
   maxHp: number;
   atk: number;
@@ -19,6 +21,7 @@ export type AllyDef = {
 };
 
 export type EnemyDef = {
+  hitRadius: number;
   name: string;
   baseMaxHp: number;
   baseAtk: number;
@@ -54,6 +57,7 @@ function isAllyDef(v: unknown): v is AllyDef {
   if (!v || typeof v !== 'object') return false;
   const o = v as Record<string, unknown>;
   return (
+    typeof o.hitRadius === 'number' &&
     typeof o.name === 'string' &&
     typeof o.maxHp === 'number' &&
     typeof o.atk === 'number' &&
@@ -67,6 +71,7 @@ function isEnemyDef(v: unknown): v is EnemyDef {
   if (!v || typeof v !== 'object') return false;
   const o = v as Record<string, unknown>;
   return (
+    typeof o.hitRadius === 'number' &&
     typeof o.name === 'string' &&
     typeof o.baseMaxHp === 'number' &&
     typeof o.baseAtk === 'number' &&
