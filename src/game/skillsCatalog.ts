@@ -9,10 +9,15 @@ export type SkillCodeStatus = 'written' | 'missing' | 'pending_changes';
 /** 技能附加参数：顺序与含义以各条 `logicEffectCn` 为准；最多 5 个 */
 export type SkillParamValue = string | number | boolean;
 
+/** 策划强度标签：用于图鉴编辑器的「属性重算」等（缺省按 `medium`） */
+export type SkillPowerTag = 'strong' | 'medium' | 'weak' | 'negative';
+
 export type SkillDef = {
   id: string;
   nameCn: string;
   limit: SkillLimit;
+  /** 强/中/弱/负面；影响配置编辑器中小怪强度重算乘区 */
+  powerTag?: SkillPowerTag;
   codeStatus: SkillCodeStatus;
   /** @deprecated 使用 `codeStatus`；兼容旧 JSON */
   implemented?: boolean;

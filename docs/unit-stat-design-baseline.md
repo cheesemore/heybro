@@ -108,13 +108,13 @@
 |------|------|
 | `src/game/config/wowBookMonsters.json` | **唯一小怪数值与命名源**（`monsters[]`）。含 `dungeonId: "legacy"` 的 12 条为原 `enemies.json` 模板兵种，id 与战场 `enemyPaint` 一致。字段含 `baseMaxHp`、`baseAtk`、`attackSpeed`（秒/次）等。 |
 | `src/game/config/wowBookChapters.json` | `chapters[]`：章节、`monsterGroup`、`finalBoss`。 |
-| `src/game/config/wowBookBosses.json` | `bosses[]`：关底首领清单（当前战斗数值仍走 `bosses.json` → `white`）。 |
+| `src/game/config/wowBookBosses.json` | `bosses[]`：关底首领元数据 + **战斗基准**（`hitRadius`、`baseMaxHp`、`baseAtk`、`attackSpeed`、`range`、`moveSpeed`、`skillIds`）；战场读取见 `resolveWowBookBossCombat`。 |
 
 **立绘文件**：用书怪可选 PNG 路径为 `public/assets/wow-mobs/<与 monsters[].id 完全相同>.png`；详见 `public/assets/wow-mobs/README.txt`。未放置时仍用 `public/assets/enemies/<enemyPaint>.png` 模板图。
 
 **改数值的约定**：小怪只改 **`wowBookMonsters.json`**；不要在业务代码里用 `*1.2` 代替改表。
 
-**关底首领数值**：当前由 `bosses.json` 的 **`white`** 提供（与 `farseer` 表值一致）；给某个有名首领单独调血攻时，可后续改为按 `wowBookBosses.json` 的 `id` 分条配置并接代码；未配技能前保持白板行为（`bossSkills` 不跑先知/牛头/剑圣的额外逻辑）。
+**关底首领数值**：以 **`wowBookBosses.json` 对应当前章节 `chapterIndex` 那一行** 为表底；缺字段时用 **`WOW_BOOK_BOSS_TABLE_DEFAULT`**（`wowBookData.ts`，与生成脚本 `DEFAULT_BOOK_BOSS_COMBAT` 一致）。进场生命为 `baseMaxHp×10` 后再走 `scaledEnemyHp`；攻击表底 `baseAtk` 经 `GLOBAL_UNIT_ATK_MULT` 后与首领战缩放一致（**不分近战远程**，不加近战额外攻倍率）。`skillIds` 为空则白板仅普攻。
 
 重新生成（会覆盖上述 JSON）：`npm run gen:wow-book`
 

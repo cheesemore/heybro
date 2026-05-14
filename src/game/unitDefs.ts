@@ -7,10 +7,9 @@
 import { ALLY_CLASSES, ENEMY_CLASSES, GLOBAL_UNIT_ATK_MULT } from './constants';
 import { RANGED_ATTACK_RANGE_THRESHOLD } from './battleBonds';
 import alliesJson from './config/allies.json';
-import bossesJson from './config/bosses.json';
 import wowBookMonstersDoc from './config/wowBookMonsters.json';
 import scalingJson from './config/scaling.json';
-import type { AllyClass, BossId, EnemyClass } from './types';
+import type { AllyClass, EnemyClass } from './types';
 import { getSkillById } from './skillsCatalog';
 
 export type AllyDef = {
@@ -36,12 +35,6 @@ export type EnemyDef = {
   /** 挂载的战斗技能 id，见 `config/skills.json` */
   skillIds: string[];
 };
-
-export type BossDef = EnemyDef & {
-  skillIds: string[];
-};
-
-const BOSS_IDS: BossId[] = ['farseer', 'tauren', 'blademaster', 'white'];
 
 function assertRecord<K extends string, V>(
   label: string,
@@ -72,26 +65,6 @@ function isAllyDef(v: unknown): v is AllyDef {
     typeof o.range === 'number' &&
     typeof o.moveSpeed === 'number'
   );
-}
-
-function isEnemyDef(v: unknown): v is EnemyDef {
-  if (!v || typeof v !== 'object') return false;
-  const o = v as Record<string, unknown>;
-  return (
-    typeof o.hitRadius === 'number' &&
-    typeof o.name === 'string' &&
-    typeof o.baseMaxHp === 'number' &&
-    typeof o.baseAtk === 'number' &&
-    typeof o.attackSpeed === 'number' &&
-    typeof o.range === 'number' &&
-    typeof o.moveSpeed === 'number'
-  );
-}
-
-function isBossDef(v: unknown): v is BossDef {
-  if (!isEnemyDef(v) || !('skillIds' in v)) return false;
-  const ids = (v as BossDef).skillIds;
-  return Array.isArray(ids) && ids.every((s) => typeof s === 'string');
 }
 
 export const ALLY_DEFS: Record<AllyClass, AllyDef> = assertRecord(
@@ -151,21 +124,6 @@ for (const k of ENEMY_CLASSES) {
   }
 }
 
-export const BOSS_DEFS: Record<BossId, BossDef> = assertRecord(
-  'bosses.json',
-  bossesJson as Record<string, unknown>,
-  BOSS_IDS,
-  isBossDef,
-);
-
-for (const id of BOSS_IDS) {
-  for (const sid of BOSS_DEFS[id].skillIds) {
-    if (!getSkillById(sid)) {
-      throw new Error(`[bosses.json / ${id}] 未知 skillId: ${sid}（须在 config/skills.json 登记）`);
-    }
-  }
-}
-
 {
   const m = GLOBAL_UNIT_ATK_MULT;
   for (const k of ALLY_CLASSES) {
@@ -174,10 +132,6 @@ for (const id of BOSS_IDS) {
   }
   for (const k of ENEMY_CLASSES) {
     const d = ENEMY_DEFS[k];
-    d.baseAtk = Math.max(1, Math.round(d.baseAtk * m));
-  }
-  for (const id of BOSS_IDS) {
-    const d = BOSS_DEFS[id];
     d.baseAtk = Math.max(1, Math.round(d.baseAtk * m));
   }
 }

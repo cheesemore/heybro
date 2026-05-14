@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>饥荒风格按钮 · 配色图鉴（12 套）</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #1e1915;
+      color: #c9c2b8;
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    }
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 28px 20px 40px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #f2e7b0;
+      letter-spacing: 0.04em;
+    }
+    .sub {
+      margin: 0 0 24px;
+      font-size: 0.85rem;
+      opacity: 0.82;
+      line-height: 1.55;
+    }
+    /* 轻微纸张噪点感（纯 CSS，无图） */
+    .page::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.07;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+      z-index: 0;
+    }
+    .page > * { position: relative; z-index: 1; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px 18px;
+    }
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 420px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* 斜切：左上、右下；粗黑边；悬停近似 motion：scale + 随机小角度 */
+    .dst-btn {
+      --cut: 14px;
+      --bd: 3px;
+      --tilt: 0deg;
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      max-width: 220px;
+      height: 52px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "KaiTi", "STKaiti", "SimSun", "Songti SC", serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: var(--ink);
+      background: var(--fill);
+      border: var(--bd) solid #0d0d0d;
+      clip-path: polygon(
+        var(--cut) 0,
+        100% 0,
+        100% calc(100% - var(--cut)),
+        calc(100% - var(--cut)) 100%,
+        0 100%,
+        0 var(--cut)
+      );
+      box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.35);
+      transform-origin: 50% 50%;
+      transform: translateZ(0) rotate(var(--tilt)) scale(1);
+      transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        filter 0.18s ease;
+    }
+    .dst-btn:hover {
+      transform: translateZ(0) rotate(var(--tilt)) scale(1.06) translateY(-2px);
+      box-shadow: 4px 6px 0 rgba(0, 0, 0, 0.42);
+      filter: brightness(1.05);
+    }
+    .dst-btn:active {
+      transform: translateZ(0) rotate(var(--tilt)) scale(0.95);
+      box-shadow: 1px 2px 0 rgba(0, 0, 0, 0.35);
+      filter: brightness(0.97);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .dst-btn,
+      .dst-btn:hover,
+      .dst-btn:active {
+        transition: none;
+        transform: none;
+        filter: none;
+      }
+    }
+
+    .caption {
+      font-size: 0.78rem;
+      color: #9a9288;
+      text-align: center;
+      line-height: 1.35;
+    }
+    .caption code {
+      font-size: 0.72rem;
+      color: #7a7368;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>饥荒风格（Don’t Starve）按钮 · 配色 12 套</h1>
+    <p class="sub">
+      按设计图鉴色值还原；外形为左上 / 右下斜切 + 粗黑描边。按钮文案为简短主题字，下方为编号与说明。可直接把
+      <code>--fill</code> / <code>--ink</code> 用到你的 Pixi / Canvas / UI 里。
+    </p>
+
+    <div class="grid">
+      <div class="cell">
+        <button type="button" class="dst-btn" style="--fill:#F2E7B0; --ink:#0d0d0d">经典</button>
+        <div class="caption">01. 经典原型<br /><code>#F2E7B0</code> · 字黑</div>
+      </div>
+      <div class="cell">
+        <button type="button" class="dst-btn" style="--fill:#D4A03D; --ink:#0d0d0d">激活</button>
+        <div class="caption">02. 科技 / 激活<br /><code>#D4A03D</code> · 字黑</div>
+      </div>
+      <div class="cell">
+        <button type="button" class="dst-btn" style="--fill:#A12B2E; --ink:#f2ece8">战斗</button>
+        <div class="caption">03. 战斗 / 鲜血<br /><code>#A12B2E</code> · 字浅</div>
+      </div>
+      <div class="cell">
+        <button type="button" class="dst-btn" style="--fill:#5B3A70; --ink:#efe4f2">魔法</button>
+        <div class="caption">04. 魔法 / 暗影<br /><code>#5B3A70</code> · 字浅紫白</div>
+      </div>
+      <div class="cell">
+        <button type="button" class="dst-btn" style="--fill:#4C6A92; --ink:#c8e6ff">研究</button>
+        <div class="caption">05. 蓝图 / 研究<br /><code>#4C6A92</code> · 字天蓝浅</div>
+      </div>
+      <div class="cell">
+        <button type="button" class="dst-btn" style="--fill:#808080; --ink:#2a2a2a">禁用</button>
+        <div class="caption">06. 破损 / 禁用<br /><code>#808080</code> · 字深灰</div>
+      </div>
+      <div class="cell">
+        <button type="button" class="dst-btn" style="--fill:#4A1212; --ink:#e53935">理智</button>
+        <div class="caption">07. 理智极低<br /><code>#4A1212</code> · 字血红</div>
+      </div>
+      <div class="cell">
+        <button type="button" class="dst-btn" style="--fill:#B2D8D8; --ink:#1e3c3c">幽灵</button>
+        <div class="caption">08. 幽灵 / 虚无<br /><code>#B2D8D8</code> · 字青灰</div>
+      </div>
+      <div class="cell">
+        <button type="button" class="dst-btn" style="--fill:#F8F4E1; --ink:#3d4a28">草纸</button>
+        <div class="caption">09. 草纸 / 轻盈<br /><code>#F8F4E1</code> · 字橄榄绿</div>
+      </div>
+      <div class="cell">
+        <button type="button" class="dst-btn" style="--fill:#8B5E3C; --ink:#2c1810">木材</button>
+        <div class="caption">10. 木材质感<br /><code>#8B5E3C</code> · 字深褐</div>
+      </div>
+      <div class="cell">
+        <button type="button" class="dst-btn" style="--fill:#1C252E; --ink:#7a9eb8">入夜</button>
+        <div class="caption">11. 查理 / 入夜<br /><code>#1C252E</code> · 字钢蓝灰</div>
+      </div>
+      <div class="cell">
+        <button type="button" class="dst-btn" style="--fill:#FDEE30; --ink:#1b3d1f">盛夏</button>
+        <div class="caption">12. 盛夏 / 高光<br /><code>#FDEE30</code> · 字深绿</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var prefersReduce =
+        window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefersReduce) {
+        return;
+      }
+      var buttons = document.querySelectorAll(".dst-btn");
+      for (var i = 0; i < buttons.length; i++) {
+        (function (btn) {
+          btn.addEventListener(
+            "pointerenter",
+            function () {
+              var deg = (Math.random() - 0.5) * 3.2;
+              btn.style.setProperty("--tilt", deg.toFixed(2) + "deg");
+            },
+            { passive: true }
+          );
+          btn.addEventListener(
+            "pointerleave",
+            function () {
+              btn.style.setProperty("--tilt", "0deg");
+            },
+            { passive: true }
+          );
+        })(buttons[i]);
+      }
+    })();
+  </script>
+</body>
+</html>

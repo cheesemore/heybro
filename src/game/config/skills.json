@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "editConvention": "全局技能主数据。`id` 唯一；`limit` minion/boss/any；`codeStatus` written/missing/pending_changes（待修改为手工标记）；`descriptionCn`/`logicEffectCn` 见各条。`params` **仅关键战斗调参**（伤害系数、范围/半径设计值、冷却间隔、眩晕与嗜血持续、触发概率等）；落点偏移、受击火花、镜像攻速节奏、召唤散布角度等**技能实现特性**写在代码里。设计像素乘 LAYOUT_SCALE 用 `skillParamDesignPx`/`skillParamNumber`。单位 `skillIds` 挂载。首领周期技秒数见 `BOSS_SKILL_COOLDOWN_SEC`。",
+  "editConvention": "全局技能主数据。`id` 唯一；`limit` minion/boss/any；`powerTag` strong|medium|weak|negative（强/中/弱/负面，缺省 medium）供图鉴编辑器「属性重算」叠乘；`codeStatus` written/missing/pending_changes（待修改为手工标记）；`descriptionCn`/`logicEffectCn` 见各条。`params` **仅关键战斗调参**（伤害系数、范围/半径设计值、冷却间隔、眩晕与嗜血持续、触发概率等）；落点偏移、受击火花、镜像攻速节奏、召唤散布角度等**技能实现特性**写在代码里。设计像素乘 LAYOUT_SCALE 用 `skillParamDesignPx`/`skillParamNumber`。单位 `skillIds` 挂载。首领周期技秒数见 `BOSS_SKILL_COOLDOWN_SEC`。",
   "skills": [
     {
       "id": "skill_farseer_chain_lightning",
@@ -9,7 +9,11 @@
       "codeStatus": "written",
       "descriptionCn": "周期性释放闪电，在敌人间跳跃弹射，对低血量单位优先。",
       "logicEffectCn": "首领周期施放（冷却见 BOSS_SKILL_COOLDOWN_SEC）。首跳选当前血量最低我方；后续跳选距上一命中点最近且未命中过的我方。伤害每跳：atk × firstHopAtkMul × decay^hop，hop 从 0 到 maxHops（含首段共 maxHops+1 段）。魔法伤害、bypassBlock。实现：castFarseerChainLightning。",
-      "params": [8, 0.78, 3]
+      "params": [
+        8,
+        0.78,
+        3
+      ]
     },
     {
       "id": "skill_farseer_summon_grunts",
@@ -18,7 +22,10 @@
       "codeStatus": "written",
       "descriptionCn": "周期性在身旁召唤多名兽人步兵加入战斗。",
       "logicEffectCn": "首领周期施放。params[0]=单次最多召唤数，params[1]=场上敌方总数上限；本次召唤 min(params[0], 空位)。实现：castFarseerSummonGrunts。",
-      "params": [6, 34]
+      "params": [
+        6,
+        34
+      ]
     },
     {
       "id": "skill_tauren_shockwave",
@@ -27,7 +34,11 @@
       "codeStatus": "written",
       "descriptionCn": "朝我方方向发出直线冲击波，沿线伤害递减，不造成眩晕。",
       "logicEffectCn": "首领周期施放。方向指向最近我方；走廊长度 params[0]、半宽 params[1]（设计像素，乘 LAYOUT_SCALE）；伤害系数 params[2]×atk×falloff。仅伤害、魔法标签。实现：castTaurenShockwave。",
-      "params": [780, 70, 0.7125]
+      "params": [
+        780,
+        70,
+        0.7125
+      ]
     },
     {
       "id": "skill_tauren_stomp",
@@ -36,7 +47,11 @@
       "codeStatus": "written",
       "descriptionCn": "大范围践踏地面，造成伤害并长时间眩晕。",
       "logicEffectCn": "首领周期施放。圆形半径 params[2]（设计像素）；伤害 atk×params[0]；眩晕 params[1] 秒。实现：castTaurenStomp。",
-      "params": [0.105, 2.6, 680]
+      "params": [
+        0.105,
+        2.6,
+        680
+      ]
     },
     {
       "id": "skill_blademaster_crit",
@@ -45,15 +60,18 @@
       "codeStatus": "written",
       "descriptionCn": "普通攻击有概率造成双倍伤害。",
       "logicEffectCn": "在 beginDefaultAttack 中，敌方且挂载本技能时，以 critChance 概率将本次普攻伤害乘 critMul。实现：BattleScreen.beginDefaultAttack。",
-      "params": [0.35, 2]
+      "params": [
+        0.35,
+        2
+      ]
     },
     {
       "id": "skill_blademaster_mirror",
       "nameCn": "分身",
       "limit": "boss",
-      "codeStatus": "missing",
+      "codeStatus": "written",
       "descriptionCn": "召唤镜像协助作战（与剑刃风暴拆分后单独实现）。",
-      "logicEffectCn": "规划：独立周期或触发召唤 mirror 外观单位；当前与剑刃风暴同 tick 合并在 skill_blademaster_bladestorm，本 id 不接单独 cast。"
+      "logicEffectCn": "无独立周期 cast：镜像生成与行为由 skill_blademaster_bladestorm 同 tick 管线处理；本 id 仅占位/图鉴与挂载一致性，战斗侧勿单独调度。"
     },
     {
       "id": "skill_blademaster_bladestorm",
@@ -62,7 +80,12 @@
       "codeStatus": "written",
       "descriptionCn": "周期性对全场我方造成旋风伤害，并可能召唤剑圣镜像。",
       "logicEffectCn": "首领周期施放。params[0]=全场 AOE 伤害系数；[1]=场上敌方数低于该值时可召镜像；[2][3]=镜像生命/攻击相对本体的比例。镜像出生位移、攻速手感等为代码实现。",
-      "params": [0.275, 14, 0.09, 0.175]
+      "params": [
+        0.275,
+        14,
+        0.09,
+        0.175
+      ]
     },
     {
       "id": "skill_dread_warrior_assault",
@@ -71,34 +94,53 @@
       "codeStatus": "written",
       "descriptionCn": "靠近我方后排时发动一次范围突袭，造成伤害、击退与眩晕。",
       "logicEffectCn": "单位存活且未用过 dreadAssaultUsed；若与任一我方距离≤radiusPx 则触发一次：范围伤害 atk×dmgMul、击退、stunSec 眩晕，然后标记已用。实现：BattleScreen.updateFrame。",
-      "params": [108, 1.2, 5, 300]
+      "params": [
+        108,
+        1.2,
+        5,
+        300
+      ]
     },
     {
       "id": "skill_raider_leap",
-      "nameCn": "跃入后排",
+      "nameCn": "闪现突袭",
       "limit": "minion",
       "codeStatus": "written",
       "descriptionCn": "周期性跃迁至远离自己的我方附近；落地后短时间内攻速提高、受到的伤害降低。",
       "logicEffectCn": "tickEnemyBacklineLeap。params: [buffSec, leapCdBase, atkMultWhileBuff, dmgTakenMultWhileBuff]；落点纵向偏移等为代码内兵种演出。",
-      "params": [5, 9, 2, 0.5]
+      "params": [
+        5,
+        9,
+        2,
+        0.5
+      ],
+      "powerTag": "strong"
     },
     {
       "id": "skill_beserker_leap",
-      "nameCn": "跃入后排",
+      "nameCn": "跳跃重击",
       "limit": "minion",
       "codeStatus": "written",
       "descriptionCn": "周期性跃迁至远离自己的我方附近，扰乱阵型。",
       "logicEffectCn": "tickEnemyBacklineLeap。params[0]=跃迁技能冷却基准（秒）；落点偏移等为代码。",
-      "params": [10.5]
+      "params": [
+        10
+      ],
+      "powerTag": "medium"
     },
     {
       "id": "skill_batrider_leap",
-      "nameCn": "跃入后排",
+      "nameCn": "钻地打击",
       "limit": "minion",
       "codeStatus": "written",
-      "descriptionCn": "周期性跃迁至远离自己的我方附近，扰乱阵型。",
-      "logicEffectCn": "tickEnemyBacklineLeap。params[0]=冷却基准（秒）；落点等为代码。",
-      "params": [7.2]
+      "descriptionCn": "从我方单位脚下钻出并且造成范围伤害。",
+      "logicEffectCn": "tickEnemyBacklineLeap：仍选最远的存活我方为锚点跃迁；落点与狼骑/狂战同管线（nyOff 见 LEAP_NYOFF_DESIGN_BATRIDER）。落地后对落点半径 params[1]（设计像素，乘 LAYOUT_SCALE）内的每名我方造成 params[2]%×自身 atk 的魔法伤害（与 cleave 相同距离判定：中心距≤半径+目标 hitRadius）。params[0]=跃迁冷却基准（秒）。",
+      "params": [
+        15,
+        50,
+        50
+      ],
+      "powerTag": "medium"
     },
     {
       "id": "skill_ultralisk_mage_fragile",
@@ -107,7 +149,9 @@
       "codeStatus": "written",
       "descriptionCn": "受到法师攻击时承受额外伤害。",
       "logicEffectCn": "applyDamage：若受击者为敌方且攻击者为 ally mage，则伤害再乘 fragileMul。",
-      "params": [2]
+      "params": [
+        2
+      ]
     },
     {
       "id": "skill_abomination_cleave",
@@ -116,7 +160,11 @@
       "codeStatus": "written",
       "descriptionCn": "近战攻击命中后，可能对目标附近其他单位造成溅射伤害。",
       "logicEffectCn": "abominationCleaveFollowup：主目标周围半径 cleaveRadiusPx 内最多 extraTargets 个其他我方，各受 atk×cleaveAtkMul。",
-      "params": [62, 2, 0.55]
+      "params": [
+        62,
+        2,
+        0.55
+      ]
     },
     {
       "id": "skill_darkspear_slow_knockback",
@@ -125,7 +173,12 @@
       "codeStatus": "written",
       "descriptionCn": "远程攻击有小概率击退目标并使其减速。",
       "logicEffectCn": "maybeDarkspearKnockback：概率 procChance；击退距离 knockDistPx；stunSec 与 moveSlowSec（移速半速）。",
-      "params": [0.1, 100, 1, 5]
+      "params": [
+        0.1,
+        100,
+        1,
+        5
+      ]
     },
     {
       "id": "skill_shaman_bloodlust",
@@ -134,7 +187,12 @@
       "codeStatus": "written",
       "descriptionCn": "周期性为附近一名友方施加嗜血，大幅提升攻速。",
       "logicEffectCn": "tickShamanBloodlustAll：每 skillInternalCdSec 尝试；半径内选最近其他敌方无嗜血则施加，否则可嗜血自己。applyBloodlustBuff：持续 buffSec，攻速间隔÷atkSpeedMul。",
-      "params": [6, 228, 12, 1.5]
+      "params": [
+        6,
+        228,
+        12,
+        1.5
+      ]
     },
     {
       "id": "skill_catapult_burn_field",
@@ -143,7 +201,113 @@
       "codeStatus": "written",
       "descriptionCn": "远程攻击在落点留下燃烧区域，持续对范围内我方造成伤害。",
       "logicEffectCn": "params: [burnRadiusDesign, tickDmgCoeff, tickIntervalSec]；灼烧区内受击火花概率等为代码演出。",
-      "params": [88, 0.2, 0.32]
+      "params": [
+        88,
+        0.2,
+        0.32
+      ]
+    },
+    {
+      "id": "skill_shadow_bot",
+      "nameCn": "暗影箭",
+      "limit": "minion",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "释放暗影箭造成高额单体伤害",
+      "logicEffectCn": "tickEnemyShadowBoltTry：params[0]=冷却秒；开场 cd=0。最近我方在 effectiveSkillRange 内且 cd 归零时发射弹道（enemy_shadow_bolt 紫拖尾），命中造成 round(atk×params[1]/100) 的魔法伤害；墨水状爆炸为落点多层紫环+火花。眩晕中不发射但 cd 仍走。",
+      "params": [
+        10,
+        300
+      ]
+    },
+    {
+      "id": "skill_normal_crit",
+      "nameCn": "致命一击",
+      "limit": "minion",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "普攻有20%几率造成2倍暴击",
+      "logicEffectCn": "beginDefaultAttack：敌方且挂载本技能时，以 params[0]/100 概率将本次普攻伤害乘 params[1]，飘字 kind=crit（与首领致命一击样式一致）。不与 skill_blademaster_crit 同单位叠加判定链：先判首领致命，否则再判本技能。",
+      "params": [
+        20,
+        2
+      ]
+    },
+    {
+      "id": "skill_evil_strenth",
+      "nameCn": "邪恶狂热",
+      "limit": "minion",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "为自己施加邪恶狂热，造成伤害提高50%，受到的伤害增加30%，持续6秒。(冷却10秒）",
+      "logicEffectCn": "tickEnemyEvilFrenzy：开场 cd=0。每帧 evilFrenzyCdRem、evilFrenzyBuffT 递减；cd 归零时刷新 buff=params[1] 秒、cd=params[0] 秒。Buff 期间 tint 偏红。applyDamage：攻击者为该敌方且 buff>0 时，对我方伤害×(1+params[2]/100)；该敌方为受击目标且 buff>0 时，我方对其伤害×(1+params[3]/100)。",
+      "params": [
+        10,
+        6,
+        50,
+        30
+      ]
+    },
+    {
+      "id": "skill_boom",
+      "nameCn": "自爆",
+      "limit": "minion",
+      "powerTag": "weak",
+      "codeStatus": "written",
+      "descriptionCn": "死亡时自爆",
+      "logicEffectCn": "applyDamage 非首领死亡分支：对范围内存活我方造成 round(atk×params[1]/100) 魔法伤害（bypassBlock）；半径=params[0] 设计像素×LAYOUT_SCALE，判定距≤半径+双方 hitRadius。procSkillBoomExplosion 火色多层环+火花；无飞出动画，tickDeathAnimations 首段移除 root。",
+      "params": [
+        50,
+        100
+      ]
+    },
+    {
+      "id": "skill_warrior_weak",
+      "nameCn": "对战士脆弱",
+      "limit": "minion",
+      "powerTag": "negative",
+      "codeStatus": "written",
+      "descriptionCn": "受到战士伤害提高50%",
+      "logicEffectCn": "applyDamage：受击者为敌方、攻击者为 ally 且 allyKind=warrior（含英雄）时，伤害再乘 (1+params[0]/100)。与其它脆弱乘区在 enemyClassWeaknessMult 叠乘。",
+      "params": [
+        50
+      ]
+    },
+    {
+      "id": "skill_mage_weak",
+      "nameCn": "对法师脆弱",
+      "limit": "minion",
+      "powerTag": "negative",
+      "codeStatus": "written",
+      "descriptionCn": "受到法师伤害提高50%",
+      "logicEffectCn": "applyDamage：受击者为敌方、攻击者为 ally 且 allyKind=mage（含英雄）时，伤害再乘 (1+params[0]/100)。enemyClassWeaknessMult。",
+      "params": [
+        50
+      ]
+    },
+    {
+      "id": "skill_archer_weak",
+      "nameCn": "对射手脆弱",
+      "limit": "minion",
+      "powerTag": "negative",
+      "codeStatus": "written",
+      "descriptionCn": "受到射手伤害提高50%",
+      "logicEffectCn": "applyDamage：受击者为敌方、攻击者为 ally 且 allyKind=archer（含英雄）时，伤害再乘 (1+params[0]/100)。enemyClassWeaknessMult。",
+      "params": [
+        50
+      ]
+    },
+    {
+      "id": "skill_knight_weak",
+      "nameCn": "对骑士脆弱",
+      "limit": "minion",
+      "powerTag": "negative",
+      "codeStatus": "written",
+      "descriptionCn": "受到骑士伤害提高50%",
+      "logicEffectCn": "applyDamage：受击者为敌方、攻击者为 ally 且 allyKind=knight（含英雄）时，伤害再乘 (1+params[0]/100)。enemyClassWeaknessMult。",
+      "params": [
+        50
+      ]
     }
   ]
 }

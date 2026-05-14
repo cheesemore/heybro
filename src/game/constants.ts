@@ -40,7 +40,7 @@ export const GLOBAL_UNIT_ATK_MULT = 2;
 
 export const ALLY_CLASSES = ['warrior', 'mage', 'priest', 'archer', 'knight'] as const;
 /**
- * 普通敌方兵种（12 种）。首领见 `bosses.json`。
+ * 普通敌方兵种（12 种）。书本关底首领见 `wowBookBosses.json`（缺省字段用 `wowBookData.WOW_BOOK_BOSS_TABLE_DEFAULT`）。
  *
  * 配表锚点：**兽人步兵 `grunt`**。各小怪在机制修正之前，宜先对齐同一「基础篇」乘积：
  * `baseMaxHp × baseAtk ÷ attackInterval`，其中 **attackInterval 即 JSON 里的 `attackSpeed` 字段**（秒/次，传入战场后映射为 `SimUnit.attackInterval`）。

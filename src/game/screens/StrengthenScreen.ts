@@ -17,6 +17,7 @@ import {
 } from '../heroMetaStorage';
 import { drawGoldenSolidPanel, GOLDEN_PANEL_BODY } from '../ui/goldenSolidPanel';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
+import { createStyledGameButton, redrawGameButtonFromStyle, type GameButton, type GameButtonStyleKey } from '../ui/gameButtons';
 import type { ModalLayer } from './ModalLayer';
 import { createDraftHeroToken } from '../unitCircleTokens';
 import { ALLY_DEFS } from '../unitDefs';
@@ -64,10 +65,8 @@ export class StrengthenScreen extends Container {
   private readonly scrollContent = new Container();
   private readonly scrollMaskG = new Graphics();
   private readonly sheetLayer = new Container();
-  private readonly tabHeroG = new Graphics();
-  private readonly tabGachaG = new Graphics();
-  private readonly tabHeroT: Text;
-  private readonly tabGachaT: Text;
+  private readonly tabHeroBtn: GameButton;
+  private readonly tabGachaBtn: GameButton;
   private readonly gachaHint: Text;
 
   private tab: 'hero' | 'gacha' = 'hero';
@@ -110,68 +109,40 @@ export class StrengthenScreen extends Container {
 
     const backW = Math.round(140 * LAYOUT_SCALE);
     const backH = Math.round(48 * LAYOUT_SCALE);
-    const backG = new Graphics();
-    backG
-      .roundRect(0, 0, backW, backH, Math.round(12 * LAYOUT_SCALE))
-      .fill(0x1e293b)
-      .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x475569 });
-    backG.eventMode = 'static';
-    backG.cursor = 'pointer';
-    backG.position.set(GAME_WIDTH - backW - PAD, Math.round(22 * LAYOUT_SCALE));
-    backG.on('pointertap', () => this.onBack());
-    this.addChild(backG);
-    const backT = new Text({
+    const backBtn = createStyledGameButton('classic', {
       text: '返回',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(20 * LAYOUT_SCALE),
-        fill: 0xe2e8f0,
-        fontWeight: '600',
-      },
+      width: backW,
+      height: backH,
+      fontSize: Math.round(20 * LAYOUT_SCALE),
     });
-    backT.anchor.set(0.5);
-    backT.position.set(backG.x + backW / 2, backG.y + backH / 2);
-    this.addChild(backT);
+    backBtn.position.set(GAME_WIDTH - backW - PAD, Math.round(22 * LAYOUT_SCALE));
+    backBtn.on('pointertap', () => this.onBack());
+    this.addChild(backBtn);
 
     const tabY = Math.round(78 * LAYOUT_SCALE);
     const tabW = Math.round(160 * LAYOUT_SCALE);
     const tabH = Math.round(44 * LAYOUT_SCALE);
     const tabGap = Math.round(12 * LAYOUT_SCALE);
-    this.tabHeroG.position.set(PAD, tabY);
-    this.tabHeroG.eventMode = 'static';
-    this.tabHeroG.cursor = 'pointer';
-    this.tabHeroG.on('pointertap', () => this.setTab('hero'));
-    this.addChild(this.tabHeroG);
-    this.tabHeroT = new Text({
+    const tabFs = Math.round(22 * LAYOUT_SCALE);
+    this.tabHeroBtn = createStyledGameButton('strengthenTabOn', {
       text: '英雄',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(22 * LAYOUT_SCALE),
-        fill: 0xffffff,
-        fontWeight: '700',
-      },
+      width: tabW,
+      height: tabH,
+      fontSize: tabFs,
     });
-    this.tabHeroT.anchor.set(0.5);
-    this.tabHeroT.position.set(PAD + tabW / 2, tabY + tabH / 2);
-    this.addChild(this.tabHeroT);
+    this.tabHeroBtn.position.set(PAD, tabY);
+    this.tabHeroBtn.on('pointertap', () => this.setTab('hero'));
+    this.addChild(this.tabHeroBtn);
 
-    this.tabGachaG.position.set(PAD + tabW + tabGap, tabY);
-    this.tabGachaG.eventMode = 'static';
-    this.tabGachaG.cursor = 'pointer';
-    this.tabGachaG.on('pointertap', () => this.setTab('gacha'));
-    this.addChild(this.tabGachaG);
-    this.tabGachaT = new Text({
+    this.tabGachaBtn = createStyledGameButton('strengthenTabOff', {
       text: '抽卡',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(22 * LAYOUT_SCALE),
-        fill: 0xe2e8f0,
-        fontWeight: '700',
-      },
+      width: tabW,
+      height: tabH,
+      fontSize: tabFs,
     });
-    this.tabGachaT.anchor.set(0.5);
-    this.tabGachaT.position.set(PAD + tabW + tabGap + tabW / 2, tabY + tabH / 2);
-    this.addChild(this.tabGachaT);
+    this.tabGachaBtn.position.set(PAD + tabW + tabGap, tabY);
+    this.tabGachaBtn.on('pointertap', () => this.setTab('gacha'));
+    this.addChild(this.tabGachaBtn);
 
     const heroAreaTop = tabY + tabH + Math.round(14 * LAYOUT_SCALE);
     this.heroRoot.position.set(0, heroAreaTop);
@@ -190,28 +161,15 @@ export class StrengthenScreen extends Container {
 
     const helpW = Math.round(100 * LAYOUT_SCALE);
     const helpH = Math.round(40 * LAYOUT_SCALE);
-    const helpG = new Graphics();
-    helpG
-      .roundRect(0, 0, helpW, helpH, Math.round(10 * LAYOUT_SCALE))
-      .fill(0x1e293b)
-      .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x64748b });
-    helpG.eventMode = 'static';
-    helpG.cursor = 'pointer';
-    helpG.position.set(GAME_WIDTH - PAD - helpW, divY + Math.round(8 * LAYOUT_SCALE));
-    helpG.on('pointertap', () => this.showHelp());
-    this.heroRoot.addChild(helpG);
-    const helpT = new Text({
+    const helpBtn = createStyledGameButton('classic', {
       text: '帮助',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(18 * LAYOUT_SCALE),
-        fill: 0x94a3b8,
-        fontWeight: '600',
-      },
+      width: helpW,
+      height: helpH,
+      fontSize: Math.round(18 * LAYOUT_SCALE),
     });
-    helpT.anchor.set(0.5);
-    helpT.position.set(helpG.x + helpW / 2, helpG.y + helpH / 2);
-    this.heroRoot.addChild(helpT);
+    helpBtn.position.set(GAME_WIDTH - PAD - helpW, divY + Math.round(8 * LAYOUT_SCALE));
+    helpBtn.on('pointertap', () => this.showHelp());
+    this.heroRoot.addChild(helpBtn);
 
     const scrollTop = divY + Math.round(56 * LAYOUT_SCALE);
     this.scrollViewW = GAME_WIDTH - PAD * 2;
@@ -251,28 +209,15 @@ export class StrengthenScreen extends Container {
 
     const lotW = Math.round(280 * LAYOUT_SCALE);
     const lotH = Math.round(56 * LAYOUT_SCALE);
-    const lotG = new Graphics();
-    lotG
-      .roundRect(0, 0, lotW, lotH, Math.round(14 * LAYOUT_SCALE))
-      .fill(0x7c3aed)
-      .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0xa78bfa });
-    lotG.eventMode = 'static';
-    lotG.cursor = 'pointer';
-    lotG.position.set(PAD, Math.round(24 * LAYOUT_SCALE));
-    lotG.on('pointertap', () => this.doFakeLottery());
-    this.gachaRoot.addChild(lotG);
-    const lotT = new Text({
+    const lotBtn = createStyledGameButton('accent', {
       text: '模拟抽奖（随机英雄）',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(20 * LAYOUT_SCALE),
-        fill: 0xffffff,
-        fontWeight: '700',
-      },
+      width: lotW,
+      height: lotH,
+      fontSize: Math.round(20 * LAYOUT_SCALE),
     });
-    lotT.anchor.set(0.5);
-    lotT.position.set(lotG.x + lotW / 2, lotG.y + lotH / 2);
-    this.gachaRoot.addChild(lotT);
+    lotBtn.position.set(PAD, Math.round(24 * LAYOUT_SCALE));
+    lotBtn.on('pointertap', () => this.doFakeLottery());
+    this.gachaRoot.addChild(lotBtn);
 
     this.gachaHint = new Text({
       text:
@@ -287,7 +232,7 @@ export class StrengthenScreen extends Container {
         lineHeight: Math.round(24 * LAYOUT_SCALE),
       },
     });
-    this.gachaHint.position.set(PAD, lotG.y + lotH + Math.round(20 * LAYOUT_SCALE));
+    this.gachaHint.position.set(PAD, lotBtn.y + lotH + Math.round(20 * LAYOUT_SCALE));
     this.gachaRoot.addChild(this.gachaHint);
 
     this.sheetLayer.visible = false;
@@ -370,20 +315,19 @@ export class StrengthenScreen extends Container {
   private refreshTabsVisual(): void {
     const tabW = Math.round(160 * LAYOUT_SCALE);
     const tabH = Math.round(44 * LAYOUT_SCALE);
-    const r = Math.round(12 * LAYOUT_SCALE);
-    const drawTab = (g: Graphics, sel: boolean) => {
-      g.clear();
-      g.roundRect(0, 0, tabW, tabH, r)
-        .fill(sel ? 0x4f46e5 : 0x1e293b)
-        .stroke({
-          width: Math.max(2, Math.round(2 * LAYOUT_SCALE)),
-          color: sel ? 0xa5b4fc : 0x475569,
-        });
-    };
-    drawTab(this.tabHeroG, this.tab === 'hero');
-    drawTab(this.tabGachaG, this.tab === 'gacha');
-    this.tabHeroT.style.fill = this.tab === 'hero' ? 0xffffff : 0x94a3b8;
-    this.tabGachaT.style.fill = this.tab === 'gacha' ? 0xffffff : 0x94a3b8;
+    const tabFs = Math.round(22 * LAYOUT_SCALE);
+    redrawGameButtonFromStyle(this.tabHeroBtn, this.tab === 'hero' ? 'strengthenTabOn' : 'strengthenTabOff', {
+      text: '英雄',
+      width: tabW,
+      height: tabH,
+      fontSize: tabFs,
+    });
+    redrawGameButtonFromStyle(this.tabGachaBtn, this.tab === 'gacha' ? 'strengthenTabOn' : 'strengthenTabOff', {
+      text: '抽卡',
+      width: tabW,
+      height: tabH,
+      fontSize: tabFs,
+    });
   }
 
   private showHelp(): void {
@@ -738,41 +682,31 @@ export class StrengthenScreen extends Container {
     const primaryY = py + ph - btnH * 2 - btnGap - Math.round(20 * LAYOUT_SCALE);
     const closeY = primaryY + btnH + btnGap;
 
-    const mkBtn = (label: string, bx: number, by: number, fill: number, onTap: () => void): void => {
-      const b = new Graphics();
-      b.roundRect(0, 0, btnW, btnH, Math.round(12 * LAYOUT_SCALE)).fill(fill);
-      b.eventMode = 'static';
-      b.cursor = 'pointer';
+    const mkBtn = (label: string, bx: number, by: number, style: GameButtonStyleKey, onTap: () => void): void => {
+      const b = createStyledGameButton(style, {
+        text: label,
+        width: btnW,
+        height: btnH,
+        fontSize: Math.round(20 * LAYOUT_SCALE),
+      });
       b.position.set(bx, by);
       b.on('pointertap', (e) => {
         e.stopPropagation();
         onTap();
       });
       this.sheetLayer.addChild(b);
-      const bt = new Text({
-        text: label,
-        style: {
-          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(20 * LAYOUT_SCALE),
-          fill: 0xffffff,
-          fontWeight: '700',
-        },
-      });
-      bt.anchor.set(0.5);
-      bt.position.set(bx + btnW / 2, by + btnH / 2);
-      this.sheetLayer.addChild(bt);
     };
 
     const centerX = px + pw / 2;
     const bx = centerX - btnW / 2;
     if (deployed) {
-      mkBtn('下阵', bx, primaryY, 0xb45309, () => {
+      mkBtn('下阵', bx, primaryY, 'sheetUndeploy', () => {
         undeployHeroById(id);
         this.closeHeroSheet();
         this.refreshAll();
       });
     } else {
-      mkBtn('上阵', bx, primaryY, 0x2563eb, () => {
+      mkBtn('上阵', bx, primaryY, 'sheetDeploy', () => {
         const r = tryDeployHero(id);
         if (r === 'full') {
           this.modal.alert('上阵栏位已满，请先下阵一名英雄。', () => {});
@@ -787,6 +721,6 @@ export class StrengthenScreen extends Container {
       });
     }
 
-    mkBtn('关闭', bx, closeY, 0x475569, () => this.closeHeroSheet());
+    mkBtn('关闭', bx, closeY, 'sheetClose', () => this.closeHeroSheet());
   }
 }

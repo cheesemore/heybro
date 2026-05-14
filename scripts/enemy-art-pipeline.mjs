@@ -16,27 +16,23 @@ import { exportEnemyPngFromBuffer } from './enemy-art-export.mjs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 
-const BOSS_JSON_TO_PAINT = {
-  farseeer: 'boss_farseer',
-  tauren: 'boss_tauren',
-  blademaster: 'boss_blademaster',
-};
-
 function loadJson(rel) {
   const p = path.join(root, 'src', 'game', 'config', rel);
   return JSON.parse(fs.readFileSync(p, 'utf8'));
 }
+
+const BOSS_PAINT_DISPLAY = {
+  boss_farseer: '先知',
+  boss_tauren: '牛头人酋长',
+  boss_blademaster: '剑圣',
+};
 
 function displayNameForPaint(paintId) {
   const doc = loadJson('wowBookMonsters.json');
   const rows = doc.monsters ?? [];
   const row = rows.find((m) => m.id === paintId);
   if (row?.nameCn) return row.nameCn;
-  const bosses = loadJson('bosses.json');
-  for (const [bj, paint] of Object.entries(BOSS_JSON_TO_PAINT)) {
-    if (paint === paintId && bosses[bj]?.name) return bosses[bj].name;
-  }
-  return paintId;
+  return BOSS_PAINT_DISPLAY[paintId] ?? paintId;
 }
 
 function buildPrompt(paintId) {

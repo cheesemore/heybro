@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>游戏通用按钮</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      color: #2a2a24;
+      background: #fefde3;
+    }
+    .layout {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 16px 20px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .sub { margin: 0 0 12px; color: #5c5c52; font-size: 0.85rem; }
+    #cfg-panel {
+      background: #fffef0;
+      border: 2px solid #3d3d33;
+      border-radius: 4px;
+      padding: 14px 16px 16px;
+      box-shadow: 3px 3px 0 rgba(61, 61, 51, 0.12);
+    }
+    #cfg-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px 14px;
+      align-items: end;
+    }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 0.8rem; font-weight: 600; color: #3d3d33; }
+    .field input[type="text"],
+    .field input[type="number"],
+    .field select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1.5px solid #3d3d33;
+      border-radius: 3px;
+      background: #fff;
+      font: inherit;
+    }
+    .field input[type="color"] {
+      width: 100%;
+      height: 34px;
+      padding: 2px;
+      border: 1.5px solid #3d3d33;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .field .hint { font-size: 0.72rem; color: #77766c; font-weight: 400; }
+    .row-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 6px;
+    }
+    .row-actions button {
+      padding: 8px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 2px solid #3d3d33;
+      border-radius: 3px;
+      background: #ebe5a7;
+      color: #3d3d33;
+    }
+    .row-actions button.secondary {
+      background: #fff;
+      font-weight: 600;
+    }
+    .check-row {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .check-row input { width: 16px; height: 16px; }
+    #canvas-host {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+      padding: 12px;
+      background: #fefde3;
+      border: 1px dashed #c9c4a0;
+      border-radius: 4px;
+    }
+    #canvas-host canvas { display: block; }
+    details.ref {
+      margin-top: 12px;
+      border-top: 1px solid #dcd7b0;
+      padding-top: 10px;
+    }
+    details.ref summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: #3d3d33;
+    }
+    details.ref dl {
+      margin: 10px 0 0;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px 16px;
+      font-size: 0.82rem;
+    }
+    details.ref dt { font-weight: 600; color: #3d3d33; }
+    details.ref dd { margin: 0; color: #555; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header>
+      <h1>通用按钮</h1>
+      <p class="sub">游戏向斜切矩形按钮 · 下方为可配置项，修改后点「应用到画布」。</p>
+    </header>
+
+    <section id="cfg-panel" aria-label="可配置项">
+      <form id="cfg-form" autocomplete="off">
+        <div class="field">
+          <label for="f-text">文案 text</label>
+          <input id="f-text" type="text" value="确定" maxlength="32" />
+        </div>
+        <div class="field">
+          <label for="f-width">宽度 width</label>
+          <input id="f-width" type="number" value="224" min="80" max="800" step="1" />
+        </div>
+        <div class="field">
+          <label for="f-height">高度 height</label>
+          <input id="f-height" type="number" value="60" min="32" max="200" step="1" />
+        </div>
+        <div class="field">
+          <label for="f-fill">填充色 fill</label>
+          <input id="f-fill" type="color" value="#ebe5a7" />
+        </div>
+        <div class="field">
+          <label for="f-stroke">描边色 stroke</label>
+          <input id="f-stroke" type="color" value="#3d3d33" />
+        </div>
+        <div class="field">
+          <label for="f-textcolor">字色 textColor</label>
+          <input id="f-textcolor" type="color" value="#3d3d33" />
+          <span class="hint">可与描边同色或单独指定</span>
+        </div>
+        <div class="field">
+          <label for="f-bg">画布背景 backgroundColor</label>
+          <input id="f-bg" type="color" value="#fefde3" />
+        </div>
+        <div class="field">
+          <label for="f-canvas-w">画布宽</label>
+          <input id="f-canvas-w" type="number" value="640" min="320" max="1200" step="1" />
+        </div>
+        <div class="field">
+          <label for="f-canvas-h">画布高</label>
+          <input id="f-canvas-h" type="number" value="360" min="200" max="800" step="1" />
+        </div>
+        <div class="field">
+          <label for="f-strokew">描边粗细 strokeWidth</label>
+          <input id="f-strokew" type="number" value="" min="1" max="8" step="0.5" placeholder="自动" />
+          <span class="hint">留空则按高度自动</span>
+        </div>
+        <div class="field">
+          <label for="f-fontsize">字号 fontSize</label>
+          <input id="f-fontsize" type="number" value="" min="10" max="72" step="1" placeholder="自动" />
+          <span class="hint">留空则约 0.4× 高度</span>
+        </div>
+        <div class="field">
+          <label for="f-cut">切角 cut</label>
+          <input id="f-cut" type="number" value="" min="0" max="80" step="1" placeholder="自动" />
+          <span class="hint">留空则随宽高自动</span>
+        </div>
+        <div class="field">
+          <label for="f-weight">字重 fontWeight</label>
+          <select id="f-weight">
+            <option value="bold" selected>bold（默认）</option>
+            <option value="700">700</option>
+            <option value="600">600</option>
+            <option value="normal">normal</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column: span 2;">
+          <label for="f-font">字体栈 fontFamily</label>
+          <input id="f-font" type="text" value='system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif' />
+        </div>
+        <div class="check-row">
+          <input id="f-sync-text" type="checkbox" />
+          <label for="f-sync-text">字色始终跟随描边（勾选后字色与描边同步）</label>
+        </div>
+        <div class="row-actions">
+          <button type="submit">应用到画布</button>
+          <button type="button" class="secondary" id="btn-reset">恢复默认</button>
+        </div>
+      </form>
+
+      <details class="ref">
+        <summary>可配置项说明（与代码 createGameGeneralButton 一致）</summary>
+        <dl>
+          <dt>text</dt><dd>按钮文字。</dd>
+          <dt>width / height</dt><dd>按钮像素尺寸。</dd>
+          <dt>fill / stroke</dt><dd>填充与描边，支持 <code>#RRGGBB</code> 或 <code>0xRRGGBB</code>。</dd>
+          <dt>textColor</dt><dd>字色；不写则与描边同色。本页用勾选「跟随描边」实现。</dd>
+          <dt>strokeWidth / fontSize / cut</dt><dd>可选；不写时按高度、宽度自动估算。</dd>
+          <dt>fontWeight</dt><dd>默认 <code>bold</code>。</dd>
+          <dt>fontFamily</dt><dd>CSS 字体列表字符串。</dd>
+          <dt>运行时</dt><dd>代码里可对实例调用 <code>btn.redraw({ ... })</code> 局部更新。</dd>
+        </dl>
+      </details>
+    </section>
+
+    <div id="canvas-host" aria-label="预览画布"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/pixi.js@7.4.2/dist/pixi.min.js"></script>
+  <script>
+    (function () {
+      function toPixiColor(value) {
+        if (typeof value === 'number' && !Number.isNaN(value)) {
+          return value >>> 0;
+        }
+        if (typeof value !== 'string') {
+          return 0xffffff;
+        }
+        var s = value.trim();
+        if (s[0] === '#') {
+          s = s.slice(1);
+        }
+        if (s.length === 3) {
+          s = s[0] + s[0] + s[1] + s[1] + s[2] + s[2];
+        }
+        return parseInt(s, 16) >>> 0;
+      }
+
+      function createGameGeneralButton(opts) {
+        opts = opts || {};
+        var w = opts.width != null ? opts.width : 224;
+        var h = opts.height != null ? opts.height : 60;
+        var fill = toPixiColor(opts.fill != null ? opts.fill : 0xebe5a7);
+        var stroke = toPixiColor(opts.stroke != null ? opts.stroke : 0x3d3d33);
+        var textColor = opts.textColor != null ? toPixiColor(opts.textColor) : stroke;
+        var strokeW =
+          opts.strokeWidth != null
+            ? opts.strokeWidth
+            : Math.max(2, Math.min(4, Math.round(h * 0.045)));
+        var cut =
+          opts.cut != null
+            ? opts.cut
+            : Math.round(
+                Math.min(h * 0.24, w * 0.09, Math.min(w, h) * 0.35)
+              );
+        var fontSize =
+          opts.fontSize != null
+            ? opts.fontSize
+            : Math.max(14, Math.round(h * 0.4));
+        var text = opts.text != null ? String(opts.text) : '确定';
+        var fontWeight = opts.fontWeight != null ? opts.fontWeight : 'bold';
+        var fontFamily =
+          opts.fontFamily ||
+          'system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif';
+
+        var btn = new PIXI.Container();
+
+        var g = new PIXI.Graphics();
+        g.lineStyle(strokeW, stroke, 1);
+        g.beginFill(fill);
+        g.moveTo(cut, 0);
+        g.lineTo(w, 0);
+        g.lineTo(w, h - cut);
+        g.lineTo(w - cut, h);
+        g.lineTo(0, h);
+        g.lineTo(0, cut);
+        g.closePath();
+        g.endFill();
+
+        var label = new PIXI.Text(text, {
+          fontFamily: fontFamily,
+          fontSize: fontSize,
+          fill: textColor,
+          fontWeight: fontWeight,
+        });
+        label.anchor.set(0.5, 0.5);
+        label.position.set(w / 2, h / 2);
+
+        btn.addChild(g);
+        btn.addChild(label);
+
+        btn.interactive = true;
+        btn.cursor = 'pointer';
+        btn.hitArea = new PIXI.Polygon(
+          cut, 0, w, 0, w, h - cut, w - cut, h, 0, h, 0, cut
+        );
+
+        btn.on('pointerdown', function () {
+          btn.alpha = 0.9;
+        });
+        btn.on('pointerup', function () {
+          btn.alpha = 1;
+        });
+        btn.on('pointerupoutside', function () {
+          btn.alpha = 1;
+        });
+
+        btn.redraw = function (patch) {
+          patch = patch || {};
+          var sizeChanged = false;
+          if (patch.width != null) {
+            w = patch.width;
+            sizeChanged = true;
+          }
+          if (patch.height != null) {
+            h = patch.height;
+            sizeChanged = true;
+          }
+          if (patch.fill != null) {
+            fill = toPixiColor(patch.fill);
+          }
+          if (patch.stroke != null) {
+            stroke = toPixiColor(patch.stroke);
+          }
+          if (patch.textColor != null) {
+            textColor = toPixiColor(patch.textColor);
+          }
+          if (patch.strokeWidth != null) {
+            strokeW = patch.strokeWidth;
+          } else if (patch.height != null) {
+            strokeW = Math.max(2, Math.min(4, Math.round(h * 0.045)));
+          }
+          if (patch.cut != null) {
+            cut = patch.cut;
+          } else if (sizeChanged) {
+            cut = Math.round(
+              Math.min(h * 0.24, w * 0.09, Math.min(w, h) * 0.35)
+            );
+          }
+          if (patch.fontSize != null) {
+            fontSize = patch.fontSize;
+          } else if (patch.height != null) {
+            fontSize = Math.max(14, Math.round(h * 0.4));
+          }
+          if (patch.fontWeight != null) {
+            fontWeight = patch.fontWeight;
+          }
+          if (patch.fontFamily != null) {
+            fontFamily = patch.fontFamily;
+          }
+          if (patch.text != null) {
+            text = String(patch.text);
+          }
+
+          g.clear();
+          g.lineStyle(strokeW, stroke, 1);
+          g.beginFill(fill);
+          g.moveTo(cut, 0);
+          g.lineTo(w, 0);
+          g.lineTo(w, h - cut);
+          g.lineTo(w - cut, h);
+          g.lineTo(0, h);
+          g.lineTo(0, cut);
+          g.closePath();
+          g.endFill();
+
+          label.text = text;
+          label.style.fontSize = fontSize;
+          label.style.fill = textColor;
+          label.style.fontWeight = fontWeight;
+          label.style.fontFamily = fontFamily;
+          label.position.set(w / 2, h / 2);
+
+          btn.hitArea = new PIXI.Polygon(
+            cut, 0, w, 0, w, h - cut, w - cut, h, 0, h, 0, cut
+          );
+        };
+
+        return btn;
+      }
+
+      window.createGameGeneralButton = createGameGeneralButton;
+      window.toPixiColor = toPixiColor;
+
+      var form = document.getElementById('cfg-form');
+      var host = document.getElementById('canvas-host');
+      var syncText = document.getElementById('f-sync-text');
+
+      function num(id, fallback) {
+        var el = document.getElementById(id);
+        var v = parseFloat(el.value, 10);
+        return Number.isFinite(v) ? v : fallback;
+      }
+
+      function numOrEmpty(id) {
+        var el = document.getElementById(id);
+        var t = el.value.trim();
+        if (t === '') {
+          return null;
+        }
+        var v = parseFloat(t, 10);
+        return Number.isFinite(v) ? v : null;
+      }
+
+      function str(id) {
+        return document.getElementById(id).value;
+      }
+
+      function autoStrokeW(h) {
+        return Math.max(2, Math.min(4, Math.round(h * 0.045)));
+      }
+      function autoFontSize(h) {
+        return Math.max(14, Math.round(h * 0.4));
+      }
+      function autoCut(w, h) {
+        return Math.round(Math.min(h * 0.24, w * 0.09, Math.min(w, h) * 0.35));
+      }
+
+      var app = new PIXI.Application({
+        width: 640,
+        height: 360,
+        background: toPixiColor('#fefde3'),
+        antialias: true,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true,
+      });
+      host.appendChild(app.view);
+
+      var mainBtn = createGameGeneralButton({});
+      app.stage.addChild(mainBtn);
+
+      function layoutButton(w, h) {
+        mainBtn.x = (app.screen.width - w) / 2;
+        mainBtn.y = (app.screen.height - h) / 2;
+      }
+
+      function applyFromForm() {
+        var cw = Math.round(num('f-canvas-w', 640));
+        var ch = Math.round(num('f-canvas-h', 360));
+        app.renderer.resize(cw, ch);
+        app.view.style.width = cw + 'px';
+        app.view.style.height = ch + 'px';
+
+        var bg = str('f-bg');
+        document.querySelector('.layout').style.background = bg;
+        document.body.style.background = bg;
+        app.renderer.backgroundColor = toPixiColor(bg);
+
+        var w = Math.round(num('f-width', 224));
+        var h = Math.round(num('f-height', 60));
+        var strokeHex = str('f-stroke');
+        var textColorHex = syncText.checked ? strokeHex : str('f-textcolor');
+
+        var sw = numOrEmpty('f-strokew');
+        var fs = numOrEmpty('f-fontsize');
+        var cut = numOrEmpty('f-cut');
+
+        mainBtn.redraw({
+          text: str('f-text'),
+          width: w,
+          height: h,
+          fill: str('f-fill'),
+          stroke: strokeHex,
+          textColor: textColorHex,
+          strokeWidth: sw != null ? sw : autoStrokeW(h),
+          fontSize: fs != null ? fs : autoFontSize(h),
+          cut: cut != null ? cut : autoCut(w, h),
+          fontWeight: str('f-weight'),
+          fontFamily: str('f-font'),
+        });
+        layoutButton(w, h);
+      }
+
+      function setDefaults() {
+        document.getElementById('f-text').value = '确定';
+        document.getElementById('f-width').value = '224';
+        document.getElementById('f-height').value = '60';
+        document.getElementById('f-fill').value = '#ebe5a7';
+        document.getElementById('f-stroke').value = '#3d3d33';
+        document.getElementById('f-textcolor').value = '#3d3d33';
+        document.getElementById('f-bg').value = '#fefde3';
+        document.getElementById('f-canvas-w').value = '640';
+        document.getElementById('f-canvas-h').value = '360';
+        document.getElementById('f-strokew').value = '';
+        document.getElementById('f-fontsize').value = '';
+        document.getElementById('f-cut').value = '';
+        document.getElementById('f-weight').value = 'bold';
+        document.getElementById('f-font').value =
+          'system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif';
+        syncText.checked = false;
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        applyFromForm();
+      });
+
+      document.getElementById('btn-reset').addEventListener('click', function () {
+        setDefaults();
+        applyFromForm();
+      });
+
+      syncText.addEventListener('change', function () {
+        if (syncText.checked) {
+          document.getElementById('f-textcolor').value = document.getElementById('f-stroke').value;
+        }
+      });
+      document.getElementById('f-stroke').addEventListener('input', function () {
+        if (syncText.checked) {
+          document.getElementById('f-textcolor').value = document.getElementById('f-stroke').value;
+        }
+      });
+
+      applyFromForm();
+    })();
+  </script>
+</body>
+</html>

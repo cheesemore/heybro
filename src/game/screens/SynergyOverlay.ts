@@ -16,15 +16,13 @@ import type { AllyClass } from '../types';
 import type { RunState } from '../runState';
 import { drawGoldenSolidPanel, GOLDEN_PANEL_ACCENT, GOLDEN_PANEL_BODY, GOLDEN_PANEL_INSET, GOLDEN_PANEL_INSET_STROKE, GOLDEN_PANEL_MUTED, GOLDEN_PANEL_TITLE } from '../ui/goldenSolidPanel';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
-import { PARCHMENT_BTN_TEXT, paintParchmentRoundRect } from '../ui/parchmentButtonFill';
+import { createGameButton, createStyledGameButton, redrawGameButtonFromStyle, type GameButton } from '../ui/gameButtons';
 
 const GOLD = GOLDEN_PANEL_ACCENT;
 const MUTED = GOLDEN_PANEL_MUTED;
 const BODY = GOLDEN_PANEL_BODY;
 const BOND_RED = 0xf87171;
 const BOND_RED_MUTED = 0x9f1239;
-const TAB_ON = GOLDEN_PANEL_TITLE;
-const TAB_OFF = GOLDEN_PANEL_MUTED;
 
 /** 判定为滚动后，忽略同一次手势内的档位 chip 误触 */
 const SCROLL_SLOP_PX = 12;
@@ -38,12 +36,8 @@ export class SynergyOverlay extends Container {
   private readonly listLayer: Container;
   private readonly scrollViewport: Container;
   private readonly scrollMaskG: Graphics;
-  private readonly tabBond: Container;
-  private readonly tabStrat: Container;
-  private readonly tabBondG: Graphics;
-  private readonly tabStratG: Graphics;
-  private readonly tabBondT: Text;
-  private readonly tabStratT: Text;
+  private readonly tabBond: GameButton;
+  private readonly tabStrat: GameButton;
   private detailHead: Text;
   private detailDesc: Text;
   private readonly innerW: number;
@@ -123,40 +117,26 @@ export class SynergyOverlay extends Container {
     const tabGap = Math.round(14 * LAYOUT_SCALE);
     const tabX0 = px + Math.round(28 * LAYOUT_SCALE);
 
-    const mk = (x: number, label: string): { wrap: Container; bg: Graphics; lab: Text } => {
-      const wrap = new Container();
-      wrap.position.set(x, tabY);
-      wrap.eventMode = 'static';
-      wrap.cursor = 'pointer';
-      const bg = new Graphics();
-      const lab = new Text({
-        text: label,
-        style: {
-          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(22 * LAYOUT_SCALE),
-          fill: TAB_OFF,
-          fontWeight: '600',
-        },
-      });
-      lab.anchor.set(0.5);
-      lab.position.set(tabW / 2, tabH / 2);
-      wrap.addChild(bg, lab);
-      return { wrap, bg, lab };
-    };
-
-    const b = mk(tabX0, '羁绊 / 神器');
-    const s = mk(tabX0 + tabW + tabGap, '本局策略');
-    this.tabBond = b.wrap;
-    this.tabBondG = b.bg;
-    this.tabBondT = b.lab;
-    this.tabStrat = s.wrap;
-    this.tabStratG = s.bg;
-    this.tabStratT = s.lab;
-
+    const tabFs = Math.round(22 * LAYOUT_SCALE);
+    this.tabBond = createStyledGameButton('synergyTabOn', {
+      text: '羁绊 / 神器',
+      width: tabW,
+      height: tabH,
+      fontSize: tabFs,
+    });
+    this.tabBond.position.set(tabX0, tabY);
     this.tabBond.on('pointertap', (e) => {
       e.stopPropagation();
       this.switchTab('bond');
     });
+
+    this.tabStrat = createStyledGameButton('synergyTabOff', {
+      text: '本局策略',
+      width: tabW,
+      height: tabH,
+      fontSize: tabFs,
+    });
+    this.tabStrat.position.set(tabX0 + tabW + tabGap, tabY);
     this.tabStrat.on('pointertap', (e) => {
       e.stopPropagation();
       this.switchTab('strategy');
@@ -207,34 +187,22 @@ export class SynergyOverlay extends Container {
     this.detailLayer.visible = false;
     this.body.addChild(this.detailLayer);
 
-    const back = new Container();
-    back.eventMode = 'static';
-    back.cursor = 'pointer';
     const bw = Math.round(120 * LAYOUT_SCALE);
     const bh = Math.round(42 * LAYOUT_SCALE);
-    const backG = new Graphics();
-    paintParchmentRoundRect(backG, 0, 0, bw, bh, Math.round(10 * LAYOUT_SCALE), LAYOUT_SCALE, false);
-    back.addChild(backG);
-    const backT = new Text({
+    const backBtn = createStyledGameButton('classic', {
       text: '← 返回',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(20 * LAYOUT_SCALE),
-        fill: PARCHMENT_BTN_TEXT,
-        fontWeight: '600',
-      },
+      width: bw,
+      height: bh,
+      fontSize: Math.round(20 * LAYOUT_SCALE),
     });
-    backT.anchor.set(0.5);
-    backT.position.set(bw / 2, bh / 2);
-    back.addChild(backT);
-    back.position.set(0, 0);
-    back.on('pointertap', (e) => {
+    backBtn.position.set(0, 0);
+    backBtn.on('pointertap', (e) => {
       e.stopPropagation();
       this.detailLayer.visible = false;
       this.scrollViewport.visible = true;
       this.listLayer.visible = true;
     });
-    this.detailLayer.addChild(back);
+    this.detailLayer.addChild(backBtn);
 
     this.detailHead = new Text({
       text: '',
@@ -265,28 +233,18 @@ export class SynergyOverlay extends Container {
     this.detailDesc.position.set(0, Math.round(108 * LAYOUT_SCALE));
     this.detailLayer.addChild(this.detailDesc);
 
-    const closeG = new Graphics();
-    paintParchmentRoundRect(closeG, 0, 0, closeW, closeH, Math.round(14 * LAYOUT_SCALE), LAYOUT_SCALE, false);
-    closeG.eventMode = 'static';
-    closeG.cursor = 'pointer';
-    closeG.position.set(px + (pw - closeW) / 2, closeTopY);
-    closeG.on('pointertap', (e) => {
+    const closeBtn = createStyledGameButton('classic', {
+      text: '关 闭',
+      width: closeW,
+      height: closeH,
+      fontSize: Math.round(24 * LAYOUT_SCALE),
+    });
+    closeBtn.position.set(px + (pw - closeW) / 2, closeTopY);
+    closeBtn.on('pointertap', (e) => {
       e.stopPropagation();
       this.dismiss();
     });
-    this.addChild(closeG);
-    const closeT = new Text({
-      text: '关 闭',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(24 * LAYOUT_SCALE),
-        fill: PARCHMENT_BTN_TEXT,
-        fontWeight: '600',
-      },
-    });
-    closeT.anchor.set(0.5);
-    closeT.position.set(closeG.x + closeW / 2, closeG.y + closeH / 2);
-    this.addChild(closeT);
+    this.addChild(closeBtn);
 
     attachScreenDebugLabel(this, 'SynergyOverlay');
 
@@ -342,18 +300,19 @@ export class SynergyOverlay extends Container {
   }
 
   private paintTabs(tabW: number, tabH: number): void {
-    const draw = (g: Graphics, on: boolean) => {
-      g.clear();
-      g.roundRect(0, 0, tabW, tabH, Math.round(12 * LAYOUT_SCALE)).fill(on ? GOLDEN_PANEL_INSET : 0x3d3328);
-      g.stroke({
-        width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)),
-        color: on ? GOLDEN_PANEL_ACCENT : GOLDEN_PANEL_INSET_STROKE,
-      });
-    };
-    draw(this.tabBondG, this.tab === 'bond');
-    draw(this.tabStratG, this.tab === 'strategy');
-    this.tabBondT.style.fill = this.tab === 'bond' ? TAB_ON : TAB_OFF;
-    this.tabStratT.style.fill = this.tab === 'strategy' ? TAB_ON : TAB_OFF;
+    const fs = Math.round(22 * LAYOUT_SCALE);
+    redrawGameButtonFromStyle(this.tabBond, this.tab === 'bond' ? 'synergyTabOn' : 'synergyTabOff', {
+      text: '羁绊 / 神器',
+      width: tabW,
+      height: tabH,
+      fontSize: fs,
+    });
+    redrawGameButtonFromStyle(this.tabStrat, this.tab === 'strategy' ? 'synergyTabOn' : 'synergyTabOff', {
+      text: '本局策略',
+      width: tabW,
+      height: tabH,
+      fontSize: fs,
+    });
   }
 
   private switchTab(id: TabId): void {
@@ -488,41 +447,29 @@ export class SynergyOverlay extends Container {
         }
         const active = bondTierActive(n, tier);
         const redTier = tier === 21;
-        const chip = new Container();
-        chip.position.set(cx, rowH - chipH);
-        chip.eventMode = 'static';
-        chip.cursor = 'pointer';
-        const g = new Graphics();
         const fillOn = redTier ? 0x450a0a : 0x422006;
         const strokeOn = redTier ? 0xef4444 : 0xf59e0b;
-        g.roundRect(0, 0, chipW, chipH, Math.round(10 * LAYOUT_SCALE)).fill(active ? fillOn : GOLDEN_PANEL_INSET);
-        g.stroke({
-          width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)),
-          color: active ? strokeOn : GOLDEN_PANEL_INSET_STROKE,
-        });
-        chip.addChild(g);
-        const lab = new Text({
-          text: bondTierChipLabel(tier),
-          style: {
-            fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-            fontSize: Math.round(16 * LAYOUT_SCALE),
-            fill: active ? (redTier ? BOND_RED : GOLD) : redTier ? BOND_RED_MUTED : MUTED,
-            fontWeight: '700',
-          },
-        });
-        lab.anchor.set(0.5);
-        lab.position.set(chipW / 2, chipH / 2);
-        chip.addChild(lab);
         const k = kind;
         const ti = tier;
-        chip.on('pointertap', (e) => {
-          e.stopPropagation();
-          if (this.blockNextChipTap) {
-            this.blockNextChipTap = false;
-            return;
-          }
-          this.showTierDetail(k, ti);
+        const chip = createGameButton({
+          text: bondTierChipLabel(tier),
+          width: chipW,
+          height: chipH,
+          fontSize: Math.round(16 * LAYOUT_SCALE),
+          fontWeight: '700',
+          fill: active ? fillOn : GOLDEN_PANEL_INSET,
+          stroke: active ? strokeOn : GOLDEN_PANEL_INSET_STROKE,
+          textColor: active ? (redTier ? BOND_RED : GOLD) : redTier ? BOND_RED_MUTED : MUTED,
+          onTap: (e) => {
+            e.stopPropagation();
+            if (this.blockNextChipTap) {
+              this.blockNextChipTap = false;
+              return;
+            }
+            this.showTierDetail(k, ti);
+          },
         });
+        chip.position.set(cx, rowH - chipH);
         row.addChild(chip);
         cx += chipW + chipGap;
       }

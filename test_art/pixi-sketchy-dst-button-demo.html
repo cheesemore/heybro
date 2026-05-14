@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PixiJS · 饥荒风手绘边（兼容 Cursor 内置浏览器）</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #1a1814;
+      color: #e8e4d9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      gap: 12px;
+    }
+    h1 { margin: 0; font-size: 1.1rem; font-weight: 700; }
+    p { margin: 0; font-size: 0.85rem; opacity: 0.85; max-width: 42rem; line-height: 1.5; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+    button.ui {
+      padding: 8px 12px;
+      border: 2px solid #5c5346;
+      border-radius: 4px;
+      background: #2d2a26;
+      color: #e5dfa6;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.ui:hover { background: #3d3830; }
+    button.ui.active { outline: 2px solid #e5dfa6; }
+    .check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border: 1px solid #5c5346;
+      border-radius: 4px;
+      background: #2d2a26;
+      font-size: 0.85rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .check input { width: 16px; height: 16px; cursor: pointer; }
+    #host {
+      margin-top: 8px;
+      border: 2px solid #3d3830;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    }
+    #host canvas { display: block; vertical-align: top; }
+    code { font-size: 0.82em; }
+  </style>
+</head>
+<body>
+  <h1>PixiJS 演示：斜切按钮 + 手绘边（兼容 Cursor 内置浏览器）</h1>
+  <p>
+    <strong>说明：</strong>Cursor 内置 Chromium 在启用自定义 <code>PIXI.Filter</code>（离屏 FBO + 片元位移）时，常见整屏变黑/透明。
+    本页<strong>不再使用自定义 Filter</strong>；勾选「手绘边缘」后，用 <code>Graphics</code> 每帧重绘<strong>轻微抖动的斜切多边形</strong>来模拟饥荒式手绘轮廓，不依赖 GPU 滤镜管线。
+  </p>
+  <div class="row" id="modes" aria-label="手绘强度预设">
+    <label class="check">
+      <input type="checkbox" id="f-enable" />
+      <span>手绘边缘（顶点抖动）</span>
+    </label>
+    <button type="button" class="ui active" data-mode="normal">sketchy-normal</button>
+    <button type="button" class="ui" data-mode="heavy">sketchy-heavy</button>
+    <button type="button" class="ui" data-mode="wavy">sketchy-wavy</button>
+  </div>
+  <div id="host"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/pixi.js@7.4.2/dist/pixi.min.js"></script>
+  <script>
+    (function () {
+      try {
+        var PRESETS = {
+          normal: { amp: 1.1, speed: 1.0, wobble: 0.35 },
+          heavy: { amp: 2.4, speed: 1.35, wobble: 0.55 },
+          wavy: { amp: 1.6, speed: 0.65, wobble: 0.85 },
+        };
+
+        var app = new PIXI.Application({
+          width: 560,
+          height: 220,
+          background: 0x1a1814,
+          antialias: true,
+          resolution: 1,
+          autoDensity: false,
+        });
+        document.getElementById('host').appendChild(app.view);
+
+        function n11(x, y, t, s) {
+          return Math.sin(x * s + t * 1.7) * Math.cos(y * s * 0.9 - t * 1.1);
+        }
+
+        function drawBevel(g, w, h, cut, fill, stroke, strokeW, t, preset, sketchOn) {
+          var p = preset || PRESETS.normal;
+          var amp = sketchOn ? p.amp : 0;
+          var sp = p.speed;
+          var wb = p.wobble;
+
+          var corners = [
+            [cut, 0],
+            [w, 0],
+            [w, h - cut],
+            [w - cut, h],
+            [0, h],
+            [0, cut],
+          ];
+
+          var pts = [];
+          for (var i = 0; i < corners.length; i++) {
+            var cx = corners[i][0];
+            var cy = corners[i][1];
+            var jx = n11(cx, cy, t * sp, 0.11 + wb * 0.06) * amp;
+            var jy = n11(cy, cx, t * sp * 0.9, 0.13 + wb * 0.05) * amp;
+            pts.push([cx + jx, cy + jy]);
+          }
+
+          g.clear();
+          g.lineStyle(strokeW, stroke, 1);
+          g.beginFill(fill);
+          g.moveTo(pts[0][0], pts[0][1]);
+          for (var k = 1; k < pts.length; k++) {
+            g.lineTo(pts[k][0], pts[k][1]);
+          }
+          g.closePath();
+          g.endFill();
+        }
+
+        function makeButton(w, h, cut, fill, stroke, strokeW, labelText) {
+          var root = new PIXI.Container();
+          var g = new PIXI.Graphics();
+          var label = new PIXI.Text(labelText, {
+            fontFamily:
+              'system-ui, "Segoe UI", "PingFang SC", "Microsoft YaHei", "SimHei", sans-serif',
+            fontSize: Math.max(18, Math.round(h * 0.42)),
+            fill: 0x2d2a26,
+            fontWeight: 'bold',
+            letterSpacing: 4,
+          });
+          label.anchor.set(0.5, 0.5);
+          label.position.set(w / 2, h / 2);
+          root.addChild(g);
+          root.addChild(label);
+          root.__g = g;
+          root.__label = label;
+          return root;
+        }
+
+        var bw = 140;
+        var bh = 52;
+        var cut = 16;
+        var fill = 0xe5dfa6;
+        var stroke = 0x2d2a26;
+        var strokeW = 3;
+
+        var btn = makeButton(bw, bh, cut, fill, stroke, strokeW, '确定');
+        btn.pivot.set(bw / 2, bh / 2);
+        btn.x = app.screen.width / 2;
+        btn.y = app.screen.height / 2;
+        app.stage.addChild(btn);
+
+        var mode = 'normal';
+        var sketchOn = false;
+        var time = 0;
+
+        function currentPreset() {
+          return PRESETS[mode] || PRESETS.normal;
+        }
+
+        function paint() {
+          drawBevel(btn.__g, bw, bh, cut, fill, stroke, strokeW, time, currentPreset(), sketchOn);
+          var p = currentPreset();
+          var sh = sketchOn ? 0.35 * p.wobble : 0;
+          btn.__label.position.set(
+            bw / 2 + Math.sin(time * 1.1 * p.speed) * sh,
+            bh / 2 + Math.cos(time * 0.95 * p.speed) * sh
+          );
+        }
+
+        paint();
+
+        function syncSketch() {
+          sketchOn = document.getElementById('f-enable').checked;
+          paint();
+        }
+
+        btn.eventMode = 'static';
+        btn.interactive = true;
+        btn.cursor = 'pointer';
+        btn.hitArea = new PIXI.Polygon(
+          cut, 0, bw, 0, bw, bh - cut, bw - cut, bh, 0, bh, 0, cut
+        );
+        btn.on('pointerover', function () {
+          btn.scale.set(1.06);
+          btn.rotation = (Math.random() - 0.5) * 0.06;
+        });
+        btn.on('pointerout', function () {
+          btn.scale.set(1);
+          btn.rotation = 0;
+        });
+        btn.on('pointerdown', function () {
+          btn.scale.set(0.96);
+        });
+        btn.on('pointerup', function () {
+          btn.scale.set(1.06);
+        });
+        btn.on('pointerupoutside', function () {
+          btn.scale.set(1);
+          btn.rotation = 0;
+        });
+
+        document.getElementById('modes').addEventListener('click', function (e) {
+          var t = e.target;
+          if (!t || !t.getAttribute || t.tagName !== 'BUTTON') {
+            return;
+          }
+          var m = t.getAttribute('data-mode');
+          if (!m) {
+            return;
+          }
+          mode = m;
+          paint();
+          var buttons = document.querySelectorAll('#modes .ui');
+          for (var i = 0; i < buttons.length; i++) {
+            buttons[i].classList.toggle('active', buttons[i] === t);
+          }
+        });
+
+        document.getElementById('f-enable').addEventListener('change', syncSketch);
+
+        app.ticker.add(function (ticker) {
+          time += ticker.deltaMS * 0.001;
+          if (sketchOn) {
+            paint();
+          }
+        });
+      } catch (err) {
+        console.error(err);
+        var errEl = document.createElement('p');
+        errEl.style.cssText =
+          'margin:12px;color:#ffb4a8;font-size:0.9rem;text-align:center;max-width:42rem';
+        errEl.textContent =
+          'Pixi 初始化失败（常见原因：无法加载 CDN、或浏览器禁用 WebGL）。错误：' +
+          (err && err.message ? err.message : String(err));
+        document.body.appendChild(errEl);
+      }
+    })();
+  </script>
+</body>
+</html>

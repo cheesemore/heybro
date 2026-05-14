@@ -1,11 +1,11 @@
 import type { EnemyPaintKind } from './battleVisuals';
 import type { BossId, EnemyClass, RoundMeta } from './types';
-import { BOSS_DEFS, ENEMY_DEFS, enemyCombatBaseAtkFromTable, scaledEnemyAtk, scaledEnemyHp } from './unitDefs';
+import { ENEMY_DEFS, enemyCombatBaseAtkFromTable, scaledEnemyAtk, scaledEnemyHp } from './unitDefs';
 import { bossDisplayName } from './roundConfig';
 import { RANGED_ATTACK_RANGE_THRESHOLD } from './battleBonds';
-import { getWowMob, bossUidForBookChapter } from './wowBookData';
+import { getWowMob, bossUidForBookChapter, resolveWowBookBossCombat } from './wowBookData';
 import type { WowMob } from './wowBookData';
-import { formatSkillNamesCn } from './skillsCatalog';
+import { formatSkillNamesCn, getSkillById, type SkillDef } from './skillsCatalog';
 
 export type BattlePreviewPortraitEntry = {
   paint: EnemyPaintKind;
@@ -73,7 +73,7 @@ const ENEMY_TRAIT: Record<EnemyClass, string> = {
   headhunter: '远程投掷。',
   darkspear: '远程；普攻概率击退并减速我方。',
   shaman: '远程；周期性为附近友军嗜血术。',
-  batrider: '远程；可跃入后排。',
+  batrider: '远程；跃入后排脚下，落地范围伤。',
   catapult: '远程；攻击附带地面燃烧区域。',
 };
 
@@ -93,11 +93,180 @@ function wowMobStatLine(chapter: 1 | 2 | 3, ri: number, mob: WowMob, bookM: numb
   return `HP ${hp} · 攻 ${atk} · 攻速 ${mob.attackSpeed.toFixed(2)} · 射程 ${mob.range}（${rng}）· 移速 ${mob.moveSpeed}`;
 }
 
+/** 玩家向技能说明：优先 `descriptionCn`，空则 `logicEffectCn` */
+function skillPlayerDescription(def: SkillDef): string {
+  const d = def.descriptionCn?.trim();
+  if (d) return d;
+  return def.logicEffectCn?.trim() || '（暂无说明）';
+}
+
+function appendSkillDetailLines(lines: string[], skillIds: readonly string[]): void {
+  if (!skillIds.length) return;
+  for (const sid of skillIds) {
+    const def = getSkillById(sid);
+    if (!def) {
+      lines.push(`  · ${sid}（未在 skills.json 登记）`);
+      continue;
+    }
+    lines.push(`  · 【${def.nameCn}】${skillPlayerDescription(def)}`);
+  }
+}
+
+/** 普攻理论秒伤：表内 `attackSpeed` 为攻击间隔（秒/次），秒伤 = 战场攻击力 ÷ 间隔 */
+function formatSustainedDpsParenthetical(combatAtk: number, attackIntervalSec: number): string {
+  if (attackIntervalSec <= 1e-6) return '（每秒伤害—）';
+  const dps = combatAtk / attackIntervalSec;
+  const s = dps >= 100 ? dps.toFixed(1) : dps >= 10 ? dps.toFixed(1) : dps.toFixed(2);
+  return `（每秒伤害${s}）`;
+}
+
+function rangeIntelLineCn(rangePx: number): string {
+  if (rangePx >= RANGED_ATTACK_RANGE_THRESHOLD) {
+    return `射程：${Math.round(rangePx)}（远程）`;
+  }
+  return '射程：近战';
+}
+
+function appendChapterIntelSkillLines(lines: string[], skillIds: readonly string[]): void {
+  if (!skillIds.length) return;
+  for (const sid of skillIds) {
+    const def = getSkillById(sid);
+    if (!def) {
+      lines.push(`${sid}：未在 skills.json 登记`);
+      continue;
+    }
+    lines.push(`${def.nameCn}：${skillPlayerDescription(def)}`);
+  }
+}
+
+function intelTwoLineStats(
+  hp: number,
+  combatAtk: number,
+  attackIntervalSec: number,
+  rangePx: number,
+): { line1: string; line2: string } {
+  return {
+    line1: `生命值：${Math.round(hp)}　攻速：${attackIntervalSec.toFixed(2)}${formatSustainedDpsParenthetical(combatAtk, attackIntervalSec)}`,
+    line2: `攻击力：${Math.round(combatAtk)}　${rangeIntelLineCn(rangePx)}`,
+  };
+}
+
+function skillLinesFromIds(skillIds: readonly string[]): string[] {
+  const lines: string[] = [];
+  appendChapterIntelSkillLines(lines, skillIds);
+  return lines;
+}
+
+export type ChapterIntelCardParts = {
+  name: string;
+  statLine1: string;
+  statLine2: string;
+  skillLines: string[];
+};
+
+/**
+ * 章节情报弹窗：单个小怪（名称 + 两行数值 + 技能行），供界面分栏排版。
+ */
+export function getChapterIntelMobCardParts(
+  w: RoundMeta['enemies'][number],
+  chapter: 1 | 2 | 3,
+  scaleRoundIndex: number,
+  bookStrengthMult: number,
+  _bookChapterId?: number,
+): ChapterIntelCardParts {
+  if (w.type === 'boss') {
+    return { name: '', statLine1: '', statLine2: '', skillLines: [] };
+  }
+  const ri = scaleRoundIndex;
+
+  if (w.wowMobId) {
+    const mob = getWowMob(w.wowMobId);
+    if (!mob) {
+      const type = w.type as EnemyClass;
+      const d = ENEMY_DEFS[type];
+      const st = intelTwoLineStats(
+        scaledEnemyHp(chapter, ri, d.baseMaxHp, bookStrengthMult),
+        scaledEnemyAtk(chapter, ri, d.baseAtk, bookStrengthMult),
+        d.attackSpeed,
+        d.range,
+      );
+      return {
+        name: d.name,
+        statLine1: st.line1,
+        statLine2: st.line2,
+        skillLines: skillLinesFromIds(d.skillIds),
+      };
+    }
+    const baseAtk = enemyCombatBaseAtkFromTable(mob.baseAtk, mob.range);
+    const combatAtk = scaledEnemyAtk(chapter, ri, baseAtk, bookStrengthMult);
+    const st = intelTwoLineStats(
+      scaledEnemyHp(chapter, ri, mob.baseMaxHp, bookStrengthMult),
+      combatAtk,
+      mob.attackSpeed,
+      mob.range,
+    );
+    return {
+      name: mob.nameCn,
+      statLine1: st.line1,
+      statLine2: st.line2,
+      skillLines: skillLinesFromIds(mob.skillIds ?? []),
+    };
+  }
+
+  const type = w.type as EnemyClass;
+  const d = ENEMY_DEFS[type];
+  const st = intelTwoLineStats(
+    scaledEnemyHp(chapter, ri, d.baseMaxHp, bookStrengthMult),
+    scaledEnemyAtk(chapter, ri, d.baseAtk, bookStrengthMult),
+    d.attackSpeed,
+    d.range,
+  );
+  return {
+    name: d.name,
+    statLine1: st.line1,
+    statLine2: st.line2,
+    skillLines: skillLinesFromIds(d.skillIds),
+  };
+}
+
+/**
+ * 章节情报弹窗：关底首领（名称 + 两行数值 + 技能行）。
+ */
+export function getChapterIntelBossCardParts(
+  w: RoundMeta['enemies'][number],
+  chapter: 1 | 2 | 3,
+  scaleRoundIndex: number,
+  bookStrengthMult: number,
+  bookChapterId?: number,
+): ChapterIntelCardParts {
+  if (w.type !== 'boss' || !w.bossId) {
+    return { name: '', statLine1: '', statLine2: '', skillLines: [] };
+  }
+  const ri = scaleRoundIndex;
+  const bc = resolveWowBookBossCombat(bookChapterId ?? 0);
+  const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable * 10, bookStrengthMult);
+  const combatAtk = scaledEnemyAtk(chapter, ri, bc.combatBaseAtk, bookStrengthMult);
+  const st = intelTwoLineStats(hp, combatAtk, bc.attackSpeed, bc.range);
+  const name =
+    w.wowBossDisplayName && w.wowBossDisplayName.trim().length > 0
+      ? w.wowBossDisplayName.trim()
+      : bossDisplayName(w.bossId);
+  const sk = bc.skillIds;
+  const skillLines =
+    sk.length === 0 ? ['无额外技能，仅普攻与走位。'] : skillLinesFromIds(sk);
+  return { name, statLine1: st.line1, statLine2: st.line2, skillLines };
+}
+
 /**
  * 关卡地图战斗预览用：名称、数量、数值、特性（样貌由界面单独绘制）。
  * @param scaleRoundIndex 与 ROUNDS 下标一致（0 … 15）
  */
-export function formatNextBattlePreview(meta: RoundMeta, scaleRoundIndex: number, bookStrengthMult: number): string {
+export function formatNextBattlePreview(
+  meta: RoundMeta,
+  scaleRoundIndex: number,
+  bookStrengthMult: number,
+  bookChapterId?: number,
+): string {
   const { chapter } = meta;
   const ri = scaleRoundIndex;
   const lines: string[] = [];
@@ -106,19 +275,24 @@ export function formatNextBattlePreview(meta: RoundMeta, scaleRoundIndex: number
 
   for (const w of meta.enemies) {
     if (w.type === 'boss' && w.bossId) {
-      const b = BOSS_DEFS[w.bossId];
-      const hp = scaledEnemyHp(chapter, ri, b.baseMaxHp * 10, bookStrengthMult);
-      const atk = scaledEnemyAtk(chapter, ri, b.baseAtk, bookStrengthMult);
+      const bc = resolveWowBookBossCombat(bookChapterId ?? 0);
+      const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable * 10, bookStrengthMult);
+      const atk = scaledEnemyAtk(chapter, ri, bc.combatBaseAtk, bookStrengthMult);
+      const atkSp = bc.attackSpeed;
+      const rng = bc.range;
+      const sk = bc.skillIds;
       const name =
         w.wowBossDisplayName && w.wowBossDisplayName.trim().length > 0
           ? w.wowBossDisplayName.trim()
           : bossDisplayName(w.bossId);
       lines.push(`【${name}】×${w.count}`);
-      lines.push(`数值：HP ${hp} · 攻 ${atk} · 攻速 ${b.attackSpeed.toFixed(2)} · 射程 ${b.range}`);
-      if (b.skillIds.length === 0) {
+      lines.push(`数值：HP ${hp} · 攻 ${atk} · 攻速 ${atkSp.toFixed(2)} · 射程 ${rng}`);
+      if (sk.length === 0) {
         lines.push('特性：白板首领（暂无配置技能，仅普攻与走位）。');
       } else {
-        lines.push(`特性：首领技能组 — ${formatSkillNamesCn(b.skillIds)}。`);
+        lines.push(`特性：首领技能组 — ${formatSkillNamesCn(sk)}。`);
+        lines.push('技能说明：');
+        appendSkillDetailLines(lines, sk);
       }
       lines.push('');
       continue;
@@ -131,12 +305,22 @@ export function formatNextBattlePreview(meta: RoundMeta, scaleRoundIndex: number
         lines.push(`【${d.name}】×${w.count}`);
         lines.push(`数值（单兵）：${statLine(chapter, ri, type, bookStrengthMult)}`);
         lines.push(`特性：${ENEMY_TRAIT[type]}`);
+        if (d.skillIds.length > 0) {
+          lines.push(`技能：${formatSkillNamesCn(d.skillIds)}`);
+          lines.push('技能说明：');
+          appendSkillDetailLines(lines, d.skillIds);
+        }
         lines.push('');
         continue;
       }
       lines.push(`【${mob.nameCn}】×${w.count}`);
       lines.push(`数值（单兵）：${wowMobStatLine(chapter, ri, mob, bookStrengthMult)}`);
-      lines.push(`特性：用书怪（立绘模板 ${ENEMY_DEFS[type].name}）— ${ENEMY_TRAIT[type]}。`);
+      if (mob.skillIds != null && mob.skillIds.length > 0) {
+        lines.push(`技能：${formatSkillNamesCn(mob.skillIds)}`);
+        lines.push('技能说明：');
+        appendSkillDetailLines(lines, mob.skillIds);
+      }
+      lines.push(`立绘模板：${ENEMY_DEFS[type].name}（${ENEMY_TRAIT[type]}）`);
       lines.push('');
       continue;
     }
@@ -145,6 +329,11 @@ export function formatNextBattlePreview(meta: RoundMeta, scaleRoundIndex: number
     lines.push(`【${d.name}】×${w.count}`);
     lines.push(`数值（单兵）：${statLine(chapter, ri, type, bookStrengthMult)}`);
     lines.push(`特性：${ENEMY_TRAIT[type]}`);
+    if (d.skillIds.length > 0) {
+      lines.push(`技能：${formatSkillNamesCn(d.skillIds)}`);
+      lines.push('技能说明：');
+      appendSkillDetailLines(lines, d.skillIds);
+    }
     lines.push('');
   }
 

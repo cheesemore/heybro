@@ -625,6 +625,7 @@ export type ProjectileVisualStyle =
   | 'ally_generic'
   | 'enemy_headhunter'
   | 'enemy_boss_magic'
+  | 'enemy_shadow_bolt'
   | 'enemy_generic';
 
 export function buildProjectileGraphic(style: ProjectileVisualStyle): Graphics {
@@ -658,6 +659,14 @@ export function buildProjectileGraphic(style: ProjectileVisualStyle): Graphics {
         });
       }
       break;
+    case 'enemy_shadow_bolt': {
+      const tail = { width: 1.4, color: 0x581c87, alpha: 0.55 };
+      g.ellipse(-22, 0, 20, 7).fill({ color: 0x6b21a8, alpha: 0.42 }).stroke(tail);
+      g.ellipse(-14, 0, 12, 5).fill({ color: 0x7e22ce, alpha: 0.5 }).stroke(tail);
+      g.circle(0, 0, 10).fill({ color: 0x9333ea, alpha: 0.98 }).stroke({ width: 1.6, color: 0xe9d5ff, alpha: 0.95 });
+      g.circle(4, -3, 3.5).fill({ color: 0xfae8ff, alpha: 0.95 });
+      break;
+    }
     case 'enemy_generic':
       g.circle(0, 0, 9).fill(0xfb7185).stroke(o);
       g.circle(0, 0, 14).stroke({ width: 1.5, color: 0xfca5a5, alpha: 0.45 });
@@ -683,6 +692,18 @@ export function spawnDeathTrailSpark(layer: Container, x: number, y: number): Ti
   g.position.set(x + (Math.random() - 0.5) * 14 * LAYOUT_SCALE, y + (Math.random() - 0.5) * 14 * LAYOUT_SCALE);
   layer.addChild(g);
   return { g, t: 0, max: 0.1 + Math.random() * 0.07 };
+}
+
+/** 暗影箭弹道拖尾（紫系） */
+export function spawnShadowTrailSpark(layer: Container, x: number, y: number): TinySparkFx {
+  const g = new Graphics();
+  const pal = [0xe9d5ff, 0xc084fc, 0xa855f7, 0x7e22ce] as const;
+  const c = pal[Math.floor(Math.random() * pal.length)]!;
+  const rr = (1.4 + Math.random() * 2.8) * LAYOUT_SCALE;
+  g.circle(0, 0, rr).fill({ color: c, alpha: 0.88 });
+  g.position.set(x + (Math.random() - 0.5) * 10 * LAYOUT_SCALE, y + (Math.random() - 0.5) * 10 * LAYOUT_SCALE);
+  layer.addChild(g);
+  return { g, t: 0, max: 0.09 + Math.random() * 0.05 };
 }
 
 export function tickTinySparks(list: TinySparkFx[], dt: number): void {

@@ -92,7 +92,7 @@ function effectiveMobPool(bookChapterId: number): readonly string[] {
   return pool.length > 0 ? pool : ['mob_ragefire_trogg'];
 }
 
-/** 为普通战/首领战生成敌阵（小怪来自用书表；关底首领用 `white`，数值同先知、无额外首领技能） */
+/** 为普通战/首领战生成敌阵（小怪来自用书表；关底首领用 `white` 作 bossId，数值与技能仅来自 `wowBookBosses` 该章行 + 代码表底缺省） */
 export function resolveCombatRoundEnemies(run: RunState, roundIndex: number, meta: RoundMeta): RoundMeta['enemies'] {
   if (meta.kind === 'boss') {
     const bossId: BossId = 'white';

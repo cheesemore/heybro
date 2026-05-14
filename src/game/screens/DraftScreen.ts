@@ -30,8 +30,9 @@ import {
   GOLDEN_PANEL_BODY,
   GOLDEN_PANEL_TITLE,
 } from '../ui/goldenSolidPanel';
-import { PARCHMENT_BTN_TEXT, drawParchmentCardTopBottomRules, paintParchmentRoundRect } from '../ui/parchmentButtonFill';
+import { PARCHMENT_BTN_TEXT, drawParchmentCardTopBottomRules } from '../ui/parchmentButtonFill';
 import { spawnFloatingGameTip } from '../ui/floatingGameTip';
+import { createStyledGameButton } from '../ui/gameButtons';
 
 const PAD_X = Math.round(20 * LAYOUT_SCALE);
 /** 选牌页右侧英雄竖条宽度（与九宫格并排） */
@@ -219,29 +220,14 @@ export class DraftScreen extends Container {
     this.addChild(header);
 
     const bondH = Math.round(46 * LAYOUT_SCALE);
-    const bondBtn = new Container();
-    bondBtn.eventMode = 'static';
-    bondBtn.cursor = 'pointer';
-    bondBtn.position.set(GAME_WIDTH - PAD_X - bondW, HEADER_Y);
-    const bondBg = new Graphics();
-    bondBtn.zIndex = 40;
-    bondBg
-      .roundRect(0, 0, bondW, bondH, Math.round(12 * LAYOUT_SCALE))
-      .fill(0x5c4a38)
-      .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x302113, alpha: 0.9 });
-    bondBtn.addChild(bondBg);
-    const bondLab = new Text({
+    const bondBtn = createStyledGameButton('classic', {
       text: '羁绊 / 策略',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(20 * LAYOUT_SCALE),
-        fill: GOLDEN_PANEL_BODY,
-        fontWeight: '600',
-      },
+      width: bondW,
+      height: bondH,
+      fontSize: Math.round(20 * LAYOUT_SCALE),
     });
-    bondLab.anchor.set(0.5);
-    bondLab.position.set(bondW / 2, bondH / 2);
-    bondBtn.addChild(bondLab);
+    bondBtn.zIndex = 40;
+    bondBtn.position.set(GAME_WIDTH - PAD_X - bondW, HEADER_Y);
     bondBtn.on('pointertap', (e) => {
       e.stopPropagation();
       this.closePricingRuleDetail();
@@ -296,31 +282,19 @@ export class DraftScreen extends Container {
     this.pickHint.position.set(PAD_X, TRIO_TOP - Math.round(48 * LAYOUT_SCALE));
     this.addChild(this.pickHint);
 
-    const pricingBtnWrap = new Container();
-    pricingBtnWrap.position.set(PAD_X, DETAIL_RULE_Y);
-    pricingBtnWrap.zIndex = 35;
-    pricingBtnWrap.eventMode = 'static';
-    pricingBtnWrap.cursor = 'pointer';
-    const pricingBtnG = new Graphics();
-    paintParchmentRoundRect(pricingBtnG, 0, 0, PRICING_RULE_BTN_W, PRICING_RULE_BTN_H, Math.round(12 * LAYOUT_SCALE), LAYOUT_SCALE, false);
-    pricingBtnWrap.addChild(pricingBtnG);
-    const pricingBtnT = new Text({
+    const pricingBtn = createStyledGameButton('classic', {
       text: '定价细则',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(19 * LAYOUT_SCALE),
-        fill: PARCHMENT_BTN_TEXT,
-        fontWeight: '700',
-      },
+      width: PRICING_RULE_BTN_W,
+      height: PRICING_RULE_BTN_H,
+      fontSize: Math.round(19 * LAYOUT_SCALE),
     });
-    pricingBtnT.anchor.set(0.5);
-    pricingBtnT.position.set(PRICING_RULE_BTN_W / 2, PRICING_RULE_BTN_H / 2);
-    pricingBtnWrap.addChild(pricingBtnT);
-    pricingBtnWrap.on('pointertap', (e) => {
+    pricingBtn.position.set(PAD_X, DETAIL_RULE_Y);
+    pricingBtn.zIndex = 35;
+    pricingBtn.on('pointertap', (e) => {
       e.stopPropagation();
       this.openPricingRuleDetail();
     });
-    this.addChild(pricingBtnWrap);
+    this.addChild(pricingBtn);
 
     const boardBandH = Math.round(400 * LAYOUT_SCALE);
     const boardBandY = BOARD_GRID_TOP - Math.round(14 * LAYOUT_SCALE);
@@ -470,29 +444,18 @@ export class DraftScreen extends Container {
 
     const closeX = px + (panelW - closeW) / 2;
     const closeY = py + panelH - innerPad - closeH;
-    const closeG = new Graphics();
-    const closeR = Math.round(12 * LAYOUT_SCALE);
-    paintParchmentRoundRect(closeG, 0, 0, closeW, closeH, closeR, LAYOUT_SCALE, false);
-    closeG.eventMode = 'static';
-    closeG.cursor = 'pointer';
-    closeG.position.set(closeX, closeY);
-    closeG.on('pointertap', (e) => {
+    const closeBtn = createStyledGameButton('classic', {
+      text: '关 闭',
+      width: closeW,
+      height: closeH,
+      fontSize: Math.round(20 * LAYOUT_SCALE),
+    });
+    closeBtn.position.set(closeX, closeY);
+    closeBtn.on('pointertap', (e) => {
       e.stopPropagation();
       this.closePricingRuleDetail();
     });
-    layer.addChild(closeG);
-    const closeT = new Text({
-      text: '关 闭',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(20 * LAYOUT_SCALE),
-        fill: PARCHMENT_BTN_TEXT,
-        fontWeight: '700',
-      },
-    });
-    closeT.anchor.set(0.5);
-    closeT.position.set(closeX + closeW / 2, closeY + closeH / 2);
-    layer.addChild(closeT);
+    layer.addChild(closeBtn);
 
     this.addChild(layer);
   }
@@ -923,7 +886,7 @@ export class DraftScreen extends Container {
       if ((c as { userData?: string }).userData === 'ctrl') c.destroy();
     }
     const { row1Y, row2Y, btnH } = this.controlRowYs();
-    type BtnKind = 'primary' | 'refresh';
+    type BtnKind = 'refresh' | 'finish';
     const mkBtn = (
       label: string,
       x: number,
@@ -934,47 +897,22 @@ export class DraftScreen extends Container {
       fn: () => void,
       onDisabledTap?: () => void,
     ): void => {
-      const g = new Graphics();
-      const rr = Math.round(14 * LAYOUT_SCALE);
-      let fill: number;
-      let textFill: number;
-      if (kind === 'refresh') {
-        fill = enabled ? 0xfef08a : 0x57534e;
-        textFill = enabled ? 0x422006 : 0xe7e5e4;
-      } else {
-        fill = 0x5c4a38;
-        textFill = 0xf2e6d9;
-      }
-      g.roundRect(0, 0, w, btnH, rr).fill(fill);
-      g.stroke({
-        width: Math.max(2, Math.round(2 * LAYOUT_SCALE)),
-        color: kind === 'refresh' && enabled ? 0xb45309 : 0x302113,
-        alpha: enabled ? 0.75 : 0.45,
-      });
-      g.eventMode = 'static';
-      g.cursor = enabled || onDisabledTap ? 'pointer' : 'default';
-      g.position.set(x, y);
-      (g as Container & { userData?: string }).userData = 'ctrl';
-      if (enabled) g.on('pointertap', fn);
-      else if (onDisabledTap) g.on('pointertap', onDisabledTap);
-      const t = new Text({
+      const styleKey =
+        kind === 'refresh' ? (enabled ? 'draftRefresh' : 'draftRefreshDisabled') : 'danger';
+      const btn = createStyledGameButton(styleKey, {
         text: label,
-        style: {
-          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(18 * LAYOUT_SCALE),
-          fill: textFill,
-          fontWeight: '600',
-          lineHeight: Math.round(24 * LAYOUT_SCALE),
-          wordWrap: true,
-          wordWrapWidth: Math.max(40, w - Math.round(16 * LAYOUT_SCALE)),
-          align: 'center',
-          breakWords: true,
-        },
+        width: w,
+        height: btnH,
+        fontSize: Math.round(18 * LAYOUT_SCALE),
+        wordWrapWidth: Math.max(40, w - Math.round(16 * LAYOUT_SCALE)),
       });
-      t.anchor.set(0.5);
-      t.position.set(x + w / 2, y + btnH / 2);
-      (t as Container & { userData?: string }).userData = 'ctrl';
-      this.addChild(g, t);
+      btn.position.set(x, y);
+      (btn as Container & { userData?: string }).userData = 'ctrl';
+      btn.on('pointertap', () => {
+        if (enabled) fn();
+        else onDisabledTap?.();
+      });
+      this.addChild(btn);
     };
 
     const btnW = GAME_WIDTH - PAD_X * 2;
@@ -1002,7 +940,7 @@ export class DraftScreen extends Container {
           },
     );
 
-    mkBtn('结束选牌并继续', PAD_X, row2Y, btnW, true, 'primary', () => this.tryFinish());
+    mkBtn('开始战斗', PAD_X, row2Y, btnW, true, 'finish', () => this.tryFinish());
 
     this.positionTipAboveRow1(row1Y);
   }

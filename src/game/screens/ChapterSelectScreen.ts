@@ -1,7 +1,6 @@
 import { Assets, Container, FederatedWheelEvent, Graphics, Rectangle, Sprite, Text, type Texture } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
-import { createEnemyBodyDisplay } from '../enemyBodyFactory';
-import { battlePreviewPortraitEntries, formatNextBattlePreview } from '../nextBattlePreview';
+import { getChapterIntelBossCardParts, getChapterIntelMobCardParts } from '../nextBattlePreview';
 import { BOOK_CHAPTER_COUNT, bookChapterStrengthPercent, mobIdsForBookChapter } from '../bookChapterConfig';
 import {
   getChapterStarFilledCount,
@@ -12,7 +11,6 @@ import {
 } from '../chapterProgressStorage';
 import { bossDisplayName } from '../roundConfig';
 import type { RoundMeta } from '../types';
-import { clampMapPreviewTokenDiameter, enemyTokenDiameterForVariant } from '../unitCircleTokens';
 import { fitChapterBottomButtonRow } from '../layoutFit';
 import {
   preloadWowCirclePortraitsForBookChapter,
@@ -26,16 +24,11 @@ import {
   drawGoldenSolidPanel,
   GOLDEN_PANEL_ACCENT,
   GOLDEN_PANEL_BODY,
-  GOLDEN_PANEL_INSET,
-  GOLDEN_PANEL_INSET_STROKE,
   GOLDEN_PANEL_MUTED,
   GOLDEN_PANEL_TITLE,
 } from '../ui/goldenSolidPanel';
-import {
-  PARCHMENT_BTN_TEXT,
-  PARCHMENT_BTN_TEXT_DIM,
-  paintParchmentRoundRect,
-} from '../ui/parchmentButtonFill';
+import { appendChapterIntelUnitCardRow } from '../ui/chapterIntelUnitCardLayout';
+import { createStyledGameButton } from '../ui/gameButtons';
 import {
   bossUidForBookChapter,
   dungeonIdForBookChapter,
@@ -46,7 +39,7 @@ import {
 } from '../wowBookData';
 
 /**
- * 章节入口：线性解锁，中央仅展示当前可挑战章节；底部「家园 | 挑战 | 英雄」。
+ * 章节入口：线性解锁，中央仅展示当前可挑战章节；底部「家园 | 进入本章 | 英雄」。
  */
 export class ChapterSelectScreen extends Container {
   private readonly onPickChapter: (chapterId: number) => void;
@@ -54,7 +47,7 @@ export class ChapterSelectScreen extends Container {
   private readonly onStrengthen?: () => void;
   /** 隐藏测试：整章按指定星级记入通关（当前界面中央章节） */
   private readonly onDebugChapterClear?: (chapterId: number, star: 1 | 2 | 3) => void;
-  /** 当前预览的书本章节（1…BOOK_CHAPTER_COUNT），可与「挑战」入口一致或经左右箭头切换 */
+  /** 当前预览的书本章节（1…BOOK_CHAPTER_COUNT），可与中央「进入本章」一致或经左右箭头切换 */
   private viewChapterId: number;
   private readonly bgLayer = new Container();
   private readonly boardLayer = new Container();
@@ -99,26 +92,15 @@ export class ChapterSelectScreen extends Container {
 
     const backW = Math.round(160 * LAYOUT_SCALE);
     const backH = Math.round(50 * LAYOUT_SCALE);
-    const backR = Math.round(12 * LAYOUT_SCALE);
-    const backG = new Graphics();
-    paintParchmentRoundRect(backG, 0, 0, backW, backH, backR, LAYOUT_SCALE, false);
-    backG.eventMode = 'static';
-    backG.cursor = 'pointer';
-    backG.position.set(GAME_WIDTH - backW - pad, Math.round(26 * LAYOUT_SCALE));
-    backG.on('pointertap', () => this.onBack());
-    this.addChild(backG);
-    const backT = new Text({
+    const backBtn = createStyledGameButton('cta', {
       text: '退出',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(21 * LAYOUT_SCALE),
-        fill: PARCHMENT_BTN_TEXT,
-        fontWeight: '600',
-      },
+      width: backW,
+      height: backH,
+      fontSize: Math.round(21 * LAYOUT_SCALE),
     });
-    backT.anchor.set(0.5);
-    backT.position.set(backG.x + backW / 2, backG.y + backH / 2);
-    this.addChild(backT);
+    backBtn.position.set(GAME_WIDTH - backW - pad, Math.round(26 * LAYOUT_SCALE));
+    backBtn.on('pointertap', () => this.onBack());
+    this.addChild(backBtn);
 
     this.addChild(this.boardLayer);
     this.rebuildChapterBoard();
@@ -135,52 +117,34 @@ export class ChapterSelectScreen extends Container {
     const rowY = GAME_HEIGHT - Math.round(200 * LAYOUT_SCALE);
 
     const mkSide = (x: number, label: string, onTap?: () => void): void => {
-      const g = new Graphics();
-      const sideR = Math.round(14 * LAYOUT_SCALE);
-      paintParchmentRoundRect(g, 0, 0, sideW, sideH, sideR, LAYOUT_SCALE, !onTap);
-      g.eventMode = onTap ? 'static' : 'passive';
-      g.cursor = onTap ? 'pointer' : 'default';
-      g.position.set(x, rowY + (midH - sideH) / 2);
-      if (onTap) g.on('pointertap', () => onTap());
-      this.addChild(g);
-      const t = new Text({
+      const btn = createStyledGameButton(onTap ? 'classic' : 'classicMuted', {
         text: label,
-        style: {
-          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(22 * LAYOUT_SCALE),
-          fill: onTap ? PARCHMENT_BTN_TEXT : PARCHMENT_BTN_TEXT_DIM,
-          fontWeight: '600',
-        },
+        width: sideW,
+        height: sideH,
+        fontSize: Math.round(22 * LAYOUT_SCALE),
       });
-      t.anchor.set(0.5);
-      t.position.set(g.x + sideW / 2, g.y + sideH / 2);
-      this.addChild(t);
+      btn.position.set(x, rowY + (midH - sideH) / 2);
+      if (onTap) {
+        btn.on('pointertap', () => onTap());
+      } else {
+        btn.eventMode = 'passive';
+        btn.cursor = 'default';
+      }
+      this.addChild(btn);
     };
 
     mkSide(rowX, '家园');
     mkSide(rowX + sideW + btnGap + midW + btnGap, '英雄', () => this.onStrengthen?.());
 
-    const chR = Math.round(18 * LAYOUT_SCALE);
-    const chG = new Graphics();
-    paintParchmentRoundRect(chG, 0, 0, midW, midH, chR, LAYOUT_SCALE, false, { gradient: true });
-    chG.eventMode = 'static';
-    chG.cursor = 'pointer';
-    chG.position.set(rowX + sideW + btnGap, rowY);
-    chG.on('pointertap', () => this.onPickChapter(this.viewChapterId));
-    this.addChild(chG);
-
-    const chT = new Text({
-      text: '挑 战',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(34 * LAYOUT_SCALE),
-        fill: GOLDEN_PANEL_ACCENT,
-        fontWeight: '900',
-      },
+    const chBtn = createStyledGameButton('danger', {
+      text: '进入本章',
+      width: midW,
+      height: midH,
+      fontSize: Math.round(34 * LAYOUT_SCALE),
     });
-    chT.anchor.set(0.5);
-    chT.position.set(chG.x + midW / 2, chG.y + midH / 2);
-    this.addChild(chT);
+    chBtn.position.set(rowX + sideW + btnGap, rowY);
+    chBtn.on('pointertap', () => this.onPickChapter(this.viewChapterId));
+    this.addChild(chBtn);
 
     const foot = new Text({
       text: '「家园」功能开发中',
@@ -380,29 +344,18 @@ export class ChapterSelectScreen extends Container {
     const detH = Math.round(50 * LAYOUT_SCALE);
     const detX = cardW - detW - Math.round(24 * LAYOUT_SCALE);
     const detY = cardH - detH - Math.round(24 * LAYOUT_SCALE);
-    const detR = Math.round(12 * LAYOUT_SCALE);
-    const detG = new Graphics();
-    paintParchmentRoundRect(detG, 0, 0, detW, detH, detR, LAYOUT_SCALE, false);
-    detG.eventMode = 'static';
-    detG.cursor = 'pointer';
-    detG.position.set(detX, detY);
-    detG.on('pointertap', (e) => {
+    const detBtn = createStyledGameButton('classic', {
+      text: '查看详情',
+      width: detW,
+      height: detH,
+      fontSize: Math.round(20 * LAYOUT_SCALE),
+    });
+    detBtn.position.set(detX, detY);
+    detBtn.on('pointertap', (e) => {
       e.stopPropagation();
       this.openChapterDetailOverlay();
     });
-    card.addChild(detG);
-    const detT = new Text({
-      text: '查看详情',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(20 * LAYOUT_SCALE),
-        fill: PARCHMENT_BTN_TEXT,
-        fontWeight: '700',
-      },
-    });
-    detT.anchor.set(0.5);
-    detT.position.set(detX + detW / 2, detY + detH / 2);
-    card.addChild(detT);
+    card.addChild(detBtn);
 
     const navGap = Math.round(18 * LAYOUT_SCALE);
     const arrowW = Math.round(148 * LAYOUT_SCALE);
@@ -419,31 +372,18 @@ export class ChapterSelectScreen extends Container {
       label: string,
       opts: { dim: boolean; onTap: () => void },
     ): void => {
-      const wrap = new Container();
-      wrap.position.set(x, navY);
-      wrap.eventMode = 'static';
-      wrap.cursor = 'pointer';
-      const g = new Graphics();
-      const navR = Math.round(12 * LAYOUT_SCALE);
-      paintParchmentRoundRect(g, 0, 0, arrowW, arrowH, navR, LAYOUT_SCALE, opts.dim);
-      wrap.addChild(g);
-      const t = new Text({
+      const btn = createStyledGameButton(opts.dim ? 'classicMuted' : 'classic', {
         text: label,
-        style: {
-          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(20 * LAYOUT_SCALE),
-          fill: opts.dim ? PARCHMENT_BTN_TEXT_DIM : PARCHMENT_BTN_TEXT,
-          fontWeight: '700',
-        },
+        width: arrowW,
+        height: arrowH,
+        fontSize: Math.round(20 * LAYOUT_SCALE),
       });
-      t.anchor.set(0.5);
-      t.position.set(arrowW / 2, arrowH / 2);
-      wrap.addChild(t);
-      wrap.on('pointertap', (e) => {
+      btn.position.set(x, navY);
+      btn.on('pointertap', (e) => {
         e.stopPropagation();
         opts.onTap();
       });
-      this.boardLayer.addChild(wrap);
+      this.boardLayer.addChild(btn);
     };
 
     const canPrev = targetId > 1;
@@ -502,29 +442,19 @@ export class ChapterSelectScreen extends Container {
     root.addChild(frameOrn);
 
     const mkBtn = (label: string, star: 1 | 2 | 3, y: number): void => {
-      const g = new Graphics();
       const bw = panelW - inset * 2;
-      const btnR = Math.round(10 * LAYOUT_SCALE);
-      paintParchmentRoundRect(g, inset, y, bw, btnH, btnR, LAYOUT_SCALE, false);
-      g.eventMode = 'static';
-      g.cursor = 'pointer';
-      g.on('pointertap', (e) => {
+      const btn = createStyledGameButton('classic', {
+        text: label,
+        width: bw,
+        height: btnH,
+        fontSize: Math.round(17 * LAYOUT_SCALE),
+      });
+      btn.position.set(inset, y);
+      btn.on('pointertap', (e) => {
         e.stopPropagation();
         this.onDebugChapterClear?.(this.viewChapterId, star);
       });
-      root.addChild(g);
-      const t = new Text({
-        text: label,
-        style: {
-          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(17 * LAYOUT_SCALE),
-          fill: PARCHMENT_BTN_TEXT,
-          fontWeight: '700',
-        },
-      });
-      t.anchor.set(0.5);
-      t.position.set(panelW / 2, y + btnH / 2);
-      root.addChild(t);
+      root.addChild(btn);
     };
 
     let y = inset;
@@ -606,6 +536,7 @@ export class ChapterSelectScreen extends Container {
     const wrapW = panelW - innerPad * 2;
 
     const closeH = Math.round(54 * LAYOUT_SCALE);
+    const closeW = Math.round(240 * LAYOUT_SCALE);
     const closeMargin = Math.round(20 * LAYOUT_SCALE);
     const closeY = GAME_HEIGHT - closeH - Math.round(100 * LAYOUT_SCALE);
     const headerH = Math.round(50 * LAYOUT_SCALE);
@@ -633,7 +564,8 @@ export class ChapterSelectScreen extends Container {
         fontWeight: '800',
       },
     });
-    h1.position.set(px + innerPad, titleY);
+    h1.anchor.set(0.5, 0);
+    h1.position.set(px + panelW / 2, titleY);
     layer.addChild(h1);
 
     const scrollRoot = new Container();
@@ -649,104 +581,76 @@ export class ChapterSelectScreen extends Container {
     scrollRoot.addChild(scrollContent);
 
     let localY = 0;
-    const mkSection = (sectionTitle: string, meta: RoundMeta, scaleRoundIndex: number): void => {
-      const st = new Text({
-        text: sectionTitle,
-        style: {
-          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(24 * LAYOUT_SCALE),
-          fill: GOLDEN_PANEL_TITLE,
-          fontWeight: '800',
-          wordWrap: true,
-          wordWrapWidth: wrapW,
-          breakWords: true,
-        },
-      });
-      st.position.set(innerPad, localY);
-      scrollContent.addChild(st);
-      localY += Math.round(Math.max(st.height, Math.round(28 * LAYOUT_SCALE)) + 8 * LAYOUT_SCALE);
-
-      const portraitTop = localY;
-      const cardW = Math.round(152 * LAYOUT_SCALE);
-      const cardH = Math.round(172 * LAYOUT_SCALE);
-      const cardGap = Math.round(10 * LAYOUT_SCALE);
-      const entries = battlePreviewPortraitEntries(meta, cid);
-      let nx = 0;
-      let rowY = 0;
-      for (const ent of entries) {
-        if (nx + cardW > wrapW && nx > 0) {
-          nx = 0;
-          rowY += cardH + cardGap;
-        }
-        const c = new Container();
-        c.position.set(innerPad + nx, portraitTop + rowY);
-        const cardBg = new Graphics();
-        cardBg
-          .roundRect(0, 0, cardW, cardH, Math.round(12 * LAYOUT_SCALE))
-          .fill(GOLDEN_PANEL_INSET)
-          .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: GOLDEN_PANEL_INSET_STROKE });
-        c.addChild(cardBg);
-        const bodyG = createEnemyBodyDisplay(
-          ent.paint,
-          'chapterMini',
-          clampMapPreviewTokenDiameter(
-            enemyTokenDiameterForVariant('chapterMini', ent.paint.startsWith('boss_')),
-            cardW,
-            cardH,
-          ),
-          { wowCirclePortraitUid: ent.wowCirclePortraitUid },
-        );
-        bodyG.position.set(cardW / 2, cardH - Math.round(10 * LAYOUT_SCALE));
-        c.addChild(bodyG);
-        const cap = new Text({
-          text: `${ent.title}×${ent.count}`,
-          style: {
-            fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-            fontSize: Math.round(14 * LAYOUT_SCALE),
-            fill: GOLDEN_PANEL_BODY,
-            fontWeight: '600',
-            align: 'center',
-            wordWrap: true,
-            wordWrapWidth: Math.max(40, cardW - Math.round(8 * LAYOUT_SCALE)),
-            breakWords: true,
-          },
-        });
-        cap.anchor.set(0.5, 1);
-        cap.position.set(cardW / 2, Math.round(18 * LAYOUT_SCALE));
-        c.addChild(cap);
-        scrollContent.addChild(c);
-        nx += cardW + cardGap;
-      }
-      const portraitBlockH = entries.length ? rowY + cardH : 0;
-      localY = portraitTop + portraitBlockH + (entries.length ? Math.round(12 * LAYOUT_SCALE) : Math.round(4 * LAYOUT_SCALE));
-
-      const body = new Text({
-        text: formatNextBattlePreview(meta, scaleRoundIndex, bookM),
-        style: {
-          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(17 * LAYOUT_SCALE),
-          fill: GOLDEN_PANEL_BODY,
-          lineHeight: Math.round(25 * LAYOUT_SCALE),
-          wordWrap: true,
-          wordWrapWidth: wrapW,
-          breakWords: true,
-        },
-      });
-      body.position.set(innerPad, localY);
-      scrollContent.addChild(body);
-      localY += body.height + Math.round(28 * LAYOUT_SCALE);
+    const sectionTitleStyle = {
+      fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+      fontSize: Math.round(24 * LAYOUT_SCALE),
+      fill: GOLDEN_PANEL_TITLE,
+      fontWeight: '800' as const,
+      wordWrap: true,
+      wordWrapWidth: wrapW,
+      breakWords: true,
+    };
+    const bodyTextStyle = {
+      fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+      fontSize: Math.round(17 * LAYOUT_SCALE),
+      fill: GOLDEN_PANEL_BODY,
+      lineHeight: Math.round(25 * LAYOUT_SCALE),
+      wordWrap: true,
+      breakWords: true,
     };
 
-    mkSection(
-      '普通战斗 · 本章敌种池（各兵种以「首关 1-1」进度估算数值；实战中随关卡推进会变强）',
-      poolMeta,
-      0,
-    );
-    mkSection(
-      `首领战 · ${wowFinalBossNameCn(cid).trim() || bossDisplayName(bossId)}（3-6；白板首领 · 数值同先知）`,
-      bossMeta,
-      15,
-    );
+    const pushSectionTitle = (title: string): void => {
+      const st = new Text({ text: title, style: sectionTitleStyle });
+      st.position.set(innerPad, localY);
+      scrollContent.addChild(st);
+      localY += Math.round(st.height + 10 * LAYOUT_SCALE);
+    };
+
+    const pushMutedLine = (text: string): void => {
+      const t = new Text({
+        text,
+        style: {
+          ...bodyTextStyle,
+          fontSize: Math.round(14 * LAYOUT_SCALE),
+          fill: GOLDEN_PANEL_MUTED,
+          lineHeight: Math.round(21 * LAYOUT_SCALE),
+          wordWrapWidth: wrapW,
+        },
+      });
+      t.position.set(innerPad, localY);
+      scrollContent.addChild(t);
+      localY += Math.round(t.height + 12 * LAYOUT_SCALE);
+    };
+
+    pushSectionTitle('普通小怪：');
+    pushMutedLine('各兵种以「首关 1-1」进度估算数值；实战中随关卡推进会变强。');
+
+    for (const w of poolMeta.enemies) {
+      const parts = getChapterIntelMobCardParts(w, 1, 0, bookM, cid);
+      localY = appendChapterIntelUnitCardRow(scrollContent, {
+        parts,
+        singleEnemyMeta: { ...poolMeta, enemies: [w] },
+        bookChapterId: cid,
+        originX: innerPad,
+        topY: localY,
+        rowW: wrapW,
+      });
+    }
+
+    pushSectionTitle('首领：');
+
+    {
+      const w = bossMeta.enemies[0]!;
+      const parts = getChapterIntelBossCardParts(w, 3, 15, bookM, cid);
+      localY = appendChapterIntelUnitCardRow(scrollContent, {
+        parts,
+        singleEnemyMeta: bossMeta,
+        bookChapterId: cid,
+        originX: innerPad,
+        topY: localY,
+        rowW: wrapW,
+      });
+    }
 
     const contentH = localY + Math.round(12 * LAYOUT_SCALE);
     const maxScroll = Math.max(0, contentH - scrollH);
@@ -801,30 +705,18 @@ export class ChapterSelectScreen extends Container {
     hintScroll.position.set(GAME_WIDTH / 2, closeY - Math.round(8 * LAYOUT_SCALE));
     layer.addChild(hintScroll);
 
-    const closeW = Math.round(240 * LAYOUT_SCALE);
-    const closeG = new Graphics();
-    const closeR = Math.round(14 * LAYOUT_SCALE);
-    paintParchmentRoundRect(closeG, 0, 0, closeW, closeH, closeR, LAYOUT_SCALE, false);
-    closeG.eventMode = 'static';
-    closeG.cursor = 'pointer';
-    closeG.position.set((GAME_WIDTH - closeW) / 2, closeY);
-    closeG.on('pointertap', (e) => {
+    const closeBtn = createStyledGameButton('classic', {
+      text: '关 闭',
+      width: closeW,
+      height: closeH,
+      fontSize: Math.round(22 * LAYOUT_SCALE),
+    });
+    closeBtn.position.set((GAME_WIDTH - closeW) / 2, closeY);
+    closeBtn.on('pointertap', (e) => {
       e.stopPropagation();
       this.closeChapterDetailOverlay();
     });
-    layer.addChild(closeG);
-    const closeT = new Text({
-      text: '关 闭',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(22 * LAYOUT_SCALE),
-        fill: PARCHMENT_BTN_TEXT,
-        fontWeight: '600',
-      },
-    });
-    closeT.anchor.set(0.5);
-    closeT.position.set(closeG.x + closeW / 2, closeG.y + closeH / 2);
-    layer.addChild(closeT);
+    layer.addChild(closeBtn);
 
     attachScreenDebugLabel(layer, 'ChapterSelectScreen.detail');
     this.addChild(layer);

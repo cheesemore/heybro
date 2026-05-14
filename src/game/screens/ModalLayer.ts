@@ -1,6 +1,7 @@
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { drawGoldenSolidPanel, GOLDEN_PANEL_BODY } from '../ui/goldenSolidPanel';
+import { createStyledGameButton } from '../ui/gameButtons';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 
 export class ModalLayer extends Container {
@@ -71,31 +72,20 @@ export class ModalLayer extends Container {
     body.position.set(GAME_WIDTH / 2, panelY + padTop);
     this.addChild(body);
 
-    const ok = new Graphics();
-    ok.roundRect(0, 0, okW, okH, Math.round(12 * LAYOUT_SCALE)).fill(0x2563eb);
-    ok.eventMode = 'static';
-    ok.cursor = 'pointer';
-    ok.position.set((GAME_WIDTH - okW) / 2, panelY + ph - padBottom - okH);
-    ok.on('pointertap', () => {
-      this.visible = false;
-      this.eventMode = 'none';
-      this.removeChildren();
-      onClose();
-    });
-    this.addChild(ok);
-
-    const okText = new Text({
+    const okBtn = createStyledGameButton('classic', {
       text: '确定',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(26 * LAYOUT_SCALE),
-        fill: 0xffffff,
-        fontWeight: '600',
+      width: okW,
+      height: okH,
+      fontSize: Math.round(26 * LAYOUT_SCALE),
+      onTap: () => {
+        this.visible = false;
+        this.eventMode = 'none';
+        this.removeChildren();
+        onClose();
       },
     });
-    okText.anchor.set(0.5);
-    okText.position.set(ok.x + okW / 2, ok.y + okH / 2);
-    this.addChild(okText);
+    okBtn.position.set((GAME_WIDTH - okW) / 2, panelY + ph - padBottom - okH);
+    this.addChild(okBtn);
 
     attachScreenDebugLabel(this, 'ModalLayer.alert');
   }

@@ -6,11 +6,12 @@ import { getEnemyPortraitTexture, getWowCirclePortraitTexture } from './enemyPor
 import { LAYOUT_SCALE } from './constants';
 import type { AllyClass } from './types';
 import type { EnemyPaintKind } from './battleVisuals';
-import { BOSS_DEFS, ENEMY_DEFS } from './unitDefs';
+import { ENEMY_DEFS } from './unitDefs';
+import { WOW_BOOK_BOSS_TABLE_DEFAULT } from './wowBookData';
 
 /** 地图/预览等无具体兵种时：用语义「小兵 / 首领」参考配置里的碰撞半径（设计像素） */
 export function battleInnerRadiusPx(isBoss: boolean): number {
-  const design = isBoss ? BOSS_DEFS.blademaster.hitRadius : ENEMY_DEFS.grunt.hitRadius;
+  const design = isBoss ? WOW_BOOK_BOSS_TABLE_DEFAULT.hitRadius : ENEMY_DEFS.grunt.hitRadius;
   return Math.round(design * LAYOUT_SCALE);
 }
 
