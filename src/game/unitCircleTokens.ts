@@ -323,7 +323,12 @@ export function createBattleAllyToken(kind: AllyClass, innerRadiusPx: number): B
   return { root, ringCur, ringLost, disk, letter, ringR, thick, cx, cy };
 }
 
-export function createBattleHeroToken(heroId: HeroId, allyKind: AllyClass, innerRadiusPx: number): BattleTokenParts {
+export function createBattleHeroToken(
+  heroId: HeroId,
+  allyKind: AllyClass,
+  innerRadiusPx: number,
+  skillTierSuffix = '',
+): BattleTokenParts {
   const innerR = innerRadiusPx;
   const cx = 0;
   const cy = -innerR;
@@ -341,6 +346,21 @@ export function createBattleHeroToken(heroId: HeroId, allyKind: AllyClass, inner
   root.addChild(disk);
   root.addChild(goldRing);
   root.addChild(letter);
+  if (skillTierSuffix) {
+    const tag = new Text({
+      text: skillTierSuffix,
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.max(9, Math.round(11 * LAYOUT_SCALE)),
+        fill: 0xfbbf24,
+        fontWeight: '800',
+        stroke: { color: 0x451a03, width: Math.max(1, Math.round(2 * LAYOUT_SCALE)) },
+      },
+    });
+    tag.anchor.set(0.5, 1);
+    tag.position.set(cx, cy + innerR * 0.72);
+    root.addChild(tag);
+  }
 
   redrawHpRingPair(ringCur, ringLost, cx, cy, ringR, thick, 1, BATTLE_ALLY_HP_RING_COLOR);
   return { root, ringCur, ringLost, disk, letter, ringR, thick, cx, cy };

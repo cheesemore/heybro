@@ -365,18 +365,50 @@ export type MeteorAnim = {
   max: number;
   ty: number;
   br: number;
+  /** 竖直下落速度（逻辑像素/秒量级，每帧乘 dt） */
+  vy: number;
+  /** 流星群小颗：冷色、短尾、快结束 */
+  swarm: boolean;
 };
 
-export function spawnMeteorAnim(layer: Container, tx: number, ty: number, blastRadius: number): MeteorAnim {
+export type MeteorSpawnOpts = {
+  swarm?: boolean;
+};
+
+export function spawnMeteorAnim(
+  layer: Container,
+  tx: number,
+  ty: number,
+  blastRadius: number,
+  opts?: MeteorSpawnOpts,
+): MeteorAnim {
+  const swarm = !!opts?.swarm;
   const streak = new Graphics();
-  streak.position.set(tx, ty - 300);
-  streak.moveTo(-12, 0).lineTo(14, 300).lineTo(-14, 300).closePath().fill({ color: 0xfb923c, alpha: 0.82 });
-  streak.circle(0, 4, 12).fill({ color: 0xfef08a, alpha: 0.95 });
+  const startAbove = swarm ? 120 + Math.random() * 90 : 300;
+  streak.position.set(tx, ty - startAbove);
+  if (swarm) {
+    const sc = 0.5 + Math.random() * 0.45;
+    streak.scale.set(sc);
+    streak.moveTo(-3, 0).lineTo(5, 110).lineTo(-4, 110).closePath().fill({ color: 0x818cf8, alpha: 0.9 });
+    streak.circle(0, 2, 5).fill({ color: 0xe0e7ff, alpha: 0.94 });
+  } else {
+    streak.moveTo(-12, 0).lineTo(14, 300).lineTo(-14, 300).closePath().fill({ color: 0xfb923c, alpha: 0.82 });
+    streak.circle(0, 4, 12).fill({ color: 0xfef08a, alpha: 0.95 });
+  }
   layer.addChild(streak);
   const boom = new Graphics();
   boom.position.set(tx, ty);
   layer.addChild(boom);
-  return { streak, boom, t: 0, max: 0.78, ty, br: blastRadius };
+  return {
+    streak,
+    boom,
+    t: 0,
+    max: swarm ? 0.32 + Math.random() * 0.1 : 0.78,
+    ty,
+    br: blastRadius,
+    vy: swarm ? 1100 + Math.random() * 280 : 980,
+    swarm,
+  };
 }
 
 export function tickMeteorAnims(anims: MeteorAnim[], dt: number): void {
@@ -384,17 +416,27 @@ export function tickMeteorAnims(anims: MeteorAnim[], dt: number): void {
     const m = anims[i]!;
     m.t += dt;
     const k = m.t / m.max;
-    m.streak.position.y += 980 * dt;
-    if (m.streak.position.y > m.ty - 40) m.streak.alpha *= 0.88;
+    m.streak.position.y += m.vy * dt;
+    const fadeY = m.swarm ? 22 : 40;
+    if (m.streak.position.y > m.ty - fadeY) m.streak.alpha *= 0.88;
     m.boom.clear();
     if (m.t > 0.06) {
-      const prog = Math.min(1, (m.t - 0.06) / 0.38);
+      const boomDur = m.swarm ? 0.2 : 0.38;
+      const prog = Math.min(1, (m.t - 0.06) / boomDur);
       const rad = m.br * prog;
-      m.boom
-        .circle(0, 0, rad)
-        .stroke({ width: 8 + prog * 14, color: 0xea580c, alpha: 0.92 * (1 - k * 0.6) });
-      m.boom.circle(0, 0, rad * 0.42).fill({ color: 0xfbbf24, alpha: 0.28 * (1 - k) });
-      m.boom.circle(0, 0, rad * 0.72).stroke({ width: 3, color: 0xfef08a, alpha: 0.35 * (1 - k) });
+      if (m.swarm) {
+        m.boom
+          .circle(0, 0, rad)
+          .stroke({ width: 2 + prog * 9, color: 0x6366f1, alpha: 0.88 * (1 - k * 0.7) });
+        m.boom.circle(0, 0, rad * 0.52).fill({ color: 0xc4b5fd, alpha: 0.24 * (1 - k) });
+        m.boom.circle(0, 0, rad * 0.78).stroke({ width: 2, color: 0xe0e7ff, alpha: 0.32 * (1 - k) });
+      } else {
+        m.boom
+          .circle(0, 0, rad)
+          .stroke({ width: 8 + prog * 14, color: 0xea580c, alpha: 0.92 * (1 - k * 0.6) });
+        m.boom.circle(0, 0, rad * 0.42).fill({ color: 0xfbbf24, alpha: 0.28 * (1 - k) });
+        m.boom.circle(0, 0, rad * 0.72).stroke({ width: 3, color: 0xfef08a, alpha: 0.35 * (1 - k) });
+      }
     }
     if (m.t >= m.max) {
       m.streak.destroy();

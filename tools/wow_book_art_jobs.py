@@ -8,7 +8,7 @@
 - 小怪：`wow-mobs/<monsterUid>.png`（例 `U000042.png`）
 - 首领：`wow-bosses/<bossUid>.png`（例 `B000001.png`）
 
-背景：小怪与非最终关首领用冷灰 bokeh；`isFinalBoss=true` 用暗红 bokeh（与饥荒风大全一致）。
+背景：小怪用冷灰 bokeh；**全部首领**立绘统一暗红/酒红 bokeh（与饥荒风大全一致）。
 """
 
 from __future__ import annotations
@@ -198,9 +198,8 @@ def prompt_boss_row(
         f"【{role_line}】{name_cn}（{name_en}）。地下城：{dungeon_cn} / {dungeon_en}。"
         f"关卡语境：{stage_cn}。首领需要更强剪影与略大魄力，仍为饥荒手绘线稿风而非写实 Boss 海报。"
     )
-    bg = RED_BG if is_final else GRAY_BG
     mid = (
-        bg
+        RED_BG
         + " "
         + STYLE_CN
         + " "

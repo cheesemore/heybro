@@ -1,23 +1,27 @@
 import type { Application } from 'pixi.js';
 import { Container, FederatedPointerEvent, FederatedWheelEvent, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
-import { HERO_REGISTRY, getHeroDef, heroStarStatMult } from '../heroRegistry';
+import { HERO_REGISTRY, getHeroDef } from '../heroRegistry';
 import type { HeroId } from '../heroRegistry';
+import { mountHeroInfoPanelContent } from '../ui/heroInfoPanel';
 import {
-  addHeroDuplicate,
   findDeployedSlotIndex,
   getDeployedHeroIds,
+  getLotteryTicketsRemaining,
+  getRecentLotteryHistory,
   HERO_DEPLOY_SLOT_CHAPTER,
-  isHeroUnlocked,
   loadHeroMeta,
   maxHeroDeploySlots,
   nextStarCost,
+  performHeroLotteryDraw,
   tryDeployHero,
   undeployHeroById,
 } from '../heroMetaStorage';
-import { drawGoldenSolidPanel, GOLDEN_PANEL_BODY } from '../ui/goldenSolidPanel';
+import { drawGoldenSolidPanel } from '../ui/goldenSolidPanel';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
+import { paintRedCountBadge } from '../ui/countBadge';
 import { createStyledGameButton, redrawGameButtonFromStyle, type GameButton, type GameButtonStyleKey } from '../ui/gameButtons';
+import { spawnFloatingGameTip } from '../ui/floatingGameTip';
 import type { ModalLayer } from './ModalLayer';
 import { createDraftHeroToken } from '../unitCircleTokens';
 import { ALLY_DEFS } from '../unitDefs';
@@ -53,7 +57,7 @@ function drawPadlock(g: Graphics, cx: number, cy: number, size: number, color: n
 }
 
 /**
- * 英雄：上阵区 + 可滚动列表；抽卡：模拟抽奖。
+ * 英雄：上阵区 + 可滚动列表；抽卡：消耗抽奖次数随机英雄。
  */
 export class StrengthenScreen extends Container {
   private readonly modal: ModalLayer;
@@ -65,9 +69,14 @@ export class StrengthenScreen extends Container {
   private readonly scrollContent = new Container();
   private readonly scrollMaskG = new Graphics();
   private readonly sheetLayer = new Container();
+  /** 英雄详情面板内滚动区 dispose，须在 removeChildren 前调用 */
+  private heroSheetPanelDispose: (() => void) | null = null;
   private readonly tabHeroBtn: GameButton;
   private readonly tabGachaBtn: GameButton;
+  private readonly tabGachaBadge = new Container();
   private readonly gachaHint: Text;
+  private lotteryBtn!: GameButton;
+  private readonly lotteryDynamicText: Text;
 
   private tab: 'hero' | 'gacha' = 'hero';
   private scrollViewW = 0;
@@ -86,6 +95,7 @@ export class StrengthenScreen extends Container {
 
   constructor(_app: Application, modal: ModalLayer, onBack: () => void) {
     super();
+    this.sortableChildren = true;
     this.modal = modal;
     this.onBack = onBack;
     this.boundDocPointerMove = this.onDocPointerMove.bind(this);
@@ -143,6 +153,10 @@ export class StrengthenScreen extends Container {
     this.tabGachaBtn.position.set(PAD + tabW + tabGap, tabY);
     this.tabGachaBtn.on('pointertap', () => this.setTab('gacha'));
     this.addChild(this.tabGachaBtn);
+    this.tabGachaBadge.zIndex = 40;
+    this.tabGachaBadge.position.set(PAD + tabW + tabGap + tabW - Math.round(6 * LAYOUT_SCALE), tabY + Math.round(8 * LAYOUT_SCALE));
+    paintRedCountBadge(this.tabGachaBadge, getLotteryTicketsRemaining());
+    this.addChild(this.tabGachaBadge);
 
     const heroAreaTop = tabY + tabH + Math.round(14 * LAYOUT_SCALE);
     this.heroRoot.position.set(0, heroAreaTop);
@@ -207,22 +221,13 @@ export class StrengthenScreen extends Container {
     this.gachaRoot.position.set(0, heroAreaTop);
     this.addChild(this.gachaRoot);
 
-    const lotW = Math.round(280 * LAYOUT_SCALE);
-    const lotH = Math.round(56 * LAYOUT_SCALE);
-    const lotBtn = createStyledGameButton('accent', {
-      text: '模拟抽奖（随机英雄）',
-      width: lotW,
-      height: lotH,
-      fontSize: Math.round(20 * LAYOUT_SCALE),
-    });
-    lotBtn.position.set(PAD, Math.round(24 * LAYOUT_SCALE));
-    lotBtn.on('pointertap', () => this.doFakeLottery());
-    this.gachaRoot.addChild(lotBtn);
-
     this.gachaHint = new Text({
       text:
-        '每次随机获得一名英雄或同名素材；同名素材达到数量会自动升星。\n' +
-        '新英雄会加入下方「英雄」页签的列表。',
+        '【抽奖规则】\n' +
+        '· 战斗关每提升 1 点历史最高星（单关 1～3★），可获得 1 次抽奖次数，可累计。\n' +
+        '· 每次抽奖消耗 1 次次数，随机获得一名新英雄或已有英雄的同名素材。\n' +
+        '· 升至 2 / 3 / 4 / 5 星分别需要 2、3、5、8 张同名卡；达到数量会自动升星。\n' +
+        '· 剩余次数、消耗次数与抽中结果均保存在本地存档。',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(17 * LAYOUT_SCALE),
@@ -232,8 +237,34 @@ export class StrengthenScreen extends Container {
         lineHeight: Math.round(24 * LAYOUT_SCALE),
       },
     });
-    this.gachaHint.position.set(PAD, lotBtn.y + lotH + Math.round(20 * LAYOUT_SCALE));
+    this.gachaHint.position.set(PAD, Math.round(24 * LAYOUT_SCALE));
     this.gachaRoot.addChild(this.gachaHint);
+
+    const lotW = Math.round(280 * LAYOUT_SCALE);
+    const lotH = Math.round(56 * LAYOUT_SCALE);
+    this.lotteryBtn = createStyledGameButton('accent', {
+      text: '抽奖',
+      width: lotW,
+      height: lotH,
+      fontSize: Math.round(20 * LAYOUT_SCALE),
+    });
+    this.lotteryBtn.position.set(PAD, this.gachaHint.y + this.gachaHint.height + Math.round(18 * LAYOUT_SCALE));
+    this.lotteryBtn.on('pointertap', () => this.doHeroLottery());
+    this.gachaRoot.addChild(this.lotteryBtn);
+
+    this.lotteryDynamicText = new Text({
+      text: '',
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.round(15 * LAYOUT_SCALE),
+        fill: 0x7dd3fc,
+        wordWrap: true,
+        wordWrapWidth: GAME_WIDTH - PAD * 2,
+        lineHeight: Math.round(22 * LAYOUT_SCALE),
+      },
+    });
+    this.lotteryDynamicText.position.set(PAD, this.lotteryBtn.y + lotH + Math.round(16 * LAYOUT_SCALE));
+    this.gachaRoot.addChild(this.lotteryDynamicText);
 
     this.sheetLayer.visible = false;
     this.sheetLayer.eventMode = 'static';
@@ -242,6 +273,7 @@ export class StrengthenScreen extends Container {
 
     this.refreshTabsVisual();
     this.refreshAll();
+    this.refreshGachaChrome();
 
     attachScreenDebugLabel(this, 'StrengthenScreen');
   }
@@ -304,11 +336,13 @@ export class StrengthenScreen extends Container {
       this.updateScrollViewportCursor();
     } else {
       this.endHeroScrollDrag();
+      this.refreshGachaChrome();
     }
   }
 
   override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
     this.endHeroScrollDrag();
+    this.closeHeroSheet();
     super.destroy(options);
   }
 
@@ -328,6 +362,25 @@ export class StrengthenScreen extends Container {
       height: tabH,
       fontSize: tabFs,
     });
+    paintRedCountBadge(this.tabGachaBadge, getLotteryTicketsRemaining());
+  }
+
+  private refreshGachaChrome(): void {
+    const n = getLotteryTicketsRemaining();
+    paintRedCountBadge(this.tabGachaBadge, n);
+    const recent = getRecentLotteryHistory(6);
+    const lines: string[] = [`当前剩余抽奖次数：${n}`];
+    if (recent.length) {
+      lines.push('', '最近抽取（新→旧）：');
+      for (const e of recent) {
+        const def = getHeroDef(e.heroId);
+        const nm = def?.name ?? e.heroId;
+        const d = new Date(e.ts);
+        const ts = `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        lines.push(`· ${nm}（${ts}）`);
+      }
+    }
+    this.lotteryDynamicText.text = lines.join('\n');
   }
 
   private showHelp(): void {
@@ -336,31 +389,48 @@ export class StrengthenScreen extends Container {
       '· 在下方列表点击英雄卡片，打开详情面板，可上阵或下阵。',
       '· 已上阵的英雄也可点击上方栏位中的头像进行下阵。',
       '· 列表中带金色边框的英雄表示当前已上阵。',
+      '· 英雄技能的强化与备战「职业羁绊」层数相关（如穆兰旋风斩随战士羁绊变化）。',
+      '',
+      '【抽奖】',
+      '· 战斗关历史最高星每提升 1★，获得 1 次抽奖次数；在「抽卡」页消耗次数随机得英雄或同名卡。',
       '',
       '【栏位解锁】',
       '· 第 1 个上阵栏：通关第 1 章后解锁',
-      '· 第 2 个上阵栏：通关第 5 章后解锁',
-      '· 第 3 个上阵栏：通关第 10 章后解锁',
-      '· 最多可同时上阵 3 名英雄。',
+      '· 第 2 个上阵栏：通关第 3 章后解锁',
+      '· 第 3 个上阵栏：通关第 5 章后解锁',
+      '· 最多可同时上阵 3 名英雄；同职业仅能保留一名在阵上，新上阵同职业会自动换下阵上该职业英雄（有飘字提示）。',
     ].join('\n');
     this.modal.alert(msg, () => {});
   }
 
-  private doFakeLottery(): void {
-    const idx = Math.floor(Math.random() * HERO_REGISTRY.length);
-    const id = HERO_REGISTRY[idx]!.id;
-    const was = isHeroUnlocked(id);
-    addHeroDuplicate(id);
-    const def = getHeroDef(id)!;
-    const msg = was
-      ? `获得同名素材：${def.name}（${id}）\n已计入升星进度，满足数量会自动升星。`
-      : `新英雄加入：${def.name}（${id}）`;
-    this.modal.alert(msg, () => this.refreshAll());
+  private doHeroLottery(): void {
+    const r = performHeroLotteryDraw();
+    if (!r.ok) {
+      this.modal.alert(
+        '抽奖次数不足。\n\n战斗关提升历史最高星可获得次数（每提升 1★ 获得 1 次），详见抽卡页说明。',
+        () => {},
+      );
+      return;
+    }
+    const def = getHeroDef(r.id)!;
+    if (r.wasDuplicate) {
+      const msg = `获得同名素材：${def.name}（${r.id}）\n已计入升星进度，满足数量会自动升星。`;
+      this.modal.alert(msg, () => {
+        this.refreshAll();
+        this.refreshGachaChrome();
+      });
+      return;
+    }
+    this.modal.alertNewHeroUnlock(r.id, () => {
+      this.refreshAll();
+      this.refreshGachaChrome();
+    });
   }
 
   private refreshAll(): void {
     this.drawSlots();
     this.drawHeroScroll();
+    this.refreshGachaChrome();
   }
 
   private drawSlots(): void {
@@ -608,6 +678,8 @@ export class StrengthenScreen extends Container {
   }
 
   private closeHeroSheet(): void {
+    this.heroSheetPanelDispose?.();
+    this.heroSheetPanelDispose = null;
     this.sheetLayer.removeChildren();
     this.sheetLayer.visible = false;
     this.sheetLayer.eventMode = 'none';
@@ -616,13 +688,10 @@ export class StrengthenScreen extends Container {
   private openHeroSheet(id: HeroId): void {
     const def = getHeroDef(id);
     if (!def) return;
-    const m = loadHeroMeta();
-    const stars = m.heroes[id]?.stars ?? 1;
-    const sm = heroStarStatMult(stars);
-    const dispHp = Math.round(def.maxHp * sm);
-    const dispAtk = Math.round(def.atk * sm);
     const deployed = findDeployedSlotIndex(id) != null;
 
+    this.heroSheetPanelDispose?.();
+    this.heroSheetPanelDispose = null;
     this.sheetLayer.removeChildren();
     this.sheetLayer.visible = true;
     this.sheetLayer.eventMode = 'static';
@@ -648,37 +717,32 @@ export class StrengthenScreen extends Container {
     this.sheetLayer.addChild(panelFrame);
 
     const dia = Math.round(96 * LAYOUT_SCALE);
-    const sheetAvatarTop = py + Math.round(52 * LAYOUT_SCALE);
-    const tok = createDraftHeroToken(id, def.allyClass, dia);
-    tok.position.set(px + pw / 2, sheetAvatarTop + dia);
-    this.sheetLayer.addChild(tok);
-
-    const body = new Text({
-      text: [
-        `${def.name}  ·  ${ALLY_DEFS[def.allyClass].name}`,
-        `★${stars}（属性×${sm.toFixed(2)}）`,
-        `生命 ${dispHp}  攻击 ${dispAtk}`,
-        `攻速 ${def.attackSpeed}  射程 ${def.range}  移速 ${def.moveSpeed}`,
-        '',
-        `被动：${def.passiveDesc}`,
-        '',
-        '主动技能：暂无',
-      ].join('\n'),
-      style: {
-        fontFamily: 'system-ui, "Microsoft YaHei", Segoe UI, sans-serif',
-        fontSize: Math.round(16 * LAYOUT_SCALE),
-        fill: GOLDEN_PANEL_BODY,
-        wordWrap: true,
-        wordWrapWidth: pw - Math.round(40 * LAYOUT_SCALE),
-        lineHeight: Math.round(22 * LAYOUT_SCALE),
-      },
-    });
-    body.position.set(px + Math.round(20 * LAYOUT_SCALE), sheetAvatarTop + dia + Math.round(14 * LAYOUT_SCALE));
-    this.sheetLayer.addChild(body);
-
     const btnW = Math.round(200 * LAYOUT_SCALE);
     const btnH = Math.round(48 * LAYOUT_SCALE);
     const btnGap = Math.round(12 * LAYOUT_SCALE);
+    const footerReserve = btnH * 2 + btnGap + Math.round(20 * LAYOUT_SCALE);
+
+    this.heroSheetPanelDispose = mountHeroInfoPanelContent({
+      parent: this.sheetLayer,
+      px,
+      py,
+      pw,
+      ph,
+      padX: Math.round(20 * LAYOUT_SCALE),
+      padTop: Math.round(52 * LAYOUT_SCALE),
+      titleText: null,
+      titleFontSize: Math.round(22 * LAYOUT_SCALE),
+      titleAlign: 'left',
+      heroId: id,
+      classStacksOnBoard: 0,
+      tokenDia: dia,
+      gapAfterTitle: 0,
+      gapAfterToken: Math.round(14 * LAYOUT_SCALE),
+      bodyFontSize: Math.round(16 * LAYOUT_SCALE),
+      bodyLineHeight: Math.round(22 * LAYOUT_SCALE),
+      footerReserve,
+    });
+
     const primaryY = py + ph - btnH * 2 - btnGap - Math.round(20 * LAYOUT_SCALE);
     const closeY = primaryY + btnH + btnGap;
 
@@ -708,13 +772,22 @@ export class StrengthenScreen extends Container {
     } else {
       mkBtn('上阵', bx, primaryY, 'sheetDeploy', () => {
         const r = tryDeployHero(id);
-        if (r === 'full') {
-          this.modal.alert('上阵栏位已满，请先下阵一名英雄。', () => {});
+        if (!r.ok) {
+          if (r.reason === 'full') {
+            this.modal.alert('上阵栏位已满，且阵上已有三种不同职业，请先下阵一名英雄。', () => {});
+            return;
+          }
+          if (r.reason === 'no_slots_unlocked') {
+            const ch = HERO_DEPLOY_SLOT_CHAPTER[0] ?? 1;
+            this.modal.alert(`尚未解锁上阵栏位，请先通关第 ${ch} 章。`, () => {});
+            return;
+          }
           return;
         }
-        if (r === 'no_slots_unlocked') {
-          this.modal.alert('尚未解锁上阵栏位，请先通关第 1 章。', () => {});
-          return;
+        if (r.replaced) {
+          const oldN = getHeroDef(r.replaced.oldId)?.name ?? r.replaced.oldId;
+          const newN = getHeroDef(id)!.name;
+          spawnFloatingGameTip(this, `${newN}与${oldN}职业相同，${oldN}已被换下`);
         }
         this.closeHeroSheet();
         this.refreshAll();

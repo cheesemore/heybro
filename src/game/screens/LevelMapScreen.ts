@@ -29,7 +29,8 @@ type Handlers = {
 /** 16 关节点坐标（三行：5+5+6），间距压缩以腾出下方情报板 */
 function roundNodePosition(i: number): { cx: number; cy: number } {
   const colStep = Math.round(52 * LAYOUT_SCALE);
-  const rowBaseY = Math.round(58 * LAYOUT_SCALE);
+  /** 整体下移，避免与顶部生命/金币 HUD 重叠（相对原 58 设计行共 +50） */
+  const rowBaseY = Math.round(58 * LAYOUT_SCALE) + 50;
   const rowGap = Math.round(86 * LAYOUT_SCALE);
   let row = 0;
   let col = 0;
@@ -156,8 +157,9 @@ export class LevelMapScreen extends Container {
     const enterH = Math.round(72 * LAYOUT_SCALE);
     const bottomMargin = Math.round(20 * LAYOUT_SCALE);
     const bottomY = GAME_HEIGHT - bottomMargin - enterH;
+    /** 最小高度随节点下移同步收紧（较原 300 设计再收 50 逻辑像素） */
     const panelH = Math.max(
-      Math.round(300 * LAYOUT_SCALE),
+      Math.round(280 * LAYOUT_SCALE) - 20,
       bottomY - Math.round(14 * LAYOUT_SCALE) - panelTop,
     );
 

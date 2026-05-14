@@ -1,13 +1,6 @@
 import type { Application } from 'pixi.js';
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
-import {
-  BOARD_CELL_MAX_STACKS,
-  GAME_HEIGHT,
-  GAME_WIDTH,
-  LAYOUT_SCALE,
-  ROGUE_PICK_AFTER_FIRST_COST,
-  ROGUE_REFRESH_TRIO_COST,
-} from '../constants';
+import { BOARD_CELL_MAX_STACKS, GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { allBondStacks } from '../battleBonds';
 import { ALLY_CLASSES } from '../constants';
@@ -23,16 +16,13 @@ import { createDraftAllyToken, createDraftHeroToken } from '../unitCircleTokens'
 import { mountStretchedDungeonBackground } from '../dungeonBackground';
 import { dungeonIdForBookChapter } from '../wowBookData';
 import { getDeployedHeroIds, maxHeroDeploySlots } from '../heroMetaStorage';
-import { getHeroDef } from '../heroRegistry';
+import { getHeroDef, heroDisplayNameWithSkillTier, type HeroId } from '../heroRegistry';
+import { mountHeroInfoPanelContent } from '../ui/heroInfoPanel';
 import { SynergyOverlay } from './SynergyOverlay';
-import {
-  drawGoldenSolidPanel,
-  GOLDEN_PANEL_BODY,
-  GOLDEN_PANEL_TITLE,
-} from '../ui/goldenSolidPanel';
 import { PARCHMENT_BTN_TEXT, drawParchmentCardTopBottomRules } from '../ui/parchmentButtonFill';
 import { spawnFloatingGameTip } from '../ui/floatingGameTip';
 import { createStyledGameButton } from '../ui/gameButtons';
+import { drawGoldenSolidPanel } from '../ui/goldenSolidPanel';
 
 const PAD_X = Math.round(20 * LAYOUT_SCALE);
 /** 选牌页右侧英雄竖条宽度（与九宫格并排） */
@@ -46,21 +36,9 @@ const TRIO_CARD_H = Math.round(278 * LAYOUT_SCALE);
 const TRIO_TOP = Math.round(268 * LAYOUT_SCALE);
 /** 三选一与备战之间的长说明区 */
 const DETAIL_RULE_Y = TRIO_TOP + TRIO_CARD_H + Math.round(16 * LAYOUT_SCALE);
-/** 三选一与备战区之间的「定价细则」按钮高度 */
-const PRICING_RULE_BTN_H = Math.round(44 * LAYOUT_SCALE);
-const PRICING_RULE_BTN_W = Math.round(176 * LAYOUT_SCALE);
-/** 九宫格左上角 Y（细则改为单行按钮后可上移） */
-const BOARD_GRID_TOP = DETAIL_RULE_Y + PRICING_RULE_BTN_H + Math.round(18 * LAYOUT_SCALE);
+/** 九宫格左上角 Y（定价细则已并入「羁绊/规则」浮层「规则」页，此处仅留与说明区间距） */
+const BOARD_GRID_TOP = DETAIL_RULE_Y + Math.round(12 * LAYOUT_SCALE);
 const CARD_GAP = Math.round(18 * LAYOUT_SCALE);
-
-/** 定价细则弹层正文（不含标题） */
-const PRICING_RULE_DETAIL_BODY = [
-  `之后每次选牌基础 ${ROGUE_PICK_AFTER_FIRST_COST} 金/张（有折扣的兵种更低）。`,
-  `棋盘上该兵种总层数 >10 时本张价格 ×2，>20 再 ×2；若当前三张里某兵种总层数 >20，刷新三选一（基础 ${ROGUE_REFRESH_TRIO_COST} 金）价格也 ×2。`,
-  `卡面与按钮均为实价。`,
-  '',
-  '备战九宫：兵种与神器各占一格、不可重叠；点按有内容的格并拖到另一格，可与另一格整体交换（含神器，影响战斗内加成位置）。',
-].join('\n');
 
 /** 备战九宫头像格：深灰实底 + 未选灰边；拖拽源格用金边（饥荒选人配色，无花纹） */
 const BOARD_AVATAR_CELL_FILL = 0x141414;
@@ -136,8 +114,10 @@ export class DraftScreen extends Container {
   private prevBondStacks: Record<AllyClass, number> | null = null;
   /** 拖拽交换兵种时盖在源格上的金边（避免 drawBoard 整表重绘打断按下） */
   private readonly boardDragOutline = new Graphics();
-  /** 定价细则全屏说明层 */
-  private pricingDetailLayer: Container | null = null;
+  /** 招募页英雄介绍浮层内滚动 dispose */
+  private heroIntroPanelDispose: (() => void) | null = null;
+  /** 招募页英雄头像全介绍浮层 */
+  private heroIntroLayer: Container | null = null;
 
   private readonly onDocPointerUp = (ev: PointerEvent): void => {
     this.clearBoardDragOutline();
@@ -201,7 +181,7 @@ export class DraftScreen extends Container {
     this.addChild(band);
 
     const meta = this.roundMeta;
-    const bondW = Math.round(188 * LAYOUT_SCALE);
+    const bondW = Math.round(248 * LAYOUT_SCALE);
     const headerWrap = GAME_WIDTH - PAD_X * 2 - bondW - Math.round(12 * LAYOUT_SCALE);
     const header = new Text({
       text: `回合 ${meta.label} · 肉鸽选牌`,
@@ -221,7 +201,7 @@ export class DraftScreen extends Container {
 
     const bondH = Math.round(46 * LAYOUT_SCALE);
     const bondBtn = createStyledGameButton('classic', {
-      text: '羁绊 / 策略',
+      text: '羁绊/规则',
       width: bondW,
       height: bondH,
       fontSize: Math.round(20 * LAYOUT_SCALE),
@@ -230,7 +210,6 @@ export class DraftScreen extends Container {
     bondBtn.position.set(GAME_WIDTH - PAD_X - bondW, HEADER_Y);
     bondBtn.on('pointertap', (e) => {
       e.stopPropagation();
-      this.closePricingRuleDetail();
       const ov = new SynergyOverlay(this.run, () => {
         this.removeChild(ov);
         ov.destroy({ children: true });
@@ -282,20 +261,6 @@ export class DraftScreen extends Container {
     this.pickHint.position.set(PAD_X, TRIO_TOP - Math.round(48 * LAYOUT_SCALE));
     this.addChild(this.pickHint);
 
-    const pricingBtn = createStyledGameButton('classic', {
-      text: '定价细则',
-      width: PRICING_RULE_BTN_W,
-      height: PRICING_RULE_BTN_H,
-      fontSize: Math.round(19 * LAYOUT_SCALE),
-    });
-    pricingBtn.position.set(PAD_X, DETAIL_RULE_Y);
-    pricingBtn.zIndex = 35;
-    pricingBtn.on('pointertap', (e) => {
-      e.stopPropagation();
-      this.openPricingRuleDetail();
-    });
-    this.addChild(pricingBtn);
-
     const boardBandH = Math.round(400 * LAYOUT_SCALE);
     const boardBandY = BOARD_GRID_TOP - Math.round(14 * LAYOUT_SCALE);
     const boardBand = new Graphics();
@@ -334,7 +299,7 @@ export class DraftScreen extends Container {
 
   override destroy(): void {
     document.removeEventListener('pointerup', this.onDocPointerUp);
-    this.closePricingRuleDetail();
+    this.closeHeroIntro();
     super.destroy({ children: true });
   }
 
@@ -364,100 +329,6 @@ export class DraftScreen extends Container {
       return;
     }
     this.tip.position.y = row1Y - tipGap - this.tip.height;
-  }
-
-  private closePricingRuleDetail(): void {
-    if (!this.pricingDetailLayer) return;
-    this.removeChild(this.pricingDetailLayer);
-    this.pricingDetailLayer.destroy({ children: true });
-    this.pricingDetailLayer = null;
-  }
-
-  /** 定价细则：全屏遮罩 + 深金面板 + 关闭 */
-  private openPricingRuleDetail(): void {
-    this.closePricingRuleDetail();
-    const layer = new Container();
-    layer.zIndex = 9000;
-    layer.eventMode = 'static';
-    layer.hitArea = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
-    this.pricingDetailLayer = layer;
-
-    const dim = new Graphics();
-    dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x020617, alpha: 0.82 });
-    dim.eventMode = 'static';
-    dim.on('pointertap', () => this.closePricingRuleDetail());
-    layer.addChild(dim);
-
-    const panelW = Math.min(GAME_WIDTH - Math.round(40 * LAYOUT_SCALE), Math.round(920 * LAYOUT_SCALE));
-    const innerPad = Math.round(22 * LAYOUT_SCALE);
-    const closeH = Math.round(50 * LAYOUT_SCALE);
-    const closeW = Math.round(200 * LAYOUT_SCALE);
-    const titleFs = Math.round(28 * LAYOUT_SCALE);
-    const bodyFs = Math.round(18 * LAYOUT_SCALE);
-    const lh = Math.round(26 * LAYOUT_SCALE);
-
-    const body = new Text({
-      text: PRICING_RULE_DETAIL_BODY,
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: bodyFs,
-        fill: GOLDEN_PANEL_BODY,
-        lineHeight: lh,
-        wordWrap: true,
-        wordWrapWidth: panelW - innerPad * 2,
-        breakWords: true,
-      },
-    });
-
-    const titleH = Math.round(40 * LAYOUT_SCALE);
-    const panelH = Math.min(
-      Math.round(GAME_HEIGHT * 0.82),
-      innerPad + titleH + Math.round(12 * LAYOUT_SCALE) + body.height + Math.round(20 * LAYOUT_SCALE) + closeH + innerPad,
-    );
-    const px = (GAME_WIDTH - panelW) / 2;
-    const py = (GAME_HEIGHT - panelH) / 2;
-
-    const plate = new Graphics();
-    const frame = new Graphics();
-    drawGoldenSolidPanel(plate, frame, panelW, panelH, LAYOUT_SCALE);
-    plate.position.set(px, py);
-    frame.position.set(px, py);
-    plate.eventMode = 'static';
-    plate.on('pointertap', (e) => e.stopPropagation());
-    layer.addChild(plate);
-    layer.addChild(frame);
-
-    const h1 = new Text({
-      text: '定价细则',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: titleFs,
-        fill: GOLDEN_PANEL_TITLE,
-        fontWeight: '800',
-      },
-    });
-    h1.position.set(px + innerPad, py + innerPad);
-    layer.addChild(h1);
-
-    body.position.set(px + innerPad, py + innerPad + titleH + Math.round(8 * LAYOUT_SCALE));
-    layer.addChild(body);
-
-    const closeX = px + (panelW - closeW) / 2;
-    const closeY = py + panelH - innerPad - closeH;
-    const closeBtn = createStyledGameButton('classic', {
-      text: '关 闭',
-      width: closeW,
-      height: closeH,
-      fontSize: Math.round(20 * LAYOUT_SCALE),
-    });
-    closeBtn.position.set(closeX, closeY);
-    closeBtn.on('pointertap', (e) => {
-      e.stopPropagation();
-      this.closePricingRuleDetail();
-    });
-    layer.addChild(closeBtn);
-
-    this.addChild(layer);
   }
 
   private boardGridMetrics(): { originX: number; originY: number; cell: number; gap: number; gridW: number } {
@@ -698,7 +569,7 @@ export class DraftScreen extends Container {
     this.app.ticker.add(onTick);
   }
 
-  /** 羁绊/策略 按钮短时闪动 */
+  /** 「羁绊/规则」按钮短时闪动 */
   private flashBondButton(): void {
     const btn = this.bondBtnRoot;
     if (!btn) return;
@@ -733,6 +604,7 @@ export class DraftScreen extends Container {
     this.prevBondStacks = { ...nextStacks };
     const bondFlash = upgradedKinds.size > 0;
 
+    this.closeHeroIntro();
     for (const c of [...this.children]) {
       const u = (c as { userData?: string }).userData;
       if (u === 'board-slot' || u === 'hero-rail') c.destroy();
@@ -819,6 +691,87 @@ export class DraftScreen extends Container {
     if (bondFlash) this.flashBondButton();
   }
 
+  private closeHeroIntro(): void {
+    this.heroIntroPanelDispose?.();
+    this.heroIntroPanelDispose = null;
+    if (!this.heroIntroLayer) return;
+    this.removeChild(this.heroIntroLayer);
+    this.heroIntroLayer.destroy({ children: true });
+    this.heroIntroLayer = null;
+  }
+
+  private openHeroIntro(hid: HeroId): void {
+    const def = getHeroDef(hid);
+    if (!def) return;
+    this.closeHeroIntro();
+    const stacks = allBondStacks(this.run.board)[def.allyClass];
+    const layer = new Container();
+    (layer as Container & { userData?: string }).userData = 'hero-intro-modal';
+    layer.zIndex = 8000;
+    this.sortableChildren = true;
+    this.heroIntroLayer = layer;
+
+    const dim = new Graphics();
+    dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x020617, alpha: 0.78 });
+    dim.eventMode = 'static';
+    dim.on('pointertap', () => this.closeHeroIntro());
+    layer.addChild(dim);
+
+    const pw = Math.min(GAME_WIDTH - Math.round(40 * LAYOUT_SCALE), Math.round(540 * LAYOUT_SCALE));
+    const ph = Math.round(620 * LAYOUT_SCALE);
+    const px = (GAME_WIDTH - pw) / 2;
+    const py = (GAME_HEIGHT - ph) / 2;
+    const panelPlate = new Graphics();
+    const panelFrame = new Graphics();
+    drawGoldenSolidPanel(panelPlate, panelFrame, pw, ph, LAYOUT_SCALE);
+    panelPlate.position.set(px, py);
+    panelFrame.position.set(px, py);
+    panelPlate.eventMode = 'static';
+    panelPlate.on('pointertap', (e) => e.stopPropagation());
+    layer.addChild(panelPlate);
+    layer.addChild(panelFrame);
+
+    const btnW = Math.round(220 * LAYOUT_SCALE);
+    const btnH = Math.round(48 * LAYOUT_SCALE);
+    const footerReserve = btnH + Math.round(18 * LAYOUT_SCALE);
+
+    this.heroIntroPanelDispose = mountHeroInfoPanelContent({
+      parent: layer,
+      px,
+      py,
+      pw,
+      ph,
+      padX: Math.round(20 * LAYOUT_SCALE),
+      padTop: Math.round(16 * LAYOUT_SCALE),
+      titleText: '英雄介绍',
+      titleFontSize: Math.round(22 * LAYOUT_SCALE),
+      titleAlign: 'left',
+      heroId: hid,
+      classStacksOnBoard: stacks,
+      tokenDia: Math.round(88 * LAYOUT_SCALE),
+      gapAfterTitle: Math.round(10 * LAYOUT_SCALE),
+      gapAfterToken: Math.round(12 * LAYOUT_SCALE),
+      bodyFontSize: Math.round(15 * LAYOUT_SCALE),
+      bodyLineHeight: Math.round(22 * LAYOUT_SCALE),
+      footerReserve,
+    });
+
+    const closeBtn = createStyledGameButton('classic', {
+      text: '关 闭',
+      width: btnW,
+      height: btnH,
+      fontSize: Math.round(20 * LAYOUT_SCALE),
+    });
+    closeBtn.position.set(px + (pw - btnW) / 2, py + ph - btnH - Math.round(18 * LAYOUT_SCALE));
+    closeBtn.on('pointertap', (e) => {
+      e.stopPropagation();
+      this.closeHeroIntro();
+    });
+    layer.addChild(closeBtn);
+
+    this.addChild(layer);
+  }
+
   /** 右侧竖条：已上阵英雄（仅展示，不可拖拽） */
   private drawHeroRail(): void {
     const m = this.boardGridMetrics();
@@ -827,6 +780,7 @@ export class DraftScreen extends Container {
     const railX = m.originX + m.gridW + HERO_RAIL_GAP;
     const slotH = Math.round((m.cell * 3 + m.gap * 2) / 3);
     const gapY = Math.round(8 * LAYOUT_SCALE);
+    const stacksBy = allBondStacks(this.run.board);
     for (let s = 0; s < cap; s++) {
       const wrap = new Container();
       wrap.position.set(railX, m.originY + s * (slotH + gapY));
@@ -840,12 +794,20 @@ export class DraftScreen extends Container {
       if (hid) {
         const def = getHeroDef(hid);
         if (def) {
+          wrap.eventMode = 'static';
+          wrap.cursor = 'pointer';
+          const hTap = hid;
+          wrap.on('pointertap', (e) => {
+            e.stopPropagation();
+            this.openHeroIntro(hTap);
+          });
           const dia = Math.min(HERO_RAIL_W * 0.72, slotH * 0.62);
           const portrait = createDraftHeroToken(hid, def.allyClass, dia);
           portrait.position.set(HERO_RAIL_W / 2, slotH * 0.42 + dia / 2);
           wrap.addChild(portrait);
+          const nm = heroDisplayNameWithSkillTier(def.name, stacksBy[def.allyClass]);
           const lab = new Text({
-            text: `英雄\n${def.name}`,
+            text: `英雄\n${nm}`,
             style: {
               fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
               fontSize: Math.round(12 * LAYOUT_SCALE),

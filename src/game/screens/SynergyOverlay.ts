@@ -10,24 +10,37 @@ import {
   bondTierActive,
   bondTierChipLabel,
   bondTierFullDesc,
-  type BondTierThreshold,
+  allyBasicSkillDesc,
 } from '../bondCopy';
 import type { AllyClass } from '../types';
 import type { RunState } from '../runState';
-import { drawGoldenSolidPanel, GOLDEN_PANEL_ACCENT, GOLDEN_PANEL_BODY, GOLDEN_PANEL_INSET, GOLDEN_PANEL_INSET_STROKE, GOLDEN_PANEL_MUTED, GOLDEN_PANEL_TITLE } from '../ui/goldenSolidPanel';
+import { RECRUIT_RULES_OVERLAY_BODY } from '../recruitRulesText';
+import { drawGoldenSolidPanel, GOLDEN_PANEL_ACCENT, GOLDEN_PANEL_BODY, GOLDEN_PANEL_MUTED, GOLDEN_PANEL_TITLE } from '../ui/goldenSolidPanel';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
-import { createGameButton, createStyledGameButton, redrawGameButtonFromStyle, type GameButton } from '../ui/gameButtons';
+import { createStyledGameButton, redrawGameButtonFromStyle, type GameButton } from '../ui/gameButtons';
 
 const GOLD = GOLDEN_PANEL_ACCENT;
 const MUTED = GOLDEN_PANEL_MUTED;
 const BODY = GOLDEN_PANEL_BODY;
 const BOND_RED = 0xf87171;
-const BOND_RED_MUTED = 0x9f1239;
+/** 「羁绊N」中 N 为该行职业棋盘总层数：未满 3 灰，3–5 绿，6 及以上蓝 */
+const BOND_STACK_GREEN = 0x4ade80;
+const BOND_STACK_BLUE = 0x60a5fa;
 
-/** 判定为滚动后，忽略同一次手势内的档位 chip 误触 */
+function bondStackCountLabelFill(stackSum: number): number {
+  if (stackSum >= 6) return BOND_STACK_BLUE;
+  if (stackSum >= 3) return BOND_STACK_GREEN;
+  return MUTED;
+}
+/** 档位数字已达成 */
+const BOND_TIER_BRIGHT = 0xf1f5f9;
+/** 档位数字未达成 */
+const BOND_TIER_DIM = 0x64748b;
+const BOND_TIER_SLASH = 0x475569;
+
 const SCROLL_SLOP_PX = 12;
 
-type TabId = 'bond' | 'strategy';
+type TabId = 'bond' | 'artifact' | 'strategy' | 'rules';
 
 export class SynergyOverlay extends Container {
   private tab: TabId = 'bond';
@@ -37,14 +50,18 @@ export class SynergyOverlay extends Container {
   private readonly scrollViewport: Container;
   private readonly scrollMaskG: Graphics;
   private readonly tabBond: GameButton;
+  private readonly tabArtifact: GameButton;
   private readonly tabStrat: GameButton;
+  private readonly tabRules: GameButton;
   private detailHead: Text;
-  private detailDesc: Text;
+  private readonly detailBody: Container;
   private readonly innerW: number;
-  /** 列表区可视高度 */
   private readonly viewportH: number;
   private readonly run: RunState;
   private readonly onDismiss: () => void;
+  private readonly tabW: number;
+  private readonly tabH: number;
+  private readonly tabGap: number;
 
   private scrollY = 0;
   private scrollMax = 0;
@@ -52,10 +69,14 @@ export class SynergyOverlay extends Container {
   private scrollDragPointerId: number | null = null;
   private scrollDragStartClientY = 0;
   private scrollDragStartScroll = 0;
-  /** 本段 pointer 序列中是否发生过明显垂直滚动 */
   private scrollGestureForTap = false;
-  /** 滚动结束后吃掉下一次 chip 的 tap，避免误开详情 */
   private blockNextChipTap = false;
+  /** 羁绊详情正文区域滚动（与列表共用 `viewportH` 可视高度） */
+  private detailScrollRoot: Container;
+  private detailScrollMask: Graphics;
+  private detailClipH: number;
+  private detailScrollOffset = 0;
+  private detailBodyScrollMax = 0;
   private readonly boundDocPointerMove: (e: PointerEvent) => void;
   private readonly boundDocPointerUp: (e: PointerEvent) => void;
 
@@ -100,7 +121,7 @@ export class SynergyOverlay extends Container {
     const lh = Math.round(30 * LAYOUT_SCALE);
 
     const title = new Text({
-      text: '羁绊 · 神器 · 策略',
+      text: '羁绊 · 神器 · 策略 · 规则',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(32 * LAYOUT_SCALE),
@@ -112,16 +133,16 @@ export class SynergyOverlay extends Container {
     this.addChild(title);
 
     const tabY = py + Math.round(72 * LAYOUT_SCALE);
-    const tabW = Math.round(200 * LAYOUT_SCALE);
-    const tabH = Math.round(48 * LAYOUT_SCALE);
-    const tabGap = Math.round(14 * LAYOUT_SCALE);
+    this.tabGap = Math.round(6 * LAYOUT_SCALE);
+    this.tabW = Math.max(Math.round(88 * LAYOUT_SCALE), Math.floor((this.innerW - 3 * this.tabGap) / 4));
+    this.tabH = Math.round(48 * LAYOUT_SCALE);
     const tabX0 = px + Math.round(28 * LAYOUT_SCALE);
+    const tabFs = Math.round(18 * LAYOUT_SCALE);
 
-    const tabFs = Math.round(22 * LAYOUT_SCALE);
     this.tabBond = createStyledGameButton('synergyTabOn', {
-      text: '羁绊 / 神器',
-      width: tabW,
-      height: tabH,
+      text: '羁绊',
+      width: this.tabW,
+      height: this.tabH,
       fontSize: tabFs,
     });
     this.tabBond.position.set(tabX0, tabY);
@@ -130,20 +151,44 @@ export class SynergyOverlay extends Container {
       this.switchTab('bond');
     });
 
-    this.tabStrat = createStyledGameButton('synergyTabOff', {
-      text: '本局策略',
-      width: tabW,
-      height: tabH,
+    this.tabArtifact = createStyledGameButton('synergyTabOff', {
+      text: '神器',
+      width: this.tabW,
+      height: this.tabH,
       fontSize: tabFs,
     });
-    this.tabStrat.position.set(tabX0 + tabW + tabGap, tabY);
+    this.tabArtifact.position.set(tabX0 + this.tabW + this.tabGap, tabY);
+    this.tabArtifact.on('pointertap', (e) => {
+      e.stopPropagation();
+      this.switchTab('artifact');
+    });
+
+    this.tabStrat = createStyledGameButton('synergyTabOff', {
+      text: '策略',
+      width: this.tabW,
+      height: this.tabH,
+      fontSize: tabFs,
+    });
+    this.tabStrat.position.set(tabX0 + (this.tabW + this.tabGap) * 2, tabY);
     this.tabStrat.on('pointertap', (e) => {
       e.stopPropagation();
       this.switchTab('strategy');
     });
-    this.addChild(this.tabBond, this.tabStrat);
 
-    const bodyTop = tabY + tabH + Math.round(18 * LAYOUT_SCALE);
+    this.tabRules = createStyledGameButton('synergyTabOff', {
+      text: '规则',
+      width: this.tabW,
+      height: this.tabH,
+      fontSize: tabFs,
+    });
+    this.tabRules.position.set(tabX0 + (this.tabW + this.tabGap) * 3, tabY);
+    this.tabRules.on('pointertap', (e) => {
+      e.stopPropagation();
+      this.switchTab('rules');
+    });
+    this.addChild(this.tabBond, this.tabArtifact, this.tabStrat, this.tabRules);
+
+    const bodyTop = tabY + this.tabH + Math.round(18 * LAYOUT_SCALE);
     this.viewportH = Math.max(
       Math.round(220 * LAYOUT_SCALE),
       closeTopY - bodyTop - Math.round(14 * LAYOUT_SCALE),
@@ -160,7 +205,14 @@ export class SynergyOverlay extends Container {
       this.beginListScrollDrag(e);
     });
     this.body.on('wheel', (e: FederatedWheelEvent) => {
-      if (this.detailLayer.visible) return;
+      if (this.detailLayer.visible) {
+        const lp = e.getLocalPosition(this.detailScrollRoot);
+        if (lp.x < 0 || lp.x > this.innerW || lp.y < 0 || lp.y > this.detailClipH) return;
+        e.preventDefault();
+        const step = e.deltaY * (e.deltaMode === 1 ? 16 : 1);
+        this.setDetailScrollOffset(this.detailScrollOffset + step);
+        return;
+      }
       if (!this.scrollViewport.visible) return;
       const lp = e.getLocalPosition(this.scrollViewport);
       if (lp.x < 0 || lp.x > this.innerW || lp.y < 0 || lp.y > this.viewportH) return;
@@ -198,6 +250,8 @@ export class SynergyOverlay extends Container {
     backBtn.position.set(0, 0);
     backBtn.on('pointertap', (e) => {
       e.stopPropagation();
+      this.detailScrollOffset = 0;
+      this.detailBody.y = 0;
       this.detailLayer.visible = false;
       this.scrollViewport.visible = true;
       this.listLayer.visible = true;
@@ -207,31 +261,35 @@ export class SynergyOverlay extends Container {
     this.detailHead = new Text({
       text: '',
       style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
         fontSize: fs,
         fill: GOLD,
         fontWeight: '700',
         wordWrap: true,
         wordWrapWidth: this.innerW,
         lineHeight: lh,
+        breakWords: true,
       },
     });
     this.detailHead.position.set(0, Math.round(52 * LAYOUT_SCALE));
     this.detailLayer.addChild(this.detailHead);
 
-    this.detailDesc = new Text({
-      text: '',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: fsSmall,
-        fill: BODY,
-        wordWrap: true,
-        wordWrapWidth: this.innerW,
-        lineHeight: Math.round(28 * LAYOUT_SCALE),
-      },
-    });
-    this.detailDesc.position.set(0, Math.round(108 * LAYOUT_SCALE));
-    this.detailLayer.addChild(this.detailDesc);
+    this.detailScrollRoot = new Container();
+    this.detailScrollRoot.eventMode = 'static';
+    this.detailClipH = Math.max(
+      Math.round(120 * LAYOUT_SCALE),
+      this.viewportH - Math.round(100 * LAYOUT_SCALE) - Math.round(6 * LAYOUT_SCALE),
+    );
+    this.detailScrollRoot.position.set(0, Math.round(100 * LAYOUT_SCALE));
+    this.detailScrollRoot.hitArea = new Rectangle(0, 0, this.innerW, this.detailClipH);
+    this.detailScrollMask = new Graphics();
+    this.detailScrollMask.rect(0, 0, this.innerW, this.detailClipH).fill({ color: 0xffffff });
+    this.detailScrollRoot.mask = this.detailScrollMask;
+    this.detailScrollRoot.addChild(this.detailScrollMask);
+
+    this.detailBody = new Container();
+    this.detailScrollRoot.addChild(this.detailBody);
+    this.detailLayer.addChild(this.detailScrollRoot);
 
     const closeBtn = createStyledGameButton('classic', {
       text: '关 闭',
@@ -248,7 +306,7 @@ export class SynergyOverlay extends Container {
 
     attachScreenDebugLabel(this, 'SynergyOverlay');
 
-    this.paintTabs(tabW, tabH);
+    this.paintTabs();
     this.fillList(fs, fsSmall, lh);
   }
 
@@ -299,20 +357,20 @@ export class SynergyOverlay extends Container {
     else this.listLayer.position.y = -this.scrollY;
   }
 
-  private paintTabs(tabW: number, tabH: number): void {
-    const fs = Math.round(22 * LAYOUT_SCALE);
-    redrawGameButtonFromStyle(this.tabBond, this.tab === 'bond' ? 'synergyTabOn' : 'synergyTabOff', {
-      text: '羁绊 / 神器',
-      width: tabW,
-      height: tabH,
-      fontSize: fs,
-    });
-    redrawGameButtonFromStyle(this.tabStrat, this.tab === 'strategy' ? 'synergyTabOn' : 'synergyTabOff', {
-      text: '本局策略',
-      width: tabW,
-      height: tabH,
-      fontSize: fs,
-    });
+  private paintTabs(): void {
+    const fs = Math.round(18 * LAYOUT_SCALE);
+    const paint = (btn: GameButton, id: TabId, label: string): void => {
+      redrawGameButtonFromStyle(btn, this.tab === id ? 'synergyTabOn' : 'synergyTabOff', {
+        text: label,
+        width: this.tabW,
+        height: this.tabH,
+        fontSize: fs,
+      });
+    };
+    paint(this.tabBond, 'bond', '羁绊');
+    paint(this.tabArtifact, 'artifact', '神器');
+    paint(this.tabStrat, 'strategy', '策略');
+    paint(this.tabRules, 'rules', '规则');
   }
 
   private switchTab(id: TabId): void {
@@ -324,7 +382,7 @@ export class SynergyOverlay extends Container {
     this.listLayer.position.y = 0;
     this.scrollGestureForTap = false;
     this.blockNextChipTap = false;
-    this.paintTabs(Math.round(200 * LAYOUT_SCALE), Math.round(48 * LAYOUT_SCALE));
+    this.paintTabs();
     const fs = Math.round(24 * LAYOUT_SCALE);
     const fsSmall = Math.round(20 * LAYOUT_SCALE);
     const lh = Math.round(30 * LAYOUT_SCALE);
@@ -337,15 +395,203 @@ export class SynergyOverlay extends Container {
     this.destroy({ children: true });
   }
 
-  private showTierDetail(kind: AllyClass, tier: BondTierThreshold): void {
+  /** 「羁绊N」+ 档位行：N 为当前职业总层数；未满 3 全灰；3–5 绿；6+ 蓝；过宽自动换行 */
+  private createBondStackStatusLine(n: number, maxW: number, fontSize: number): { root: Container; height: number } {
+    const root = new Container();
+    const fontFamily = 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif';
+    const lineGap = Math.round(4 * LAYOUT_SCALE);
+    const gapAfterBond = Math.round(10 * LAYOUT_SCALE);
+
+    let x = 0;
+    let y = 0;
+    let rowH = 0;
+
+    const newLine = (): void => {
+      y += rowH + lineGap;
+      x = 0;
+      rowH = 0;
+    };
+
+    const place = (t: Text): void => {
+      if (x > 0 && x + t.width > maxW) {
+        newLine();
+      }
+      t.position.set(x, y);
+      root.addChild(t);
+      x += t.width;
+      rowH = Math.max(rowH, t.height);
+    };
+
+    const bondTx = new Text({
+      text: `羁绊${n}`,
+      style: {
+        fontFamily,
+        fontSize,
+        fontWeight: '800',
+        fill: bondStackCountLabelFill(n),
+      },
+    });
+    place(bondTx);
+    x += gapAfterBond;
+
+    for (let i = 0; i < BOND_TIER_THRESHOLDS.length; i++) {
+      if (i > 0) {
+        const slash = new Text({
+          text: '/',
+          style: { fontFamily, fontSize, fontWeight: '600', fill: BOND_TIER_SLASH },
+        });
+        place(slash);
+      }
+      const tier = BOND_TIER_THRESHOLDS[i]!;
+      const bright = n >= tier;
+      const num = new Text({
+        text: String(tier),
+        style: {
+          fontFamily,
+          fontSize,
+          fontWeight: '800',
+          fill: bright ? BOND_TIER_BRIGHT : BOND_TIER_DIM,
+        },
+      });
+      place(num);
+    }
+
+    return { root, height: y + rowH };
+  }
+
+  /** 羁绊列表行：左侧「羁绊N + 档位」，右侧灰色「(点击查看全部信息)」与档位行垂直居中 */
+  private createBondListStatusRowWithRightHint(
+    n: number,
+    contentMaxW: number,
+    stripFs: number,
+    hintFs: number,
+  ): { root: Container; height: number } {
+    const fontHint = 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif';
+    const hint = new Text({
+      text: '(点击查看全部信息)',
+      style: {
+        fontFamily: fontHint,
+        fontSize: hintFs,
+        fill: MUTED,
+        fontWeight: '500',
+      },
+    });
+    const gap = Math.round(8 * LAYOUT_SCALE);
+    const hintW = hint.width;
+    const stripMaxW = Math.max(Math.round(120 * LAYOUT_SCALE), contentMaxW - gap - hintW);
+    const { root: stripRoot, height: stripH } = this.createBondStackStatusLine(n, stripMaxW, stripFs);
+    const statusRoot = new Container();
+    statusRoot.addChild(stripRoot);
+    const hintY = Math.max(0, (stripH - hint.height) / 2);
+    hint.position.set(contentMaxW - hintW, hintY);
+    statusRoot.addChild(hint);
+    const height = Math.max(stripH, hint.height);
+    return { root: statusRoot, height };
+  }
+
+  private syncDetailScrollChrome(): void {
+    const gap = Math.round(8 * LAYOUT_SCALE);
+    const footPad = Math.round(4 * LAYOUT_SCALE);
+    this.detailScrollRoot.position.y = this.detailHead.position.y + this.detailHead.height + gap;
+    this.detailClipH = Math.max(
+      Math.round(96 * LAYOUT_SCALE),
+      this.viewportH - this.detailScrollRoot.position.y - footPad,
+    );
+    this.detailScrollRoot.hitArea = new Rectangle(0, 0, this.innerW, this.detailClipH);
+    this.detailScrollMask.clear();
+    this.detailScrollMask.rect(0, 0, this.innerW, this.detailClipH).fill({ color: 0xffffff });
+  }
+
+  private setDetailScrollOffset(o: number): void {
+    this.detailScrollOffset = Math.max(0, Math.min(this.detailBodyScrollMax, o));
+    this.detailBody.y = -this.detailScrollOffset;
+  }
+
+  private layoutDetailScrollAfterContent(): void {
+    const b = this.detailBody.getLocalBounds();
+    const contentH = b.y + b.height;
+    this.detailBodyScrollMax = Math.max(0, contentH - this.detailClipH);
+    if (this.detailScrollOffset > this.detailBodyScrollMax) {
+      this.setDetailScrollOffset(this.detailBodyScrollMax);
+    }
+  }
+
+  private showBondClassDetail(kind: AllyClass): void {
     this.listLayer.visible = false;
     this.detailLayer.visible = true;
     this.scrollViewport.visible = false;
-    this.detailHead.text = `${allyBondDisplayName(kind)} · ${bondTierChipLabel(tier)}`;
-    this.detailDesc.text = bondTierFullDesc(kind, tier);
-    const red = tier === 21;
-    this.detailHead.style.fill = red ? BOND_RED : GOLD;
-    this.detailDesc.style.fill = red ? 0xfca5a5 : BODY;
+    const n = allBondStacks(this.run.board)[kind];
+    this.detailHead.text = `${allyBondDisplayName(kind)} · 羁绊一览`;
+    this.detailHead.style.fill = GOLD;
+    this.syncDetailScrollChrome();
+
+    this.detailBody.removeChildren();
+    let yy = 0;
+    const labelFs = Math.round(21 * LAYOUT_SCALE);
+    const descFs = Math.round(19 * LAYOUT_SCALE);
+    const descLh = Math.round(28 * LAYOUT_SCALE);
+
+    const basicBlock = new Text({
+      text: `${allyBondDisplayName(kind)}：${allyBasicSkillDesc(kind)}`,
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
+        fontSize: descFs,
+        fill: n >= 3 ? BODY : MUTED,
+        fontWeight: '600',
+        wordWrap: true,
+        wordWrapWidth: this.innerW,
+        lineHeight: descLh,
+        breakWords: true,
+      },
+    });
+    basicBlock.position.set(0, yy);
+    this.detailBody.addChild(basicBlock);
+    yy += basicBlock.height + Math.round(12 * LAYOUT_SCALE);
+
+    const stripFs = Math.round(20 * LAYOUT_SCALE);
+    const { root: stripRoot, height: stripH } = this.createBondStackStatusLine(n, this.innerW, stripFs);
+    stripRoot.position.set(0, yy);
+    this.detailBody.addChild(stripRoot);
+    yy += stripH + Math.round(16 * LAYOUT_SCALE);
+
+    for (const tier of BOND_TIER_THRESHOLDS) {
+      const active = bondTierActive(n, tier);
+      const redTier = tier === 21;
+      const labelFill = !active ? MUTED : redTier ? BOND_RED : GOLD;
+      const descFill = !active ? 0x64748b : redTier ? 0xfca5a5 : BODY;
+
+      const lab = new Text({
+        text: bondTierChipLabel(tier),
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
+          fontSize: labelFs,
+          fill: labelFill,
+          fontWeight: '800',
+        },
+      });
+      lab.position.set(0, yy);
+      this.detailBody.addChild(lab);
+      yy += lab.height + Math.round(4 * LAYOUT_SCALE);
+
+      const desc = new Text({
+        text: bondTierFullDesc(kind, tier),
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
+          fontSize: descFs,
+          fill: descFill,
+          wordWrap: true,
+          wordWrapWidth: this.innerW,
+          lineHeight: descLh,
+          breakWords: true,
+        },
+      });
+      desc.position.set(0, yy);
+      this.detailBody.addChild(desc);
+      yy += desc.height + Math.round(14 * LAYOUT_SCALE);
+    }
+
+    this.setDetailScrollOffset(0);
+    this.layoutDetailScrollAfterContent();
   }
 
   private fillList(fs: number, fsSmall: number, lh: number): void {
@@ -412,94 +658,23 @@ export class SynergyOverlay extends Container {
       return;
     }
 
-    const stacks = allBondStacks(this.run.board);
-    const chipW = Math.round(92 * LAYOUT_SCALE);
-    const chipH = Math.round(40 * LAYOUT_SCALE);
-    const chipGap = Math.round(8 * LAYOUT_SCALE);
-
-    for (const kind of allAllyClassesOrdered()) {
-      const n = stacks[kind];
-      const name = allyBondDisplayName(kind);
-      const line = new Text({
-        text: `${name}　当前层数：${n}`,
+    if (this.tab === 'rules') {
+      const h1 = new Text({
+        text: '招募定价与备战',
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: fsSmall,
-          fill: BODY,
-          fontWeight: '600',
+          fontSize: fs,
+          fill: GOLD,
+          fontWeight: '700',
           wordWrap: true,
           wordWrapWidth: this.innerW,
-          lineHeight: lh,
         },
       });
-      line.position.set(0, y);
-      this.listLayer.addChild(line);
-      y += line.height + Math.round(10 * LAYOUT_SCALE);
-
-      const row = new Container();
-      row.position.set(0, y);
-      let cx = 0;
-      let rowH = chipH;
-      for (const tier of BOND_TIER_THRESHOLDS) {
-        if (cx > 0 && cx + chipW > this.innerW) {
-          cx = 0;
-          rowH += chipH + chipGap;
-        }
-        const active = bondTierActive(n, tier);
-        const redTier = tier === 21;
-        const fillOn = redTier ? 0x450a0a : 0x422006;
-        const strokeOn = redTier ? 0xef4444 : 0xf59e0b;
-        const k = kind;
-        const ti = tier;
-        const chip = createGameButton({
-          text: bondTierChipLabel(tier),
-          width: chipW,
-          height: chipH,
-          fontSize: Math.round(16 * LAYOUT_SCALE),
-          fontWeight: '700',
-          fill: active ? fillOn : GOLDEN_PANEL_INSET,
-          stroke: active ? strokeOn : GOLDEN_PANEL_INSET_STROKE,
-          textColor: active ? (redTier ? BOND_RED : GOLD) : redTier ? BOND_RED_MUTED : MUTED,
-          onTap: (e) => {
-            e.stopPropagation();
-            if (this.blockNextChipTap) {
-              this.blockNextChipTap = false;
-              return;
-            }
-            this.showTierDetail(k, ti);
-          },
-        });
-        chip.position.set(cx, rowH - chipH);
-        row.addChild(chip);
-        cx += chipW + chipGap;
-      }
-      this.listLayer.addChild(row);
-      y += rowH + Math.round(20 * LAYOUT_SCALE);
-    }
-
-    y += Math.round(8 * LAYOUT_SCALE);
-    const artHead = new Text({
-      text: '神器（备战九宫一格，与兵种互斥，可拖动换位）',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: fs,
-        fill: 0xc7d2fe,
-        fontWeight: '700',
-        wordWrap: true,
-        wordWrapWidth: this.innerW,
-      },
-    });
-    artHead.position.set(0, y);
-    this.listLayer.addChild(artHead);
-    y += artHead.height + Math.round(10 * LAYOUT_SCALE);
-
-    let anyArt = false;
-    for (let i = 0; i < 9; i++) {
-      const k = this.run.artifactBySlot[i];
-      if (!k) continue;
-      anyArt = true;
-      const t = new Text({
-        text: `格子 ${i + 1}：${ARTIFACT_BATTLE_DESC[k]}`,
+      h1.position.set(0, y);
+      this.listLayer.addChild(h1);
+      y += h1.height + Math.round(12 * LAYOUT_SCALE);
+      const body = new Text({
+        text: RECRUIT_RULES_OVERLAY_BODY,
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           fontSize: fsSmall,
@@ -509,18 +684,143 @@ export class SynergyOverlay extends Container {
           lineHeight: Math.round(28 * LAYOUT_SCALE),
         },
       });
-      t.position.set(0, y);
-      this.listLayer.addChild(t);
-      y += t.height + Math.round(8 * LAYOUT_SCALE);
-    }
-    if (!anyArt) {
-      const t = new Text({
-        text: '当前未摆放神器。',
-        style: { fontFamily: 'system-ui, sans-serif', fontSize: fsSmall, fill: MUTED },
+      body.position.set(0, y);
+      this.listLayer.addChild(body);
+      y += body.height + Math.round(16 * LAYOUT_SCALE);
+      const h2 = new Text({
+        text: '羁绊与策略',
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontSize: fs,
+          fill: GOLD,
+          fontWeight: '700',
+        },
       });
-      t.position.set(0, y);
-      this.listLayer.addChild(t);
-      y += t.height;
+      h2.position.set(0, y);
+      this.listLayer.addChild(h2);
+      y += h2.height + Math.round(8 * LAYOUT_SCALE);
+      const tip = new Text({
+        text: '「羁绊」页：职业名与基础技能会自动换行。下一行左侧「羁绊N」为本行职业备战总层数：未满 3 层时整段灰色；至少 3 层且不足 6 层时为绿色；至少 6 层时为蓝色；其后 3/6/10/15/21 为档位阈值，已达成高亮、未达成灰色。该行最右侧灰色小字（点击查看全部信息）为提示；点本行任意处进入详情（可滚轮翻阅）。「策略」页展示本局已选章节策略。',
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontSize: fsSmall,
+          fill: MUTED,
+          wordWrap: true,
+          wordWrapWidth: this.innerW,
+          lineHeight: Math.round(28 * LAYOUT_SCALE),
+        },
+      });
+      tip.position.set(0, y);
+      this.listLayer.addChild(tip);
+      y += tip.height;
+      this.updateScrollBounds(y);
+      return;
+    }
+
+    if (this.tab === 'artifact') {
+      const artHead = new Text({
+        text: '神器（备战九宫一格，与兵种互斥，可拖动换位）',
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontSize: fs,
+          fill: 0xc7d2fe,
+          fontWeight: '700',
+          wordWrap: true,
+          wordWrapWidth: this.innerW,
+        },
+      });
+      artHead.position.set(0, y);
+      this.listLayer.addChild(artHead);
+      y += artHead.height + Math.round(10 * LAYOUT_SCALE);
+
+      let anyArt = false;
+      for (let i = 0; i < 9; i++) {
+        const k = this.run.artifactBySlot[i];
+        if (!k) continue;
+        anyArt = true;
+        const t = new Text({
+          text: `格子 ${i + 1}：${ARTIFACT_BATTLE_DESC[k]}`,
+          style: {
+            fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+            fontSize: fsSmall,
+            fill: BODY,
+            wordWrap: true,
+            wordWrapWidth: this.innerW,
+            lineHeight: Math.round(28 * LAYOUT_SCALE),
+          },
+        });
+        t.position.set(0, y);
+        this.listLayer.addChild(t);
+        y += t.height + Math.round(8 * LAYOUT_SCALE);
+      }
+      if (!anyArt) {
+        const t = new Text({
+          text: '当前未摆放神器。',
+          style: { fontFamily: 'system-ui, sans-serif', fontSize: fsSmall, fill: MUTED },
+        });
+        t.position.set(0, y);
+        this.listLayer.addChild(t);
+        y += t.height;
+      }
+      this.updateScrollBounds(y);
+      return;
+    }
+
+    const stacks = allBondStacks(this.run.board);
+    const rowPadX = Math.round(8 * LAYOUT_SCALE);
+    const rowPadY = Math.round(10 * LAYOUT_SCALE);
+    const stripFs = Math.round(19 * LAYOUT_SCALE);
+    const hintFs = Math.round(15 * LAYOUT_SCALE);
+    for (const kind of allAllyClassesOrdered()) {
+      const n = stacks[kind];
+      const name = allyBondDisplayName(kind);
+      const row = new Container();
+      row.eventMode = 'static';
+      row.cursor = 'pointer';
+
+      const skillText = new Text({
+        text: `${name}：${allyBasicSkillDesc(kind)}`,
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
+          fontSize: fsSmall,
+          fill: n >= 3 ? BODY : MUTED,
+          fontWeight: '600',
+          wordWrap: true,
+          wordWrapWidth: this.innerW - rowPadX * 2,
+          lineHeight: lh,
+          breakWords: true,
+        },
+      });
+      skillText.position.set(rowPadX, rowPadY);
+
+      const stripTop = rowPadY + skillText.height + Math.round(8 * LAYOUT_SCALE);
+      const contentMaxW = this.innerW - rowPadX * 2;
+      const { root: statusRow, height: statusH } = this.createBondListStatusRowWithRightHint(
+        n,
+        contentMaxW,
+        stripFs,
+        hintFs,
+      );
+      statusRow.position.set(rowPadX, stripTop);
+
+      const rowH = stripTop + statusH + rowPadY;
+      const hit = new Graphics();
+      hit.rect(0, 0, this.innerW, rowH).fill({ color: 0xffffff, alpha: n > 0 ? 0.06 : 0.04 });
+      row.addChild(hit);
+      row.addChild(skillText);
+      row.addChild(statusRow);
+      row.position.set(0, y);
+      const kk = kind;
+      row.on('pointertap', (e) => {
+        e.stopPropagation();
+        if (this.blockNextChipTap) {
+          this.blockNextChipTap = false;
+          return;
+        }
+        this.showBondClassDetail(kk);
+      });
+      this.listLayer.addChild(row);
+      y += rowH + Math.round(12 * LAYOUT_SCALE);
     }
 
     this.updateScrollBounds(y);

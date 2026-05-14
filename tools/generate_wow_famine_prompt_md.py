@@ -166,7 +166,7 @@ def generate(repo_root: Path, out_md: Path) -> None:
         "> **副本主题插画**：`### 副本主题插画` 暂缓；`wow_md_parse_jobs` 需 `include_scene` 才解析。",
         "> **UID**：小怪 `monsterUid`（`U*`），首领 `bossUid`（`B*`）；与 `scripts/generate-wow-book-tables.mjs` 一致。",
         "> **画风**：与 `gptimage/dont_starve_style.py` 的 `STYLE_CORE` 及下方「通用画风」块一致。",
-        "> **敌方立绘背景**：小怪为冷灰 bokeh；`### 最终首领` 段内提示词按 `isFinalBoss` 切换灰/红底（与 `wow_book_art_jobs` 一致）。",
+        "> **敌方立绘背景**：小怪为冷灰 bokeh；**全部首领**立绘均为暗红/酒红 bokeh（与 `wow_book_art_jobs` 一致）。",
         "",
         "---",
         "",
