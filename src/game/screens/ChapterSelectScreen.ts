@@ -21,6 +21,7 @@ import {
 } from '../enemyPortraitTextures';
 import { dungeonBackgroundImageUrl } from '../dungeonBackground';
 import { spawnFloatingGameTip } from '../ui/floatingGameTip';
+import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import {
   drawGoldenSolidPanel,
   GOLDEN_PANEL_ACCENT,
@@ -201,6 +202,8 @@ export class ChapterSelectScreen extends Container {
       };
       window.addEventListener('keydown', this.keyHandler);
     }
+
+    attachScreenDebugLabel(this, 'ChapterSelectScreen');
   }
 
   private refreshDungeonBackground(): void {
@@ -823,6 +826,7 @@ export class ChapterSelectScreen extends Container {
     closeT.position.set(closeG.x + closeW / 2, closeG.y + closeH / 2);
     layer.addChild(closeT);
 
+    attachScreenDebugLabel(layer, 'ChapterSelectScreen.detail');
     this.addChild(layer);
   }
 

@@ -10,6 +10,7 @@ import {
   LAYOUT_SCALE,
   NORMAL_BATTLE_SECONDS,
 } from '../constants';
+import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import type { AllyClass, BattleOutcome, BossId, EnemyClass, RoundMeta } from '../types';
 import type { RunState } from '../runState';
 import { ALLY_DEFS, BOSS_DEFS, ENEMY_DEFS, enemyCombatBaseAtkFromTable, scaledEnemyAtk, scaledEnemyHp } from '../unitDefs';
@@ -485,6 +486,8 @@ export class BattleScreen extends Container {
       };
       window.addEventListener('keydown', this.uiTestKeyHandler);
     }
+
+    attachScreenDebugLabel(this, 'BattleScreen');
 
     this._tick = (ticker) => this.updateFrame(ticker.deltaMS / 1000);
     this.app.ticker.add(this._tick);

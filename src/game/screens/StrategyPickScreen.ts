@@ -1,5 +1,6 @@
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_WIDTH, LAYOUT_SCALE } from '../constants';
+import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { ROUNDS } from '../roundConfig';
 import type { RunState } from '../runState';
 import { applyChosenStrategy, pickThreeStrategies } from '../strategyApply';
@@ -104,5 +105,7 @@ export class StrategyPickScreen extends Container {
       this.addChild(wrap);
       y += cardH + gap;
     }
+
+    attachScreenDebugLabel(this, 'StrategyPickScreen');
   }
 }

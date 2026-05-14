@@ -1,6 +1,7 @@
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { drawGoldenSolidPanel, GOLDEN_PANEL_BODY } from '../ui/goldenSolidPanel';
+import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 
 export class ModalLayer extends Container {
   constructor() {
@@ -95,5 +96,7 @@ export class ModalLayer extends Container {
     okText.anchor.set(0.5);
     okText.position.set(ok.x + okW / 2, ok.y + okH / 2);
     this.addChild(okText);
+
+    attachScreenDebugLabel(this, 'ModalLayer.alert');
   }
 }

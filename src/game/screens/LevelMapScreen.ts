@@ -7,6 +7,7 @@ import { ROUNDS } from '../roundConfig';
 import { getResolvedRoundMeta } from '../roundResolve';
 import { rewardChapterPreviewSummary, strategyChapterPreviewSummary } from '../strategyApply';
 import type { RunState } from '../runState';
+import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { clampMapPreviewTokenDiameter, enemyTokenDiameterForVariant } from '../unitCircleTokens';
 import { fitMapBottomEnterRow } from '../layoutFit';
 import { mountStretchedDungeonBackground } from '../dungeonBackground';
@@ -284,6 +285,8 @@ export class LevelMapScreen extends Container {
       gold.text = `金币：${this.run.gold}`;
     };
     refreshHud();
+
+    attachScreenDebugLabel(this, 'LevelMapScreen');
   }
 
   private buildNextRoundPanel(pad: number, topY: number): Container {
@@ -593,6 +596,7 @@ export class LevelMapScreen extends Container {
     closeT.position.set(closeX + closeW / 2, closeY + closeH / 2);
     layer.addChild(closeT);
 
+    attachScreenDebugLabel(layer, 'LevelMapScreen.battlePreview');
     this.addChild(layer);
   }
 }

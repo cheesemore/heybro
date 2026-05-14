@@ -1,6 +1,7 @@
 import { Application, Assets, Container, Graphics, Rectangle, Sprite, Text, type Texture } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { COVER_VERSION_LABEL } from '../version';
+import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 
 function titleCoverAssetUrl(): string {
   const base = import.meta.env.BASE_URL;
@@ -110,6 +111,8 @@ export class TitleScreen extends Container {
     tap.cursor = 'pointer';
     tap.on('pointertap', go);
     this.addChild(tap);
+
+    attachScreenDebugLabel(this, 'TitleScreen');
 
     this.eventMode = 'static';
     this.hitArea = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);

@@ -15,6 +15,7 @@ import {
 import type { AllyClass } from '../types';
 import type { RunState } from '../runState';
 import { drawGoldenSolidPanel, GOLDEN_PANEL_ACCENT, GOLDEN_PANEL_BODY, GOLDEN_PANEL_INSET, GOLDEN_PANEL_INSET_STROKE, GOLDEN_PANEL_MUTED, GOLDEN_PANEL_TITLE } from '../ui/goldenSolidPanel';
+import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { PARCHMENT_BTN_TEXT, paintParchmentRoundRect } from '../ui/parchmentButtonFill';
 
 const GOLD = GOLDEN_PANEL_ACCENT;
@@ -286,6 +287,8 @@ export class SynergyOverlay extends Container {
     closeT.anchor.set(0.5);
     closeT.position.set(closeG.x + closeW / 2, closeG.y + closeH / 2);
     this.addChild(closeT);
+
+    attachScreenDebugLabel(this, 'SynergyOverlay');
 
     this.paintTabs(tabW, tabH);
     this.fillList(fs, fsSmall, lh);

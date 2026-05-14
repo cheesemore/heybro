@@ -8,6 +8,7 @@ import {
   ROGUE_PICK_AFTER_FIRST_COST,
   ROGUE_REFRESH_TRIO_COST,
 } from '../constants';
+import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { allBondStacks } from '../battleBonds';
 import { ALLY_CLASSES } from '../constants';
 import { applyPick, boardHasAnyUnit, randomThreeFromFive } from '../draftLogic';
@@ -353,6 +354,8 @@ export class DraftScreen extends Container {
     this.boardDragOutline.eventMode = 'none';
     this.boardDragOutline.visible = false;
     this.addChild(this.boardDragOutline);
+
+    attachScreenDebugLabel(this, 'DraftScreen');
   }
 
   override destroy(): void {

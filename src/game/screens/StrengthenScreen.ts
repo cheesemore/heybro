@@ -16,6 +16,7 @@ import {
   undeployHeroById,
 } from '../heroMetaStorage';
 import { drawGoldenSolidPanel, GOLDEN_PANEL_BODY } from '../ui/goldenSolidPanel';
+import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import type { ModalLayer } from './ModalLayer';
 import { createDraftHeroToken } from '../unitCircleTokens';
 import { ALLY_DEFS } from '../unitDefs';
@@ -296,6 +297,8 @@ export class StrengthenScreen extends Container {
 
     this.refreshTabsVisual();
     this.refreshAll();
+
+    attachScreenDebugLabel(this, 'StrengthenScreen');
   }
 
   private beginHeroScrollDrag(e: FederatedPointerEvent): void {
