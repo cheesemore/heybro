@@ -1,7 +1,11 @@
 import type { Container } from 'pixi.js';
 import type { EnemyPaintKind } from './battleVisuals';
 import { createMapEnemyToken } from './unitCircleTokens';
-import { getEnemyPortraitTexture, preloadEnemyPortraitTextures } from './enemyPortraitTextures';
+import {
+  getEnemyPortraitTexture,
+  preloadEnemyPortraitTextures,
+  preloadWowCirclePortraitsForBookChapter,
+} from './enemyPortraitTextures';
 
 export type EnemyBodyDisplayVariant = 'battle' | 'mapMini' | 'mapPreviewModal' | 'chapterMini';
 
@@ -22,10 +26,18 @@ export function useAnyEnemyTexture(): boolean {
 
 export { getEnemyPortraitTexture };
 
-/** 预加载敌方圆形半身像 PNG（存在则战斗/地图代币内显示贴图） */
-export async function preloadEnemyTextures(): Promise<void> {
-  return preloadEnemyPortraitTextures();
+/** 预加载敌方圆形半身像 PNG（存在则战斗/地图代币内显示贴图）；可选传入书本章节号以预加载该书圆形立绘。 */
+export async function preloadEnemyTextures(bookChapterId?: number): Promise<void> {
+  await preloadEnemyPortraitTextures();
+  if (bookChapterId != null && bookChapterId > 0) {
+    await preloadWowCirclePortraitsForBookChapter(bookChapterId);
+  }
 }
+
+export type EnemyBodyDisplayOptions = {
+  /** `monsterUid`（U+六位）或 `bossUid`（B+六位），与 `public/assets/wow-*-circle/` 文件名一致 */
+  wowCirclePortraitUid?: string;
+};
 
 /**
  * 地图 / 章节预览等：敌方代币（有血环的仅在战斗内由 BattleScreen 创建）。
@@ -34,8 +46,9 @@ export function createEnemyBodyDisplay(
   paint: EnemyPaintKind,
   variant: EnemyBodyDisplayVariant,
   maxDiameterPx?: number,
+  opts?: EnemyBodyDisplayOptions,
 ): Container {
-  return createMapEnemyToken(paint, variant, maxDiameterPx);
+  return createMapEnemyToken(paint, variant, maxDiameterPx, opts);
 }
 
 /** @deprecated use preloadEnemyTextures */

@@ -9,6 +9,17 @@ import { rewardChapterPreviewSummary, strategyChapterPreviewSummary } from '../s
 import type { RunState } from '../runState';
 import { clampMapPreviewTokenDiameter, enemyTokenDiameterForVariant } from '../unitCircleTokens';
 import { fitMapBottomEnterRow } from '../layoutFit';
+import { mountStretchedDungeonBackground } from '../dungeonBackground';
+import { dungeonIdForBookChapter, wowChapterStageTitle } from '../wowBookData';
+import {
+  drawGoldenSolidPanel,
+  GOLDEN_PANEL_BODY,
+  GOLDEN_PANEL_INSET,
+  GOLDEN_PANEL_INSET_STROKE,
+  GOLDEN_PANEL_MUTED,
+  GOLDEN_PANEL_TITLE,
+} from '../ui/goldenSolidPanel';
+import { PARCHMENT_BTN_TEXT, paintParchmentRoundRect } from '../ui/parchmentButtonFill';
 
 type Handlers = {
   onEnterRound: () => void;
@@ -52,6 +63,8 @@ export class LevelMapScreen extends Container {
     this.run = run;
     this.h = h;
 
+    mountStretchedDungeonBackground(this, dungeonIdForBookChapter(this.run.bookChapterId), { dimAlpha: 0.32 });
+
     const pad = Math.round(28 * LAYOUT_SCALE);
     const rowGap = Math.round(132 * LAYOUT_SCALE);
     const rowBaseY = Math.round(118 * LAYOUT_SCALE);
@@ -59,7 +72,7 @@ export class LevelMapScreen extends Container {
     const ch = this.run.bookChapterId;
     const strPct = bookChapterStrengthPercent(ch);
     const title = new Text({
-      text: `HeyBro · 第 ${ch} 章（强度 ${strPct}%）`,
+      text: `${wowChapterStageTitle(ch)} · 强度 ${strPct}%`,
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(34 * LAYOUT_SCALE),
@@ -280,24 +293,23 @@ export class LevelMapScreen extends Container {
     const bottomReserve = Math.round(132 * LAYOUT_SCALE) + Math.round(88 * LAYOUT_SCALE);
     const bh = Math.max(Math.round(200 * LAYOUT_SCALE), GAME_HEIGHT - topY - bottomReserve);
 
-    const bg = new Graphics();
-    bg
-      .roundRect(0, 0, bw, bh, Math.round(16 * LAYOUT_SCALE))
-      .fill({ color: 0x0c1222, alpha: 0.96 })
-      .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x334155 });
-    block.addChild(bg);
+    const plate = new Graphics();
+    const frame = new Graphics();
+    drawGoldenSolidPanel(plate, frame, bw, bh, LAYOUT_SCALE);
+    block.addChild(plate);
+    block.addChild(frame);
 
     const idx = this.run.currentRoundIndex;
     const headStyle = {
       fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
       fontSize: Math.round(22 * LAYOUT_SCALE),
-      fill: 0xe2e8f0,
+      fill: GOLDEN_PANEL_TITLE,
       fontWeight: '700' as const,
     };
     const bodyStyle = {
       fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
       fontSize: Math.round(18 * LAYOUT_SCALE),
-      fill: 0xcbd5e1,
+      fill: GOLDEN_PANEL_BODY,
       lineHeight: Math.round(26 * LAYOUT_SCALE),
       wordWrap: true,
       wordWrapWidth: bw - Math.round(36 * LAYOUT_SCALE),
@@ -351,7 +363,7 @@ export class LevelMapScreen extends Container {
     }
 
     /* normal / boss */
-    const entries = battlePreviewPortraitEntries(meta);
+    const entries = battlePreviewPortraitEntries(meta, this.run.bookChapterId);
     const miniW = Math.round(100 * LAYOUT_SCALE);
     const miniH = Math.round(112 * LAYOUT_SCALE);
     const miniGap = Math.round(10 * LAYOUT_SCALE);
@@ -363,8 +375,8 @@ export class LevelMapScreen extends Container {
       const cbg = new Graphics();
       cbg
         .roundRect(0, 0, miniW, miniH, Math.round(12 * LAYOUT_SCALE))
-        .fill(0x0f172a)
-        .stroke({ width: Math.max(1, Math.round(1 * LAYOUT_SCALE)), color: 0x475569 });
+        .fill(GOLDEN_PANEL_INSET)
+        .stroke({ width: Math.max(1, Math.round(1 * LAYOUT_SCALE)), color: GOLDEN_PANEL_INSET_STROKE });
       card.addChild(cbg);
       const bodyG = createEnemyBodyDisplay(
         ent.paint,
@@ -374,6 +386,7 @@ export class LevelMapScreen extends Container {
           miniW,
           miniH,
         ),
+        { wowCirclePortraitUid: ent.wowCirclePortraitUid },
       );
       bodyG.position.set(miniW / 2, miniH - Math.round(8 * LAYOUT_SCALE));
       card.addChild(bodyG);
@@ -382,7 +395,7 @@ export class LevelMapScreen extends Container {
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           fontSize: Math.round(13 * LAYOUT_SCALE),
-          fill: 0xbae6fd,
+          fill: GOLDEN_PANEL_BODY,
           fontWeight: '600',
           align: 'center',
           wordWrap: true,
@@ -402,7 +415,7 @@ export class LevelMapScreen extends Container {
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(15 * LAYOUT_SCALE),
-        fill: 0x38bdf8,
+        fill: GOLDEN_PANEL_MUTED,
         fontWeight: '600',
       },
     });
@@ -460,7 +473,7 @@ export class LevelMapScreen extends Container {
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(30 * LAYOUT_SCALE),
-        fill: 0xf8fafc,
+        fill: GOLDEN_PANEL_TITLE,
         fontWeight: '700',
       },
     });
@@ -471,7 +484,7 @@ export class LevelMapScreen extends Container {
     const cardW = Math.round(172 * LAYOUT_SCALE);
     const cardH = Math.round(196 * LAYOUT_SCALE);
     const cardGap = Math.round(12 * LAYOUT_SCALE);
-    const entries = battlePreviewPortraitEntries(meta);
+    const entries = battlePreviewPortraitEntries(meta, this.run.bookChapterId);
     let nx = 0;
     let rowY = 0;
     for (const ent of entries) {
@@ -484,8 +497,8 @@ export class LevelMapScreen extends Container {
       const cardBg = new Graphics();
       cardBg
         .roundRect(0, 0, cardW, cardH, Math.round(14 * LAYOUT_SCALE))
-        .fill(0x0f172a)
-        .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x334155 });
+        .fill(GOLDEN_PANEL_INSET)
+        .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: GOLDEN_PANEL_INSET_STROKE });
       card.addChild(cardBg);
       const bodyG = createEnemyBodyDisplay(
         ent.paint,
@@ -495,6 +508,7 @@ export class LevelMapScreen extends Container {
           cardW,
           cardH,
         ),
+        { wowCirclePortraitUid: ent.wowCirclePortraitUid },
       );
       bodyG.position.set(cardW / 2, cardH - Math.round(12 * LAYOUT_SCALE));
       card.addChild(bodyG);
@@ -503,7 +517,7 @@ export class LevelMapScreen extends Container {
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           fontSize: Math.round(16 * LAYOUT_SCALE),
-          fill: 0xbae6fd,
+          fill: GOLDEN_PANEL_BODY,
           fontWeight: '600',
           align: 'center',
           wordWrap: true,
@@ -525,7 +539,7 @@ export class LevelMapScreen extends Container {
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(20 * LAYOUT_SCALE),
-        fill: 0xe2e8f0,
+        fill: GOLDEN_PANEL_BODY,
         lineHeight: Math.round(30 * LAYOUT_SCALE),
         wordWrap: true,
         wordWrapWidth: wrapW,
@@ -546,15 +560,18 @@ export class LevelMapScreen extends Container {
       Math.max(Math.round(320 * LAYOUT_SCALE), closeY + closeH + Math.round(28 * LAYOUT_SCALE) - py),
     );
 
-    const panel = new Graphics();
-    panel.roundRect(0, 0, panelW, panelH, Math.round(18 * LAYOUT_SCALE)).fill(0x111827);
-    panel.stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x334155 });
-    panel.eventMode = 'static';
-    panel.position.set(px, py);
-    panel.on('pointertap', (e) => e.stopPropagation());
-    layer.addChildAt(panel, 1);
+    const panelPlate = new Graphics();
+    const panelFrame = new Graphics();
+    drawGoldenSolidPanel(panelPlate, panelFrame, panelW, panelH, LAYOUT_SCALE);
+    panelPlate.position.set(px, py);
+    panelFrame.position.set(px, py);
+    panelPlate.eventMode = 'static';
+    panelPlate.on('pointertap', (e) => e.stopPropagation());
+    layer.addChildAt(panelPlate, 1);
+    layer.addChildAt(panelFrame, 2);
     const closeG = new Graphics();
-    closeG.roundRect(0, 0, closeW, closeH, Math.round(14 * LAYOUT_SCALE)).fill(0x2563eb);
+    const closeR = Math.round(14 * LAYOUT_SCALE);
+    paintParchmentRoundRect(closeG, 0, 0, closeW, closeH, closeR, LAYOUT_SCALE, false);
     closeG.eventMode = 'static';
     closeG.cursor = 'pointer';
     closeG.position.set(closeX, closeY);
@@ -568,7 +585,7 @@ export class LevelMapScreen extends Container {
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(22 * LAYOUT_SCALE),
-        fill: 0xffffff,
+        fill: PARCHMENT_BTN_TEXT,
         fontWeight: '600',
       },
     });

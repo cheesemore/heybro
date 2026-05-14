@@ -58,7 +58,8 @@ export class GameRoot extends Container {
   private openUiTestBattle(): void {
     void (async () => {
       await preloadAllyPortraitTextures();
-      await preloadEnemyTextures();
+      await preloadEnemyTextures(1);
+      await preloadHeroPortraitTextures().catch(() => {});
       const testRun = new RunState();
       seedUiTestRunBoard(testRun);
       this.clearLayer();
@@ -122,7 +123,8 @@ export class GameRoot extends Container {
   private showLevelMap(): void {
     void (async () => {
       await preloadAllyPortraitTextures();
-      await preloadEnemyTextures();
+      await preloadEnemyTextures(this.run.bookChapterId);
+      await preloadHeroPortraitTextures().catch(() => {});
       this.clearLayer();
       const map = new LevelMapScreen(this.run, {
         onEnterRound: () => this.enterCurrentRound(),
@@ -193,7 +195,8 @@ export class GameRoot extends Container {
   private openDraftCombat(): void {
     void (async () => {
       await preloadAllyPortraitTextures();
-      await preloadEnemyTextures();
+      await preloadEnemyTextures(this.run.bookChapterId);
+      await preloadHeroPortraitTextures().catch(() => {});
       this.clearLayer();
       const draft = new DraftScreen(this.app, this.run, () => this.afterDraft());
       this.layer.addChild(draft);
@@ -203,7 +206,7 @@ export class GameRoot extends Container {
   private afterDraft(): void {
     void (async () => {
       await preloadAllyPortraitTextures();
-      await preloadEnemyTextures();
+      await preloadEnemyTextures(this.run.bookChapterId);
       const idx = this.run.currentRoundIndex;
       const base = ROUNDS[idx];
       if (!base) {

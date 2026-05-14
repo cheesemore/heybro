@@ -2,7 +2,7 @@ import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import { getAllyPortraitTexture } from './allyPortraitAssets';
 import { getHeroPortraitTexture } from './heroPortraitAssets';
 import type { HeroId } from './heroRegistry';
-import { getEnemyPortraitTexture } from './enemyPortraitTextures';
+import { getEnemyPortraitTexture, getWowCirclePortraitTexture } from './enemyPortraitTextures';
 import { LAYOUT_SCALE } from './constants';
 import type { AllyClass } from './types';
 import type { EnemyPaintKind } from './battleVisuals';
@@ -209,12 +209,14 @@ function buildHeroDraftGoldRing(cx: number, cy: number, innerR: number): Graphic
   return g;
 }
 
-/** 敌方：有预加载圆形半身像则圆内贴图，否则灰/浅红盘 + 敌/首字 */
+/** 敌方：优先用书圆形立绘（已预加载），否则兵种圆形半身像，再否则灰/浅红盘 + 敌/首字 */
 function buildEnemyDiskAndLetter(
   innerR: number,
   paint: EnemyPaintKind,
+  wowCirclePortraitUid?: string,
 ): { disk: Container; letter: Text } {
-  const tex = getEnemyPortraitTexture(paint);
+  const circleTex = wowCirclePortraitUid ? getWowCirclePortraitTexture(wowCirclePortraitUid) : undefined;
+  const tex = circleTex ?? getEnemyPortraitTexture(paint);
   const cx = 0;
   const cy = -innerR;
   const disk = new Container();
@@ -343,7 +345,15 @@ export function createBattleHeroToken(heroId: HeroId, allyKind: AllyClass, inner
   return { root, ringCur, ringLost, disk, letter, ringR, thick, cx, cy };
 }
 
-export function createBattleEnemyToken(paint: EnemyPaintKind, innerRadiusPx: number): BattleTokenParts {
+export type BattleEnemyTokenOptions = {
+  wowCirclePortraitUid?: string;
+};
+
+export function createBattleEnemyToken(
+  paint: EnemyPaintKind,
+  innerRadiusPx: number,
+  opts?: BattleEnemyTokenOptions,
+): BattleTokenParts {
   const innerR = innerRadiusPx;
   const cx = 0;
   const cy = -innerR;
@@ -354,7 +364,7 @@ export function createBattleEnemyToken(paint: EnemyPaintKind, innerRadiusPx: num
   const root = new Container();
   const ringLost = new Graphics();
   const ringCur = new Graphics();
-  const { disk, letter } = buildEnemyDiskAndLetter(innerR, paint);
+  const { disk, letter } = buildEnemyDiskAndLetter(innerR, paint, opts?.wowCirclePortraitUid);
 
   root.addChild(ringLost);
   root.addChild(ringCur);
@@ -419,6 +429,7 @@ export function createMapEnemyToken(
   paint: EnemyPaintKind,
   variant: 'battle' | 'mapMini' | 'mapPreviewModal' | 'chapterMini',
   maxDiameterPx?: number,
+  tokenOpts?: BattleEnemyTokenOptions,
 ): Container {
   const boss = paint.startsWith('boss_');
   let d = enemyTokenDiameterForVariant(variant, boss);
@@ -427,7 +438,7 @@ export function createMapEnemyToken(
   }
   const innerR = d / 2;
   const root = new Container();
-  const { disk, letter } = buildEnemyDiskAndLetter(innerR, paint);
+  const { disk, letter } = buildEnemyDiskAndLetter(innerR, paint, tokenOpts?.wowCirclePortraitUid);
   root.addChild(disk);
   root.addChild(letter);
   return root;
