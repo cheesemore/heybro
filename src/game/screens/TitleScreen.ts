@@ -1,14 +1,8 @@
-import { Application, Assets, Container, Graphics, Rectangle, Sprite, Text, type Texture } from 'pixi.js';
+import { Application, Container, Graphics, Rectangle, Sprite, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
+import { loadPublicTexture, publicAssetUrl } from '../loadPublicTexture';
 import { COVER_VERSION_LABEL } from '../version';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
-
-function titleCoverAssetUrl(): string {
-  const base = import.meta.env.BASE_URL;
-  const rel = 'assets/title-cover.png';
-  if (!base || base === '/') return `/${rel}`;
-  return `${base}${rel}`.replace(/\/{2,}/g, '/');
-}
 
 /** 等比缩放铺满逻辑画布（类似 object-fit: cover），避免非等比拉伸。 */
 function layoutCoverSprite(sprite: Sprite, boxW: number, boxH: number): void {
@@ -43,7 +37,7 @@ export class TitleScreen extends Container {
     fallback.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(0x120a1e);
     coverRoot.addChild(fallback);
 
-    void Assets.load<Texture>(titleCoverAssetUrl())
+    void loadPublicTexture(publicAssetUrl('assets/title-cover.png'))
       .then((texture) => {
         if (coverRoot.destroyed) {
           texture.destroy(true);
@@ -57,7 +51,7 @@ export class TitleScreen extends Container {
         coverRoot.addChildAt(sprite, 0);
       })
       .catch(() => {
-        /* 缺文件时保留深色底 */
+        /* 缺文件或加载失败：保留深色底；开发环境见 loadPublicTexture 内 warn */
       });
 
     const hint = new Text({

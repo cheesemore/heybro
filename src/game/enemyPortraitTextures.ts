@@ -1,18 +1,16 @@
-import { Assets, type Texture } from 'pixi.js';
+import type { Texture } from 'pixi.js';
 import type { EnemyPaintKind } from './battleVisuals';
 import { ENEMY_PAINT_PRELOAD_ORDER } from './enemyBodyBounds';
 import { mobIdsForBookChapter } from './bookChapterConfig';
 import { bossUidForBookChapter, getWowMob } from './wowBookData';
+import { loadPublicTexture, publicAssetUrl } from './loadPublicTexture';
 
 const textureByPaint = new Map<EnemyPaintKind, Texture>();
 let preloadPromise: Promise<void> | null = null;
 let preloadDone = false;
 
 function enemyTextureUrl(paint: EnemyPaintKind): string {
-  const base = import.meta.env.BASE_URL;
-  const rel = `assets/enemies/${paint}.png`;
-  if (!base || base === '/') return `/${rel}`;
-  return `${base}${rel}`.replace(/\/{2,}/g, '/');
+  return publicAssetUrl(`assets/enemies/${paint}.png`);
 }
 
 /**
@@ -26,7 +24,7 @@ export async function preloadEnemyPortraitTextures(): Promise<void> {
       await Promise.all(
         ENEMY_PAINT_PRELOAD_ORDER.map(async (paint) => {
           try {
-            const tex = await Assets.load<Texture>(enemyTextureUrl(paint));
+            const tex = await loadPublicTexture(enemyTextureUrl(paint));
             textureByPaint.set(paint, tex);
           } catch {
             /* 无文件或加载失败 */
@@ -46,9 +44,7 @@ export function getEnemyPortraitTexture(paint: EnemyPaintKind): Texture | undefi
 const textureByWowCircleUid = new Map<string, Texture>();
 
 function assetBaseRelUrl(rel: string): string {
-  const base = import.meta.env.BASE_URL;
-  if (!base || base === '/') return `/${rel}`;
-  return `${base}${rel}`.replace(/\/{2,}/g, '/');
+  return publicAssetUrl(rel);
 }
 
 /** 用书小怪圆形代币立绘：`public/assets/wow-mobs-circle/<monsterUid>.png` */
@@ -82,7 +78,7 @@ export async function preloadWowCirclePortraitsForUids(uids: readonly string[]):
     unique.map(async (uid) => {
       if (textureByWowCircleUid.has(uid)) return;
       try {
-        const tex = await Assets.load<Texture>(wowCirclePortraitTextureUrl(uid));
+        const tex = await loadPublicTexture(wowCirclePortraitTextureUrl(uid));
         textureByWowCircleUid.set(uid, tex);
       } catch {
         /* 无文件或加载失败 */
@@ -108,28 +104,19 @@ export async function preloadWowCirclePortraitsForBookChapter(bookChapterId: num
  * 用书怪立绘 URL（推荐出图文件名）：`monsterUid` 与 `wowBookMonsters.json` 中该字段一致（例 `U000042.png`）。
  */
 export function wowMobPortraitTextureUrlByMonsterUid(monsterUid: string): string {
-  const base = import.meta.env.BASE_URL;
-  const rel = `assets/wow-mobs/${monsterUid}.png`;
-  if (!base || base === '/') return `/${rel}`;
-  return `${base}${rel}`.replace(/\/{2,}/g, '/');
+  return publicAssetUrl(`assets/wow-mobs/${monsterUid}.png`);
 }
 
 /**
  * 用书怪立绘 URL（兼容旧命名）：`mobId` 与表中 `id` 一致（例 `mob_ragefire_trogg.png`）。
  */
 export function wowMobPortraitTextureUrl(mobId: string): string {
-  const base = import.meta.env.BASE_URL;
-  const rel = `assets/wow-mobs/${mobId}.png`;
-  if (!base || base === '/') return `/${rel}`;
-  return `${base}${rel}`.replace(/\/{2,}/g, '/');
+  return publicAssetUrl(`assets/wow-mobs/${mobId}.png`);
 }
 
 /**
  * 用书关卡首领立绘 URL：`bossUid` 与 `wowBookBosses.json` 一致（例 `B000001.png`）。
  */
 export function wowBossPortraitTextureUrlByBossUid(bossUid: string): string {
-  const base = import.meta.env.BASE_URL;
-  const rel = `assets/wow-bosses/${bossUid}.png`;
-  if (!base || base === '/') return `/${rel}`;
-  return `${base}${rel}`.replace(/\/{2,}/g, '/');
+  return publicAssetUrl(`assets/wow-bosses/${bossUid}.png`);
 }

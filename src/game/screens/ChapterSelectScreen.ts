@@ -1,4 +1,4 @@
-import { Assets, Container, FederatedWheelEvent, Graphics, Rectangle, Sprite, Text, type Texture } from 'pixi.js';
+import { Container, FederatedWheelEvent, Graphics, Rectangle, Sprite, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { getChapterIntelBossCardParts, getChapterIntelMobCardParts } from '../nextBattlePreview';
 import { BOOK_CHAPTER_COUNT, bookChapterStrengthPercent, mobIdsForBookChapter } from '../bookChapterConfig';
@@ -18,6 +18,7 @@ import {
   wowBossPortraitTextureUrlByBossUid,
 } from '../enemyPortraitTextures';
 import { dungeonBackgroundImageUrl } from '../dungeonBackground';
+import { loadPublicTexture, loadPublicTextureFirst } from '../loadPublicTexture';
 import { spawnFloatingGameTip } from '../ui/floatingGameTip';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import {
@@ -29,6 +30,8 @@ import {
 } from '../ui/goldenSolidPanel';
 import { appendChapterIntelUnitCardRow } from '../ui/chapterIntelUnitCardLayout';
 import { createStyledGameButton } from '../ui/gameButtons';
+import { paintRedCountBadge } from '../ui/countBadge';
+import { getLotteryTicketsRemaining } from '../heroMetaStorage';
 import {
   bossUidForBookChapter,
   dungeonIdForBookChapter,
@@ -134,7 +137,24 @@ export class ChapterSelectScreen extends Container {
     };
 
     mkSide(rowX, '家园');
-    mkSide(rowX + sideW + btnGap + midW + btnGap, '英雄', () => this.onStrengthen?.());
+
+    const heroX = rowX + sideW + btnGap + midW + btnGap;
+    const heroY = rowY + (midH - sideH) / 2;
+    const heroBtn = createStyledGameButton('classic', {
+      text: '英雄',
+      width: sideW,
+      height: sideH,
+      fontSize: Math.round(22 * LAYOUT_SCALE),
+    });
+    heroBtn.position.set(heroX, heroY);
+    heroBtn.on('pointertap', () => this.onStrengthen?.());
+    this.addChild(heroBtn);
+
+    const heroLotteryBadge = new Container();
+    heroLotteryBadge.zIndex = 120;
+    heroLotteryBadge.position.set(heroX + sideW - Math.round(6 * LAYOUT_SCALE), heroY + Math.round(8 * LAYOUT_SCALE));
+    paintRedCountBadge(heroLotteryBadge, getLotteryTicketsRemaining());
+    this.addChild(heroLotteryBadge);
 
     const chBtn = createStyledGameButton('danger', {
       text: '进入本章',
@@ -178,7 +198,7 @@ export class ChapterSelectScreen extends Container {
       this.bgLayer.removeChild(c);
       c.destroy({ children: true });
     }
-    void Assets.load<Texture>(url)
+    void loadPublicTexture(url)
       .then((tex) => {
         if (gen !== this.dungeonBgGen || this.bgLayer.destroyed) {
           tex.destroy(true);
@@ -302,8 +322,7 @@ export class ChapterSelectScreen extends Container {
     if (bossUid) {
       const circleUrl = wowBossCirclePortraitTextureUrlByBossUid(bossUid);
       const squareUrl = wowBossPortraitTextureUrlByBossUid(bossUid);
-      void Assets.load<Texture>(circleUrl)
-        .catch(() => Assets.load<Texture>(squareUrl))
+      void loadPublicTextureFirst([circleUrl, squareUrl])
         .then((tex) => {
           if (boardGen !== this.boardRebuildGen || card.destroyed) {
             tex.destroy(true);

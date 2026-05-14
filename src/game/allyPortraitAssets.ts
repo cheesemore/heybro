@@ -1,4 +1,5 @@
-import { Assets, type Texture } from 'pixi.js';
+import type { Texture } from 'pixi.js';
+import { loadPublicTexture, publicAssetUrl } from './loadPublicTexture';
 import type { AllyClass } from './types';
 
 /**
@@ -12,10 +13,7 @@ import type { AllyClass } from './types';
 const ALLY_PORTRAIT_REL = (kind: AllyClass): string => `portraits/ally/${kind}.png`;
 
 function portraitUrl(kind: AllyClass): string {
-  const base = import.meta.env.BASE_URL;
-  const rel = ALLY_PORTRAIT_REL(kind);
-  if (!base || base === '/') return `/${rel}`;
-  return `${base}${rel}`.replace(/\/{2,}/g, '/');
+  return publicAssetUrl(ALLY_PORTRAIT_REL(kind));
 }
 
 const textureByKind = new Map<AllyClass, Texture>();
@@ -28,7 +26,7 @@ export async function preloadAllyPortraitTextures(): Promise<void> {
       await Promise.all(
         kinds.map(async (kind) => {
           try {
-            const tex = await Assets.load<Texture>(portraitUrl(kind));
+            const tex = await loadPublicTexture(portraitUrl(kind));
             textureByKind.set(kind, tex);
           } catch {
             /* 缺文件或网络失败：战斗 UI 回退为色盘 + 字 */

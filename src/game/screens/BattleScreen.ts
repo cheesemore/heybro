@@ -81,6 +81,11 @@ const DEATH_EXIT_MARGIN = Math.round(320 * LAYOUT_SCALE);
 const BATTLE_FINISH_POST_DELAY_SEC = 3;
 const HIT_FLASH_DUR = 0.11;
 const ATTACK_LUNGE_DUR = 0.12;
+/**
+ * 相对 `effectiveSkillRangeTo` 的基础容差；`meleeEngagementMarginPx` 会再按碰撞半径加宽。
+ * 软碰撞每帧末尾推开单位，若整圈判距过紧会卡在「略远于 reach」且本帧 `travel≈0` → `u.cd` 永不减（战士等近战常见）。
+ */
+const DEFAULT_ATTACK_RANGE_SLACK_PX = Math.max(5, Math.round(6 * LAYOUT_SCALE));
 
 const MAGE_SPLASH_RADIUS = Math.round(50 * LAYOUT_SCALE);
 const METEOR_INTERVAL = 20;
@@ -519,6 +524,17 @@ export class BattleScreen extends Container {
 
   private hitRadius(u: SimUnit): number {
     return u.hitRadiusPx;
+  }
+
+  /**
+   * 普攻/追击：在 `effectiveSkillRangeTo` 之外再加的像素（软碰撞与取整会把双方卡在略大于表定 reach 的位置）。
+   */
+  private meleeEngagementMarginPx(u: SimUnit, target: SimUnit): number {
+    const rSum = this.hitRadius(u) + this.hitRadius(target);
+    return Math.max(
+      DEFAULT_ATTACK_RANGE_SLACK_PX,
+      Math.round(4 * LAYOUT_SCALE) + Math.round(0.22 * rSum),
+    );
   }
 
   private floatLabelY(u: SimUnit): number {
@@ -1976,7 +1992,8 @@ export class BattleScreen extends Container {
       let bestS = Number.POSITIVE_INFINITY;
       for (const a of others) {
         const d = Math.hypot(a.x - u.x, a.y - u.y);
-        if (d <= this.effectiveSkillRangeTo(u, a) && score(a) < bestS) {
+        const healAim = this.effectiveSkillRangeTo(u, a) + this.meleeEngagementMarginPx(u, a);
+        if (d <= healAim && score(a) < bestS) {
           bestS = score(a);
           bestIn = a;
         }
@@ -2349,11 +2366,13 @@ export class BattleScreen extends Container {
       const dy = ht.y - u.y;
       const dist = Math.hypot(dx, dy) || 1;
       const healReach = this.effectiveSkillRangeTo(u, ht);
-      if (dist > healReach) {
+      const healMargin = this.meleeEngagementMarginPx(u, ht);
+      const healAim = healReach + healMargin;
+      if (dist > healAim) {
         const nx = dx / dist;
         const ny = dy / dist;
         const stepLen = u.speed * dt;
-        const travel = Math.min(stepLen, Math.max(0, dist - healReach));
+        const travel = Math.min(stepLen, Math.max(0, dist - healAim));
         u.x += nx * travel;
         u.y += ny * travel;
         u.root.position.set(u.x, u.y);
@@ -2366,7 +2385,15 @@ export class BattleScreen extends Container {
     const dy = targetEnemy.y - u.y;
     const dist = Math.hypot(dx, dy) || 1;
     const atkReach = this.effectiveSkillRangeTo(u, targetEnemy);
-    if (dist <= atkReach) {
+    const atkMargin = this.meleeEngagementMarginPx(u, targetEnemy);
+    const atkAim = atkReach + atkMargin;
+    const stepLen = u.speed * dt;
+    const travelAtk = Math.min(stepLen, Math.max(0, dist - atkAim));
+    const atkStuck =
+      dist > atkAim &&
+      travelAtk < Math.min(1.25, stepLen * 0.04) &&
+      dist <= atkAim + Math.max(18, Math.round(24 * LAYOUT_SCALE));
+    if (dist <= atkAim || atkStuck) {
       u.cd -= dt;
       if (u.cd <= 0) {
         const dmg = u.atk;
@@ -2395,10 +2422,8 @@ export class BattleScreen extends Container {
     } else {
       const nx = dx / dist;
       const ny = dy / dist;
-      const stepLen = u.speed * dt;
-      const travel = Math.min(stepLen, Math.max(0, dist - atkReach));
-      u.x += nx * travel;
-      u.y += ny * travel;
+      u.x += nx * travelAtk;
+      u.y += ny * travelAtk;
       u.root.position.set(u.x, u.y);
     }
   }
@@ -2818,16 +2843,22 @@ export class BattleScreen extends Container {
         const dy = target.y - u.y;
         const dist = Math.hypot(dx, dy) || 1;
         const reach = this.effectiveSkillRangeTo(u, target);
-        if (dist <= reach) {
+        const margin = this.meleeEngagementMarginPx(u, target);
+        const aimDist = reach + margin;
+        const nx = dx / dist;
+        const ny = dy / dist;
+        const stepLen = u.speed * dt;
+        const travel = Math.min(stepLen, Math.max(0, dist - aimDist));
+        const meleeStuck =
+          dist > aimDist &&
+          travel < Math.min(1.25, stepLen * 0.04) &&
+          dist <= aimDist + Math.max(18, Math.round(24 * LAYOUT_SCALE));
+        if (dist <= aimDist || meleeStuck) {
           u.cd -= dt;
           if (u.cd <= 0) {
             this.beginDefaultAttack(u, target, dist, dx, dy);
           }
         } else {
-          const nx = dx / dist;
-          const ny = dy / dist;
-          const stepLen = u.speed * dt;
-          const travel = Math.min(stepLen, Math.max(0, dist - reach));
           u.x += nx * travel;
           u.y += ny * travel;
           u.root.position.set(u.x, u.y);

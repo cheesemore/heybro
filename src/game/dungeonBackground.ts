@@ -1,12 +1,10 @@
-import { Assets, Container, Graphics, Sprite } from 'pixi.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH } from './constants';
+import { loadPublicTexture, publicAssetUrl } from './loadPublicTexture';
 
 /** `public/assets/dungeon-bgs/<dungeonId>.png`，强制拉伸铺满逻辑 1080×1920 底板 */
 export function dungeonBackgroundImageUrl(dungeonId: string): string {
-  const base = import.meta.env.BASE_URL;
-  const rel = `assets/dungeon-bgs/${dungeonId}.png`;
-  if (!base || base === '/') return `/${rel}`;
-  return `${base}${rel}`.replace(/\/{2,}/g, '/');
+  return publicAssetUrl(`assets/dungeon-bgs/${dungeonId}.png`);
 }
 
 /**
@@ -20,7 +18,7 @@ export function mountStretchedDungeonBackground(
 ): void {
   const dimAlpha = options?.dimAlpha ?? 0.36;
   const url = dungeonBackgroundImageUrl(dungeonId);
-  void Assets.load(url)
+  void loadPublicTexture(url)
     .then((tex) => {
       if (parent.destroyed) {
         tex.destroy(true);
