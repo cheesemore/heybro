@@ -39,7 +39,13 @@ export const BATTLE_MOVE_SPEED_MULT = 0.7;
 export const GLOBAL_UNIT_ATK_MULT = 2;
 
 export const ALLY_CLASSES = ['warrior', 'mage', 'priest', 'archer', 'knight'] as const;
-/** 普通敌方兵种（12 种）；表底以兽人步兵为强度锚点（HP×有效攻击/攻击间隔），远程与特技档另有预算修正。首领见 bosses.json。 */
+/**
+ * 普通敌方兵种（12 种）。首领见 `bosses.json`。
+ *
+ * 配表锚点：**兽人步兵 `grunt`**。各小怪在机制修正之前，宜先对齐同一「基础篇」乘积：
+ * `baseMaxHp × baseAtk ÷ attackInterval`，其中 **attackInterval 即 JSON 里的 `attackSpeed` 字段**（秒/次，传入战场后映射为 `SimUnit.attackInterval`）。
+ * 「有效攻击」默认取 **单次普攻 `baseAtk`**；溅射、多段、远程拉扯、控制等另算机制预算，再偏离该乘积时应有意识地加减 HP 或 atk。
+ */
 export const ENEMY_CLASSES = [
   'grunt',
   'dread_warrior',

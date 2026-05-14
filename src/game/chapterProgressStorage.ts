@@ -171,6 +171,25 @@ export function maxTotalStars(): number {
   return BOOK_CHAPTER_COUNT * MAX_STAR_PER_CHAPTER;
 }
 
+/** 已通关章节数 + 这些章节上已获得星级 / 可拿满星（每章 3 星），用于章节选择顶栏一行文案 */
+export function getCompletedChaptersStarSummary(): {
+  completedChapterCount: number;
+  starsEarned: number;
+  starsCapForCompleted: number;
+} {
+  const prog = loadChapterProgress();
+  const cleared = [...new Set(prog.clearedChapterIds)].filter(
+    (id) => id >= 1 && id <= BOOK_CHAPTER_COUNT,
+  );
+  let starsEarned = 0;
+  for (const c of cleared) {
+    starsEarned += getChapterStarFilledCount(c);
+  }
+  const completedChapterCount = cleared.length;
+  const starsCapForCompleted = completedChapterCount * MAX_STAR_PER_CHAPTER;
+  return { completedChapterCount, starsEarned, starsCapForCompleted };
+}
+
 /** 第 1…BOOK_CHAPTER_COUNT 章是否均已通关 */
 export function isAllChaptersFullyCleared(): boolean {
   const cleared = new Set(loadChapterProgress().clearedChapterIds);

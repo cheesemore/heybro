@@ -1,0 +1,4887 @@
+[
+  {
+    "name_cn": "怒焰裂谷",
+    "name_en": "Ragefire Chasm",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "怒焰裂谷-第一关",
+        "boss": {
+          "name_cn": "奥格尔弗林特",
+          "name_en": "Oggleflint",
+          "appearance": "身材矮壮的穴居人，皮肤呈暗红焦岩色，双手粗糙有力",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "石质打击",
+              "description": "物理伤害"
+            },
+            {
+              "name_cn": "冲锋",
+              "description": "快速接近敌人"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "怒焰裂谷-第二关",
+        "boss": {
+          "name_cn": "饥饿者塔拉加曼",
+          "name_en": "Taragaman the Hungerer",
+          "appearance": "巨大的恶魔卫士，身高超过3米，全身燃烧着地狱火焰，手持燃烧的巨剑",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "上勾拳",
+              "description": "将敌人击飞"
+            },
+            {
+              "name_cn": "冲击波",
+              "description": "以自身为中心释放火焰冲击波"
+            },
+            {
+              "name_cn": "燃烧光环",
+              "description": "周围持续受到火焰伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "怒焰裂谷-第三关",
+        "boss": {
+          "name_cn": "祈求者耶戈什",
+          "name_en": "Jergosh the Invoker",
+          "appearance": "身着华丽邪能长袍的高阶术士，手持燃烧的法杖，周围环绕着暗影符文",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影箭",
+              "description": "发射强力暗影箭"
+            },
+            {
+              "name_cn": "召唤",
+              "description": "召唤恶魔仆从协助作战"
+            },
+            {
+              "name_cn": "腐蚀术",
+              "description": "使目标持续受到暗影伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "怒焰裂谷-第四关",
+        "boss": {
+          "name_cn": "巴扎兰",
+          "name_en": "Bazzalan",
+          "appearance": "萨特形态的最终首领，身披暗影斗篷，全身散发着邪恶气息",
+          "attack_type": "是",
+          "role": "远程",
+          "creature_type": "输出",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "是暗影议会的真正领袖",
+              "description": ""
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "愤怒穴居人",
+        "name_en": "Ragefire Trogg",
+        "appearance": "身材矮壮的穴居人，皮肤呈暗红焦岩色，全身覆盖熔岩纹路，双眼发出橙红色光芒",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "其他",
+        "description": "穴居人种族，皮肤被熔岩灼烧后产生变异",
+        "signature_skill": "打击：挥舞石质武器攻击"
+      },
+      {
+        "name_cn": "愤怒萨满",
+        "name_en": "Ragefire Shaman",
+        "appearance": "身披暗红色斗篷的萨满祭司，皮肤泛着余烬般的微光，手持镶嵌熔岩碎片的法杖",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "其他",
+        "description": "操控火焰元素的萨满，能召唤火系图腾",
+        "signature_skill": "闪电箭：发射闪电攻击；治疗波：恢复友方生命值"
+      },
+      {
+        "name_cn": "熔岩元素",
+        "name_en": "Molten Elemental",
+        "appearance": "由纯液态熔岩构成的人形元素生物，通体流动着橙红色的岩浆，表面不断冒着气泡",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "元素",
+        "description": "纯元素生物，接触即会造成灼烧伤害",
+        "signature_skill": "熔岩射击：喷射熔岩流造成范围伤害"
+      },
+      {
+        "name_cn": "灼刃执行者",
+        "name_en": "Searing Blade Enforcer",
+        "appearance": "身穿黑色皮甲的兽人战士，护甲上烙印着灼热的燃刃徽记，手持燃烧的战斧",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "燃刃教派的主力战斗人员",
+        "signature_skill": "顺劈斩：攻击面前多个目标；旋风斩：快速旋转武器攻击周围敌人"
+      },
+      {
+        "name_cn": "灼刃邪教徒",
+        "name_en": "Searing Blade Cultist",
+        "appearance": "身着破烂红袍的人类信徒，脸上绘有燃烧的眼睛符文，手持匕首",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "燃刃教派的狂热信徒",
+        "signature_skill": "暗影箭：发射暗影箭矢"
+      },
+      {
+        "name_cn": "灼刃术士",
+        "name_en": "Searing Blade Warlock",
+        "appearance": "身披暗红长袍的术士，手持镶嵌骷髅的法杖，眼窝中燃烧着邪能火焰",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "燃刃教派的施法者",
+        "signature_skill": "暗影箭雨：对区域内的敌人降下暗影箭"
+      },
+      {
+        "name_cn": "地虫",
+        "name_en": "Earthborer",
+        "appearance": "巨大的蠕虫状生物，体表覆盖暗褐色甲壳，头部有螺旋状钻头",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "潜伏在地下的挖掘生物",
+        "signature_skill": "钻刺：用钻头状口器穿刺敌人"
+      },
+      {
+        "name_cn": "虚空行者",
+        "name_en": "Voidwalker Minion",
+        "appearance": "暗紫色的虚空生物，身体呈半固态，触手众多，双眼发出微弱的紫光",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "其他",
+        "description": "术士召唤的虚空仆从",
+        "signature_skill": "暗影缠绕：用触手缠绕敌人造成暗影伤害"
+      }
+    ]
+  },
+  {
+    "name_cn": "死亡矿井",
+    "name_en": "Deadmines",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "死亡矿井-第一关",
+        "boss": {
+          "name_cn": "拉克佐",
+          "name_en": "Rhahk'zor",
+          "appearance": "身材魁梧的食人魔战士，肌肉虬结，手持巨大的战斧",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "猛击",
+              "description": "造成大量物理伤害"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "战吼",
+              "description": "提升自身攻击力"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "死亡矿井-第二关",
+        "boss": {
+          "name_cn": "斯尼德",
+          "name_en": "Sneed",
+          "appearance": "身穿船长服饰的矮胖人类，神情狡猾，手持匕首",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "剑刃风暴",
+              "description": "快速旋转攻击"
+            },
+            {
+              "name_cn": "消失",
+              "description": "进入潜行状态"
+            },
+            {
+              "name_cn": "毒药",
+              "description": "对武器涂上毒药"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "死亡矿井-第三关",
+        "boss": {
+          "name_cn": "基尔尼格",
+          "name_en": "Gilnid",
+          "appearance": "身穿油腻工装的矮人技师，头戴护目镜，背着工具包",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "焊接射线",
+              "description": "喷射高温焊接火焰"
+            },
+            {
+              "name_cn": "召唤傀儡",
+              "description": "召唤机械傀儡协助作战"
+            },
+            {
+              "name_cn": "修理",
+              "description": "修复友方机械"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "死亡矿井-第四关",
+        "boss": {
+          "name_cn": "重拳先生",
+          "name_en": "Mr. Smite",
+          "appearance": "身材魁梧的人类打手，肌肉虬结，穿着皮护甲，拳头上套着沉重的铁拳套",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "猛拳",
+              "description": "用力挥拳造成大量伤害"
+            },
+            {
+              "name_cn": "铁拳冲击",
+              "description": "拳击地面产生震荡波"
+            },
+            {
+              "name_cn": "践踏",
+              "description": "昏迷周围敌人"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "死亡矿井-第五关",
+        "boss": {
+          "name_cn": "绿皮队长",
+          "name_en": "Captain Greenskin",
+          "appearance": "绿皮独眼舰长，戴着标志性的眼罩，身披船长外套，手持弯刀",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "毒性鱼叉",
+              "description": "投掷带毒的鱼叉"
+            },
+            {
+              "name_cn": "怒吼",
+              "description": "降低附近敌人的护甲"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 6,
+        "stage_name_cn": "死亡矿井-第六关",
+        "boss": {
+          "name_cn": "艾德温·范克里夫",
+          "name_en": "Edwin VanCleef",
+          "appearance": "身穿皮甲的人类盗贼首领，手持双剑，眼神冷酷而精明，披风上绣有迪菲亚兄弟会的标志",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "剑刃风暴",
+              "description": "快速旋转攻击造成大量物理伤害"
+            },
+            {
+              "name_cn": "致盲",
+              "description": "使目标暂时失明"
+            },
+            {
+              "name_cn": "凿击",
+              "description": "造成伤害并昏迷4秒"
+            },
+            {
+              "name_cn": "消失",
+              "description": "进入潜行状态"
+            },
+            {
+              "name_cn": "召唤援军",
+              "description": "生命值低于50%时召唤援军"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "迪菲亚船员",
+        "name_en": "Defias Pirate",
+        "appearance": "身穿破旧海军服的人类海盗，头戴黑色三角帽，腰间别着弯刀",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "迪菲亚兄弟会的水手，精通近战搏斗",
+        "signature_skill": "弯刀斩：挥舞弯刀劈砍"
+      },
+      {
+        "name_cn": "迪菲亚黑卫",
+        "name_en": "Defias Blackguard",
+        "appearance": "身穿黑色皮甲的精锐战士，头戴面罩，手持长剑和圆盾",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "范克里夫的私人卫队",
+        "signature_skill": "格挡：用盾牌抵挡部分伤害"
+      },
+      {
+        "name_cn": "迪菲亚矿工",
+        "name_en": "Defias Miner",
+        "appearance": "头戴矿工头盔的矮壮人类，手持铁镐，身上的衣服沾满煤灰",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "被范克里夫胁迫的矿工",
+        "signature_skill": "镐击：用铁镐猛击"
+      },
+      {
+        "name_cn": "迪菲亚工程师",
+        "name_en": "Defias Enchanter",
+        "appearance": "身穿沾满油污工装的矮人工程师，头戴护目镜",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "为迪菲亚制造武器的技术人员",
+        "signature_skill": "投掷炸药：投掷爆炸物造成范围伤害"
+      },
+      {
+        "name_cn": "迪菲亚术士",
+        "name_en": "Defias Wizard",
+        "appearance": "身穿紫色长袍的神秘法师，手持镶嵌宝石的法杖",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "研习禁忌魔法的术士",
+        "signature_skill": "火球术：发射火球攻击"
+      },
+      {
+        "name_cn": "迪菲亚监工",
+        "name_en": "Defias Overseer",
+        "appearance": "身穿皮甲的监工，手持鞭子",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "监督矿工劳动的监工",
+        "signature_skill": "鞭打：用鞭子抽打"
+      },
+      {
+        "name_cn": "虚空行者",
+        "name_en": "Voidwalker Minion",
+        "appearance": "暗紫色的虚空生物，身体呈半固态，触手众多，双眼发出微弱的紫光",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "其他",
+        "description": "术士召唤的虚空仆从",
+        "signature_skill": "暗影缠绕：用触手缠绕敌人造成暗影伤害"
+      },
+      {
+        "name_cn": "哥布林工程师",
+        "name_en": "Goblin Engineer",
+        "appearance": "身穿油腻工装的哥布林，头戴护目镜",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "为迪菲亚制造机械的工程师",
+        "signature_skill": "遥控引爆：远程引爆炸弹"
+      },
+      {
+        "name_cn": "哥布林船匠",
+        "name_en": "Goblin Craftsman",
+        "appearance": "身穿工装的哥布林船匠，手持各种工具",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "为迪菲亚建造战舰的船匠",
+        "signature_skill": "工具投掷：投掷工具攻击"
+      }
+    ]
+  },
+  {
+    "name_cn": "哀嚎洞穴",
+    "name_en": "Wailing Caverns",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "哀嚎洞穴-第一关",
+        "boss": {
+          "name_cn": "毒蛇女士",
+          "name_en": "Lady Anacondra",
+          "appearance": "身穿华丽长袍的女性蛇人德鲁伊，佩戴羽毛和骨头装饰，手持弯曲的法杖",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "闪电箭",
+              "description": "发射闪电攻击"
+            },
+            {
+              "name_cn": "睡眠",
+              "description": "使目标入睡"
+            },
+            {
+              "name_cn": "治疗之触",
+              "description": "恢复友方生命值"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "哀嚎洞穴-第二关",
+        "boss": {
+          "name_cn": "毒蛇领主",
+          "name_en": "Lord Cobrahn",
+          "appearance": "身穿蛇鳞护甲的蛇人德鲁伊，皮肤呈深绿色，手持双刃剑",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "蛇形态",
+              "description": "变形为巨蛇提升攻击力"
+            },
+            {
+              "name_cn": "毒液撕咬",
+              "description": "造成持续自然伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "哀嚎洞穴-第三关",
+        "boss": {
+          "name_cn": "巨蛇领主",
+          "name_en": "Lord Pythas",
+          "appearance": "体型最大的蛇人德鲁伊，佩戴骨制面具，手持战锤",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "雷霆一击",
+              "description": "范围物理伤害"
+            },
+            {
+              "name_cn": "战栗之魂",
+              "description": "召唤亡灵仆从"
+            },
+            {
+              "name_cn": "自然之怒",
+              "description": "召唤树枝攻击"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "哀嚎洞穴-第四关",
+        "boss": {
+          "name_cn": "眼镜蛇领主",
+          "name_en": "Lord Serpentis",
+          "appearance": "身穿暗影长袍的蛇人法师，眼眸泛着幽光，手持魔杖",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影箭",
+              "description": "发射暗影箭矢"
+            },
+            {
+              "name_cn": "奥术飞弹",
+              "description": "发射多枚魔法飞弹"
+            },
+            {
+              "name_cn": "法术反制",
+              "description": "打断敌人施法"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "哀嚎洞穴-第五关",
+        "boss": {
+          "name_cn": "永生者维尔丹",
+          "name_en": "Verdan the Everliving",
+          "appearance": "古老的人性树精，皮肤呈树皮色，身体由藤蔓和花朵构成，散发着永恒的气息",
+          "attack_type": "近战",
+          "role": "辅助",
+          "creature_type": "植物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "根须缠绕",
+              "description": "困住敌人"
+            },
+            {
+              "name_cn": "治愈之花",
+              "description": "释放治疗能量"
+            },
+            {
+              "name_cn": "硬化树皮",
+              "description": "提升护甲"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 6,
+        "stage_name_cn": "哀嚎洞穴-第六关",
+        "boss": {
+          "name_cn": "吞噬者穆塔纳斯",
+          "name_en": "Mutanus the Devourer",
+          "appearance": "巨大的鱼人头领，体型是普通鱼人的数倍，全身散发着腐烂的气息",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "吞噬",
+              "description": "造成伤害并恢复生命值"
+            },
+            {
+              "name_cn": "酸液溅射",
+              "description": "对区域敌人造成自然伤害"
+            },
+            {
+              "name_cn": "召唤",
+              "description": "召唤鱼人仆从"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "畸形妖",
+        "name_en": "Murloc Aberration",
+        "appearance": "扭曲变异的鱼人，皮肤呈现病态的绿色和紫色",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "被噩梦能量腐化的鱼人",
+        "signature_skill": "腐蚀吐息：喷吐腐蚀性气体"
+      },
+      {
+        "name_cn": "毒菇",
+        "name_en": "Deadly Moss",
+        "appearance": "巨大的发光蘑菇，高约2米，伞盖呈紫黑色",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "植物",
+        "description": "洞穴中的危险植物生物",
+        "signature_skill": "孢子爆发：释放有毒孢子"
+      },
+      {
+        "name_cn": "巨型蝙蝠",
+        "name_en": "Cave Bat",
+        "appearance": "翼展超过3米的巨型蝙蝠，皮毛呈暗灰色",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "洞穴中的顶级捕食者",
+        "signature_skill": "翼击：用巨大的翅膀拍击"
+      },
+      {
+        "name_cn": "堕落的德鲁伊",
+        "name_en": "Druid of the Fang",
+        "appearance": "身披破损绿色长袍的人形生物，皮肤呈现病态灰色",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "被噩梦腐化的德鲁伊",
+        "signature_skill": "纠缠：使敌人减速"
+      },
+      {
+        "name_cn": "夜之魇",
+        "name_en": "Nightmare Hawk",
+        "appearance": "浑身笼罩在黑雾中的噩梦生物",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "噩梦能量的具象化",
+        "signature_skill": "暗影啄击：用喙啄击造成暗影伤害"
+      },
+      {
+        "name_cn": "疯狂的孢子",
+        "name_en": "Fungal Oracle",
+        "appearance": "半人半真菌的诡异生物，皮肤上长满发光的蘑菇",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "植物",
+        "description": "掌握孢子魔法的真菌生物",
+        "signature_skill": "孢子云：在区域生成治疗孢子云"
+      },
+      {
+        "name_cn": "多头蛇怪",
+        "name_en": "Karldra Nightthorn",
+        "appearance": "多头蛇怪，拥有三个蛇头，皮肤呈深紫色",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "剧毒的多头蛇生物",
+        "signature_skill": "多重吐息：三个头分别吐息攻击"
+      },
+      {
+        "name_cn": "变异巨蟒",
+        "name_en": "Deviate Python",
+        "appearance": "变异的蟒蛇，体型巨大，皮肤呈绿色",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "被噩梦腐化的巨蟒",
+        "signature_skill": "绞杀：用身体缠绕敌人"
+      }
+    ]
+  },
+  {
+    "name_cn": "影牙城堡",
+    "name_en": "Shadowfang Keep",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "影牙城堡-第一关",
+        "boss": {
+          "name_cn": "雷西戈尔",
+          "name_en": "Rethilgore",
+          "appearance": "狼人形态的猎手首领，灰褐色毛发，眼中泛着红光，手持巨斧",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "灵魂虹吸",
+              "description": "偷取目标生命值"
+            },
+            {
+              "name_cn": "虚弱诅咒",
+              "description": "降低敌人属性"
+            },
+            {
+              "name_cn": "嚎叫",
+              "description": "发出恐惧嚎叫"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "影牙城堡-第二关",
+        "boss": {
+          "name_cn": "刀臂屠夫",
+          "name_en": "Razorclaw the Butcher",
+          "appearance": "人狼混合体的屠夫，肌肉虬结，手持带血的战斧，背部有锋利的骨刺",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "撕裂",
+              "description": "造成持续流血伤害"
+            },
+            {
+              "name_cn": "狂暴",
+              "description": "生命值越低攻击速度越快"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "影牙城堡-第三关",
+        "boss": {
+          "name_cn": "巴隆·希尔瓦莱恩男爵",
+          "name_en": "Baron Silverlaine",
+          "appearance": "身穿华丽铠甲的亡灵贵族，全身散发着死亡气息，眼窝中燃烧着幽蓝色火焰",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影之魂",
+              "description": "造成暗影伤害"
+            },
+            {
+              "name_cn": "虚弱之影",
+              "description": "降低目标治疗效果"
+            },
+            {
+              "name_cn": "召唤骷髅",
+              "description": "召唤亡灵仆从"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "影牙城堡-第四关",
+        "boss": {
+          "name_cn": "斯普林瓦尔指挥官",
+          "name_en": "Commander Springvale",
+          "appearance": "身穿骑士铠甲的亡灵指挥官，手持长剑和塔盾，铠甲上刻有血色十字标记",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "骑士冲锋",
+              "description": "快速冲向敌人"
+            },
+            {
+              "name_cn": "神圣打击",
+              "description": "对敌人造成神圣伤害"
+            },
+            {
+              "name_cn": "命令",
+              "description": "提升友军攻击力"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "影牙城堡-第五关",
+        "boss": {
+          "name_cn": "盲眼奥多",
+          "name_en": "Odo the Blindwatcher",
+          "appearance": "独眼狼人战士，虽然名为盲眼但感知能力极强，手持巨大的狼牙棒",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "战争践踏",
+              "description": "踩踏并造成伤害"
+            },
+            {
+              "name_cn": "战栗之魂",
+              "description": "召唤幽灵狼"
+            },
+            {
+              "name_cn": "狂暴",
+              "description": "提升攻击速度"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 6,
+        "stage_name_cn": "影牙城堡-第六关",
+        "boss": {
+          "name_cn": "吞噬者芬鲁斯",
+          "name_en": "Fenrus the Devourer",
+          "appearance": "巨大的暗影狼形态生物，浑身由黑雾构成，眼中燃烧着幽绿色的火焰",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影撕咬",
+              "description": "造成暗影伤害并减速"
+            },
+            {
+              "name_cn": "恐惧咆哮",
+              "description": "使敌人陷入恐惧"
+            },
+            {
+              "name_cn": "暗影护盾",
+              "description": "吸收伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 7,
+        "stage_name_cn": "影牙城堡-第七关",
+        "boss": {
+          "name_cn": "大法师阿鲁高",
+          "name_en": "Archmage Arugal",
+          "appearance": "身穿紫色长袍的人类法师，眼窝深陷，周围环绕着扭曲的魔法能量",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "奥术飞弹",
+              "description": "发射多枚奥术能量球"
+            },
+            {
+              "name_cn": "变形术",
+              "description": "变成小动物"
+            },
+            {
+              "name_cn": "召唤狼人",
+              "description": "召唤狼人仆从"
+            },
+            {
+              "name_cn": "奥术爆炸",
+              "description": "范围伤害"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "骷髅战士",
+        "name_en": "Skeletal Warrior",
+        "appearance": "泛着幽蓝色光芒的骷髅战士，手持锈蚀的剑和破损的盾",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "亡灵",
+        "description": "被召唤的不死战士",
+        "signature_skill": "顺劈斩：攻击面前多个敌人"
+      },
+      {
+        "name_cn": "骷髅法师",
+        "name_en": "Skeletal Mage",
+        "appearance": "身披破烂法袍的骷髅法师，手持弯曲的法杖",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "掌握冰霜魔法的亡灵",
+        "signature_skill": "冰霜箭：发射冰霜箭矢"
+      },
+      {
+        "name_cn": "狼人",
+        "name_en": "Worgen",
+        "appearance": "人形狼头生物，全身覆盖灰褐色毛发，肌肉发达",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "被诅咒的人类转变而成",
+        "signature_skill": "爪击：用利爪撕裂"
+      },
+      {
+        "name_cn": "僵尸",
+        "name_en": "Zombie",
+        "appearance": "腐烂程度不一的人类尸体，皮肤呈灰绿色",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "亡灵",
+        "description": "从坟墓中爬出的不死者",
+        "signature_skill": "腐爪击：用腐烂的爪子攻击"
+      },
+      {
+        "name_cn": "幽魂",
+        "name_en": "Specter",
+        "appearance": "半透明的幽灵，女性形态，长发飘散",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "亡灵",
+        "description": "惨死的灵魂徘徊于此",
+        "signature_skill": "灵魂吸取：偷取目标法力值"
+      },
+      {
+        "name_cn": "骷髅骑士",
+        "name_en": "Lieutenant Foresight",
+        "appearance": "身穿全套骑士铠甲的骷髅，手持长剑和塔盾",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "亡灵",
+        "description": "阿鲁高召唤的亡灵骑士",
+        "signature_skill": "骑士冲锋：快速冲向敌人"
+      },
+      {
+        "name_cn": "暗影狼",
+        "name_en": "Shadowfang Wolfguard",
+        "appearance": "暗影形态的狼，体型健壮",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "阿鲁高召唤的狼人守卫",
+        "signature_skill": "爪击：用利爪撕裂"
+      },
+      {
+        "name_cn": "暗影魔",
+        "name_en": "Son of Arugal",
+        "appearance": "暗影形态的魔法生物",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "阿鲁高的魔法造物",
+        "signature_skill": "阿鲁高之赐：周期性暗影伤害"
+      }
+    ]
+  },
+  {
+    "name_cn": "黑暗深渊",
+    "name_en": "Blackfathom Deeps",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "黑暗深渊-第一关",
+        "boss": {
+          "name_cn": "加穆-拉",
+          "name_en": "Ghamoo-Ra",
+          "appearance": "巨大的海龟形态生物，龟壳由深蓝色岩石构成，体型巨大如小山",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "碾压",
+              "description": "用巨大身躯压向敌人"
+            },
+            {
+              "name_cn": "水溅",
+              "description": "用尾巴拍击造成范围伤害"
+            },
+            {
+              "name_cn": "龟甲防御",
+              "description": "减免伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "黑暗深渊-第二关",
+        "boss": {
+          "name_cn": "多米娜",
+          "name_en": "Domina",
+          "appearance": "身披华丽长袍的娜迦女祭司，手持珍珠权杖，散发着海魔法气息",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "闪电链",
+              "description": "释放连锁闪电攻击多个敌人"
+            },
+            {
+              "name_cn": "治疗",
+              "description": "恢复自身生命值"
+            },
+            {
+              "name_cn": "护盾",
+              "description": "提供临时护盾"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "黑暗深渊-第三关",
+        "boss": {
+          "name_cn": "征服者科尔乌尔",
+          "name_en": "Subjugator Kor'ul",
+          "appearance": "身穿黑色铠甲的娜迦战士，手持三叉戟，眼中泛着冷酷的光芒",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "三叉戟穿刺",
+              "description": "用三叉戟穿刺"
+            },
+            {
+              "name_cn": "嘲讽",
+              "description": "强迫目标攻击自己"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "黑暗深渊-第四关",
+        "boss": {
+          "name_cn": "瑟鲁克",
+          "name_en": "Thruk",
+          "appearance": "凶残的鱼人头领，手持巨斧，全身覆盖贝壳护甲",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "旋风斩",
+              "description": "快速旋转攻击周围敌人"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个目标"
+            },
+            {
+              "name_cn": "战吼",
+              "description": "提升附近友军攻击力"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "黑暗深渊-第五关",
+        "boss": {
+          "name_cn": "剑子手戈尔",
+          "name_en": "Executioner Gore",
+          "appearance": "高大的亡灵刽子手，手持巨大的砍头剑，全身散发着死亡气息",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "处决",
+              "description": "对低生命值目标造成额外伤害"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前所有敌人"
+            },
+            {
+              "name_cn": "死亡标记",
+              "description": "标记目标使其护甲降低"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 6,
+        "stage_name_cn": "黑暗深渊-第六关",
+        "boss": {
+          "name_cn": "深渊守护者",
+          "name_en": "Guardian of the Deep",
+          "appearance": "巨大的章鱼状生物，触手覆盖吸盘，体型庞大，眼眸发出幽暗的光芒",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "触手缠绕",
+              "description": "用触手缠绕敌人"
+            },
+            {
+              "name_cn": "墨汁喷射",
+              "description": "喷出墨汁模糊视线"
+            },
+            {
+              "name_cn": "水溅",
+              "description": "用触手拍击"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 7,
+        "stage_name_cn": "黑暗深渊-第七关",
+        "boss": {
+          "name_cn": "暮光领主巴希尔",
+          "name_en": "Twilight Lord Bathiel",
+          "appearance": "身穿星光长袍的古老精灵幽魂，半透明的身体散发着柔和的蓝光",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "星光箭",
+              "description": "发射星光箭矢"
+            },
+            {
+              "name_cn": "梦境之力",
+              "description": "使目标入睡"
+            },
+            {
+              "name_cn": "灵魂安抚",
+              "description": "治疗友方"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 8,
+        "stage_name_cn": "黑暗深渊-第八关",
+        "boss": {
+          "name_cn": "吞噬者阿库迈尔",
+          "name_en": "Aku'mai the Devourer",
+          "appearance": "巨大的克拉西斯生物，体型庞大，全身覆盖深蓝色的甲壳，触手众多",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "其他",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "吞噬",
+              "description": "造成伤害并恢复生命值"
+            },
+            {
+              "name_cn": "深渊吐息",
+              "description": "喷出黑暗能量"
+            },
+            {
+              "name_cn": "尾击",
+              "description": "横扫身后敌人"
+            },
+            {
+              "name_cn": "黑暗护盾",
+              "description": "吸收伤害"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "娜迦侍女",
+        "name_en": "Naga Keeper",
+        "appearance": "人身蛇尾的娜迦女性，手持三叉戟",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "守护神殿的娜迦战士",
+        "signature_skill": "三叉戟刺：用三叉戟穿刺"
+      },
+      {
+        "name_cn": "娜迦海巫",
+        "name_en": "Naga Sea Witch",
+        "appearance": "身披深色斗篷的娜迦施法者，手持镶嵌珍珠的法杖",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "掌握水系魔法的娜迦",
+        "signature_skill": "治疗波：释放治愈的水流"
+      },
+      {
+        "name_cn": "鱼人霸者",
+        "name_en": "Murloc Tyrant",
+        "appearance": "体型巨大的鱼人首领，鳞片呈金色",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "鱼人部落的首领",
+        "signature_skill": "盾牌猛击：用盾牌击晕敌人"
+      },
+      {
+        "name_cn": "幽灵侍女",
+        "name_en": "Shade of Twilight",
+        "appearance": "透明的女性幽灵，身穿古精灵风格的白裙",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "亡灵",
+        "description": "死于神殿的暗夜精灵灵魂",
+        "signature_skill": "灵魂安抚：治疗友方"
+      },
+      {
+        "name_cn": "黑暗深渊哨兵",
+        "name_en": "Blackfathom Patrol",
+        "appearance": "巨大的章鱼状生物，触手众多",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "其他",
+        "description": "深海中的顶级捕食者",
+        "signature_skill": "触手缠绕：用触手缠绕敌人"
+      },
+      {
+        "name_cn": "娜迦女祭司",
+        "name_en": "Lady S'theno",
+        "appearance": "身披华丽金色铠甲的娜迦女祭司",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "娜迦女祭司中的佼佼者",
+        "signature_skill": "闪电链：释放连锁闪电"
+      },
+      {
+        "name_cn": "独眼鱼人",
+        "name_en": "One Eye",
+        "appearance": "独眼的巨型鱼人，体型是普通鱼人的三倍",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "被称为独眼的变异鱼人首领",
+        "signature_skill": "碾压：用巨大的身躯压向敌人"
+      },
+      {
+        "name_cn": "暗影贤者",
+        "name_en": "Shadow Weaver",
+        "appearance": "身披黑袍的娜迦法师",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "掌握暗影魔法的娜迦",
+        "signature_skill": "暗影箭：发射暗影箭矢"
+      },
+      {
+        "name_cn": "海潮侍从",
+        "name_en": "Tide LK中texter",
+        "appearance": "人身蛇尾的娜迦侍从",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "娜迦的普通成员",
+        "signature_skill": "水溅：用尾巴拍击"
+      }
+    ]
+  },
+  {
+    "name_cn": "诺莫瑞根",
+    "name_en": "Gnomeregan",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "诺莫瑞根-第一关",
+        "boss": {
+          "name_cn": "格鲁比斯",
+          "name_en": "Grubbis",
+          "appearance": "变异的穴居人，体型是普通穴居人的两倍，皮肤呈病态绿色，全身覆盖甲壳",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "辐射吐息",
+              "description": "喷出辐射性液体"
+            },
+            {
+              "name_cn": "酸液喷射",
+              "description": "酸性吐息腐蚀护甲"
+            },
+            {
+              "name_cn": "狂暴冲撞",
+              "description": "冲向敌人造成伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "诺莫瑞根-第二关",
+        "boss": {
+          "name_cn": "粘性辐射物",
+          "name_en": "Viscous Fallout",
+          "appearance": "半液态的辐射元素生物，身体呈病态绿色，不断散发着有毒蒸气",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "酸液池",
+              "description": "在脚下创造酸液池"
+            },
+            {
+              "name_cn": "辐射爆炸",
+              "description": "造成范围自然伤害"
+            },
+            {
+              "name_cn": "腐蚀",
+              "description": "降低目标护甲"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "诺莫瑞根-第三关",
+        "boss": {
+          "name_cn": "电流处理器6000",
+          "name_en": "Electrocutioner 6000",
+          "appearance": "巨大的机器人形态的侏儒科学家，全身由金属构成，双眼发出红光，胸口有闪电符号",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "超级电击",
+              "description": "造成大量自然伤害"
+            },
+            {
+              "name_cn": "电弧风暴",
+              "description": "连锁闪电攻击"
+            },
+            {
+              "name_cn": "能量护盾",
+              "description": "反射伤害"
+            },
+            {
+              "name_cn": "召唤克瓦迪尔",
+              "description": "召唤辐射生物"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "诺莫瑞根-第四关",
+        "boss": {
+          "name_cn": "群众击打者9-60",
+          "name_en": "Crowd Pummeler 9-60",
+          "appearance": "巨大的战斗机器人，高约4米，全身由黄铜和钢铁构成，双臂是巨大的液压锤",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "液压锤击",
+              "description": "用巨大的液压锤猛击"
+            },
+            {
+              "name_cn": "践踏",
+              "description": "踩踏周围敌人"
+            },
+            {
+              "name_cn": "震地",
+              "description": "重击地面造成范围伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "诺莫瑞根-第五关",
+        "boss": {
+          "name_cn": "机械师瑟玛普莱格",
+          "name_en": "Mekgineer Thermaplugg",
+          "appearance": "身穿油腻工装的疯狂侏儒科学家，头戴护目镜，手中握着一个发光的机械球",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "其他",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "超级电击",
+              "description": "释放强大电能攻击"
+            },
+            {
+              "name_cn": "召唤炸弹",
+              "description": "召唤移动炸弹"
+            },
+            {
+              "name_cn": "自爆",
+              "description": "与敌人同归于尽"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "机械侏儒",
+        "name_en": "Mechanized Gnome",
+        "appearance": "穿着蒸汽动力外骨骼的侏儒，上半身是人类，下半身是机械腿",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "被斯蒂洛格改造成机械的侏儒",
+        "signature_skill": "焊枪射击：喷射高温火焰"
+      },
+      {
+        "name_cn": "诺莫瑞根守卫",
+        "name_en": "Gnomeregan Guard",
+        "appearance": "身穿厚重铠甲的侏儒士兵，头戴全息面罩",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "城市防御的最后一道防线",
+        "signature_skill": "电击射击：发射电击子弹"
+      },
+      {
+        "name_cn": "诺莫瑞根工程师",
+        "name_en": "Gnomeregan Engineer",
+        "appearance": "身穿工装的侏儒技术员，头戴电焊护目镜",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "其他",
+        "description": "负责维护城市机械的技术人员",
+        "signature_skill": "投掷炸弹：投掷爆炸物"
+      },
+      {
+        "name_cn": "辐射工蚁",
+        "name_en": "Irradiated Insect",
+        "appearance": "被辐射变异的巨型蚂蚁，体型是普通蚂蚁的十倍",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "辐射污染产生的新物种",
+        "signature_skill": "辐射吐息：喷出辐射性液体"
+      },
+      {
+        "name_cn": "爆破者",
+        "name_en": "Bomber",
+        "appearance": "携带大量炸药的侏儒，身上挂满炸弹",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "自杀式攻击单位",
+        "signature_skill": "自爆：与敌人同归于尽"
+      },
+      {
+        "name_cn": "发光水母",
+        "name_en": "Lantern",
+        "appearance": "发光的水母状生物，半透明的伞盖发出柔和的绿色光芒",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "其他",
+        "description": "城市照明系统的生物版本",
+        "signature_skill": "光疗：发出治疗光线"
+      },
+      {
+        "name_cn": "战斗傀儡",
+        "name_en": "Crowd Pummeler 9-60",
+        "appearance": "巨大的战斗机器人，高约4米，双臂是巨大的液压锤",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "其他",
+        "description": "诺莫瑞根的主战机器人",
+        "signature_skill": "液压锤击：用巨大的液压锤猛击"
+      },
+      {
+        "name_cn": "辐射水蛭",
+        "name_en": "Irradiated Leech",
+        "appearance": "变异的吸血水蛭",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "辐射区域的水生变异生物",
+        "signature_skill": "吸血：吸取目标生命值"
+      },
+      {
+        "name_cn": "麻风侏儒",
+        "name_en": "Leper Gnome",
+        "appearance": "身患麻风的侏儒，身体溃烂但仍能战斗",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "被疾病折磨的侏儒",
+        "signature_skill": "腐化攻击：造成持续自然伤害"
+      }
+    ]
+  },
+  {
+    "name_cn": "剃刀沼泽",
+    "name_en": "Razorfen Kraul",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "剃刀沼泽-第一关",
+        "boss": {
+          "name_cn": "鲁古格",
+          "name_en": "Roogug",
+          "appearance": "野猪人萨满，佩戴骨头装饰，手持法杖，能召唤元素",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "闪电箭",
+              "description": "发射闪电攻击"
+            },
+            {
+              "name_cn": "治疗波",
+              "description": "恢复友方生命值"
+            },
+            {
+              "name_cn": "土元素召唤",
+              "description": "召唤土元素协助"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "剃刀沼泽-第二关",
+        "boss": {
+          "name_cn": "阿格姆·索恩克尔斯",
+          "name_en": "Aggem Thorncurse",
+          "appearance": "野猪人野兽大师，身边跟随着多只野猪，手持长矛和匕首",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "召唤野猪",
+              "description": "召唤野猪仆从"
+            },
+            {
+              "name_cn": "协同攻击",
+              "description": "指挥野猪同时攻击"
+            },
+            {
+              "name_cn": "战栗",
+              "description": "恐惧周围敌人"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "剃刀沼泽-第三关",
+        "boss": {
+          "name_cn": "死亡演说家贾尔巴",
+          "name_en": "Death Speaker Jargba",
+          "appearance": "野猪人暗影萨满，身披黑色斗篷，手持骷髅法杖",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影箭",
+              "description": "发射暗影箭矢"
+            },
+            {
+              "name_cn": "暗影治愈",
+              "description": "治疗亡灵"
+            },
+            {
+              "name_cn": "虚弱诅咒",
+              "description": "降低敌人属性"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "剃刀沼泽-第四关",
+        "boss": {
+          "name_cn": "统治者拉姆图斯",
+          "name_en": "Overlord Ramtusk",
+          "appearance": "身披厚重骨甲的野猪人首领，手持巨大的战锤，头戴骷髅王冠",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "毁灭之锤",
+              "description": "用战锤造成范围伤害"
+            },
+            {
+              "name_cn": "战争怒吼",
+              "description": "提升友军攻击力"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "剃刀沼泽-第五关",
+        "boss": {
+          "name_cn": "狂暴的阿加塞洛斯",
+          "name_en": "Agathelos the Raging",
+          "appearance": "巨大的野猪灵魂形态，由橙红色火焰构成，散发着古老的力量",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "灵魂冲击",
+              "description": "穿透敌人造成伤害"
+            },
+            {
+              "name_cn": "炽热光环",
+              "description": "周围持续受到火焰伤害"
+            },
+            {
+              "name_cn": "狂暴",
+              "description": "提升攻击力"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 6,
+        "stage_name_cn": "剃刀沼泽-第六关",
+        "boss": {
+          "name_cn": "查理加·剃刀侧翼",
+          "name_en": "Charlga Razorflank",
+          "appearance": "身披华丽祭袍的野猪人女祭司，全身佩戴骨头和羽毛装饰",
+          "attack_type": "远程",
+          "role": "治疗",
+          "creature_type": "生物",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "治疗",
+              "description": "恢复友方生命值"
+            },
+            {
+              "name_cn": "神圣制裁",
+              "description": "造成神圣伤害"
+            },
+            {
+              "name_cn": "复活",
+              "description": "复活死亡的野猪人士兵"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "野猪人战士",
+        "name_en": "Quillboar Warrior",
+        "appearance": "身披厚重护甲的野猪人，獠牙锐利如剑",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "剃刀沼泽的主要战斗力量",
+        "signature_skill": "獠牙突刺：用獠牙穿刺"
+      },
+      {
+        "name_cn": "野猪人萨满",
+        "name_en": "Quillboar Shaman",
+        "appearance": "身披骷髅装饰的野猪人萨满，手持骨制法杖",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "掌握古老魔法的萨满",
+        "signature_skill": "治疗波：恢复友方生命值"
+      },
+      {
+        "name_cn": "剃刀蝙蝠",
+        "name_en": "Razorfen Bat",
+        "appearance": "暗红色皮毛的巨型蝙蝠，翼展约3米",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "野猪人的空中侦察力量",
+        "signature_skill": "超声波攻击：用超声波干扰敌人"
+      },
+      {
+        "name_cn": "蘑菇人",
+        "name_en": "Razorfen Briarbane",
+        "appearance": "人形植物生物，身体由藤蔓和蘑菇组成",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "植物",
+        "description": "与野猪人共生的植物生物",
+        "signature_skill": "藤蔓缠绕：用藤蔓困住敌人"
+      },
+      {
+        "name_cn": "骷髅战士",
+        "name_en": "Skeletal Warrior",
+        "appearance": "被野猪人从土中唤醒的骷髅战士",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "被野猪人驱使的不死战士",
+        "signature_skill": "顺劈斩：攻击面前多个敌人"
+      },
+      {
+        "name_cn": "灵魂猎手",
+        "name_en": "Hakkar",
+        "appearance": "巨大的灵魂生物，由橙红色火焰构成",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "元素",
+        "description": "被野猪人崇拜的灵魂实体",
+        "signature_skill": "灵魂斩击：用灵魂之斧劈砍"
+      },
+      {
+        "name_cn": "复仇亡灵",
+        "name_en": "Avenger of the March",
+        "appearance": "身披骷髅铠甲的亡灵战士",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "亡灵",
+        "description": "被阿迦玛甘召唤的复仇亡魂",
+        "signature_skill": "战锤猛击：用战锤猛击"
+      },
+      {
+        "name_cn": "腐蹄树人",
+        "name_en": "Gnarlwood",
+        "appearance": "树人形态的守护者，树干是身体主干",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "植物",
+        "description": "沼泽中的古老守护者",
+        "signature_skill": "根须缠绕：用根须缠绕敌人"
+      },
+      {
+        "name_cn": "死亡头颅祭司",
+        "name_en": "Death's Head Priest",
+        "appearance": "野猪人祭司，身披黑袍",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "崇拜死亡的祭司",
+        "signature_skill": "暗影治愈：治疗亡灵"
+      },
+      {
+        "name_cn": "死亡头颅萨满",
+        "name_en": "Death's Head Seer",
+        "appearance": "野猪人萨满，能召唤元素",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "掌握预知之术的萨满",
+        "signature_skill": "治疗波：恢复友方生命值"
+      }
+    ]
+  },
+  {
+    "name_cn": "血色修道院",
+    "name_en": "Scarlet Monastery",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "血色修道院-第一关",
+        "boss": {
+          "name_cn": "灵魂收割者萨尔诺斯",
+          "name_en": "Thalnos the Soulrender",
+          "appearance": "身穿破烂红袍的亡灵法师，眼窝中燃烧着蓝火，手持骷髅法杖",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影箭",
+              "description": "发射暗影箭矢"
+            },
+            {
+              "name_cn": "灵魂虹吸",
+              "description": "偷取目标生命值"
+            },
+            {
+              "name_cn": "召唤骷髅",
+              "description": "召唤亡灵仆从"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "血色修道院-第二关",
+        "boss": {
+          "name_cn": "科尔洛夫兄弟",
+          "name_en": "Brother Korloff",
+          "appearance": "身穿血色十字军铠甲的圣武士，手持巨锤，全身散发着圣光",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "制裁之锤",
+              "description": "造成神圣伤害并眩晕"
+            },
+            {
+              "name_cn": "圣光术",
+              "description": "治疗友方"
+            },
+            {
+              "name_cn": "神圣之火",
+              "description": "造成神圣伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "血色修道院-第三关",
+        "boss": {
+          "name_cn": "大检察官法尔莫",
+          "name_en": "High Inquisitor Fairbanks",
+          "appearance": "身穿华丽黑色祭袍的大检察官，手持燃烧的十字火炬，面容严肃而狂热",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "生物",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "神圣制裁",
+              "description": "造成神圣伤害"
+            },
+            {
+              "name_cn": "信仰赐福",
+              "description": "大幅提升友军攻击力"
+            },
+            {
+              "name_cn": "驱邪",
+              "description": "驱散亡灵并造成伤害"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "血色十字军士兵",
+        "name_en": "Scarlet Soldier",
+        "appearance": "身穿红色铠甲的人类士兵，手持长剑和鸢盾",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "血色十字军的主力战斗人员",
+        "signature_skill": "盾击：用盾牌击晕"
+      },
+      {
+        "name_cn": "血色十字军骑士",
+        "name_en": "Scarlet Knight",
+        "appearance": "骑乘战马的骑士，全身红色铠甲",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "血色十字军的精英骑兵",
+        "signature_skill": "骑士冲锋：高速冲锋造成大量伤害"
+      },
+      {
+        "name_cn": "血色十字军法师",
+        "name_en": "Scarlet Sorcerer",
+        "appearance": "身穿红袍的法师，手持法杖",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "血色十字军的魔法部队",
+        "signature_skill": "神圣之光：发射神圣光束"
+      },
+      {
+        "name_cn": "血色十字军牧师",
+        "name_en": "Scarlet Priest",
+        "appearance": "身披红色祭袍的牧师，手持圣典",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "血色十字军的精神领袖",
+        "signature_skill": "治疗：恢复友方生命值"
+      },
+      {
+        "name_cn": "血色猎犬",
+        "name_en": "Scarlet Hound",
+        "appearance": "训练有素的大型猎犬，毛色呈暗红色",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "血色十字军用于追捕敌人的猎犬",
+        "signature_skill": "撕咬：用尖锐的獠牙撕咬"
+      },
+      {
+        "name_cn": "血色驯犬者",
+        "name_en": "Arcane Handler",
+        "appearance": "身穿驯兽师服装的人类",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "血色十字军的驯兽师",
+        "signature_skill": "命令：指挥猎犬攻击特定目标"
+      },
+      {
+        "name_cn": "血色十字军守卫",
+        "name_en": "Scarlet Champion",
+        "appearance": "身穿重甲的血色十字军精英战士",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "血色十字军的精锐部队",
+        "signature_skill": "顺劈斩：攻击面前多个敌人"
+      },
+      {
+        "name_cn": "血色十字军狂热者",
+        "name_en": "Scarlet Zealot",
+        "appearance": "狂热的人类战士，眼中闪烁着狂信的光芒",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "血色十字军的狂热追随者",
+        "signature_skill": "狂热打击：造成额外神圣伤害"
+      }
+    ]
+  },
+  {
+    "name_cn": "剃刀高地",
+    "name_en": "Razorfen Downs",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "剃刀高地-第一关",
+        "boss": {
+          "name_cn": "奥鲁克斯",
+          "name_en": "Aarux",
+          "appearance": "半透明的幽灵野猪人，散发着冰冷的气息，手持幽灵之剑",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "灵魂冲击",
+              "description": "穿透敌人造成伤害"
+            },
+            {
+              "name_cn": "寒意侵蚀",
+              "description": "降低敌人攻击速度"
+            },
+            {
+              "name_cn": "幽灵护甲",
+              "description": "减免伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "剃刀高地-第二关",
+        "boss": {
+          "name_cn": "火焰之眼莫德雷什",
+          "name_en": "Mordresh Fire Eye",
+          "appearance": "巨大的骷髅战士，眼窝中燃烧着火焰，手持燃烧的战斧",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "火焰冲击",
+              "description": "冲撞并造成火焰伤害"
+            },
+            {
+              "name_cn": "燃烧光环",
+              "description": "周围持续受到火焰伤害"
+            },
+            {
+              "name_cn": "火焰弹",
+              "description": "发射火球"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "剃刀高地-第三关",
+        "boss": {
+          "name_cn": "磨菇怪",
+          "name_en": "Mushlump",
+          "appearance": "巨大的蘑菇状生物，伞盖巨大且长满霉斑，茎部粗壮",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "植物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "孢子爆发",
+              "description": "释放有毒孢子"
+            },
+            {
+              "name_cn": "撞击",
+              "description": "用粗壮的茎部冲撞"
+            },
+            {
+              "name_cn": "黏液喷射",
+              "description": "喷射黏液减缓敌人"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "剃刀高地-第四关",
+        "boss": {
+          "name_cn": "死亡演说家布莱克索恩",
+          "name_en": "Death Speaker Blackthorn",
+          "appearance": "身穿幽灵长袍的巨魔祭司，半透明的身体散发着蓝光",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "灵魂虹吸",
+              "description": "偷取敌人生命值"
+            },
+            {
+              "name_cn": "虚弱诅咒",
+              "description": "降低敌人属性"
+            },
+            {
+              "name_cn": "灵魂治愈",
+              "description": "治疗友方亡灵"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "剃刀高地-第五关",
+        "boss": {
+          "name_cn": "寒意使者阿姆内纳尔",
+          "name_en": "Amnennar the Coldbringer",
+          "appearance": "由寒冰构成的巨大幽灵，全身散发着极寒的气息，双眼如两团冰蓝色的火焰",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "寒冰之矛",
+              "description": "投掷冰霜长矛穿刺敌人"
+            },
+            {
+              "name_cn": "冰霜领域",
+              "description": "在脚下创造冰霜领域"
+            },
+            {
+              "name_cn": "绝对零度",
+              "description": "冻结区域内所有敌人"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "剃刀高地野猪人",
+        "name_en": "Razorfen Earthbreaker",
+        "appearance": "身披厚重毛皮的野猪人战士，皮肤呈灰白色",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "剃刀高地的精锐战士",
+        "signature_skill": "獠牙突刺：用巨大獠牙穿刺"
+      },
+      {
+        "name_cn": "野猪人萨满",
+        "name_en": "Razorfen Geomancer",
+        "appearance": "佩戴骨制面具的野猪人萨满",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "掌握古老魔法的萨满",
+        "signature_skill": "冰霜震击：造成冰霜伤害并减速"
+      },
+      {
+        "name_cn": "骷髅战士",
+        "name_en": "Skeletal Groundskeeper",
+        "appearance": "被唤醒的古老骷髅战士，骨骼上覆盖苔藓和冰霜",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "守护野猪人圣地的古老亡魂",
+        "signature_skill": "骨质顺劈：用腐朽武器顺劈"
+      },
+      {
+        "name_cn": "冰霜蝙蝠",
+        "name_en": "Frostbat",
+        "appearance": "翼膜呈冰蓝色的巨型蝙蝠",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "寒冷环境中生存的变异蝙蝠",
+        "signature_skill": "冰霜翼击：翼击附带冰冷伤害"
+      },
+      {
+        "name_cn": "幽灵领主",
+        "name_en": "Phantom Partisan",
+        "appearance": "由淡蓝色光芒构成的幽灵战士",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "野猪人先祖的灵魂守卫",
+        "signature_skill": "幽灵穿刺：用幽灵长枪穿刺"
+      },
+      {
+        "name_cn": "贪食者",
+        "name_en": "Glutton",
+        "appearance": "体型异常肥硕的野猪人，肚子滚圆",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "以腐肉为食的野猪人",
+        "signature_skill": "碾压：用巨大身躯压向敌人"
+      },
+      {
+        "name_cn": "多头蛇首领",
+        "name_en": "Ragemaw",
+        "appearance": "多头蛇怪的头目，拥有异常大的蛇头",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "沼泽多头蛇的领袖",
+        "signature_skill": "多重吐息：同时喷吐酸液和火焰"
+      },
+      {
+        "name_cn": "钢铁龟人",
+        "name_en": "Bonesnapper",
+        "appearance": "龟人形态的生物，龟壳由金属和骨头混合构成",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "剃刀高地的古老守护种族",
+        "signature_skill": "钢铁咬击：用钢铁尖牙咬碎护甲"
+      },
+      {
+        "name_cn": "幽灵野猪人",
+        "name_en": "Ghostly Quillboar",
+        "appearance": "幽灵形态的野猪人，散发着寒冷气息",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "死于剃刀高地的野猪人灵魂",
+        "signature_skill": "灵魂之触：造成暗影伤害"
+      }
+    ]
+  },
+  {
+    "name_cn": "奥达曼",
+    "name_en": "Uldaman",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "奥达曼-第一关",
+        "boss": {
+          "name_cn": "雷维洛什",
+          "name_en": "Revelosh",
+          "appearance": "由岩石构成的机械人偶，全身由青铜和钢铁构成，关节处有齿轮",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "机械拳击",
+              "description": "用金属拳头攻击"
+            },
+            {
+              "name_cn": "电流冲击",
+              "description": "释放电能攻击"
+            },
+            {
+              "name_cn": "修复",
+              "description": "自我修复"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "奥达曼-第二关",
+        "boss": {
+          "name_cn": "艾隆娜亚",
+          "name_en": "Ironaya",
+          "appearance": "古老的岩石女性巨人，身体由花岗岩构成，双眼发出蓝色光芒",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "石拳击",
+              "description": "用岩石拳头攻击"
+            },
+            {
+              "name_cn": "震地",
+              "description": "践踏造成伤害"
+            },
+            {
+              "name_cn": "石化皮肤",
+              "description": "大幅提升护甲"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "奥达曼-第三关",
+        "boss": {
+          "name_cn": "黑曜石哨兵",
+          "name_en": "Obsidian Sentinel",
+          "appearance": "巨大的黑曜石守卫，全身漆黑如镜，手持巨大的战锤",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "石拳击",
+              "description": "用黑曜石拳头攻击"
+            },
+            {
+              "name_cn": "震地",
+              "description": "践踏造成范围伤害"
+            },
+            {
+              "name_cn": "反光护盾",
+              "description": "反射法术伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "奥达曼-第四关",
+        "boss": {
+          "name_cn": "远古石之守护者",
+          "name_en": "Ancient Stone Keeper",
+          "appearance": "古老的石灵守护者，身体由各种岩石拼凑而成",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "石拳击",
+              "description": "用岩石拳头攻击"
+            },
+            {
+              "name_cn": "震地",
+              "description": "践踏造成伤害"
+            },
+            {
+              "name_cn": "石化皮肤",
+              "description": "提升护甲"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "奥达曼-第五关",
+        "boss": {
+          "name_cn": "加尔甘·火锤",
+          "name_en": "Galgann Firehammer",
+          "appearance": "火焰元素的化身，全身由熔岩和火焰构成，手持燃烧的战锤",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "熔岩拳",
+              "description": "用熔岩拳头攻击"
+            },
+            {
+              "name_cn": "火焰爆发",
+              "description": "从身体爆发火焰"
+            },
+            {
+              "name_cn": "炽热光环",
+              "description": "周围持续受到火焰伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 6,
+        "stage_name_cn": "奥达曼-第六关",
+        "boss": {
+          "name_cn": "格里姆洛克",
+          "name_en": "Grimlok",
+          "appearance": "被囚禁的远古石灵，身体由暗色岩石构成",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "闪电箭",
+              "description": "发射闪电攻击"
+            },
+            {
+              "name_cn": "石拳",
+              "description": "用岩石拳头攻击"
+            },
+            {
+              "name_cn": "震地",
+              "description": "践踏造成伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 7,
+        "stage_name_cn": "奥达曼-第七关",
+        "boss": {
+          "name_cn": "远古石灵",
+          "name_en": "Archaedas",
+          "appearance": "由灰色岩石构成的人形生物，身高约3米，双眼发出蓝色光芒",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "元素",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "石拳击",
+              "description": "用岩石拳头攻击"
+            },
+            {
+              "name_cn": "震地",
+              "description": "践踏造成伤害"
+            },
+            {
+              "name_cn": "召唤仆从",
+              "description": "召唤石灵协助战斗"
+            },
+            {
+              "name_cn": "大地之盾",
+              "description": "为友方提供护盾"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "石灵守护者",
+        "name_en": "Archaedas",
+        "appearance": "由灰色岩石构成的人形生物，身高约3米",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "元素",
+        "description": "泰坦创造的石灵守卫",
+        "signature_skill": "石拳击：用岩石拳头攻击"
+      },
+      {
+        "name_cn": "土灵",
+        "name_en": "Earthen",
+        "appearance": "皮肤呈土褐色的矮人形态生物，身材矮壮",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "泰坦造物的早期版本",
+        "signature_skill": "挖掘打击：用工具挖掘攻击"
+      },
+      {
+        "name_cn": "挖沙者",
+        "name_en": "Earthenoulder",
+        "appearance": "滚动的岩石球体生物，由无数小石块组成",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "元素",
+        "description": "守护矿洞深处的石灵变种",
+        "signature_skill": "碾压：滚动碾压敌人"
+      },
+      {
+        "name_cn": "梦魇绿龙",
+        "name_en": "Shade of Eranikus",
+        "appearance": "半透明的翡翠色巨龙形态，散发着梦魇和梦魇的气息",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "其他",
+        "description": "被困在梦魇中的绿龙灵魂",
+        "signature_skill": "梦境吐息：造成暗影伤害并使目标入睡"
+      },
+      {
+        "name_cn": "骷髅矿工",
+        "name_en": "Skeletal Miner",
+        "appearance": "被遗忘在矿洞中的矿工骷髅，手持生锈的镐头",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "死于矿难的不幸矿工",
+        "signature_skill": "镐击：用矿镐攻击"
+      },
+      {
+        "name_cn": "洞穴人",
+        "name_en": "Cave Dweller",
+        "appearance": "原始人类形态的穴居人，皮肤灰白",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "穴居在奥达曼中的原始人类后裔",
+        "signature_skill": "棍棒打击：用木棒攻击"
+      },
+      {
+        "name_cn": "矮人探险家",
+        "name_en": "Baelog",
+        "appearance": "身披毛皮的矮人猎人，手持战斧和弓",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "奥达曼探险队成员",
+        "signature_skill": "战斧劈砍：用战斧猛烈劈砍"
+      },
+      {
+        "name_cn": "矮人盾兵",
+        "name_en": "Olaf",
+        "appearance": "手持盾牌的矮人战士，身穿厚重铠甲",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "矮人探险队的护卫",
+        "signature_skill": "盾击：用盾牌击晕"
+      },
+      {
+        "name_cn": "矮人工程师",
+        "name_en": "Eric",
+        "appearance": "戴着矿工帽的矮人工程师，背着一个冒烟的背包",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "负责开路和爆破的工程师",
+        "signature_skill": "炸药投掷：投掷炸药造成范围伤害"
+      }
+    ]
+  },
+  {
+    "name_cn": "祖尔法拉克",
+    "name_en": "Zul'Farrak",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "祖尔法拉克-第一关",
+        "boss": {
+          "name_cn": "水术师维尔的拉萨",
+          "name_en": "Hydromancer Velratha",
+          "appearance": "娜迦水系法师，身披蓝色鳞甲，手持珊瑚权杖",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "水流冲击",
+              "description": "造成伤害并减速"
+            },
+            {
+              "name_cn": "治疗之泉",
+              "description": "创造治疗泉水"
+            },
+            {
+              "name_cn": "水牢",
+              "description": "困住单个敌人"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "祖尔法拉克-第二关",
+        "boss": {
+          "name_cn": "加兹瑞拉",
+          "name_en": "Gahz'rilla",
+          "appearance": "巨大的迅猛龙形态生物，体型是普通迅猛龙的数倍",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "爪击",
+              "description": "用利爪撕裂"
+            },
+            {
+              "name_cn": "撕咬",
+              "description": "用尖牙咬噬"
+            },
+            {
+              "name_cn": "跳跃攻击",
+              "description": "从空中俯冲"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "祖尔法拉克-第三关",
+        "boss": {
+          "name_cn": "安图苏尔",
+          "name_en": "Antu'sul",
+          "appearance": "巨魔首领，身披厚重骨甲，手持巨大的战锤",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "毁灭之锤",
+              "description": "用战锤造成范围伤害"
+            },
+            {
+              "name_cn": "战争怒吼",
+              "description": "提升友军攻击力"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "祖尔法拉克-第四关",
+        "boss": {
+          "name_cn": "殉道者塞卡",
+          "name_en": "Theka the Martyr",
+          "appearance": "巨魔女祭司，身体呈半透明状态，散发着蓝色的灵魂能量",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "灵魂治愈",
+              "description": "治疗友方"
+            },
+            {
+              "name_cn": "灵魂虹吸",
+              "description": "偷取敌人生命值"
+            },
+            {
+              "name_cn": "虚弱诅咒",
+              "description": "降低敌人属性"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "祖尔法拉克-第五关",
+        "boss": {
+          "name_cn": "巫医祖姆拉",
+          "name_en": "Witch Doctor Zum'rah",
+          "appearance": "巨魔巫医，身披羽毛装饰，手持骨制法杖",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "治疗波",
+              "description": "恢复友方生命值"
+            },
+            {
+              "name_cn": "先祖之魂",
+              "description": "召唤先祖灵魂协助"
+            },
+            {
+              "name_cn": "虚弱诅咒",
+              "description": "降低敌人属性"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 6,
+        "stage_name_cn": "祖尔法拉克-第六关",
+        "boss": {
+          "name_cn": "奈克鲁姆·古特切沃尔",
+          "name_en": "Nekrum Gutchewer",
+          "appearance": "巨魔亡灵战士，身披破烂战甲，手持生锈的武器",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影斩击",
+              "description": "用幽灵武器劈砍"
+            },
+            {
+              "name_cn": "灵魂护盾",
+              "description": "吸收伤害"
+            },
+            {
+              "name_cn": "虚弱打击",
+              "description": "降低敌人攻击力"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 7,
+        "stage_name_cn": "祖尔法拉克-第七关",
+        "boss": {
+          "name_cn": "暗影祭司塞斯齐兹",
+          "name_en": "Shadowpriest Sezz'ziz",
+          "appearance": "巨魔暗影祭司，全身散发着暗影能量",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影箭",
+              "description": "发射暗影箭矢"
+            },
+            {
+              "name_cn": "精神控制",
+              "description": "控制敌人"
+            },
+            {
+              "name_cn": "恐惧",
+              "description": "使敌人逃跑"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 8,
+        "stage_name_cn": "祖尔法拉克-第八关",
+        "boss": {
+          "name_cn": "沙怒首领乌科尔兹",
+          "name_en": "Chief Ukorz Sandscalp",
+          "appearance": "巨魔首领，身披华丽战袍，手持巨斧，是沙怒部落的最强战士",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "毁灭之锤",
+              "description": "用巨斧造成范围伤害"
+            },
+            {
+              "name_cn": "战争怒吼",
+              "description": "提升友军攻击力"
+            },
+            {
+              "name_cn": "旋风斩",
+              "description": "快速旋转攻击周围敌人"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "沙怒巨魔战士",
+        "name_en": "Sandfury Troll",
+        "appearance": "皮肤呈紫红色的巨魔战士，佩戴骨头和羽毛装饰",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "沙怒巨魔的普通战士",
+        "signature_skill": "长矛穿刺：用长矛穿刺"
+      },
+      {
+        "name_cn": "沙怒巨魔猎人",
+        "name_en": "Sandfury Hunter",
+        "appearance": "身披猎物的皮毛的巨魔猎人，手持弓箭",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "巨魔部落的猎手",
+        "signature_skill": "精准射击：远程弓箭射击"
+      },
+      {
+        "name_cn": "迅猛龙",
+        "name_en": "Raptor",
+        "appearance": "紫红色的迅猛龙，体型矫健",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "巨魔的坐骑和战斗伙伴",
+        "signature_skill": "爪击：用利爪撕裂"
+      },
+      {
+        "name_cn": "祖尔祭司",
+        "name_en": "Zul'Farrak Priest",
+        "appearance": "身披羽毛装饰的巨魔祭司，脸上涂有白色颜料",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "崇拜哈卡的祭司",
+        "signature_skill": "暗影治愈：治疗友方"
+      },
+      {
+        "name_cn": "殉道女祭司",
+        "name_en": "Theka the Martyr",
+        "appearance": "巨魔女祭司，身体呈半透明状态",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "其他",
+        "description": "古老的祖尔祭司",
+        "signature_skill": "灵魂治愈：治疗友方"
+      },
+      {
+        "name_cn": "祖尔法师",
+        "name_en": "Zul'Lor",
+        "appearance": "强大的巨魔法师，手持骷髅法杖",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "巨魔部落的首席法师",
+        "signature_skill": "暗影箭：发射暗影箭矢"
+      },
+      {
+        "name_cn": "水元素",
+        "name_en": "Water Elemental",
+        "appearance": "由清澈海水构成的人形元素生物",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "元素",
+        "description": "祖尔法拉克中的古老元素",
+        "signature_skill": "水流冲击：造成伤害并减速"
+      },
+      {
+        "name_cn": "食腐鸟",
+        "name_en": "Carrion Bird",
+        "appearance": "秃鹫形态的食腐生物",
+        "attack_type": "是",
+        "role": "是",
+        "creature_type": "生物",
+        "description": "是",
+        "signature_skill": "是"
+      },
+      {
+        "name_cn": "沙怒萨满",
+        "name_en": "Zul'Farrak Shaman",
+        "appearance": "巨魔萨满，能操控元素之力,是",
+        "attack_type": "是",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "是",
+        "signature_skill": "是"
+      }
+    ]
+  },
+  {
+    "name_cn": "玛拉顿",
+    "name_en": "Maraudon",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "玛拉顿-第一关",
+        "boss": {
+          "name_cn": "诺克希恩",
+          "name_en": "Noxxion",
+          "appearance": "由腐化能量构成的元素生物，身体呈深紫色，散发着有毒蒸气",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "酸液池",
+              "description": "在脚下创造酸液池"
+            },
+            {
+              "name_cn": "毒液喷射",
+              "description": "造成范围自然伤害"
+            },
+            {
+              "name_cn": "分裂",
+              "description": "分裂成多个小型本体"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "玛拉顿-第二关",
+        "boss": {
+          "name_cn": "锐刺鞭笞者",
+          "name_en": "Razorlash",
+          "appearance": "巨大的植物生物，由藤蔓和荆棘构成，不断蠕动着",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "植物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "藤蔓缠绕",
+              "description": "用藤蔓困住敌人"
+            },
+            {
+              "name_cn": "荆棘之盾",
+              "description": "反弹伤害"
+            },
+            {
+              "name_cn": "根须突刺",
+              "description": "从地面突刺"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "玛拉顿-第三关",
+        "boss": {
+          "name_cn": "工匠吉兹洛克",
+          "name_en": "Tinkerer Gizlock",
+          "appearance": "疯狂的侏儒工程师，头戴护目镜，手持各种工具",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "扳手投掷",
+              "description": "远程投掷工具攻击"
+            },
+            {
+              "name_cn": "焊枪射击",
+              "description": "喷射高温火焰"
+            },
+            {
+              "name_cn": "召唤",
+              "description": "召唤机械仆从"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "玛拉顿-第四关",
+        "boss": {
+          "name_cn": "维利塔恩领主",
+          "name_en": "Lord Vyletongue",
+          "appearance": "萨特领主，人身羊腿，手持燃烧的法杖",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影箭",
+              "description": "发射暗影箭矢"
+            },
+            {
+              "name_cn": "闪烁",
+              "description": "瞬移"
+            },
+            {
+              "name_cn": "召唤",
+              "description": "召唤恶魔仆从"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "玛拉顿-第五关",
+        "boss": {
+          "name_cn": "被诅咒的塞雷布拉斯",
+          "name_en": "Celebras the Cursed",
+          "appearance": "被腐化的林地守护者，身体呈现病态绿色，周围环绕着暗影能量",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "自然之怒",
+              "description": "召唤树枝攻击"
+            },
+            {
+              "name_cn": "腐化之触",
+              "description": "造成暗影伤害"
+            },
+            {
+              "name_cn": "召唤亡灵",
+              "description": "召唤亡灵仆从"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 6,
+        "stage_name_cn": "玛拉顿-第六关",
+        "boss": {
+          "name_cn": "兰斯利德",
+          "name_en": "Landslide",
+          "appearance": "巨大的山岭巨人，身体由岩石构成",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "震地",
+              "description": "踩踏造成范围伤害"
+            },
+            {
+              "name_cn": "石拳",
+              "description": "用巨大的拳头攻击"
+            },
+            {
+              "name_cn": "召唤石灵",
+              "description": "召唤石灵协助战斗"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 7,
+        "stage_name_cn": "玛拉顿-第七关",
+        "boss": {
+          "name_cn": "罗特格里普",
+          "name_en": "Rotgrip",
+          "appearance": "巨大的鳄鱼形态生物，体型如小山",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "撕咬",
+              "description": "用巨大的颚咬噬"
+            },
+            {
+              "name_cn": "甩尾",
+              "description": "用尾巴击退敌人"
+            },
+            {
+              "name_cn": "水溅",
+              "description": "造成范围伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 8,
+        "stage_name_cn": "玛拉顿-第八关",
+        "boss": {
+          "name_cn": "瑟莱德丝公主",
+          "name_en": "Princess Theradras",
+          "appearance": "半人半岩石的公主形态，全身散发着石化和腐化的气息",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "元素",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "岩石投掷",
+              "description": "造成物理伤害"
+            },
+            {
+              "name_cn": "地震波",
+              "description": "击退敌人"
+            },
+            {
+              "name_cn": "荆棘光环",
+              "description": "反弹伤害"
+            },
+            {
+              "name_cn": "石化肌肤",
+              "description": "提升护甲"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "玛拉顿半人马",
+        "name_en": "Maraudon Centaur",
+        "appearance": "半人半马的强大战士，上半身是人类，下半身是马身",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "扎尔的后裔，半神血脉的守护者",
+        "signature_skill": "践踏：用马蹄踩踏"
+      },
+      {
+        "name_cn": "半人马幽灵",
+        "name_en": "Centaur Spirit",
+        "appearance": "半透明的半人马幽灵，散发着蓝色幽光",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "被塞瑟斯诅咒而死的半人马亡魂",
+        "signature_skill": "灵魂冲击：穿透敌人造成伤害"
+      },
+      {
+        "name_cn": "岩石元素",
+        "name_en": "Rock Elemental",
+        "appearance": "由棕色岩石构成的人形生物，身体坚硬如铁",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "元素",
+        "description": "守护洞穴的岩石元素",
+        "signature_skill": "岩石拳击：用坚硬的拳头攻击"
+      },
+      {
+        "name_cn": "植物守护者",
+        "name_en": "Herbalist",
+        "appearance": "身体由藤蔓和花朵构成的人形植物生物",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "植物",
+        "description": "守护玛拉顿植物的古老存在",
+        "signature_skill": "治愈之花：释放治疗能量"
+      },
+      {
+        "name_cn": "巨魔幽灵",
+        "name_en": "Zul'Farrak Ghost",
+        "appearance": "巨魔幽灵战士，灵魂被束缚在玛拉顿中",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "死于玛拉顿的巨魔战士",
+        "signature_skill": "灵魂斩击：用幽灵武器劈砍"
+      },
+      {
+        "name_cn": "陶蹄树人",
+        "name_en": "Terrordisc",
+        "appearance": "巨大的树人守护者，树干粗壮",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "植物",
+        "description": "古老的树人战士",
+        "signature_skill": "树枝抽打：用树枝抽打"
+      },
+      {
+        "name_cn": "扎尔之子",
+        "name_en": "Zaetar's Progeny",
+        "appearance": "扎尔与塞瑟斯之子，死亡后化为幽灵存在",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "悲剧的半神之子",
+        "signature_skill": "幽冥冲锋：快速冲锋攻击"
+      },
+      {
+        "name_cn": "水晶收割者",
+        "name_en": "Crystal Harvester",
+        "appearance": "水晶构成的机械生物,是",
+        "attack_type": "是",
+        "role": "坦克",
+        "creature_type": "其他",
+        "description": "是",
+        "signature_skill": "是"
+      },
+      {
+        "name_cn": "沼泽多头蛇",
+        "name_en": "Cavern Hydra",
+        "appearance": "多头水蛇",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "沼泽中的危险生物",
+        "signature_skill": "多重吐息：多头部同时吐息"
+      }
+    ]
+  },
+  {
+    "name_cn": "沉没的神庙",
+    "name_en": "Sunken Temple",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "沉没的神庙-第一关",
+        "boss": {
+          "name_cn": "哈卡尔的化身",
+          "name_en": "Avatar of Hakkar",
+          "appearance": "巨大的灵魂生物，由橙红色火焰构成",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "灵魂冲击",
+              "description": "穿透敌人造成伤害"
+            },
+            {
+              "name_cn": "炽热光环",
+              "description": "周围持续受到火焰伤害"
+            },
+            {
+              "name_cn": "灵魂锁链",
+              "description": "束缚敌人"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "沉没的神庙-第二关",
+        "boss": {
+          "name_cn": "预言者贾玛兰",
+          "name_en": "Jammal'an the Prophet",
+          "appearance": "巨魔祭司灵魂，身披幽灵长袍，散发着古老的力量",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "灵魂治愈",
+              "description": "治疗友方亡灵"
+            },
+            {
+              "name_cn": "灵魂虹吸",
+              "description": "偷取敌人生命值"
+            },
+            {
+              "name_cn": "预言",
+              "description": "使敌人受到诅咒"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "沉没的神庙-第三关",
+        "boss": {
+          "name_cn": "梦境守护者",
+          "name_en": "Wardens of the Dream",
+          "appearance": "四个守护者的灵魂，每个代表一种自然力量",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "协同攻击",
+              "description": "多个守护者同时攻击"
+            },
+            {
+              "name_cn": "守护之力",
+              "description": "提供护盾"
+            },
+            {
+              "name_cn": "自然之力",
+              "description": "治疗友方"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "沉没的神庙-第四关",
+        "boss": {
+          "name_cn": "伊兰尼库斯之影",
+          "name_en": "Shade of Eranikus",
+          "appearance": "半透明的翡翠色巨龙形态，散发着梦魇和梦境的气息",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "其他",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "梦魇吐息",
+              "description": "造成暗影伤害并使目标入睡"
+            },
+            {
+              "name_cn": "梦境支配",
+              "description": "使敌人沉睡"
+            },
+            {
+              "name_cn": "绿龙之爪",
+              "description": "物理伤害"
+            },
+            {
+              "name_cn": "梦魇之力",
+              "description": "恐惧所有敌人"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "龙人",
+        "name_en": "Drakonid",
+        "appearance": "人形龙族战士，鳞片呈青铜色",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "多彩龙军团的战士",
+        "signature_skill": "龙剑斩：用龙族巨剑劈砍"
+      },
+      {
+        "name_cn": "娜迦海巫",
+        "name_en": "Naga Sea Witch",
+        "appearance": "人身蛇尾的娜迦女祭司",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "守护神庙的娜迦施法者",
+        "signature_skill": "水流治愈：治疗友方"
+      },
+      {
+        "name_cn": "巨型蚂蚁",
+        "name_en": "Atal'ai Wasp",
+        "appearance": "变异的巨型蚂蚁，体型有小狗大小",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "神庙中的危险虫族",
+        "signature_skill": "群体撕咬：多只蚂蚁同时攻击"
+      },
+      {
+        "name_cn": "幽灵观察者",
+        "name_en": "Ghostly Observer",
+        "appearance": "半透明的幽灵，漂浮在空中",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "亡灵",
+        "description": "阿塔哈卡神庙的守护幽灵",
+        "signature_skill": "灵魂观测：侦察敌人位置"
+      },
+      {
+        "name_cn": "祭司灵魂",
+        "name_en": "Jammal'an the Dead",
+        "appearance": "被唤醒的巨魔祭司灵魂",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "亡灵",
+        "description": "死于神庙的祭司亡魂",
+        "signature_skill": "灵魂之触：治疗友方"
+      },
+      {
+        "name_cn": "蚂蚁巢穴守护者",
+        "name_en": "Hazzali",
+        "appearance": "巨大的蚂蚁巢穴守护者",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "其他",
+        "description": "蚂蚁群落的守护者",
+        "signature_skill": "甲壳冲撞：用坚硬甲壳冲撞"
+      },
+      {
+        "name_cn": "娜迦观察者",
+        "name_en": "Narassu",
+        "appearance": "娜迦观察者",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "神庙中的娜迦巡逻队",
+        "signature_skill": "三叉戟投掷：投掷三叉戟"
+      },
+      {
+        "name_cn": "太阳王子",
+        "name_en": "Princes of the Sun",
+        "appearance": "四个太阳巨魔王子",
+        "attack_type": "近战",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "崇拜太阳的巨魔王子",
+        "signature_skill": "太阳祝福：提升友军属性"
+      },
+      {
+        "name_cn": "梦境守护者",
+        "name_en": "Dream Watcher",
+        "appearance": "守护梦境的古老存在,是",
+        "attack_type": "是",
+        "role": "坦克",
+        "creature_type": "其他",
+        "description": "是",
+        "signature_skill": "是"
+      }
+    ]
+  },
+  {
+    "name_cn": "黑石深渊",
+    "name_en": "Blackrock Depths",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "黑石深渊-第一关",
+        "boss": {
+          "name_cn": "贝恩加",
+          "name_en": "Bael'gar",
+          "appearance": "火焰巨灵，身体由熔岩构成",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "熔岩拳",
+              "description": "用熔岩拳头攻击"
+            },
+            {
+              "name_cn": "火焰爆发",
+              "description": "从身体爆发火焰"
+            },
+            {
+              "name_cn": "炽热光环",
+              "description": "周围持续受到火焰伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "黑石深渊-第二关",
+        "boss": {
+          "name_cn": "审讯者格斯汗",
+          "name_en": "High Interrogator Gerstahn",
+          "appearance": "亡灵法师，手持皮鞭",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影箭",
+              "description": "发射暗影箭矢"
+            },
+            {
+              "name_cn": "拷问",
+              "description": "造成持续暗影伤害"
+            },
+            {
+              "name_cn": "恐惧",
+              "description": "使敌人逃跑"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "黑石深渊-第三关",
+        "boss": {
+          "name_cn": "洛格·罗卡",
+          "name_en": "Roccor",
+          "appearance": "岩石巨灵",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "石拳击",
+              "description": "用岩石拳头攻击"
+            },
+            {
+              "name_cn": "震地",
+              "description": "践踏造成伤害"
+            },
+            {
+              "name_cn": "石化皮肤",
+              "description": "提升护甲"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "黑石深渊-第四关",
+        "boss": {
+          "name_cn": "犬王格雷布玛",
+          "name_en": "Houndmaster Grebmar",
+          "appearance": "黑铁矮人猎人，身边跟随着地狱犬",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "射击",
+              "description": "远程物理攻击"
+            },
+            {
+              "name_cn": "召唤地狱犬",
+              "description": "召唤地狱犬协助作战"
+            },
+            {
+              "name_cn": "命令",
+              "description": "指挥宠物攻击"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "黑石深渊-第五关",
+        "boss": {
+          "name_cn": "灰烬领主因西迪乌斯",
+          "name_en": "Lord Incendius",
+          "appearance": "火焰元素领主",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "火焰冲击",
+              "description": "冲撞并造成火焰伤害"
+            },
+            {
+              "name_cn": "燃烧光环",
+              "description": "周围持续受到火焰伤害"
+            },
+            {
+              "name_cn": "火球术",
+              "description": "发射火球"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 6,
+        "stage_name_cn": "黑石深渊-第六关",
+        "boss": {
+          "name_cn": "将军安格博格",
+          "name_en": "General Angerforge",
+          "appearance": "黑铁矮人将军",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "战争命令",
+              "description": "提升友军攻击力"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "盾击",
+              "description": "用盾牌击晕"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 7,
+        "stage_name_cn": "黑石深渊-第七关",
+        "boss": {
+          "name_cn": "傀儡领主阿基尔玛",
+          "name_en": "Golem Lord Argelmach",
+          "appearance": "巨大的机械傀儡",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "碾压",
+              "description": "用巨大身躯压向敌人"
+            },
+            {
+              "name_cn": "践踏",
+              "description": "踩踏周围敌人"
+            },
+            {
+              "name_cn": "火焰喷射",
+              "description": "从胸口喷射火焰"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 8,
+        "stage_name_cn": "黑石深渊-第八关",
+        "boss": {
+          "name_cn": "赫维·黑潮",
+          "name_en": "Hurley Blackbreath",
+          "appearance": "黑铁矮人工程师",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "炸药投掷",
+              "description": "投掷炸药造成范围伤害"
+            },
+            {
+              "name_cn": "修理",
+              "description": "修复友方机械"
+            },
+            {
+              "name_cn": "召唤傀儡",
+              "description": "召唤机械仆从"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 9,
+        "stage_name_cn": "黑石深渊-第九关",
+        "boss": {
+          "name_cn": "执政官鲜血",
+          "name_en": "Phalanx",
+          "appearance": "黑铁矮人执政官",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "盾击",
+              "description": "用盾牌击晕"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "神圣打击",
+              "description": "对敌人造成神圣伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 10,
+        "stage_name_cn": "黑石深渊-第十关",
+        "boss": {
+          "name_cn": "七贤",
+          "name_en": "The Seven",
+          "appearance": "七个被囚禁的灵魂",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影箭",
+              "description": "发射暗影箭矢"
+            },
+            {
+              "name_cn": "治疗",
+              "description": "恢复生命值"
+            },
+            {
+              "name_cn": "召唤骷髅",
+              "description": "召唤亡灵仆从"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 11,
+        "stage_name_cn": "黑石深渊-第十一关",
+        "boss": {
+          "name_cn": "麦姆·格洛格",
+          "name_en": "Magmus",
+          "appearance": "火焰巨人",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "熔岩拳",
+              "description": "用熔岩拳头攻击"
+            },
+            {
+              "name_cn": "火焰爆发",
+              "description": "从身体爆发火焰"
+            },
+            {
+              "name_cn": "炽热光环",
+              "description": "周围持续受到火焰伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 12,
+        "stage_name_cn": "黑石深渊-第十二关",
+        "boss": {
+          "name_cn": "达格兰·索瑞森",
+          "name_en": "Emperor Dagran Thaurissan",
+          "appearance": "身穿黑铁王冠和华丽铠甲的黑铁矮人之王",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "烈焰之拳",
+              "description": "火焰伤害"
+            },
+            {
+              "name_cn": "火焰光环",
+              "description": "持续火焰伤害"
+            },
+            {
+              "name_cn": "熔岩打击",
+              "description": "区域伤害"
+            },
+            {
+              "name_cn": "炎魔之力",
+              "description": "提升属性"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "黑铁矮人战士",
+        "name_en": "Dark Iron Soldier",
+        "appearance": "皮肤呈深灰色的矮人战士，身披黑色铠甲",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "黑铁矮人的主力战斗部队",
+        "signature_skill": "战斧劈砍：用战斧猛烈劈砍"
+      },
+      {
+        "name_cn": "黑铁矮人技师",
+        "name_en": "Dark Iron Technician",
+        "appearance": "身穿油腻工装的矮人技师",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "负责维护城市机械的技术人员",
+        "signature_skill": "焊接射线：喷射高温焊接火焰"
+      },
+      {
+        "name_cn": "火焰元素",
+        "name_en": "Fire Elemental",
+        "appearance": "由橙红色火焰构成的人形元素生物",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "元素",
+        "description": "黑铁矮人召唤的火焰仆从",
+        "signature_skill": "火焰冲击：冲撞并造成火焰伤害"
+      },
+      {
+        "name_cn": "暗影萨满",
+        "name_en": "Shadow Shaman",
+        "appearance": "身披黑色斗篷的堕落萨满",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "其他",
+        "description": "被拉格纳罗斯腐化的萨满",
+        "signature_skill": "暗影治愈：治疗友方"
+      },
+      {
+        "name_cn": "战斗傀儡",
+        "name_en": "War Golem",
+        "appearance": "巨大的岩石和金属构成的战斗傀儡，高约4米",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "其他",
+        "description": "黑铁矮人制造的战争机器",
+        "signature_skill": "碾压：用巨大身躯压向敌人"
+      },
+      {
+        "name_cn": "精锐战士",
+        "name_en": "Anvilrage",
+        "appearance": "精锐的黑铁矮人战士，身披加厚铠甲",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "黑铁矮人最精锐的战士团体",
+        "signature_skill": "巨剑劈砍：用巨剑劈砍"
+      },
+      {
+        "name_cn": "灵魂哨兵",
+        "name_en": "Soulbringer",
+        "appearance": "被暗影魔法改造的黑铁矮人灵魂",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "为黑铁矮人效忠的不死战士",
+        "signature_skill": "灵魂冲击：穿透敌人造成伤害"
+      },
+      {
+        "name_cn": "火焰巨人",
+        "name_en": "Magmus",
+        "appearance": "火焰巨人，体型是普通人的三倍",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "元素",
+        "description": "守护熔岩区域的火焰巨人",
+        "signature_skill": "熔岩拳：用熔岩拳头攻击"
+      },
+      {
+        "name_cn": "黑铁矮人铁匠",
+        "name_en": "Dark Iron Smiths",
+        "appearance": "黑铁矮人铁匠",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "负责锻造武器的矮人",
+        "signature_skill": "锻造锤击：用锤子敲打"
+      }
+    ]
+  },
+  {
+    "name_cn": "厄运之槌",
+    "name_en": "Dire Maul",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "厄运之槌-第一关",
+        "boss": {
+          "name_cn": "普斯林",
+          "name_en": "Pusillin",
+          "appearance": "小鬼形态的恶作剧者",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影弹",
+              "description": "发射暗影能量"
+            },
+            {
+              "name_cn": "闪烁",
+              "description": "瞬移"
+            },
+            {
+              "name_cn": "召唤",
+              "description": "召唤小鬼协助"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "厄运之槌-第二关",
+        "boss": {
+          "name_cn": "泽林·霍恩胡夫",
+          "name_en": "Zevrim Thornhoof",
+          "appearance": "萨特猎人",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "其他",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "恶魔之爪",
+              "description": "用利爪撕裂"
+            },
+            {
+              "name_cn": "暗影箭",
+              "description": "发射暗影箭矢"
+            },
+            {
+              "name_cn": "献祭",
+              "description": "持续火焰伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "厄运之槌-第三关",
+        "boss": {
+          "name_cn": "海杜斯彭",
+          "name_en": "Hydrospawn",
+          "appearance": "水元素",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "元素",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "水流冲击",
+              "description": "造成伤害并冲走"
+            },
+            {
+              "name_cn": "召唤水元素",
+              "description": "召唤小型水元素"
+            },
+            {
+              "name_cn": "水牢",
+              "description": "困住单个敌人"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "厄运之槌-第四关",
+        "boss": {
+          "name_cn": "利斯坦德里斯",
+          "name_en": "Lethtendris",
+          "appearance": "血精灵女术士",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "虚空箭",
+              "description": "发射虚空箭矢"
+            },
+            {
+              "name_cn": "献祭",
+              "description": "持续火焰伤害"
+            },
+            {
+              "name_cn": "召唤小鬼",
+              "description": "召唤小鬼协助"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "厄运之槌-第五关",
+        "boss": {
+          "name_cn": "奥兹恩",
+          "name_en": "Alzzin the Wildshaper",
+          "appearance": "萨特形态的恶魔",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "其他",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "弱化",
+              "description": "使敌人减速"
+            },
+            {
+              "name_cn": "寒冬",
+              "description": "持续冰霜伤害"
+            },
+            {
+              "name_cn": "荆棘术",
+              "description": "反弹伤害"
+            },
+            {
+              "name_cn": "召唤树人",
+              "description": "召唤树人协助战斗"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "扭木纠缠者",
+        "name_en": "Warpwood Tangler",
+        "appearance": "由扭曲藤蔓构成的人形生物，枝条缠绕如头发",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "植物",
+        "description": "被腐化的扭木守护者",
+        "signature_skill": "藤蔓缠绕：困住敌人"
+      },
+      {
+        "name_cn": "扭木树人",
+        "name_en": "Warpwood Guardian",
+        "appearance": "巨大的树人守护者，树干粗壮",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "植物",
+        "description": "守护东翼的古老树人",
+        "signature_skill": "树枝扫击：用树枝横扫"
+      },
+      {
+        "name_cn": "荒野萨特",
+        "name_en": "Wild Satyr",
+        "appearance": "人形恶魔，下半身是山羊腿",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "被腐化的堕夜精灵萨特",
+        "signature_skill": "恶魔之爪：用利爪撕裂"
+      },
+      {
+        "name_cn": "相位猎手",
+        "name_en": "Phase Hunter",
+        "appearance": "透明虚幻的萨特，能够在相位间穿梭",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "其他",
+        "description": "能够在现实和虚空间切换的猎手",
+        "signature_skill": "相位射击：远程相位攻击"
+      },
+      {
+        "name_cn": "扭曲树人",
+        "name_en": "Twisted Alder",
+        "appearance": "腐化的树人",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "植物",
+        "description": "是",
+        "signature_skill": "是"
+      },
+      {
+        "name_cn": "食人魔战士",
+        "name_en": "Gordok Ogre",
+        "appearance": "普通食人魔战士，身材魁梧",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "戈尔多克部族的普通成员",
+        "signature_skill": "巨棒打击：用巨棒猛击"
+      },
+      {
+        "name_cn": "食人魔萨满",
+        "name_en": "Master Woothes",
+        "appearance": "食人魔萨满",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "戈尔多克部族的萨满领袖",
+        "signature_skill": "治疗波：恢复友方生命值"
+      },
+      {
+        "name_cn": "水元素",
+        "name_en": "Hydrospawn Minion",
+        "appearance": "水元素的小型版本",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "元素",
+        "description": "是",
+        "signature_skill": "是"
+      },
+      {
+        "name_cn": "鬼灵高等精灵",
+        "name_en": "Ghostly Highborne",
+        "appearance": "鬼灵形态的高等精灵,是",
+        "attack_type": "是",
+        "role": "辅助",
+        "creature_type": "亡灵",
+        "description": "是",
+        "signature_skill": "是"
+      }
+    ]
+  },
+  {
+    "name_cn": "斯坦索姆",
+    "name_en": "Stratholme",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "斯坦索姆-第一关",
+        "boss": {
+          "name_cn": "不可宽恕者",
+          "name_en": "The Unforgiven",
+          "appearance": "亡灵战士",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前所有敌人"
+            },
+            {
+              "name_cn": "暗影打击",
+              "description": "造成暗影伤害"
+            },
+            {
+              "name_cn": "亡灵护甲",
+              "description": "受到伤害减免"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "斯坦索姆-第二关",
+        "boss": {
+          "name_cn": "心碎者弗雷斯特恩",
+          "name_en": "Hearthsinger Forresten",
+          "appearance": "亡灵游侠",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "射击",
+              "description": "远程物理攻击"
+            },
+            {
+              "name_cn": "多重射击",
+              "description": "攻击多个目标"
+            },
+            {
+              "name_cn": "逃脱",
+              "description": "快速脱离战斗"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "斯坦索姆-第三关",
+        "boss": {
+          "name_cn": "残忍的蒂米",
+          "name_en": "Timmy the Cruel",
+          "appearance": "疯狂的亡灵小鬼",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "撕咬",
+              "description": "用利爪撕咬"
+            },
+            {
+              "name_cn": "狂暴",
+              "description": "提升攻击速度"
+            },
+            {
+              "name_cn": "恐惧",
+              "description": "使敌人逃跑"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "斯坦索姆-第四关",
+        "boss": {
+          "name_cn": "指挥官马洛尔",
+          "name_en": "Commander Malor",
+          "appearance": "亡灵骑士",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "骑士冲锋",
+              "description": "快速冲向敌人"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前所有敌人"
+            },
+            {
+              "name_cn": "命令",
+              "description": "提升友军攻击力"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "斯坦索姆-第五关",
+        "boss": {
+          "name_cn": "威尔·破望者",
+          "name_en": "Willey Hopebreaker",
+          "appearance": "亡灵军官",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "盾击",
+              "description": "用盾牌击晕"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "战吼",
+              "description": "提升自身攻击力"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 6,
+        "stage_name_cn": "斯坦索姆-第六关",
+        "boss": {
+          "name_cn": "教官加尔福德",
+          "name_en": "Instructor Galford",
+          "appearance": "亡灵法师",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "暗影箭",
+              "description": "发射暗影箭矢"
+            },
+            {
+              "name_cn": "火球术",
+              "description": "发射火球"
+            },
+            {
+              "name_cn": "召唤骷髅",
+              "description": "召唤亡灵仆从"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 7,
+        "stage_name_cn": "斯坦索姆-第七关",
+        "boss": {
+          "name_cn": "巴尔纳扎尔",
+          "name_en": "Balnazzar",
+          "appearance": "恐惧魔王",
+          "attack_type": "远程",
+          "role": "辅助",
+          "creature_type": "亡灵",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "暗影冲击",
+              "description": "造成暗影伤害"
+            },
+            {
+              "name_cn": "精神控制",
+              "description": "控制敌人"
+            },
+            {
+              "name_cn": "恐惧",
+              "description": "使敌人逃跑"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "食尸鬼",
+        "name_en": "Ghoul",
+        "appearance": "腐烂的不死战士，身体残缺不全",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "亡灵天灾的普通士兵",
+        "signature_skill": "爪击：用利爪撕裂"
+      },
+      {
+        "name_cn": "骷髅战士",
+        "name_en": "Skeletal Warrior",
+        "appearance": "泛着幽蓝光芒的骷髅战士，手持长剑和盾",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "亡灵",
+        "description": "被召唤的不死战士",
+        "signature_skill": "顺劈：攻击面前多个敌人"
+      },
+      {
+        "name_cn": "骷髅法师",
+        "name_en": "Skeletal Mage",
+        "appearance": "身披破烂法袍的骷髅法师",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "掌握亡灵魔法的法师",
+        "signature_skill": "暗影箭：发射暗影箭"
+      },
+      {
+        "name_cn": "诅咒信徒",
+        "name_en": "Cult of the Damned",
+        "appearance": "身穿黑袍的人类信徒",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "亡灵",
+        "description": "被阿尔萨斯腐化的信徒",
+        "signature_skill": "暗影治愈：治疗亡灵"
+      },
+      {
+        "name_cn": "憎恶",
+        "name_en": "Abomination",
+        "appearance": "缝合而成的巨大怪物，由多具尸体拼凑而成",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "亡灵",
+        "description": "用尸体缝合的战争机器",
+        "signature_skill": "粉碎：用巨大的拳头粉碎敌人"
+      },
+      {
+        "name_cn": "瘟疫蜘蛛",
+        "name_en": "Plague Spider",
+        "appearance": "体型巨大的瘟疫蜘蛛，全身覆盖病态绿色的绒毛",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "被瘟疫感染的蜘蛛",
+        "signature_skill": "蛛丝喷射：喷射粘性蛛丝"
+      },
+      {
+        "name_cn": "巨型骷髅",
+        "name_en": "Stonespine",
+        "appearance": "巨型骷髅战士，体型是普通骷髅的两倍",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "亡灵",
+        "description": "斯坦索姆的稀有精英守卫",
+        "signature_skill": "巨剑劈砍：强力劈砍"
+      },
+      {
+        "name_cn": "骷髅仆从",
+        "name_en": "Skeletal Servant",
+        "appearance": "普通的骷髅战士",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "亡灵天灾的仆从",
+        "signature_skill": "顺劈斩：攻击面前所有敌人"
+      },
+      {
+        "name_cn": "血色狂热者",
+        "name_en": "Crimson Fanatic",
+        "appearance": "穿着破烂红袍的人类",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "是",
+        "signature_skill": "是"
+      }
+    ]
+  },
+  {
+    "name_cn": "通灵学院",
+    "name_en": "Scholomance",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "通灵学院-第一关",
+        "boss": {
+          "name_cn": "严寒导师",
+          "name_en": "Instructor Chillheart",
+          "appearance": "冰冷的亡灵法师",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "寒冰箭",
+              "description": "发射冰霜箭矢"
+            },
+            {
+              "name_cn": "寒冰新星",
+              "description": "冻结周围敌人"
+            },
+            {
+              "name_cn": "寒冰之墓",
+              "description": "将敌人冻结在冰中"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "通灵学院-第二关",
+        "boss": {
+          "name_cn": "贾迪斯·巴罗夫",
+          "name_en": "Jandice Barov",
+          "appearance": "亡灵女巫",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "奥术飞弹",
+              "description": "发射多枚魔法飞弹"
+            },
+            {
+              "name_cn": "召唤",
+              "description": "召唤亡灵仆从"
+            },
+            {
+              "name_cn": "变形",
+              "description": "变成无害生物"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "通灵学院-第三关",
+        "boss": {
+          "name_cn": "骨鳞",
+          "name_en": "Rattlegore",
+          "appearance": "巨大的骸骨战士",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "粉碎",
+              "description": "用巨大的拳头粉碎敌人"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "骨甲",
+              "description": "提升护甲"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "通灵学院-第四关",
+        "boss": {
+          "name_cn": "莉莉安·沃斯",
+          "name_en": "Lilian Voss",
+          "appearance": "堕落的圣骑士",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "制裁之锤",
+              "description": "造成神圣伤害并眩晕"
+            },
+            {
+              "name_cn": "神圣之火",
+              "description": "造成神圣伤害"
+            },
+            {
+              "name_cn": "命令",
+              "description": "提升友军攻击力"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "通灵学院-第五关",
+        "boss": {
+          "name_cn": "黑暗院长加丁",
+          "name_en": "Darkmaster Gandling",
+          "appearance": "身穿暗黑院长袍的亡灵法师",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "亡灵",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "心灵震爆",
+              "description": "造成暗影伤害并昏迷"
+            },
+            {
+              "name_cn": "暗影箭雨",
+              "description": "范围伤害"
+            },
+            {
+              "name_cn": "死亡缠绕",
+              "description": "偷取生命"
+            },
+            {
+              "name_cn": "召唤学生",
+              "description": "召唤亡灵学生"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "亡灵学生",
+        "name_en": "Scholomance Student",
+        "appearance": "身穿破烂长袍的亡灵法师学徒",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "通灵学院的基础学生",
+        "signature_skill": "暗影箭：发射暗影箭"
+      },
+      {
+        "name_cn": "亡灵导师",
+        "name_en": "Scholomance Adept",
+        "appearance": "身穿完整法袍的亡灵法师",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "通灵学院的进阶学生",
+        "signature_skill": "冰霜箭：发射冰霜箭矢"
+      },
+      {
+        "name_cn": "亡灵召唤师",
+        "name_en": "Dark Summoner",
+        "appearance": "身披深紫色长袍的高级亡灵",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "亡灵",
+        "description": "掌握召唤魔法的亡灵",
+        "signature_skill": "召唤骷髅：从尸体召唤骷髅"
+      },
+      {
+        "name_cn": "亡灵处理师",
+        "name_en": "Scholomance Handler",
+        "appearance": "身披铠甲的亡灵战士",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "亡灵",
+        "description": "管理学院中的亡灵生物",
+        "signature_skill": "盾击：用盾牌击晕"
+      },
+      {
+        "name_cn": "亡灵Necrolyte",
+        "name_en": "Scholomance Necrolyte",
+        "appearance": "亡灵施法者，身体半透明",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "亡灵",
+        "description": "掌握死灵的亡灵法师",
+        "signature_skill": "暗影箭：发射暗影箭"
+      },
+      {
+        "name_cn": "亡灵Necromancer",
+        "name_en": "Scholomance Necromancer",
+        "appearance": "掌握强大亡灵魔法的法师",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "通灵学院的高阶亡灵法师",
+        "signature_skill": "暗影箭雨：对区域降下暗影箭"
+      },
+      {
+        "name_cn": "亡灵Wight",
+        "name_en": "Scholomance Wight",
+        "appearance": "强大的亡灵战士，身披破烂铠甲",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "亡灵",
+        "description": "通灵学院的精英守卫",
+        "signature_skill": "英雄打击：造成额外伤害"
+      },
+      {
+        "name_cn": "亡灵Wraith",
+        "name_en": "Scholomance Wraith",
+        "appearance": "幽灵状态的亡灵，半透明且漂浮",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "亡灵",
+        "description": "通灵学院中游荡的灵魂",
+        "signature_skill": "灵魂吸取：偷取法力值"
+      },
+      {
+        "name_cn": "亡灵暗影法师",
+        "name_en": "Scholomance Dark Adept",
+        "appearance": "亡灵法师的高级版本,是",
+        "attack_type": "是",
+        "role": "输出",
+        "creature_type": "亡灵",
+        "description": "是",
+        "signature_skill": "是"
+      }
+    ]
+  },
+  {
+    "name_cn": "黑石塔下层",
+    "name_en": "Lower Blackrock Spire",
+    "stages": [
+      {
+        "stage_number": 1,
+        "stage_name_cn": "黑石塔下层-第一关",
+        "boss": {
+          "name_cn": "奥莫克将军",
+          "name_en": "Highlord Omokk",
+          "appearance": "黑石兽人首领",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "冲锋",
+              "description": "高速冲向敌人"
+            },
+            {
+              "name_cn": "狂暴",
+              "description": "提升攻击力"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 2,
+        "stage_name_cn": "黑石塔下层-第二关",
+        "boss": {
+          "name_cn": "暗影猎手沃什加金",
+          "name_en": "Shadow Hunter Vosh'gajin",
+          "appearance": "巨魔女暗影猎手",
+          "attack_type": "远程",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "投掷战斧",
+              "description": "远程投掷战斧"
+            },
+            {
+              "name_cn": "毒液涂在武器上",
+              "description": ""
+            },
+            {
+              "name_cn": "治疗",
+              "description": "恢复自身生命值"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 3,
+        "stage_name_cn": "黑石塔下层-第三关",
+        "boss": {
+          "name_cn": "战王沃恩",
+          "name_en": "War Master Voone",
+          "appearance": "兽人头领",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "战吼",
+              "description": "提升自身攻击力"
+            },
+            {
+              "name_cn": "压制",
+              "description": "对目标造成额外伤害"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 4,
+        "stage_name_cn": "黑石塔下层-第四关",
+        "boss": {
+          "name_cn": "阴燃蛛母",
+          "name_en": "Mother Smolderweb",
+          "appearance": "巨大的蜘蛛",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "蛛丝喷射",
+              "description": "喷射粘性蛛丝"
+            },
+            {
+              "name_cn": "毒液叮咬",
+              "description": "造成自然伤害"
+            },
+            {
+              "name_cn": "召唤小蜘蛛",
+              "description": "召唤蜘蛛协助"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 5,
+        "stage_name_cn": "黑石塔下层-第五关",
+        "boss": {
+          "name_cn": "厄运嚎叫者乌罗克",
+          "name_en": "Urok Doomhowl",
+          "appearance": "狂暴的食人魔",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "旋风斩",
+              "description": "快速旋转攻击"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "战吼",
+              "description": "提升攻击力"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 6,
+        "stage_name_cn": "黑石塔下层-第六关",
+        "boss": {
+          "name_cn": "军需官齐格里斯",
+          "name_en": "Quartermaster Zigris",
+          "appearance": "黑铁矮人军需官",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "战斗怒吼",
+              "description": "提升友军攻击力"
+            },
+            {
+              "name_cn": "盾击",
+              "description": "用盾牌击晕"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 7,
+        "stage_name_cn": "黑石塔下层-第七关",
+        "boss": {
+          "name_cn": "哈里肯",
+          "name_en": "Halycon",
+          "appearance": "龙人",
+          "attack_type": "近战",
+          "role": "输出",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "龙剑斩",
+              "description": "用龙族巨剑劈砍"
+            },
+            {
+              "name_cn": "龙息",
+              "description": "喷吐火焰"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 8,
+        "stage_name_cn": "黑石塔下层-第八关",
+        "boss": {
+          "name_cn": "奴隶主吉兹鲁尔",
+          "name_en": "Gizrul the Slavener",
+          "appearance": "龙人",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": false,
+          "skills": [
+            {
+              "name_cn": "龙爪击",
+              "description": "用利爪撕裂"
+            },
+            {
+              "name_cn": "顺劈斩",
+              "description": "攻击面前多个敌人"
+            },
+            {
+              "name_cn": "战吼",
+              "description": "提升附近友军攻击力"
+            }
+          ]
+        }
+      },
+      {
+        "stage_number": 9,
+        "stage_name_cn": "黑石塔下层-第九关",
+        "boss": {
+          "name_cn": "飞龙领主维尔姆萨拉克",
+          "name_en": "Overlord Wyrmthalak",
+          "appearance": "黑龙军团指挥官",
+          "attack_type": "近战",
+          "role": "坦克",
+          "creature_type": "生物",
+          "is_final_boss": true,
+          "skills": [
+            {
+              "name_cn": "龙翼攻击",
+              "description": "范围物理伤害并减速"
+            },
+            {
+              "name_cn": "龙息",
+              "description": "锥形火焰伤害"
+            },
+            {
+              "name_cn": "碾碎",
+              "description": "范围伤害并击晕"
+            },
+            {
+              "name_cn": "召唤龙人",
+              "description": "召唤龙人协助"
+            }
+          ]
+        }
+      }
+    ],
+    "mob_pool": [
+      {
+        "name_cn": "黑石兽人",
+        "name_en": "Blackrock Warrior",
+        "appearance": "皮肤黝黑的兽人战士，身披黑铁护甲",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "黑石氏族的普通战士",
+        "signature_skill": "战斧劈砍：用战斧劈砍"
+      },
+      {
+        "name_cn": "黑石术士",
+        "name_en": "Blackrock Sorcerer",
+        "appearance": "身穿暗红法袍的兽人术士",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "掌握火焰魔法的兽人术士",
+        "signature_skill": "火球术：发射火球"
+      },
+      {
+        "name_cn": "黑石龙人",
+        "name_en": "Blackrock Drakonid",
+        "appearance": "人形龙族战士，鳞片呈深黑色",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "黑龙军团的精英战士",
+        "signature_skill": "龙剑斩：用龙族巨剑劈砍"
+      },
+      {
+        "name_cn": "火焰行者",
+        "name_en": "Flamekin",
+        "appearance": "由火焰构成的元素生物，身体呈橙红色",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "元素",
+        "description": "黑石山中的火焰元素",
+        "signature_skill": "火焰冲击：冲撞敌人造成火焰伤害"
+      },
+      {
+        "name_cn": "熔岩元素",
+        "name_en": "Molten Destroyer",
+        "appearance": "由熔岩构成的大型元素生物",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "元素",
+        "description": "守护黑石塔深处的熔岩元素",
+        "signature_skill": "熔岩碾压：用熔岩身躯压向敌人"
+      },
+      {
+        "name_cn": "暗影猎手",
+        "name_en": "Shadow Hunter",
+        "appearance": "巨魔暗影猎手，佩戴羽毛和骨头装饰",
+        "attack_type": "远程",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "黑石氏族的巨魔盟友",
+        "signature_skill": "投掷战斧：远程投掷战斧"
+      },
+      {
+        "name_cn": "暴掠者",
+        "name_en": "Warbringer",
+        "appearance": "身材魁梧的黑石兽人，手持巨大的双刃战斧",
+        "attack_type": "近战",
+        "role": "输出",
+        "creature_type": "生物",
+        "description": "黑石氏族的精英战士",
+        "signature_skill": "双刃劈砍：强力的双刃战斧攻击"
+      },
+      {
+        "name_cn": "指挥官",
+        "name_en": "Warlord",
+        "appearance": "身披全身黑铁铠甲的指挥官",
+        "attack_type": "近战",
+        "role": "坦克",
+        "creature_type": "生物",
+        "description": "黑石氏族的指挥官",
+        "signature_skill": "战争命令：提升友军攻击力"
+      },
+      {
+        "name_cn": "黑铁矮人技师",
+        "name_en": "Dark Iron Technician",
+        "appearance": "身穿油腻工装的黑铁矮人技师",
+        "attack_type": "远程",
+        "role": "辅助",
+        "creature_type": "生物",
+        "description": "负责维护城市机械的技术人员",
+        "signature_skill": "焊接射线：喷射高温焊接火焰"
+      },
+      {
+        "name_cn": "灼热地狱犬",
+        "name_en": "Hellfire Imp",
+        "appearance": "由火焰构成的小型地狱犬,是",
+        "attack_type": "是",
+        "role": "输出",
+        "creature_type": "元素",
+        "description": "是",
+        "signature_skill": "是"
+      }
+    ]
+  }
+]

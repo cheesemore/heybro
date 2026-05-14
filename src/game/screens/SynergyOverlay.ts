@@ -14,14 +14,16 @@ import {
 } from '../bondCopy';
 import type { AllyClass } from '../types';
 import type { RunState } from '../runState';
+import { drawGoldenSolidPanel, GOLDEN_PANEL_ACCENT, GOLDEN_PANEL_BODY, GOLDEN_PANEL_INSET, GOLDEN_PANEL_INSET_STROKE, GOLDEN_PANEL_MUTED, GOLDEN_PANEL_TITLE } from '../ui/goldenSolidPanel';
+import { PARCHMENT_BTN_TEXT, paintParchmentRoundRect } from '../ui/parchmentButtonFill';
 
-const GOLD = 0xfbbf24;
-const MUTED = 0x64748b;
-const BODY = 0xe2e8f0;
+const GOLD = GOLDEN_PANEL_ACCENT;
+const MUTED = GOLDEN_PANEL_MUTED;
+const BODY = GOLDEN_PANEL_BODY;
 const BOND_RED = 0xf87171;
 const BOND_RED_MUTED = 0x9f1239;
-const TAB_ON = 0x38bdf8;
-const TAB_OFF = 0x94a3b8;
+const TAB_ON = GOLDEN_PANEL_TITLE;
+const TAB_OFF = GOLDEN_PANEL_MUTED;
 
 /** 判定为滚动后，忽略同一次手势内的档位 chip 误触 */
 const SCROLL_SLOP_PX = 12;
@@ -88,13 +90,15 @@ export class SynergyOverlay extends Container {
     const closeW = Math.round(240 * LAYOUT_SCALE);
     const closeTopY = py + ph - closeH - Math.round(22 * LAYOUT_SCALE);
 
-    const panel = new Graphics();
-    panel.roundRect(0, 0, pw, ph, Math.round(20 * LAYOUT_SCALE)).fill(0x111827);
-    panel.stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x334155 });
-    panel.position.set(px, py);
-    panel.eventMode = 'static';
-    panel.on('pointertap', (e) => e.stopPropagation());
-    this.addChild(panel);
+    const panelPlate = new Graphics();
+    const panelFrame = new Graphics();
+    drawGoldenSolidPanel(panelPlate, panelFrame, pw, ph, LAYOUT_SCALE);
+    panelPlate.position.set(px, py);
+    panelFrame.position.set(px, py);
+    panelPlate.eventMode = 'static';
+    panelPlate.on('pointertap', (e) => e.stopPropagation());
+    this.addChild(panelPlate);
+    this.addChild(panelFrame);
 
     const fs = Math.round(24 * LAYOUT_SCALE);
     const fsSmall = Math.round(20 * LAYOUT_SCALE);
@@ -105,7 +109,7 @@ export class SynergyOverlay extends Container {
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(32 * LAYOUT_SCALE),
-        fill: 0xf8fafc,
+        fill: GOLDEN_PANEL_TITLE,
         fontWeight: '700',
       },
     });
@@ -208,14 +212,14 @@ export class SynergyOverlay extends Container {
     const bw = Math.round(120 * LAYOUT_SCALE);
     const bh = Math.round(42 * LAYOUT_SCALE);
     const backG = new Graphics();
-    backG.roundRect(0, 0, bw, bh, Math.round(10 * LAYOUT_SCALE)).fill(0x334155);
+    paintParchmentRoundRect(backG, 0, 0, bw, bh, Math.round(10 * LAYOUT_SCALE), LAYOUT_SCALE, false);
     back.addChild(backG);
     const backT = new Text({
       text: '← 返回',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(20 * LAYOUT_SCALE),
-        fill: 0xf1f5f9,
+        fill: PARCHMENT_BTN_TEXT,
         fontWeight: '600',
       },
     });
@@ -261,9 +265,7 @@ export class SynergyOverlay extends Container {
     this.detailLayer.addChild(this.detailDesc);
 
     const closeG = new Graphics();
-    closeG
-      .roundRect(0, 0, closeW, closeH, Math.round(14 * LAYOUT_SCALE))
-      .fill(0x2563eb);
+    paintParchmentRoundRect(closeG, 0, 0, closeW, closeH, Math.round(14 * LAYOUT_SCALE), LAYOUT_SCALE, false);
     closeG.eventMode = 'static';
     closeG.cursor = 'pointer';
     closeG.position.set(px + (pw - closeW) / 2, closeTopY);
@@ -277,7 +279,7 @@ export class SynergyOverlay extends Container {
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(24 * LAYOUT_SCALE),
-        fill: 0xffffff,
+        fill: PARCHMENT_BTN_TEXT,
         fontWeight: '600',
       },
     });
@@ -339,10 +341,10 @@ export class SynergyOverlay extends Container {
   private paintTabs(tabW: number, tabH: number): void {
     const draw = (g: Graphics, on: boolean) => {
       g.clear();
-      g.roundRect(0, 0, tabW, tabH, Math.round(12 * LAYOUT_SCALE)).fill(on ? 0x1e3a5f : 0x0f172a);
+      g.roundRect(0, 0, tabW, tabH, Math.round(12 * LAYOUT_SCALE)).fill(on ? GOLDEN_PANEL_INSET : 0x3d3328);
       g.stroke({
         width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)),
-        color: on ? 0x38bdf8 : 0x334155,
+        color: on ? GOLDEN_PANEL_ACCENT : GOLDEN_PANEL_INSET_STROKE,
       });
     };
     draw(this.tabBondG, this.tab === 'bond');
@@ -490,10 +492,10 @@ export class SynergyOverlay extends Container {
         const g = new Graphics();
         const fillOn = redTier ? 0x450a0a : 0x422006;
         const strokeOn = redTier ? 0xef4444 : 0xf59e0b;
-        g.roundRect(0, 0, chipW, chipH, Math.round(10 * LAYOUT_SCALE)).fill(active ? fillOn : 0x1e293b);
+        g.roundRect(0, 0, chipW, chipH, Math.round(10 * LAYOUT_SCALE)).fill(active ? fillOn : GOLDEN_PANEL_INSET);
         g.stroke({
           width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)),
-          color: active ? strokeOn : 0x334155,
+          color: active ? strokeOn : GOLDEN_PANEL_INSET_STROKE,
         });
         chip.addChild(g);
         const lab = new Text({

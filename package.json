@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "npm run build:character-prompts && tsc && vite build",
     "build:character-prompts": "node scripts/build-character-manifest.mjs",
+    "gen:wow-book": "node scripts/generate-wow-book-tables.mjs",
+    "gen:wow-famine-md": "python tools/generate_wow_famine_prompt_md.py",
     "enemy:art": "node scripts/enemy-art-pipeline.mjs",
     "enemy:art:grunt": "node scripts/enemy-art-pipeline.mjs --id grunt",
     "enemy:art:all": "node scripts/enemy-art-pipeline.mjs --all",

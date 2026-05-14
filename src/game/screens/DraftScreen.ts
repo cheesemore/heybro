@@ -19,9 +19,18 @@ import { ALLY_DEFS } from '../unitDefs';
 import type { AllyClass, RoundMeta } from '../types';
 import type { RunState } from '../runState';
 import { createDraftAllyToken, createDraftHeroToken } from '../unitCircleTokens';
+import { mountStretchedDungeonBackground } from '../dungeonBackground';
+import { dungeonIdForBookChapter } from '../wowBookData';
 import { getDeployedHeroIds, maxHeroDeploySlots } from '../heroMetaStorage';
 import { getHeroDef } from '../heroRegistry';
 import { SynergyOverlay } from './SynergyOverlay';
+import {
+  drawGoldenSolidPanel,
+  GOLDEN_PANEL_BODY,
+  GOLDEN_PANEL_TITLE,
+} from '../ui/goldenSolidPanel';
+import { PARCHMENT_BTN_TEXT, drawParchmentCardTopBottomRules, paintParchmentRoundRect } from '../ui/parchmentButtonFill';
+import { spawnFloatingGameTip } from '../ui/floatingGameTip';
 
 const PAD_X = Math.round(20 * LAYOUT_SCALE);
 /** 选牌页右侧英雄竖条宽度（与九宫格并排） */
@@ -35,9 +44,26 @@ const TRIO_CARD_H = Math.round(278 * LAYOUT_SCALE);
 const TRIO_TOP = Math.round(268 * LAYOUT_SCALE);
 /** 三选一与备战之间的长说明区 */
 const DETAIL_RULE_Y = TRIO_TOP + TRIO_CARD_H + Math.round(16 * LAYOUT_SCALE);
-/** 九宫格左上角 Y */
-const BOARD_GRID_TOP = DETAIL_RULE_Y + Math.round(124 * LAYOUT_SCALE);
+/** 三选一与备战区之间的「定价细则」按钮高度 */
+const PRICING_RULE_BTN_H = Math.round(44 * LAYOUT_SCALE);
+const PRICING_RULE_BTN_W = Math.round(176 * LAYOUT_SCALE);
+/** 九宫格左上角 Y（细则改为单行按钮后可上移） */
+const BOARD_GRID_TOP = DETAIL_RULE_Y + PRICING_RULE_BTN_H + Math.round(18 * LAYOUT_SCALE);
 const CARD_GAP = Math.round(18 * LAYOUT_SCALE);
+
+/** 定价细则弹层正文（不含标题） */
+const PRICING_RULE_DETAIL_BODY = [
+  `之后每次选牌基础 ${ROGUE_PICK_AFTER_FIRST_COST} 金/张（有折扣的兵种更低）。`,
+  `棋盘上该兵种总层数 >10 时本张价格 ×2，>20 再 ×2；若当前三张里某兵种总层数 >20，刷新三选一（基础 ${ROGUE_REFRESH_TRIO_COST} 金）价格也 ×2。`,
+  `卡面与按钮均为实价。`,
+  '',
+  '备战九宫：兵种与神器各占一格、不可重叠；点按有内容的格并拖到另一格，可与另一格整体交换（含神器，影响战斗内加成位置）。',
+].join('\n');
+
+/** 备战九宫头像格：深灰实底 + 未选灰边；拖拽源格用金边（饥荒选人配色，无花纹） */
+const BOARD_AVATAR_CELL_FILL = 0x141414;
+const BOARD_AVATAR_STROKE_MUTED = 0x6b6b6b;
+const BOARD_AVATAR_STROKE_GOLD = 0xeab308;
 
 function artifactMark(k: ArtifactKind): string {
   switch (k) {
@@ -106,8 +132,13 @@ export class DraftScreen extends Container {
   private bondBtnRoot: Container | null = null;
   /** 上一帧各职业棋盘层数，用于检测羁绊档位上升 */
   private prevBondStacks: Record<AllyClass, number> | null = null;
+  /** 拖拽交换兵种时盖在源格上的金边（避免 drawBoard 整表重绘打断按下） */
+  private readonly boardDragOutline = new Graphics();
+  /** 定价细则全屏说明层 */
+  private pricingDetailLayer: Container | null = null;
 
   private readonly onDocPointerUp = (ev: PointerEvent): void => {
+    this.clearBoardDragOutline();
     const j = this.hitSlotFromClient(ev.clientX, ev.clientY);
     if (this.dragMode === 'slot' && this.dragFromSlot !== null && j !== null && j !== this.dragFromSlot) {
       const i = this.dragFromSlot;
@@ -127,6 +158,7 @@ export class DraftScreen extends Container {
 
   constructor(app: Application, run: RunState, onFinished: () => void) {
     super();
+    this.sortableChildren = true;
     this.app = app;
     this.run = run;
     this.onFinished = onFinished;
@@ -150,9 +182,7 @@ export class DraftScreen extends Container {
       }
     }
 
-    const deepBg = new Graphics();
-    deepBg.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(0x030712);
-    this.addChild(deepBg);
+    mountStretchedDungeonBackground(this, dungeonIdForBookChapter(this.run.bookChapterId), { dimAlpha: 0.38 });
 
     const stars = new Graphics();
     for (let i = 0; i < 56; i++) {
@@ -193,17 +223,18 @@ export class DraftScreen extends Container {
     bondBtn.cursor = 'pointer';
     bondBtn.position.set(GAME_WIDTH - PAD_X - bondW, HEADER_Y);
     const bondBg = new Graphics();
+    bondBtn.zIndex = 40;
     bondBg
       .roundRect(0, 0, bondW, bondH, Math.round(12 * LAYOUT_SCALE))
-      .fill(0x1e3a5f)
-      .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x38bdf8 });
+      .fill(0x5c4a38)
+      .stroke({ width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)), color: 0x302113, alpha: 0.9 });
     bondBtn.addChild(bondBg);
     const bondLab = new Text({
       text: '羁绊 / 策略',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(20 * LAYOUT_SCALE),
-        fill: 0xe0f2fe,
+        fill: GOLDEN_PANEL_BODY,
         fontWeight: '600',
       },
     });
@@ -212,6 +243,7 @@ export class DraftScreen extends Container {
     bondBtn.addChild(bondLab);
     bondBtn.on('pointertap', (e) => {
       e.stopPropagation();
+      this.closePricingRuleDetail();
       const ov = new SynergyOverlay(this.run, () => {
         this.removeChild(ov);
         ov.destroy({ children: true });
@@ -263,20 +295,31 @@ export class DraftScreen extends Container {
     this.pickHint.position.set(PAD_X, TRIO_TOP - Math.round(48 * LAYOUT_SCALE));
     this.addChild(this.pickHint);
 
-    const detailRule = new Text({
-      text: `定价细则：之后每次选牌基础 ${ROGUE_PICK_AFTER_FIRST_COST} 金/张（有折扣的兵种更低）。棋盘上该兵种总层数 >10 时本张价格 ×2，>20 再 ×2；若当前三张里某兵种总层数 >20，刷新三选一（基础 ${ROGUE_REFRESH_TRIO_COST} 金）价格也 ×2。卡面与按钮均为实价。\n备战九宫：兵种与神器各占一格、不可重叠；点按有内容的格并拖到另一格，可与另一格整体交换（含神器，影响战斗内加成位置）。`,
+    const pricingBtnWrap = new Container();
+    pricingBtnWrap.position.set(PAD_X, DETAIL_RULE_Y);
+    pricingBtnWrap.zIndex = 35;
+    pricingBtnWrap.eventMode = 'static';
+    pricingBtnWrap.cursor = 'pointer';
+    const pricingBtnG = new Graphics();
+    paintParchmentRoundRect(pricingBtnG, 0, 0, PRICING_RULE_BTN_W, PRICING_RULE_BTN_H, Math.round(12 * LAYOUT_SCALE), LAYOUT_SCALE, false);
+    pricingBtnWrap.addChild(pricingBtnG);
+    const pricingBtnT = new Text({
+      text: '定价细则',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(18 * LAYOUT_SCALE),
-        fill: 0x94a3b8,
-        lineHeight: Math.round(26 * LAYOUT_SCALE),
-        wordWrap: true,
-        wordWrapWidth: wrapW,
-        breakWords: true,
+        fontSize: Math.round(19 * LAYOUT_SCALE),
+        fill: PARCHMENT_BTN_TEXT,
+        fontWeight: '700',
       },
     });
-    detailRule.position.set(PAD_X, DETAIL_RULE_Y);
-    this.addChild(detailRule);
+    pricingBtnT.anchor.set(0.5);
+    pricingBtnT.position.set(PRICING_RULE_BTN_W / 2, PRICING_RULE_BTN_H / 2);
+    pricingBtnWrap.addChild(pricingBtnT);
+    pricingBtnWrap.on('pointertap', (e) => {
+      e.stopPropagation();
+      this.openPricingRuleDetail();
+    });
+    this.addChild(pricingBtnWrap);
 
     const boardBandH = Math.round(400 * LAYOUT_SCALE);
     const boardBandY = BOARD_GRID_TOP - Math.round(14 * LAYOUT_SCALE);
@@ -306,10 +349,15 @@ export class DraftScreen extends Container {
     this.drawTrio();
     this.drawBoard();
     this.drawControls();
+
+    this.boardDragOutline.eventMode = 'none';
+    this.boardDragOutline.visible = false;
+    this.addChild(this.boardDragOutline);
   }
 
   override destroy(): void {
     document.removeEventListener('pointerup', this.onDocPointerUp);
+    this.closePricingRuleDetail();
     super.destroy({ children: true });
   }
 
@@ -339,6 +387,111 @@ export class DraftScreen extends Container {
       return;
     }
     this.tip.position.y = row1Y - tipGap - this.tip.height;
+  }
+
+  private closePricingRuleDetail(): void {
+    if (!this.pricingDetailLayer) return;
+    this.removeChild(this.pricingDetailLayer);
+    this.pricingDetailLayer.destroy({ children: true });
+    this.pricingDetailLayer = null;
+  }
+
+  /** 定价细则：全屏遮罩 + 深金面板 + 关闭 */
+  private openPricingRuleDetail(): void {
+    this.closePricingRuleDetail();
+    const layer = new Container();
+    layer.zIndex = 9000;
+    layer.eventMode = 'static';
+    layer.hitArea = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    this.pricingDetailLayer = layer;
+
+    const dim = new Graphics();
+    dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x020617, alpha: 0.82 });
+    dim.eventMode = 'static';
+    dim.on('pointertap', () => this.closePricingRuleDetail());
+    layer.addChild(dim);
+
+    const panelW = Math.min(GAME_WIDTH - Math.round(40 * LAYOUT_SCALE), Math.round(920 * LAYOUT_SCALE));
+    const innerPad = Math.round(22 * LAYOUT_SCALE);
+    const closeH = Math.round(50 * LAYOUT_SCALE);
+    const closeW = Math.round(200 * LAYOUT_SCALE);
+    const titleFs = Math.round(28 * LAYOUT_SCALE);
+    const bodyFs = Math.round(18 * LAYOUT_SCALE);
+    const lh = Math.round(26 * LAYOUT_SCALE);
+
+    const body = new Text({
+      text: PRICING_RULE_DETAIL_BODY,
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: bodyFs,
+        fill: GOLDEN_PANEL_BODY,
+        lineHeight: lh,
+        wordWrap: true,
+        wordWrapWidth: panelW - innerPad * 2,
+        breakWords: true,
+      },
+    });
+
+    const titleH = Math.round(40 * LAYOUT_SCALE);
+    const panelH = Math.min(
+      Math.round(GAME_HEIGHT * 0.82),
+      innerPad + titleH + Math.round(12 * LAYOUT_SCALE) + body.height + Math.round(20 * LAYOUT_SCALE) + closeH + innerPad,
+    );
+    const px = (GAME_WIDTH - panelW) / 2;
+    const py = (GAME_HEIGHT - panelH) / 2;
+
+    const plate = new Graphics();
+    const frame = new Graphics();
+    drawGoldenSolidPanel(plate, frame, panelW, panelH, LAYOUT_SCALE);
+    plate.position.set(px, py);
+    frame.position.set(px, py);
+    plate.eventMode = 'static';
+    plate.on('pointertap', (e) => e.stopPropagation());
+    layer.addChild(plate);
+    layer.addChild(frame);
+
+    const h1 = new Text({
+      text: '定价细则',
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: titleFs,
+        fill: GOLDEN_PANEL_TITLE,
+        fontWeight: '800',
+      },
+    });
+    h1.position.set(px + innerPad, py + innerPad);
+    layer.addChild(h1);
+
+    body.position.set(px + innerPad, py + innerPad + titleH + Math.round(8 * LAYOUT_SCALE));
+    layer.addChild(body);
+
+    const closeX = px + (panelW - closeW) / 2;
+    const closeY = py + panelH - innerPad - closeH;
+    const closeG = new Graphics();
+    const closeR = Math.round(12 * LAYOUT_SCALE);
+    paintParchmentRoundRect(closeG, 0, 0, closeW, closeH, closeR, LAYOUT_SCALE, false);
+    closeG.eventMode = 'static';
+    closeG.cursor = 'pointer';
+    closeG.position.set(closeX, closeY);
+    closeG.on('pointertap', (e) => {
+      e.stopPropagation();
+      this.closePricingRuleDetail();
+    });
+    layer.addChild(closeG);
+    const closeT = new Text({
+      text: '关 闭',
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.round(20 * LAYOUT_SCALE),
+        fill: PARCHMENT_BTN_TEXT,
+        fontWeight: '700',
+      },
+    });
+    closeT.anchor.set(0.5);
+    closeT.position.set(closeX + closeW / 2, closeY + closeH / 2);
+    layer.addChild(closeT);
+
+    this.addChild(layer);
   }
 
   private boardGridMetrics(): { originX: number; originY: number; cell: number; gap: number; gridW: number } {
@@ -409,11 +562,12 @@ export class DraftScreen extends Container {
       card.cursor = 'pointer';
       card.hitArea = new Rectangle(0, 0, cardW, cardH);
 
-      const bg = new Graphics();
-      bg.roundRect(0, 0, cardW, cardH, Math.round(18 * LAYOUT_SCALE))
-        .fill(0x111827)
-        .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x475569, alpha: 0.9 });
-      card.addChild(bg);
+      const cardR = Math.round(18 * LAYOUT_SCALE);
+      const plate = new Graphics();
+      const rules = new Graphics();
+      drawParchmentCardTopBottomRules(plate, rules, cardW, cardH, cardR, LAYOUT_SCALE, false);
+      card.addChild(plate);
+      card.addChild(rules);
 
       const goldCost = roguePickGoldCost(this.run, kind, this.picksThisRound);
       const priceLab = new Text({
@@ -421,7 +575,7 @@ export class DraftScreen extends Container {
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           fontSize: Math.round(19 * LAYOUT_SCALE),
-          fill: goldCost === 0 ? 0x86efac : 0xfbbf24,
+          fill: goldCost === 0 ? 0x166534 : 0xa16207,
           fontWeight: '700',
         },
       });
@@ -440,7 +594,7 @@ export class DraftScreen extends Container {
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           fontSize: Math.round(17 * LAYOUT_SCALE),
-          fill: 0xcbd5e1,
+          fill: PARCHMENT_BTN_TEXT,
           align: 'center',
           lineHeight: Math.round(22 * LAYOUT_SCALE),
           fontWeight: '600',
@@ -464,8 +618,7 @@ export class DraftScreen extends Container {
     const kind = this.choices[index]!;
     const cost = roguePickGoldCost(this.run, kind, this.picksThisRound);
     if (cost > 0 && this.run.gold < cost) {
-      this.tip.text = `金币不足，需要 ${cost} 金才能选这张牌。`;
-      this.positionTipAboveRow1(this.controlRowYs().row1Y);
+      spawnFloatingGameTip(this, `金币不足，需要 ${cost} 金才能选这张牌。`);
       return;
     }
     const slot = applyPick(this.run.board, this.run.artifactBySlot, kind);
@@ -528,7 +681,31 @@ export class DraftScreen extends Container {
     document.removeEventListener('pointerup', this.onDocPointerUp);
     this.dragMode = 'slot';
     this.dragFromSlot = slotIndex;
+    this.paintBoardDragOutline();
     document.addEventListener('pointerup', this.onDocPointerUp, { once: true });
+  }
+
+  private clearBoardDragOutline(): void {
+    this.boardDragOutline.clear();
+    this.boardDragOutline.visible = false;
+  }
+
+  /** 源格金边（与未选灰边对照，几何仍为圆角矩形） */
+  private paintBoardDragOutline(): void {
+    if (this.dragMode !== 'slot' || this.dragFromSlot === null) {
+      this.clearBoardDragOutline();
+      return;
+    }
+    const b = this.boardSlotRect(this.dragFromSlot);
+    const rr = Math.round(14 * LAYOUT_SCALE);
+    const sw = Math.max(3, Math.round(3 * LAYOUT_SCALE));
+    this.boardDragOutline.clear();
+    this.boardDragOutline
+      .roundRect(0, 0, b.w, b.h, rr)
+      .stroke({ width: sw, color: BOARD_AVATAR_STROKE_GOLD, alpha: 1, join: 'round', cap: 'round' });
+    this.boardDragOutline.position.set(b.x, b.y);
+    this.boardDragOutline.visible = true;
+    this.addChild(this.boardDragOutline);
   }
 
   /** 羁绊档位提升时：格缘一次性高亮 */
@@ -602,9 +779,10 @@ export class DraftScreen extends Container {
       wrap.eventMode = 'static';
       wrap.cursor = this.run.board[i] || this.run.artifactBySlot[i] ? 'grab' : 'default';
       const g = new Graphics();
-      g.roundRect(0, 0, b.w, b.h, Math.round(14 * LAYOUT_SCALE))
-        .fill(0x0f172a)
-        .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x334155 });
+      const rr = Math.round(14 * LAYOUT_SCALE);
+      g.roundRect(0, 0, b.w, b.h, rr)
+        .fill(BOARD_AVATAR_CELL_FILL)
+        .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: BOARD_AVATAR_STROKE_MUTED });
       wrap.addChild(g);
       const art = this.run.artifactBySlot[i];
       const slot = this.run.board[i];
@@ -612,8 +790,8 @@ export class DraftScreen extends Container {
         const artBg = new Graphics();
         artBg
           .roundRect(b.w * 0.12, b.h * 0.12, b.w * 0.76, b.h * 0.52, Math.round(12 * LAYOUT_SCALE))
-          .fill({ color: 0x312e81, alpha: 0.92 })
-          .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0xa5b4fc });
+          .fill({ color: 0x1c1c1c, alpha: 1 })
+          .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: BOARD_AVATAR_STROKE_MUTED });
         wrap.addChild(artBg);
         const am = new Text({
           text: artifactMark(art),
@@ -648,7 +826,7 @@ export class DraftScreen extends Container {
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           fontSize: slot || art ? Math.round(15 * LAYOUT_SCALE) : Math.round(19 * LAYOUT_SCALE),
-          fill: slot ? bondNameFill(bondTotal) : art ? 0xc7d2fe : 0x475569,
+          fill: slot ? bondNameFill(bondTotal) : art ? 0xd4d4d4 : 0x9ca3af,
           align: 'center',
           lineHeight: Math.round(20 * LAYOUT_SCALE),
           fontWeight: slot || art ? '600' : '400',
@@ -667,6 +845,11 @@ export class DraftScreen extends Container {
       this.addChild(wrap);
     }
     this.drawHeroRail();
+    if (this.dragMode === 'slot' && this.dragFromSlot !== null) {
+      this.paintBoardDragOutline();
+    } else {
+      this.clearBoardDragOutline();
+    }
     if (bondFlash) this.flashBondButton();
   }
 
@@ -684,8 +867,8 @@ export class DraftScreen extends Container {
       (wrap as Container & { userData?: string }).userData = 'hero-rail';
       const g = new Graphics();
       g.roundRect(0, 0, HERO_RAIL_W, slotH, Math.round(12 * LAYOUT_SCALE))
-        .fill(0x0f172a)
-        .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x4c1d95 });
+        .fill(BOARD_AVATAR_CELL_FILL)
+        .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: BOARD_AVATAR_STROKE_MUTED });
       wrap.addChild(g);
       const hid = dep[s];
       if (hid) {
@@ -737,20 +920,46 @@ export class DraftScreen extends Container {
       if ((c as { userData?: string }).userData === 'ctrl') c.destroy();
     }
     const { row1Y, row2Y, btnH } = this.controlRowYs();
-    const mkBtn = (label: string, x: number, y: number, w: number, enabled: boolean, fn: () => void): void => {
+    type BtnKind = 'primary' | 'refresh';
+    const mkBtn = (
+      label: string,
+      x: number,
+      y: number,
+      w: number,
+      enabled: boolean,
+      kind: BtnKind,
+      fn: () => void,
+      onDisabledTap?: () => void,
+    ): void => {
       const g = new Graphics();
-      g.roundRect(0, 0, w, btnH, Math.round(14 * LAYOUT_SCALE)).fill(enabled ? 0x1d4ed8 : 0x334155);
-      g.eventMode = enabled ? 'static' : 'passive';
-      g.cursor = enabled ? 'pointer' : 'default';
+      const rr = Math.round(14 * LAYOUT_SCALE);
+      let fill: number;
+      let textFill: number;
+      if (kind === 'refresh') {
+        fill = enabled ? 0xfef08a : 0x57534e;
+        textFill = enabled ? 0x422006 : 0xe7e5e4;
+      } else {
+        fill = 0x5c4a38;
+        textFill = 0xf2e6d9;
+      }
+      g.roundRect(0, 0, w, btnH, rr).fill(fill);
+      g.stroke({
+        width: Math.max(2, Math.round(2 * LAYOUT_SCALE)),
+        color: kind === 'refresh' && enabled ? 0xb45309 : 0x302113,
+        alpha: enabled ? 0.75 : 0.45,
+      });
+      g.eventMode = 'static';
+      g.cursor = enabled || onDisabledTap ? 'pointer' : 'default';
       g.position.set(x, y);
       (g as Container & { userData?: string }).userData = 'ctrl';
       if (enabled) g.on('pointertap', fn);
+      else if (onDisabledTap) g.on('pointertap', onDisabledTap);
       const t = new Text({
         text: label,
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           fontSize: Math.round(18 * LAYOUT_SCALE),
-          fill: 0xffffff,
+          fill: textFill,
           fontWeight: '600',
           lineHeight: Math.round(24 * LAYOUT_SCALE),
           wordWrap: true,
@@ -774,6 +983,7 @@ export class DraftScreen extends Container {
       row1Y,
       btnW,
       this.run.gold >= refreshCost,
+      'refresh',
       () => {
         if (this.run.gold < refreshCost) return;
         this.run.gold -= refreshCost;
@@ -782,9 +992,14 @@ export class DraftScreen extends Container {
         this.drawTrio();
         this.drawControls();
       },
+      this.run.gold >= refreshCost
+        ? undefined
+        : () => {
+            spawnFloatingGameTip(this, `金币不足，刷新需要 ${refreshCost} 金。`);
+          },
     );
 
-    mkBtn('结束选牌并继续', PAD_X, row2Y, btnW, true, () => this.tryFinish());
+    mkBtn('结束选牌并继续', PAD_X, row2Y, btnW, true, 'primary', () => this.tryFinish());
 
     this.positionTipAboveRow1(row1Y);
   }

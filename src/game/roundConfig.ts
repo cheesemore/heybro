@@ -40,6 +40,8 @@ export function bossDisplayName(id: BossId): string {
       return '牛头人酋长';
     case 'blademaster':
       return '剑圣';
+    case 'white':
+      return '白板首领';
     default:
       return id;
   }

@@ -1,13 +1,17 @@
 /**
  * 数值配置来源：`src/game/config/` 下 JSON。
+ *
+ * 敌方小怪与 `grunt` 对齐的配表口径见 `constants.ts` 中 `ENEMY_CLASSES` 注释：
+ * `baseMaxHp × baseAtk ÷ attackInterval`（`attackInterval` ← `wowBookMonsters.json` 的 `attackSpeed`，单位秒/次）。
  */
 import { ALLY_CLASSES, ENEMY_CLASSES, GLOBAL_UNIT_ATK_MULT } from './constants';
 import { RANGED_ATTACK_RANGE_THRESHOLD } from './battleBonds';
 import alliesJson from './config/allies.json';
 import bossesJson from './config/bosses.json';
-import enemiesJson from './config/enemies.json';
+import wowBookMonstersDoc from './config/wowBookMonsters.json';
 import scalingJson from './config/scaling.json';
 import type { AllyClass, BossId, EnemyClass } from './types';
+import { getSkillById } from './skillsCatalog';
 
 export type AllyDef = {
   /** 战场碰撞/代币半径用的设计像素（逻辑宽度基准 720），再乘 `LAYOUT_SCALE` */
@@ -25,16 +29,19 @@ export type EnemyDef = {
   name: string;
   baseMaxHp: number;
   baseAtk: number;
+  /** 攻击间隔（秒/次）；战场内写入 `SimUnit.attackInterval`。配表锚点见 `constants.ts` 中 `ENEMY_CLASSES`（`baseMaxHp×baseAtk÷本字段`）。 */
   attackSpeed: number;
   range: number;
   moveSpeed: number;
+  /** 挂载的战斗技能 id，见 `config/skills.json` */
+  skillIds: string[];
 };
 
 export type BossDef = EnemyDef & {
-  skills: string[];
+  skillIds: string[];
 };
 
-const BOSS_IDS: BossId[] = ['farseer', 'tauren', 'blademaster'];
+const BOSS_IDS: BossId[] = ['farseer', 'tauren', 'blademaster', 'white'];
 
 function assertRecord<K extends string, V>(
   label: string,
@@ -82,9 +89,9 @@ function isEnemyDef(v: unknown): v is EnemyDef {
 }
 
 function isBossDef(v: unknown): v is BossDef {
-  if (!isEnemyDef(v) || !('skills' in v)) return false;
-  const skills = (v as BossDef).skills;
-  return Array.isArray(skills) && skills.every((s) => typeof s === 'string');
+  if (!isEnemyDef(v) || !('skillIds' in v)) return false;
+  const ids = (v as BossDef).skillIds;
+  return Array.isArray(ids) && ids.every((s) => typeof s === 'string');
 }
 
 export const ALLY_DEFS: Record<AllyClass, AllyDef> = assertRecord(
@@ -94,12 +101,55 @@ export const ALLY_DEFS: Record<AllyClass, AllyDef> = assertRecord(
   isAllyDef,
 );
 
-export const ENEMY_DEFS: Record<EnemyClass, EnemyDef> = assertRecord(
-  'enemies.json',
-  enemiesJson as Record<string, unknown>,
-  ENEMY_CLASSES,
-  isEnemyDef,
-);
+type WowMonsterRow = {
+  id: string;
+  nameCn: string;
+  hitRadius: number;
+  baseMaxHp: number;
+  baseAtk: number;
+  attackSpeed: number;
+  range: number;
+  moveSpeed: number;
+  skillIds?: string[];
+};
+
+function wowMonsterRowToEnemyDef(row: WowMonsterRow): EnemyDef {
+  return {
+    hitRadius: row.hitRadius,
+    name: row.nameCn,
+    baseMaxHp: row.baseMaxHp,
+    baseAtk: row.baseAtk,
+    attackSpeed: row.attackSpeed,
+    range: row.range,
+    moveSpeed: row.moveSpeed,
+    skillIds: Array.isArray(row.skillIds) ? [...row.skillIds] : [],
+  };
+}
+
+function buildEnemyDefsFromWowBook(): Record<EnemyClass, EnemyDef> {
+  const rows = (wowBookMonstersDoc as { monsters: WowMonsterRow[] }).monsters;
+  const out = {} as Record<EnemyClass, EnemyDef>;
+  for (const k of ENEMY_CLASSES) {
+    const row = rows.find((m) => m.id === k);
+    if (!row) {
+      throw new Error(
+        `[wowBookMonsters.json] 缺少 id="${k}" 的条目（须与 ENEMY_CLASSES 一致，可运行 npm run gen:wow-book 生成含 legacy 的表）`,
+      );
+    }
+    out[k] = wowMonsterRowToEnemyDef(row);
+  }
+  return out;
+}
+
+export const ENEMY_DEFS: Record<EnemyClass, EnemyDef> = buildEnemyDefsFromWowBook();
+
+for (const k of ENEMY_CLASSES) {
+  for (const sid of ENEMY_DEFS[k].skillIds) {
+    if (!getSkillById(sid)) {
+      throw new Error(`[wowBookMonsters / ${k}] 未知 skillId: ${sid}（须在 config/skills.json 登记）`);
+    }
+  }
+}
 
 export const BOSS_DEFS: Record<BossId, BossDef> = assertRecord(
   'bosses.json',
@@ -107,6 +157,14 @@ export const BOSS_DEFS: Record<BossId, BossDef> = assertRecord(
   BOSS_IDS,
   isBossDef,
 );
+
+for (const id of BOSS_IDS) {
+  for (const sid of BOSS_DEFS[id].skillIds) {
+    if (!getSkillById(sid)) {
+      throw new Error(`[bosses.json / ${id}] 未知 skillId: ${sid}（须在 config/skills.json 登记）`);
+    }
+  }
+}
 
 {
   const m = GLOBAL_UNIT_ATK_MULT;
@@ -139,6 +197,18 @@ const MELEE_BASE_ATK_BONUS = 1.2;
       d.baseAtk = Math.max(1, Math.round(d.baseAtk * MELEE_BASE_ATK_BONUS));
     }
   }
+}
+
+/**
+ * 将「表底攻击力」转为与 `ENEMY_DEFS` 一致的战场基准：先乘 `GLOBAL_UNIT_ATK_MULT`，近战再乘 `MELEE_BASE_ATK_BONUS`。
+ * 用于 `wowBookMonsters` 等未在加载阶段写入 `ENEMY_DEFS` 的怪。
+ */
+export function enemyCombatBaseAtkFromTable(baseAtkRaw: number, range: number): number {
+  let a = Math.max(1, Math.round(baseAtkRaw * GLOBAL_UNIT_ATK_MULT));
+  if (range < RANGED_ATTACK_RANGE_THRESHOLD) {
+    a = Math.max(1, Math.round(a * MELEE_BASE_ATK_BONUS));
+  }
+  return a;
 }
 
 type ChapterMult = { hp: number; atk: number };

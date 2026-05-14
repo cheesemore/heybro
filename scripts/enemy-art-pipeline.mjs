@@ -28,8 +28,10 @@ function loadJson(rel) {
 }
 
 function displayNameForPaint(paintId) {
-  const enemies = loadJson('enemies.json');
-  if (enemies[paintId]?.name) return enemies[paintId].name;
+  const doc = loadJson('wowBookMonsters.json');
+  const rows = doc.monsters ?? [];
+  const row = rows.find((m) => m.id === paintId);
+  if (row?.nameCn) return row.nameCn;
   const bosses = loadJson('bosses.json');
   for (const [bj, paint] of Object.entries(BOSS_JSON_TO_PAINT)) {
     if (paint === paintId && bosses[bj]?.name) return bosses[bj].name;

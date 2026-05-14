@@ -1,9 +1,27 @@
-import { Application, Container, Graphics, Rectangle, Text } from 'pixi.js';
+import { Application, Assets, Container, Graphics, Rectangle, Sprite, Text, type Texture } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { COVER_VERSION_LABEL } from '../version';
 
+function titleCoverAssetUrl(): string {
+  const base = import.meta.env.BASE_URL;
+  const rel = 'assets/title-cover.png';
+  if (!base || base === '/') return `/${rel}`;
+  return `${base}${rel}`.replace(/\/{2,}/g, '/');
+}
+
+/** 等比缩放铺满逻辑画布（类似 object-fit: cover），避免非等比拉伸。 */
+function layoutCoverSprite(sprite: Sprite, boxW: number, boxH: number): void {
+  const tw = sprite.texture.width;
+  const th = sprite.texture.height;
+  if (tw < 1 || th < 1) return;
+  const sc = Math.max(boxW / tw, boxH / th);
+  sprite.scale.set(sc);
+  sprite.anchor.set(0.5);
+  sprite.position.set(boxW * 0.5, boxH * 0.5);
+}
+
 /**
- * 启动封面（登录/欢迎页）：How Many Dudes 式人群 + HeyBro，点击后进入主流程。
+ * 启动封面：全屏 KV（`public/assets/title-cover.png`）+ 底部一句点击提示与左上角版本号；点击后进入主流程。
  * 子节点 eventMode=none + 顶层透明点击层，避免命中被挡；见 main 须在 init 后再挂 GameRoot。
  */
 export class TitleScreen extends Container {
@@ -15,89 +33,31 @@ export class TitleScreen extends Container {
     super();
     this.app = app;
 
-    const bg = new Graphics();
-    bg.eventMode = 'none';
-    bg.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(0x120a1e);
-    for (let y = 0; y < GAME_HEIGHT; y += 6) {
-      const t = y / GAME_HEIGHT;
-      const c = Math.round(18 + t * 40);
-      const r = Math.round(30 + t * 50);
-      const b = Math.round(80 + t * 70);
-      bg.rect(0, y, GAME_WIDTH, 6).fill({ color: (c << 16) | (r << 8) | b, alpha: 1 });
-    }
-    this.addChild(bg);
+    const coverRoot = new Container();
+    coverRoot.eventMode = 'none';
+    this.addChild(coverRoot);
 
-    const crowd = new Graphics();
-    crowd.eventMode = 'none';
-    const palette = [
-      0xf97316, 0x22d3ee, 0xf472b6, 0xa3e635, 0xfbbf24, 0xc084fc, 0x38bdf8, 0xfb7185,
-    ];
-    let rng = 0x5f3759df >>> 0;
-    const rnd = (): number => {
-      rng = (rng * 1664525 + 1013904223) >>> 0;
-      return rng / 0xffffffff;
-    };
-    const n = 140;
-    for (let i = 0; i < n; i++) {
-      const x = rnd() * (GAME_WIDTH + 40) - 20;
-      const y = rnd() * (GAME_HEIGHT * 0.68) + GAME_HEIGHT * 0.18;
-      const sc = (0.38 + rnd() * 0.5) * LAYOUT_SCALE;
-      const bodyW = 24 * sc;
-      const bodyH = 30 * sc;
-      const headR = 15 * sc;
-      const col = palette[(i * 7) % palette.length]!;
-      crowd.roundRect(x - bodyW * 0.5, y, bodyW, bodyH, 9 * sc).fill({ color: col, alpha: 0.9 });
-      crowd.circle(x, y - headR * 0.15, headR).fill({ color: 0xfffbeb, alpha: 0.96 });
-      crowd.circle(x - headR * 0.32, y - headR * 0.42, 3.2 * sc).fill(0x1e293b);
-      crowd.circle(x + headR * 0.32, y - headR * 0.42, 3.2 * sc).fill(0x1e293b);
-    }
-    this.addChild(crowd);
+    const fallback = new Graphics();
+    fallback.eventMode = 'none';
+    fallback.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(0x120a1e);
+    coverRoot.addChild(fallback);
 
-    const vignette = new Graphics();
-    vignette.eventMode = 'none';
-    vignette
-      .rect(0, 0, GAME_WIDTH, Math.round(220 * LAYOUT_SCALE))
-      .fill({ color: 0x020617, alpha: 0.55 });
-    vignette
-      .rect(0, GAME_HEIGHT - Math.round(280 * LAYOUT_SCALE), GAME_WIDTH, Math.round(280 * LAYOUT_SCALE))
-      .fill({ color: 0x020617, alpha: 0.65 });
-    this.addChild(vignette);
-
-    const logo = new Text({
-      text: 'HeyBro',
-      style: {
-        fontFamily: 'system-ui, "Segoe UI", Roboto, sans-serif',
-        fontSize: Math.round(112 * LAYOUT_SCALE),
-        fill: 0xfef08a,
-        fontWeight: '900',
-        dropShadow: {
-          alpha: 0.85,
-          angle: Math.PI / 4,
-          blur: 18,
-          color: 0x7c3aed,
-          distance: 6,
-        },
-        stroke: { color: 0x4c1d95, width: Math.max(3, Math.round(4 * LAYOUT_SCALE)) },
-      },
-    });
-    logo.eventMode = 'none';
-    logo.anchor.set(0.5, 0.5);
-    logo.position.set(GAME_WIDTH * 0.5, GAME_HEIGHT * 0.38);
-    this.addChild(logo);
-
-    const tag = new Text({
-      text: '竖版自走棋 · 点阵开战',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(26 * LAYOUT_SCALE),
-        fill: 0xc4b5fd,
-        fontWeight: '600',
-      },
-    });
-    tag.eventMode = 'none';
-    tag.anchor.set(0.5, 0);
-    tag.position.set(GAME_WIDTH * 0.5, logo.y + Math.round(72 * LAYOUT_SCALE));
-    this.addChild(tag);
+    void Assets.load<Texture>(titleCoverAssetUrl())
+      .then((texture) => {
+        if (coverRoot.destroyed) {
+          texture.destroy(true);
+          return;
+        }
+        const sprite = new Sprite(texture);
+        sprite.eventMode = 'none';
+        layoutCoverSprite(sprite, GAME_WIDTH, GAME_HEIGHT);
+        coverRoot.removeChild(fallback);
+        fallback.destroy();
+        coverRoot.addChildAt(sprite, 0);
+      })
+      .catch(() => {
+        /* 缺文件时保留深色底 */
+      });
 
     const hint = new Text({
       text: '点击屏幕进入游戏',
@@ -106,6 +66,7 @@ export class TitleScreen extends Container {
         fontSize: Math.round(32 * LAYOUT_SCALE),
         fill: 0xf1f5f9,
         fontWeight: '700',
+        stroke: { color: 0x0f172a, width: Math.max(2, Math.round(3 * LAYOUT_SCALE)) },
       },
     });
     hint.eventMode = 'none';
@@ -118,8 +79,9 @@ export class TitleScreen extends Container {
       style: {
         fontFamily: 'ui-monospace, Consolas, monospace',
         fontSize: Math.round(22 * LAYOUT_SCALE),
-        fill: 0x94a3b8,
+        fill: 0xe2e8f0,
         fontWeight: '600',
+        stroke: { color: 0x0f172a, width: Math.max(1, Math.round(2 * LAYOUT_SCALE)) },
       },
     });
     ver.eventMode = 'none';
@@ -127,19 +89,6 @@ export class TitleScreen extends Container {
     this.addChild(ver);
 
     if (import.meta.env.DEV && onUiTestBattle) {
-      const devHint = new Text({
-        text: 'DEV：按 U 进入「UI技能测试」战场',
-        style: {
-          fontFamily: 'ui-monospace, Consolas, monospace',
-          fontSize: Math.round(18 * LAYOUT_SCALE),
-          fill: 0xfbbf24,
-          fontWeight: '600',
-        },
-      });
-      devHint.eventMode = 'none';
-      devHint.alpha = 0.92;
-      devHint.position.set(Math.round(20 * LAYOUT_SCALE), Math.round(52 * LAYOUT_SCALE));
-      this.addChild(devHint);
       const onKey = (ev: KeyboardEvent): void => {
         if (ev.repeat || ev.code !== 'KeyU') return;
         ev.preventDefault();

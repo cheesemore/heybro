@@ -15,6 +15,7 @@ import {
   tryDeployHero,
   undeployHeroById,
 } from '../heroMetaStorage';
+import { drawGoldenSolidPanel, GOLDEN_PANEL_BODY } from '../ui/goldenSolidPanel';
 import type { ModalLayer } from './ModalLayer';
 import { createDraftHeroToken } from '../unitCircleTokens';
 import { ALLY_DEFS } from '../unitDefs';
@@ -689,13 +690,15 @@ export class StrengthenScreen extends Container {
     const ph = Math.round(520 * LAYOUT_SCALE);
     const px = (GAME_WIDTH - pw) / 2;
     const py = (GAME_HEIGHT - ph) / 2;
-    const panel = new Graphics();
-    panel.roundRect(0, 0, pw, ph, Math.round(18 * LAYOUT_SCALE)).fill(0x1e293b);
-    panel.stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x475569 });
-    panel.position.set(px, py);
-    panel.eventMode = 'static';
-    panel.on('pointertap', (e) => e.stopPropagation());
-    this.sheetLayer.addChild(panel);
+    const panelPlate = new Graphics();
+    const panelFrame = new Graphics();
+    drawGoldenSolidPanel(panelPlate, panelFrame, pw, ph, LAYOUT_SCALE);
+    panelPlate.position.set(px, py);
+    panelFrame.position.set(px, py);
+    panelPlate.eventMode = 'static';
+    panelPlate.on('pointertap', (e) => e.stopPropagation());
+    this.sheetLayer.addChild(panelPlate);
+    this.sheetLayer.addChild(panelFrame);
 
     const dia = Math.round(96 * LAYOUT_SCALE);
     const sheetAvatarTop = py + Math.round(52 * LAYOUT_SCALE);
@@ -717,7 +720,7 @@ export class StrengthenScreen extends Container {
       style: {
         fontFamily: 'system-ui, "Microsoft YaHei", Segoe UI, sans-serif',
         fontSize: Math.round(16 * LAYOUT_SCALE),
-        fill: 0xe2e8f0,
+        fill: GOLDEN_PANEL_BODY,
         wordWrap: true,
         wordWrapWidth: pw - Math.round(40 * LAYOUT_SCALE),
         lineHeight: Math.round(22 * LAYOUT_SCALE),

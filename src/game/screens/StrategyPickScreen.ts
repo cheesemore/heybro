@@ -1,8 +1,10 @@
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
-import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
+import { GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { ROUNDS } from '../roundConfig';
 import type { RunState } from '../runState';
 import { applyChosenStrategy, pickThreeStrategies } from '../strategyApply';
+import { mountStretchedDungeonBackground } from '../dungeonBackground';
+import { dungeonIdForBookChapter } from '../wowBookData';
 
 const PAD_X = Math.round(20 * LAYOUT_SCALE);
 
@@ -17,9 +19,7 @@ export class StrategyPickScreen extends Container {
     this.onDone = onDone;
     this.options = pickThreeStrategies(chapter);
 
-    const deepBg = new Graphics();
-    deepBg.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(0x030712);
-    this.addChild(deepBg);
+    mountStretchedDungeonBackground(this, dungeonIdForBookChapter(this.run.bookChapterId), { dimAlpha: 0.38 });
 
     const idx = run.currentRoundIndex;
     const label = ROUNDS[idx]?.label ?? `${chapter}-2`;

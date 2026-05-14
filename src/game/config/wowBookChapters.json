@@ -1,0 +1,3108 @@
+{
+  "schemaVersion": 1,
+  "generator": "scripts/generate-wow-book-tables.mjs",
+  "sourceReference": "docs/reference-classic-vanilla-wow-roguelike-level-design.json",
+  "editConvention": "章节顺序与关底 Boss 以本文件为准；若改某关可用怪组，改对应项的 monsterGroup（id 须存在于 wowBookMonsters.json）。",
+  "chapters": [
+    {
+      "chapterIndex": 1,
+      "dungeonId": "ragefire_chasm",
+      "dungeonNameCn": "怒焰裂谷",
+      "dungeonNameEn": "Ragefire Chasm",
+      "stageNumber": 1,
+      "stageNameCn": "怒焰裂谷-第一关",
+      "monsterGroup": [
+        "mob_ragefire_trogg",
+        "mob_ragefire_shaman",
+        "mob_molten_elemental",
+        "mob_searing_blade_enforcer",
+        "mob_searing_blade_cultist",
+        "mob_searing_blade_warlock",
+        "mob_earthborer",
+        "mob_voidwalker_minion"
+      ],
+      "finalBoss": {
+        "nameCn": "奥格尔弗林特",
+        "nameEn": "Oggleflint",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 2,
+      "dungeonId": "ragefire_chasm",
+      "dungeonNameCn": "怒焰裂谷",
+      "dungeonNameEn": "Ragefire Chasm",
+      "stageNumber": 2,
+      "stageNameCn": "怒焰裂谷-第二关",
+      "monsterGroup": [
+        "mob_ragefire_trogg",
+        "mob_ragefire_shaman",
+        "mob_molten_elemental",
+        "mob_searing_blade_enforcer",
+        "mob_searing_blade_cultist",
+        "mob_searing_blade_warlock",
+        "mob_earthborer",
+        "mob_voidwalker_minion"
+      ],
+      "finalBoss": {
+        "nameCn": "饥饿者塔拉加曼",
+        "nameEn": "Taragaman the Hungerer",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 3,
+      "dungeonId": "ragefire_chasm",
+      "dungeonNameCn": "怒焰裂谷",
+      "dungeonNameEn": "Ragefire Chasm",
+      "stageNumber": 3,
+      "stageNameCn": "怒焰裂谷-第三关",
+      "monsterGroup": [
+        "mob_ragefire_trogg",
+        "mob_ragefire_shaman",
+        "mob_molten_elemental",
+        "mob_searing_blade_enforcer",
+        "mob_searing_blade_cultist",
+        "mob_searing_blade_warlock",
+        "mob_earthborer",
+        "mob_voidwalker_minion"
+      ],
+      "finalBoss": {
+        "nameCn": "祈求者耶戈什",
+        "nameEn": "Jergosh the Invoker",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 4,
+      "dungeonId": "ragefire_chasm",
+      "dungeonNameCn": "怒焰裂谷",
+      "dungeonNameEn": "Ragefire Chasm",
+      "stageNumber": 4,
+      "stageNameCn": "怒焰裂谷-第四关",
+      "monsterGroup": [
+        "mob_ragefire_trogg",
+        "mob_ragefire_shaman",
+        "mob_molten_elemental",
+        "mob_searing_blade_enforcer",
+        "mob_searing_blade_cultist",
+        "mob_searing_blade_warlock",
+        "mob_earthborer",
+        "mob_voidwalker_minion"
+      ],
+      "finalBoss": {
+        "nameCn": "巴扎兰",
+        "nameEn": "Bazzalan",
+        "attackType": "是",
+        "role": "远程",
+        "creatureType": "输出",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 5,
+      "dungeonId": "deadmines",
+      "dungeonNameCn": "死亡矿井",
+      "dungeonNameEn": "Deadmines",
+      "stageNumber": 1,
+      "stageNameCn": "死亡矿井-第一关",
+      "monsterGroup": [
+        "mob_defias_pirate",
+        "mob_defias_blackguard",
+        "mob_defias_miner",
+        "mob_defias_enchanter",
+        "mob_defias_wizard",
+        "mob_defias_overseer",
+        "mob_deadmines_voidwalker_minion",
+        "mob_goblin_engineer",
+        "mob_goblin_craftsman"
+      ],
+      "finalBoss": {
+        "nameCn": "拉克佐",
+        "nameEn": "Rhahk'zor",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 6,
+      "dungeonId": "deadmines",
+      "dungeonNameCn": "死亡矿井",
+      "dungeonNameEn": "Deadmines",
+      "stageNumber": 2,
+      "stageNameCn": "死亡矿井-第二关",
+      "monsterGroup": [
+        "mob_defias_pirate",
+        "mob_defias_blackguard",
+        "mob_defias_miner",
+        "mob_defias_enchanter",
+        "mob_defias_wizard",
+        "mob_defias_overseer",
+        "mob_deadmines_voidwalker_minion",
+        "mob_goblin_engineer",
+        "mob_goblin_craftsman"
+      ],
+      "finalBoss": {
+        "nameCn": "斯尼德",
+        "nameEn": "Sneed",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 7,
+      "dungeonId": "deadmines",
+      "dungeonNameCn": "死亡矿井",
+      "dungeonNameEn": "Deadmines",
+      "stageNumber": 3,
+      "stageNameCn": "死亡矿井-第三关",
+      "monsterGroup": [
+        "mob_defias_pirate",
+        "mob_defias_blackguard",
+        "mob_defias_miner",
+        "mob_defias_enchanter",
+        "mob_defias_wizard",
+        "mob_defias_overseer",
+        "mob_deadmines_voidwalker_minion",
+        "mob_goblin_engineer",
+        "mob_goblin_craftsman"
+      ],
+      "finalBoss": {
+        "nameCn": "基尔尼格",
+        "nameEn": "Gilnid",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 8,
+      "dungeonId": "deadmines",
+      "dungeonNameCn": "死亡矿井",
+      "dungeonNameEn": "Deadmines",
+      "stageNumber": 4,
+      "stageNameCn": "死亡矿井-第四关",
+      "monsterGroup": [
+        "mob_defias_pirate",
+        "mob_defias_blackguard",
+        "mob_defias_miner",
+        "mob_defias_enchanter",
+        "mob_defias_wizard",
+        "mob_defias_overseer",
+        "mob_deadmines_voidwalker_minion",
+        "mob_goblin_engineer",
+        "mob_goblin_craftsman"
+      ],
+      "finalBoss": {
+        "nameCn": "重拳先生",
+        "nameEn": "Mr. Smite",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 9,
+      "dungeonId": "deadmines",
+      "dungeonNameCn": "死亡矿井",
+      "dungeonNameEn": "Deadmines",
+      "stageNumber": 5,
+      "stageNameCn": "死亡矿井-第五关",
+      "monsterGroup": [
+        "mob_defias_pirate",
+        "mob_defias_blackguard",
+        "mob_defias_miner",
+        "mob_defias_enchanter",
+        "mob_defias_wizard",
+        "mob_defias_overseer",
+        "mob_deadmines_voidwalker_minion",
+        "mob_goblin_engineer",
+        "mob_goblin_craftsman"
+      ],
+      "finalBoss": {
+        "nameCn": "绿皮队长",
+        "nameEn": "Captain Greenskin",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 10,
+      "dungeonId": "deadmines",
+      "dungeonNameCn": "死亡矿井",
+      "dungeonNameEn": "Deadmines",
+      "stageNumber": 6,
+      "stageNameCn": "死亡矿井-第六关",
+      "monsterGroup": [
+        "mob_defias_pirate",
+        "mob_defias_blackguard",
+        "mob_defias_miner",
+        "mob_defias_enchanter",
+        "mob_defias_wizard",
+        "mob_defias_overseer",
+        "mob_deadmines_voidwalker_minion",
+        "mob_goblin_engineer",
+        "mob_goblin_craftsman"
+      ],
+      "finalBoss": {
+        "nameCn": "艾德温·范克里夫",
+        "nameEn": "Edwin VanCleef",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 11,
+      "dungeonId": "wailing_caverns",
+      "dungeonNameCn": "哀嚎洞穴",
+      "dungeonNameEn": "Wailing Caverns",
+      "stageNumber": 1,
+      "stageNameCn": "哀嚎洞穴-第一关",
+      "monsterGroup": [
+        "mob_murloc_aberration",
+        "mob_deadly_moss",
+        "mob_cave_bat",
+        "mob_druid_of_the_fang",
+        "mob_nightmare_hawk",
+        "mob_fungal_oracle",
+        "mob_karldra_nightthorn",
+        "mob_deviate_python"
+      ],
+      "finalBoss": {
+        "nameCn": "毒蛇女士",
+        "nameEn": "Lady Anacondra",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 12,
+      "dungeonId": "wailing_caverns",
+      "dungeonNameCn": "哀嚎洞穴",
+      "dungeonNameEn": "Wailing Caverns",
+      "stageNumber": 2,
+      "stageNameCn": "哀嚎洞穴-第二关",
+      "monsterGroup": [
+        "mob_murloc_aberration",
+        "mob_deadly_moss",
+        "mob_cave_bat",
+        "mob_druid_of_the_fang",
+        "mob_nightmare_hawk",
+        "mob_fungal_oracle",
+        "mob_karldra_nightthorn",
+        "mob_deviate_python"
+      ],
+      "finalBoss": {
+        "nameCn": "毒蛇领主",
+        "nameEn": "Lord Cobrahn",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 13,
+      "dungeonId": "wailing_caverns",
+      "dungeonNameCn": "哀嚎洞穴",
+      "dungeonNameEn": "Wailing Caverns",
+      "stageNumber": 3,
+      "stageNameCn": "哀嚎洞穴-第三关",
+      "monsterGroup": [
+        "mob_murloc_aberration",
+        "mob_deadly_moss",
+        "mob_cave_bat",
+        "mob_druid_of_the_fang",
+        "mob_nightmare_hawk",
+        "mob_fungal_oracle",
+        "mob_karldra_nightthorn",
+        "mob_deviate_python"
+      ],
+      "finalBoss": {
+        "nameCn": "巨蛇领主",
+        "nameEn": "Lord Pythas",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 14,
+      "dungeonId": "wailing_caverns",
+      "dungeonNameCn": "哀嚎洞穴",
+      "dungeonNameEn": "Wailing Caverns",
+      "stageNumber": 4,
+      "stageNameCn": "哀嚎洞穴-第四关",
+      "monsterGroup": [
+        "mob_murloc_aberration",
+        "mob_deadly_moss",
+        "mob_cave_bat",
+        "mob_druid_of_the_fang",
+        "mob_nightmare_hawk",
+        "mob_fungal_oracle",
+        "mob_karldra_nightthorn",
+        "mob_deviate_python"
+      ],
+      "finalBoss": {
+        "nameCn": "眼镜蛇领主",
+        "nameEn": "Lord Serpentis",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 15,
+      "dungeonId": "wailing_caverns",
+      "dungeonNameCn": "哀嚎洞穴",
+      "dungeonNameEn": "Wailing Caverns",
+      "stageNumber": 5,
+      "stageNameCn": "哀嚎洞穴-第五关",
+      "monsterGroup": [
+        "mob_murloc_aberration",
+        "mob_deadly_moss",
+        "mob_cave_bat",
+        "mob_druid_of_the_fang",
+        "mob_nightmare_hawk",
+        "mob_fungal_oracle",
+        "mob_karldra_nightthorn",
+        "mob_deviate_python"
+      ],
+      "finalBoss": {
+        "nameCn": "永生者维尔丹",
+        "nameEn": "Verdan the Everliving",
+        "attackType": "近战",
+        "role": "辅助",
+        "creatureType": "植物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 16,
+      "dungeonId": "wailing_caverns",
+      "dungeonNameCn": "哀嚎洞穴",
+      "dungeonNameEn": "Wailing Caverns",
+      "stageNumber": 6,
+      "stageNameCn": "哀嚎洞穴-第六关",
+      "monsterGroup": [
+        "mob_murloc_aberration",
+        "mob_deadly_moss",
+        "mob_cave_bat",
+        "mob_druid_of_the_fang",
+        "mob_nightmare_hawk",
+        "mob_fungal_oracle",
+        "mob_karldra_nightthorn",
+        "mob_deviate_python"
+      ],
+      "finalBoss": {
+        "nameCn": "吞噬者穆塔纳斯",
+        "nameEn": "Mutanus the Devourer",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 17,
+      "dungeonId": "shadowfang_keep",
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 1,
+      "stageNameCn": "影牙城堡-第一关",
+      "monsterGroup": [
+        "mob_skeletal_warrior",
+        "mob_skeletal_mage",
+        "mob_worgen",
+        "mob_zombie",
+        "mob_specter",
+        "mob_lieutenant_foresight",
+        "mob_shadowfang_wolfguard",
+        "mob_son_of_arugal"
+      ],
+      "finalBoss": {
+        "nameCn": "雷西戈尔",
+        "nameEn": "Rethilgore",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 18,
+      "dungeonId": "shadowfang_keep",
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 2,
+      "stageNameCn": "影牙城堡-第二关",
+      "monsterGroup": [
+        "mob_skeletal_warrior",
+        "mob_skeletal_mage",
+        "mob_worgen",
+        "mob_zombie",
+        "mob_specter",
+        "mob_lieutenant_foresight",
+        "mob_shadowfang_wolfguard",
+        "mob_son_of_arugal"
+      ],
+      "finalBoss": {
+        "nameCn": "刀臂屠夫",
+        "nameEn": "Razorclaw the Butcher",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 19,
+      "dungeonId": "shadowfang_keep",
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 3,
+      "stageNameCn": "影牙城堡-第三关",
+      "monsterGroup": [
+        "mob_skeletal_warrior",
+        "mob_skeletal_mage",
+        "mob_worgen",
+        "mob_zombie",
+        "mob_specter",
+        "mob_lieutenant_foresight",
+        "mob_shadowfang_wolfguard",
+        "mob_son_of_arugal"
+      ],
+      "finalBoss": {
+        "nameCn": "巴隆·希尔瓦莱恩男爵",
+        "nameEn": "Baron Silverlaine",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 20,
+      "dungeonId": "shadowfang_keep",
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 4,
+      "stageNameCn": "影牙城堡-第四关",
+      "monsterGroup": [
+        "mob_skeletal_warrior",
+        "mob_skeletal_mage",
+        "mob_worgen",
+        "mob_zombie",
+        "mob_specter",
+        "mob_lieutenant_foresight",
+        "mob_shadowfang_wolfguard",
+        "mob_son_of_arugal"
+      ],
+      "finalBoss": {
+        "nameCn": "斯普林瓦尔指挥官",
+        "nameEn": "Commander Springvale",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 21,
+      "dungeonId": "shadowfang_keep",
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 5,
+      "stageNameCn": "影牙城堡-第五关",
+      "monsterGroup": [
+        "mob_skeletal_warrior",
+        "mob_skeletal_mage",
+        "mob_worgen",
+        "mob_zombie",
+        "mob_specter",
+        "mob_lieutenant_foresight",
+        "mob_shadowfang_wolfguard",
+        "mob_son_of_arugal"
+      ],
+      "finalBoss": {
+        "nameCn": "盲眼奥多",
+        "nameEn": "Odo the Blindwatcher",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 22,
+      "dungeonId": "shadowfang_keep",
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 6,
+      "stageNameCn": "影牙城堡-第六关",
+      "monsterGroup": [
+        "mob_skeletal_warrior",
+        "mob_skeletal_mage",
+        "mob_worgen",
+        "mob_zombie",
+        "mob_specter",
+        "mob_lieutenant_foresight",
+        "mob_shadowfang_wolfguard",
+        "mob_son_of_arugal"
+      ],
+      "finalBoss": {
+        "nameCn": "吞噬者芬鲁斯",
+        "nameEn": "Fenrus the Devourer",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 23,
+      "dungeonId": "shadowfang_keep",
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 7,
+      "stageNameCn": "影牙城堡-第七关",
+      "monsterGroup": [
+        "mob_skeletal_warrior",
+        "mob_skeletal_mage",
+        "mob_worgen",
+        "mob_zombie",
+        "mob_specter",
+        "mob_lieutenant_foresight",
+        "mob_shadowfang_wolfguard",
+        "mob_son_of_arugal"
+      ],
+      "finalBoss": {
+        "nameCn": "大法师阿鲁高",
+        "nameEn": "Archmage Arugal",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 24,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 1,
+      "stageNameCn": "黑暗深渊-第一关",
+      "monsterGroup": [
+        "mob_naga_keeper",
+        "mob_naga_sea_witch",
+        "mob_murloc_tyrant",
+        "mob_shade_of_twilight",
+        "mob_blackfathom_patrol",
+        "mob_lady_s_theno",
+        "mob_one_eye",
+        "mob_shadow_weaver",
+        "mob_tide_lk_texter"
+      ],
+      "finalBoss": {
+        "nameCn": "加穆-拉",
+        "nameEn": "Ghamoo-Ra",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 25,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 2,
+      "stageNameCn": "黑暗深渊-第二关",
+      "monsterGroup": [
+        "mob_naga_keeper",
+        "mob_naga_sea_witch",
+        "mob_murloc_tyrant",
+        "mob_shade_of_twilight",
+        "mob_blackfathom_patrol",
+        "mob_lady_s_theno",
+        "mob_one_eye",
+        "mob_shadow_weaver",
+        "mob_tide_lk_texter"
+      ],
+      "finalBoss": {
+        "nameCn": "多米娜",
+        "nameEn": "Domina",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 26,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 3,
+      "stageNameCn": "黑暗深渊-第三关",
+      "monsterGroup": [
+        "mob_naga_keeper",
+        "mob_naga_sea_witch",
+        "mob_murloc_tyrant",
+        "mob_shade_of_twilight",
+        "mob_blackfathom_patrol",
+        "mob_lady_s_theno",
+        "mob_one_eye",
+        "mob_shadow_weaver",
+        "mob_tide_lk_texter"
+      ],
+      "finalBoss": {
+        "nameCn": "征服者科尔乌尔",
+        "nameEn": "Subjugator Kor'ul",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 27,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 4,
+      "stageNameCn": "黑暗深渊-第四关",
+      "monsterGroup": [
+        "mob_naga_keeper",
+        "mob_naga_sea_witch",
+        "mob_murloc_tyrant",
+        "mob_shade_of_twilight",
+        "mob_blackfathom_patrol",
+        "mob_lady_s_theno",
+        "mob_one_eye",
+        "mob_shadow_weaver",
+        "mob_tide_lk_texter"
+      ],
+      "finalBoss": {
+        "nameCn": "瑟鲁克",
+        "nameEn": "Thruk",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 28,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 5,
+      "stageNameCn": "黑暗深渊-第五关",
+      "monsterGroup": [
+        "mob_naga_keeper",
+        "mob_naga_sea_witch",
+        "mob_murloc_tyrant",
+        "mob_shade_of_twilight",
+        "mob_blackfathom_patrol",
+        "mob_lady_s_theno",
+        "mob_one_eye",
+        "mob_shadow_weaver",
+        "mob_tide_lk_texter"
+      ],
+      "finalBoss": {
+        "nameCn": "剑子手戈尔",
+        "nameEn": "Executioner Gore",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 29,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 6,
+      "stageNameCn": "黑暗深渊-第六关",
+      "monsterGroup": [
+        "mob_naga_keeper",
+        "mob_naga_sea_witch",
+        "mob_murloc_tyrant",
+        "mob_shade_of_twilight",
+        "mob_blackfathom_patrol",
+        "mob_lady_s_theno",
+        "mob_one_eye",
+        "mob_shadow_weaver",
+        "mob_tide_lk_texter"
+      ],
+      "finalBoss": {
+        "nameCn": "深渊守护者",
+        "nameEn": "Guardian of the Deep",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 30,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 7,
+      "stageNameCn": "黑暗深渊-第七关",
+      "monsterGroup": [
+        "mob_naga_keeper",
+        "mob_naga_sea_witch",
+        "mob_murloc_tyrant",
+        "mob_shade_of_twilight",
+        "mob_blackfathom_patrol",
+        "mob_lady_s_theno",
+        "mob_one_eye",
+        "mob_shadow_weaver",
+        "mob_tide_lk_texter"
+      ],
+      "finalBoss": {
+        "nameCn": "暮光领主巴希尔",
+        "nameEn": "Twilight Lord Bathiel",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 31,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 8,
+      "stageNameCn": "黑暗深渊-第八关",
+      "monsterGroup": [
+        "mob_naga_keeper",
+        "mob_naga_sea_witch",
+        "mob_murloc_tyrant",
+        "mob_shade_of_twilight",
+        "mob_blackfathom_patrol",
+        "mob_lady_s_theno",
+        "mob_one_eye",
+        "mob_shadow_weaver",
+        "mob_tide_lk_texter"
+      ],
+      "finalBoss": {
+        "nameCn": "吞噬者阿库迈尔",
+        "nameEn": "Aku'mai the Devourer",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "其他",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 32,
+      "dungeonId": "gnomeregan",
+      "dungeonNameCn": "诺莫瑞根",
+      "dungeonNameEn": "Gnomeregan",
+      "stageNumber": 1,
+      "stageNameCn": "诺莫瑞根-第一关",
+      "monsterGroup": [
+        "mob_mechanized_gnome",
+        "mob_gnomeregan_guard",
+        "mob_gnomeregan_engineer",
+        "mob_irradiated_insect",
+        "mob_bomber",
+        "mob_lantern",
+        "mob_crowd_pummeler_9_60",
+        "mob_irradiated_leech",
+        "mob_leper_gnome"
+      ],
+      "finalBoss": {
+        "nameCn": "格鲁比斯",
+        "nameEn": "Grubbis",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 33,
+      "dungeonId": "gnomeregan",
+      "dungeonNameCn": "诺莫瑞根",
+      "dungeonNameEn": "Gnomeregan",
+      "stageNumber": 2,
+      "stageNameCn": "诺莫瑞根-第二关",
+      "monsterGroup": [
+        "mob_mechanized_gnome",
+        "mob_gnomeregan_guard",
+        "mob_gnomeregan_engineer",
+        "mob_irradiated_insect",
+        "mob_bomber",
+        "mob_lantern",
+        "mob_crowd_pummeler_9_60",
+        "mob_irradiated_leech",
+        "mob_leper_gnome"
+      ],
+      "finalBoss": {
+        "nameCn": "粘性辐射物",
+        "nameEn": "Viscous Fallout",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 34,
+      "dungeonId": "gnomeregan",
+      "dungeonNameCn": "诺莫瑞根",
+      "dungeonNameEn": "Gnomeregan",
+      "stageNumber": 3,
+      "stageNameCn": "诺莫瑞根-第三关",
+      "monsterGroup": [
+        "mob_mechanized_gnome",
+        "mob_gnomeregan_guard",
+        "mob_gnomeregan_engineer",
+        "mob_irradiated_insect",
+        "mob_bomber",
+        "mob_lantern",
+        "mob_crowd_pummeler_9_60",
+        "mob_irradiated_leech",
+        "mob_leper_gnome"
+      ],
+      "finalBoss": {
+        "nameCn": "电流处理器6000",
+        "nameEn": "Electrocutioner 6000",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 35,
+      "dungeonId": "gnomeregan",
+      "dungeonNameCn": "诺莫瑞根",
+      "dungeonNameEn": "Gnomeregan",
+      "stageNumber": 4,
+      "stageNameCn": "诺莫瑞根-第四关",
+      "monsterGroup": [
+        "mob_mechanized_gnome",
+        "mob_gnomeregan_guard",
+        "mob_gnomeregan_engineer",
+        "mob_irradiated_insect",
+        "mob_bomber",
+        "mob_lantern",
+        "mob_crowd_pummeler_9_60",
+        "mob_irradiated_leech",
+        "mob_leper_gnome"
+      ],
+      "finalBoss": {
+        "nameCn": "群众击打者9-60",
+        "nameEn": "Crowd Pummeler 9-60",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 36,
+      "dungeonId": "gnomeregan",
+      "dungeonNameCn": "诺莫瑞根",
+      "dungeonNameEn": "Gnomeregan",
+      "stageNumber": 5,
+      "stageNameCn": "诺莫瑞根-第五关",
+      "monsterGroup": [
+        "mob_mechanized_gnome",
+        "mob_gnomeregan_guard",
+        "mob_gnomeregan_engineer",
+        "mob_irradiated_insect",
+        "mob_bomber",
+        "mob_lantern",
+        "mob_crowd_pummeler_9_60",
+        "mob_irradiated_leech",
+        "mob_leper_gnome"
+      ],
+      "finalBoss": {
+        "nameCn": "机械师瑟玛普莱格",
+        "nameEn": "Mekgineer Thermaplugg",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "其他",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 37,
+      "dungeonId": "razorfen_kraul",
+      "dungeonNameCn": "剃刀沼泽",
+      "dungeonNameEn": "Razorfen Kraul",
+      "stageNumber": 1,
+      "stageNameCn": "剃刀沼泽-第一关",
+      "monsterGroup": [
+        "mob_quillboar_warrior",
+        "mob_quillboar_shaman",
+        "mob_razorfen_bat",
+        "mob_razorfen_briarbane",
+        "mob_razorfen_kraul_skeletal_warrior",
+        "mob_hakkar",
+        "mob_avenger_of_the_march",
+        "mob_gnarlwood",
+        "mob_death_s_head_priest",
+        "mob_death_s_head_seer"
+      ],
+      "finalBoss": {
+        "nameCn": "鲁古格",
+        "nameEn": "Roogug",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 38,
+      "dungeonId": "razorfen_kraul",
+      "dungeonNameCn": "剃刀沼泽",
+      "dungeonNameEn": "Razorfen Kraul",
+      "stageNumber": 2,
+      "stageNameCn": "剃刀沼泽-第二关",
+      "monsterGroup": [
+        "mob_quillboar_warrior",
+        "mob_quillboar_shaman",
+        "mob_razorfen_bat",
+        "mob_razorfen_briarbane",
+        "mob_razorfen_kraul_skeletal_warrior",
+        "mob_hakkar",
+        "mob_avenger_of_the_march",
+        "mob_gnarlwood",
+        "mob_death_s_head_priest",
+        "mob_death_s_head_seer"
+      ],
+      "finalBoss": {
+        "nameCn": "阿格姆·索恩克尔斯",
+        "nameEn": "Aggem Thorncurse",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 39,
+      "dungeonId": "razorfen_kraul",
+      "dungeonNameCn": "剃刀沼泽",
+      "dungeonNameEn": "Razorfen Kraul",
+      "stageNumber": 3,
+      "stageNameCn": "剃刀沼泽-第三关",
+      "monsterGroup": [
+        "mob_quillboar_warrior",
+        "mob_quillboar_shaman",
+        "mob_razorfen_bat",
+        "mob_razorfen_briarbane",
+        "mob_razorfen_kraul_skeletal_warrior",
+        "mob_hakkar",
+        "mob_avenger_of_the_march",
+        "mob_gnarlwood",
+        "mob_death_s_head_priest",
+        "mob_death_s_head_seer"
+      ],
+      "finalBoss": {
+        "nameCn": "死亡演说家贾尔巴",
+        "nameEn": "Death Speaker Jargba",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 40,
+      "dungeonId": "razorfen_kraul",
+      "dungeonNameCn": "剃刀沼泽",
+      "dungeonNameEn": "Razorfen Kraul",
+      "stageNumber": 4,
+      "stageNameCn": "剃刀沼泽-第四关",
+      "monsterGroup": [
+        "mob_quillboar_warrior",
+        "mob_quillboar_shaman",
+        "mob_razorfen_bat",
+        "mob_razorfen_briarbane",
+        "mob_razorfen_kraul_skeletal_warrior",
+        "mob_hakkar",
+        "mob_avenger_of_the_march",
+        "mob_gnarlwood",
+        "mob_death_s_head_priest",
+        "mob_death_s_head_seer"
+      ],
+      "finalBoss": {
+        "nameCn": "统治者拉姆图斯",
+        "nameEn": "Overlord Ramtusk",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 41,
+      "dungeonId": "razorfen_kraul",
+      "dungeonNameCn": "剃刀沼泽",
+      "dungeonNameEn": "Razorfen Kraul",
+      "stageNumber": 5,
+      "stageNameCn": "剃刀沼泽-第五关",
+      "monsterGroup": [
+        "mob_quillboar_warrior",
+        "mob_quillboar_shaman",
+        "mob_razorfen_bat",
+        "mob_razorfen_briarbane",
+        "mob_razorfen_kraul_skeletal_warrior",
+        "mob_hakkar",
+        "mob_avenger_of_the_march",
+        "mob_gnarlwood",
+        "mob_death_s_head_priest",
+        "mob_death_s_head_seer"
+      ],
+      "finalBoss": {
+        "nameCn": "狂暴的阿加塞洛斯",
+        "nameEn": "Agathelos the Raging",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 42,
+      "dungeonId": "razorfen_kraul",
+      "dungeonNameCn": "剃刀沼泽",
+      "dungeonNameEn": "Razorfen Kraul",
+      "stageNumber": 6,
+      "stageNameCn": "剃刀沼泽-第六关",
+      "monsterGroup": [
+        "mob_quillboar_warrior",
+        "mob_quillboar_shaman",
+        "mob_razorfen_bat",
+        "mob_razorfen_briarbane",
+        "mob_razorfen_kraul_skeletal_warrior",
+        "mob_hakkar",
+        "mob_avenger_of_the_march",
+        "mob_gnarlwood",
+        "mob_death_s_head_priest",
+        "mob_death_s_head_seer"
+      ],
+      "finalBoss": {
+        "nameCn": "查理加·剃刀侧翼",
+        "nameEn": "Charlga Razorflank",
+        "attackType": "远程",
+        "role": "治疗",
+        "creatureType": "生物",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 43,
+      "dungeonId": "scarlet_monastery",
+      "dungeonNameCn": "血色修道院",
+      "dungeonNameEn": "Scarlet Monastery",
+      "stageNumber": 1,
+      "stageNameCn": "血色修道院-第一关",
+      "monsterGroup": [
+        "mob_scarlet_soldier",
+        "mob_scarlet_knight",
+        "mob_scarlet_sorcerer",
+        "mob_scarlet_priest",
+        "mob_scarlet_hound",
+        "mob_arcane_handler",
+        "mob_scarlet_champion",
+        "mob_scarlet_zealot"
+      ],
+      "finalBoss": {
+        "nameCn": "灵魂收割者萨尔诺斯",
+        "nameEn": "Thalnos the Soulrender",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 44,
+      "dungeonId": "scarlet_monastery",
+      "dungeonNameCn": "血色修道院",
+      "dungeonNameEn": "Scarlet Monastery",
+      "stageNumber": 2,
+      "stageNameCn": "血色修道院-第二关",
+      "monsterGroup": [
+        "mob_scarlet_soldier",
+        "mob_scarlet_knight",
+        "mob_scarlet_sorcerer",
+        "mob_scarlet_priest",
+        "mob_scarlet_hound",
+        "mob_arcane_handler",
+        "mob_scarlet_champion",
+        "mob_scarlet_zealot"
+      ],
+      "finalBoss": {
+        "nameCn": "科尔洛夫兄弟",
+        "nameEn": "Brother Korloff",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 45,
+      "dungeonId": "scarlet_monastery",
+      "dungeonNameCn": "血色修道院",
+      "dungeonNameEn": "Scarlet Monastery",
+      "stageNumber": 3,
+      "stageNameCn": "血色修道院-第三关",
+      "monsterGroup": [
+        "mob_scarlet_soldier",
+        "mob_scarlet_knight",
+        "mob_scarlet_sorcerer",
+        "mob_scarlet_priest",
+        "mob_scarlet_hound",
+        "mob_arcane_handler",
+        "mob_scarlet_champion",
+        "mob_scarlet_zealot"
+      ],
+      "finalBoss": {
+        "nameCn": "大检察官法尔莫",
+        "nameEn": "High Inquisitor Fairbanks",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "生物",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 46,
+      "dungeonId": "razorfen_downs",
+      "dungeonNameCn": "剃刀高地",
+      "dungeonNameEn": "Razorfen Downs",
+      "stageNumber": 1,
+      "stageNameCn": "剃刀高地-第一关",
+      "monsterGroup": [
+        "mob_razorfen_earthbreaker",
+        "mob_razorfen_geomancer",
+        "mob_skeletal_groundskeeper",
+        "mob_frostbat",
+        "mob_phantom_partisan",
+        "mob_glutton",
+        "mob_ragemaw",
+        "mob_bonesnapper",
+        "mob_ghostly_quillboar"
+      ],
+      "finalBoss": {
+        "nameCn": "奥鲁克斯",
+        "nameEn": "Aarux",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 47,
+      "dungeonId": "razorfen_downs",
+      "dungeonNameCn": "剃刀高地",
+      "dungeonNameEn": "Razorfen Downs",
+      "stageNumber": 2,
+      "stageNameCn": "剃刀高地-第二关",
+      "monsterGroup": [
+        "mob_razorfen_earthbreaker",
+        "mob_razorfen_geomancer",
+        "mob_skeletal_groundskeeper",
+        "mob_frostbat",
+        "mob_phantom_partisan",
+        "mob_glutton",
+        "mob_ragemaw",
+        "mob_bonesnapper",
+        "mob_ghostly_quillboar"
+      ],
+      "finalBoss": {
+        "nameCn": "火焰之眼莫德雷什",
+        "nameEn": "Mordresh Fire Eye",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 48,
+      "dungeonId": "razorfen_downs",
+      "dungeonNameCn": "剃刀高地",
+      "dungeonNameEn": "Razorfen Downs",
+      "stageNumber": 3,
+      "stageNameCn": "剃刀高地-第三关",
+      "monsterGroup": [
+        "mob_razorfen_earthbreaker",
+        "mob_razorfen_geomancer",
+        "mob_skeletal_groundskeeper",
+        "mob_frostbat",
+        "mob_phantom_partisan",
+        "mob_glutton",
+        "mob_ragemaw",
+        "mob_bonesnapper",
+        "mob_ghostly_quillboar"
+      ],
+      "finalBoss": {
+        "nameCn": "磨菇怪",
+        "nameEn": "Mushlump",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "植物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 49,
+      "dungeonId": "razorfen_downs",
+      "dungeonNameCn": "剃刀高地",
+      "dungeonNameEn": "Razorfen Downs",
+      "stageNumber": 4,
+      "stageNameCn": "剃刀高地-第四关",
+      "monsterGroup": [
+        "mob_razorfen_earthbreaker",
+        "mob_razorfen_geomancer",
+        "mob_skeletal_groundskeeper",
+        "mob_frostbat",
+        "mob_phantom_partisan",
+        "mob_glutton",
+        "mob_ragemaw",
+        "mob_bonesnapper",
+        "mob_ghostly_quillboar"
+      ],
+      "finalBoss": {
+        "nameCn": "死亡演说家布莱克索恩",
+        "nameEn": "Death Speaker Blackthorn",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 50,
+      "dungeonId": "razorfen_downs",
+      "dungeonNameCn": "剃刀高地",
+      "dungeonNameEn": "Razorfen Downs",
+      "stageNumber": 5,
+      "stageNameCn": "剃刀高地-第五关",
+      "monsterGroup": [
+        "mob_razorfen_earthbreaker",
+        "mob_razorfen_geomancer",
+        "mob_skeletal_groundskeeper",
+        "mob_frostbat",
+        "mob_phantom_partisan",
+        "mob_glutton",
+        "mob_ragemaw",
+        "mob_bonesnapper",
+        "mob_ghostly_quillboar"
+      ],
+      "finalBoss": {
+        "nameCn": "寒意使者阿姆内纳尔",
+        "nameEn": "Amnennar the Coldbringer",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 51,
+      "dungeonId": "uldaman",
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 1,
+      "stageNameCn": "奥达曼-第一关",
+      "monsterGroup": [
+        "mob_archaedas",
+        "mob_earthen",
+        "mob_earthenoulder",
+        "mob_shade_of_eranikus",
+        "mob_skeletal_miner",
+        "mob_cave_dweller",
+        "mob_baelog",
+        "mob_olaf",
+        "mob_eric"
+      ],
+      "finalBoss": {
+        "nameCn": "雷维洛什",
+        "nameEn": "Revelosh",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 52,
+      "dungeonId": "uldaman",
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 2,
+      "stageNameCn": "奥达曼-第二关",
+      "monsterGroup": [
+        "mob_archaedas",
+        "mob_earthen",
+        "mob_earthenoulder",
+        "mob_shade_of_eranikus",
+        "mob_skeletal_miner",
+        "mob_cave_dweller",
+        "mob_baelog",
+        "mob_olaf",
+        "mob_eric"
+      ],
+      "finalBoss": {
+        "nameCn": "艾隆娜亚",
+        "nameEn": "Ironaya",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 53,
+      "dungeonId": "uldaman",
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 3,
+      "stageNameCn": "奥达曼-第三关",
+      "monsterGroup": [
+        "mob_archaedas",
+        "mob_earthen",
+        "mob_earthenoulder",
+        "mob_shade_of_eranikus",
+        "mob_skeletal_miner",
+        "mob_cave_dweller",
+        "mob_baelog",
+        "mob_olaf",
+        "mob_eric"
+      ],
+      "finalBoss": {
+        "nameCn": "黑曜石哨兵",
+        "nameEn": "Obsidian Sentinel",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 54,
+      "dungeonId": "uldaman",
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 4,
+      "stageNameCn": "奥达曼-第四关",
+      "monsterGroup": [
+        "mob_archaedas",
+        "mob_earthen",
+        "mob_earthenoulder",
+        "mob_shade_of_eranikus",
+        "mob_skeletal_miner",
+        "mob_cave_dweller",
+        "mob_baelog",
+        "mob_olaf",
+        "mob_eric"
+      ],
+      "finalBoss": {
+        "nameCn": "远古石之守护者",
+        "nameEn": "Ancient Stone Keeper",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 55,
+      "dungeonId": "uldaman",
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 5,
+      "stageNameCn": "奥达曼-第五关",
+      "monsterGroup": [
+        "mob_archaedas",
+        "mob_earthen",
+        "mob_earthenoulder",
+        "mob_shade_of_eranikus",
+        "mob_skeletal_miner",
+        "mob_cave_dweller",
+        "mob_baelog",
+        "mob_olaf",
+        "mob_eric"
+      ],
+      "finalBoss": {
+        "nameCn": "加尔甘·火锤",
+        "nameEn": "Galgann Firehammer",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 56,
+      "dungeonId": "uldaman",
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 6,
+      "stageNameCn": "奥达曼-第六关",
+      "monsterGroup": [
+        "mob_archaedas",
+        "mob_earthen",
+        "mob_earthenoulder",
+        "mob_shade_of_eranikus",
+        "mob_skeletal_miner",
+        "mob_cave_dweller",
+        "mob_baelog",
+        "mob_olaf",
+        "mob_eric"
+      ],
+      "finalBoss": {
+        "nameCn": "格里姆洛克",
+        "nameEn": "Grimlok",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 57,
+      "dungeonId": "uldaman",
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 7,
+      "stageNameCn": "奥达曼-第七关",
+      "monsterGroup": [
+        "mob_archaedas",
+        "mob_earthen",
+        "mob_earthenoulder",
+        "mob_shade_of_eranikus",
+        "mob_skeletal_miner",
+        "mob_cave_dweller",
+        "mob_baelog",
+        "mob_olaf",
+        "mob_eric"
+      ],
+      "finalBoss": {
+        "nameCn": "远古石灵",
+        "nameEn": "Archaedas",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "元素",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 58,
+      "dungeonId": "zul_farrak",
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 1,
+      "stageNameCn": "祖尔法拉克-第一关",
+      "monsterGroup": [
+        "mob_sandfury_troll",
+        "mob_sandfury_hunter",
+        "mob_raptor",
+        "mob_zul_farrak_priest",
+        "mob_theka_the_martyr",
+        "mob_zul_lor",
+        "mob_water_elemental",
+        "mob_carrion_bird",
+        "mob_zul_farrak_shaman"
+      ],
+      "finalBoss": {
+        "nameCn": "水术师维尔的拉萨",
+        "nameEn": "Hydromancer Velratha",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 59,
+      "dungeonId": "zul_farrak",
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 2,
+      "stageNameCn": "祖尔法拉克-第二关",
+      "monsterGroup": [
+        "mob_sandfury_troll",
+        "mob_sandfury_hunter",
+        "mob_raptor",
+        "mob_zul_farrak_priest",
+        "mob_theka_the_martyr",
+        "mob_zul_lor",
+        "mob_water_elemental",
+        "mob_carrion_bird",
+        "mob_zul_farrak_shaman"
+      ],
+      "finalBoss": {
+        "nameCn": "加兹瑞拉",
+        "nameEn": "Gahz'rilla",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 60,
+      "dungeonId": "zul_farrak",
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 3,
+      "stageNameCn": "祖尔法拉克-第三关",
+      "monsterGroup": [
+        "mob_sandfury_troll",
+        "mob_sandfury_hunter",
+        "mob_raptor",
+        "mob_zul_farrak_priest",
+        "mob_theka_the_martyr",
+        "mob_zul_lor",
+        "mob_water_elemental",
+        "mob_carrion_bird",
+        "mob_zul_farrak_shaman"
+      ],
+      "finalBoss": {
+        "nameCn": "安图苏尔",
+        "nameEn": "Antu'sul",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 61,
+      "dungeonId": "zul_farrak",
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 4,
+      "stageNameCn": "祖尔法拉克-第四关",
+      "monsterGroup": [
+        "mob_sandfury_troll",
+        "mob_sandfury_hunter",
+        "mob_raptor",
+        "mob_zul_farrak_priest",
+        "mob_theka_the_martyr",
+        "mob_zul_lor",
+        "mob_water_elemental",
+        "mob_carrion_bird",
+        "mob_zul_farrak_shaman"
+      ],
+      "finalBoss": {
+        "nameCn": "殉道者塞卡",
+        "nameEn": "Theka the Martyr",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 62,
+      "dungeonId": "zul_farrak",
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 5,
+      "stageNameCn": "祖尔法拉克-第五关",
+      "monsterGroup": [
+        "mob_sandfury_troll",
+        "mob_sandfury_hunter",
+        "mob_raptor",
+        "mob_zul_farrak_priest",
+        "mob_theka_the_martyr",
+        "mob_zul_lor",
+        "mob_water_elemental",
+        "mob_carrion_bird",
+        "mob_zul_farrak_shaman"
+      ],
+      "finalBoss": {
+        "nameCn": "巫医祖姆拉",
+        "nameEn": "Witch Doctor Zum'rah",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 63,
+      "dungeonId": "zul_farrak",
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 6,
+      "stageNameCn": "祖尔法拉克-第六关",
+      "monsterGroup": [
+        "mob_sandfury_troll",
+        "mob_sandfury_hunter",
+        "mob_raptor",
+        "mob_zul_farrak_priest",
+        "mob_theka_the_martyr",
+        "mob_zul_lor",
+        "mob_water_elemental",
+        "mob_carrion_bird",
+        "mob_zul_farrak_shaman"
+      ],
+      "finalBoss": {
+        "nameCn": "奈克鲁姆·古特切沃尔",
+        "nameEn": "Nekrum Gutchewer",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 64,
+      "dungeonId": "zul_farrak",
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 7,
+      "stageNameCn": "祖尔法拉克-第七关",
+      "monsterGroup": [
+        "mob_sandfury_troll",
+        "mob_sandfury_hunter",
+        "mob_raptor",
+        "mob_zul_farrak_priest",
+        "mob_theka_the_martyr",
+        "mob_zul_lor",
+        "mob_water_elemental",
+        "mob_carrion_bird",
+        "mob_zul_farrak_shaman"
+      ],
+      "finalBoss": {
+        "nameCn": "暗影祭司塞斯齐兹",
+        "nameEn": "Shadowpriest Sezz'ziz",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 65,
+      "dungeonId": "zul_farrak",
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 8,
+      "stageNameCn": "祖尔法拉克-第八关",
+      "monsterGroup": [
+        "mob_sandfury_troll",
+        "mob_sandfury_hunter",
+        "mob_raptor",
+        "mob_zul_farrak_priest",
+        "mob_theka_the_martyr",
+        "mob_zul_lor",
+        "mob_water_elemental",
+        "mob_carrion_bird",
+        "mob_zul_farrak_shaman"
+      ],
+      "finalBoss": {
+        "nameCn": "沙怒首领乌科尔兹",
+        "nameEn": "Chief Ukorz Sandscalp",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 66,
+      "dungeonId": "maraudon",
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 1,
+      "stageNameCn": "玛拉顿-第一关",
+      "monsterGroup": [
+        "mob_maraudon_centaur",
+        "mob_centaur_spirit",
+        "mob_rock_elemental",
+        "mob_herbalist",
+        "mob_zul_farrak_ghost",
+        "mob_terrordisc",
+        "mob_zaetar_s_progeny",
+        "mob_crystal_harvester",
+        "mob_cavern_hydra"
+      ],
+      "finalBoss": {
+        "nameCn": "诺克希恩",
+        "nameEn": "Noxxion",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 67,
+      "dungeonId": "maraudon",
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 2,
+      "stageNameCn": "玛拉顿-第二关",
+      "monsterGroup": [
+        "mob_maraudon_centaur",
+        "mob_centaur_spirit",
+        "mob_rock_elemental",
+        "mob_herbalist",
+        "mob_zul_farrak_ghost",
+        "mob_terrordisc",
+        "mob_zaetar_s_progeny",
+        "mob_crystal_harvester",
+        "mob_cavern_hydra"
+      ],
+      "finalBoss": {
+        "nameCn": "锐刺鞭笞者",
+        "nameEn": "Razorlash",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "植物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 68,
+      "dungeonId": "maraudon",
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 3,
+      "stageNameCn": "玛拉顿-第三关",
+      "monsterGroup": [
+        "mob_maraudon_centaur",
+        "mob_centaur_spirit",
+        "mob_rock_elemental",
+        "mob_herbalist",
+        "mob_zul_farrak_ghost",
+        "mob_terrordisc",
+        "mob_zaetar_s_progeny",
+        "mob_crystal_harvester",
+        "mob_cavern_hydra"
+      ],
+      "finalBoss": {
+        "nameCn": "工匠吉兹洛克",
+        "nameEn": "Tinkerer Gizlock",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 69,
+      "dungeonId": "maraudon",
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 4,
+      "stageNameCn": "玛拉顿-第四关",
+      "monsterGroup": [
+        "mob_maraudon_centaur",
+        "mob_centaur_spirit",
+        "mob_rock_elemental",
+        "mob_herbalist",
+        "mob_zul_farrak_ghost",
+        "mob_terrordisc",
+        "mob_zaetar_s_progeny",
+        "mob_crystal_harvester",
+        "mob_cavern_hydra"
+      ],
+      "finalBoss": {
+        "nameCn": "维利塔恩领主",
+        "nameEn": "Lord Vyletongue",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 70,
+      "dungeonId": "maraudon",
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 5,
+      "stageNameCn": "玛拉顿-第五关",
+      "monsterGroup": [
+        "mob_maraudon_centaur",
+        "mob_centaur_spirit",
+        "mob_rock_elemental",
+        "mob_herbalist",
+        "mob_zul_farrak_ghost",
+        "mob_terrordisc",
+        "mob_zaetar_s_progeny",
+        "mob_crystal_harvester",
+        "mob_cavern_hydra"
+      ],
+      "finalBoss": {
+        "nameCn": "被诅咒的塞雷布拉斯",
+        "nameEn": "Celebras the Cursed",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 71,
+      "dungeonId": "maraudon",
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 6,
+      "stageNameCn": "玛拉顿-第六关",
+      "monsterGroup": [
+        "mob_maraudon_centaur",
+        "mob_centaur_spirit",
+        "mob_rock_elemental",
+        "mob_herbalist",
+        "mob_zul_farrak_ghost",
+        "mob_terrordisc",
+        "mob_zaetar_s_progeny",
+        "mob_crystal_harvester",
+        "mob_cavern_hydra"
+      ],
+      "finalBoss": {
+        "nameCn": "兰斯利德",
+        "nameEn": "Landslide",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 72,
+      "dungeonId": "maraudon",
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 7,
+      "stageNameCn": "玛拉顿-第七关",
+      "monsterGroup": [
+        "mob_maraudon_centaur",
+        "mob_centaur_spirit",
+        "mob_rock_elemental",
+        "mob_herbalist",
+        "mob_zul_farrak_ghost",
+        "mob_terrordisc",
+        "mob_zaetar_s_progeny",
+        "mob_crystal_harvester",
+        "mob_cavern_hydra"
+      ],
+      "finalBoss": {
+        "nameCn": "罗特格里普",
+        "nameEn": "Rotgrip",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 73,
+      "dungeonId": "maraudon",
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 8,
+      "stageNameCn": "玛拉顿-第八关",
+      "monsterGroup": [
+        "mob_maraudon_centaur",
+        "mob_centaur_spirit",
+        "mob_rock_elemental",
+        "mob_herbalist",
+        "mob_zul_farrak_ghost",
+        "mob_terrordisc",
+        "mob_zaetar_s_progeny",
+        "mob_crystal_harvester",
+        "mob_cavern_hydra"
+      ],
+      "finalBoss": {
+        "nameCn": "瑟莱德丝公主",
+        "nameEn": "Princess Theradras",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "元素",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 74,
+      "dungeonId": "sunken_temple",
+      "dungeonNameCn": "沉没的神庙",
+      "dungeonNameEn": "Sunken Temple",
+      "stageNumber": 1,
+      "stageNameCn": "沉没的神庙-第一关",
+      "monsterGroup": [
+        "mob_drakonid",
+        "mob_sunken_temple_naga_sea_witch",
+        "mob_atal_ai_wasp",
+        "mob_ghostly_observer",
+        "mob_jammal_an_the_dead",
+        "mob_hazzali",
+        "mob_narassu",
+        "mob_princes_of_the_sun",
+        "mob_dream_watcher"
+      ],
+      "finalBoss": {
+        "nameCn": "哈卡尔的化身",
+        "nameEn": "Avatar of Hakkar",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 75,
+      "dungeonId": "sunken_temple",
+      "dungeonNameCn": "沉没的神庙",
+      "dungeonNameEn": "Sunken Temple",
+      "stageNumber": 2,
+      "stageNameCn": "沉没的神庙-第二关",
+      "monsterGroup": [
+        "mob_drakonid",
+        "mob_sunken_temple_naga_sea_witch",
+        "mob_atal_ai_wasp",
+        "mob_ghostly_observer",
+        "mob_jammal_an_the_dead",
+        "mob_hazzali",
+        "mob_narassu",
+        "mob_princes_of_the_sun",
+        "mob_dream_watcher"
+      ],
+      "finalBoss": {
+        "nameCn": "预言者贾玛兰",
+        "nameEn": "Jammal'an the Prophet",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 76,
+      "dungeonId": "sunken_temple",
+      "dungeonNameCn": "沉没的神庙",
+      "dungeonNameEn": "Sunken Temple",
+      "stageNumber": 3,
+      "stageNameCn": "沉没的神庙-第三关",
+      "monsterGroup": [
+        "mob_drakonid",
+        "mob_sunken_temple_naga_sea_witch",
+        "mob_atal_ai_wasp",
+        "mob_ghostly_observer",
+        "mob_jammal_an_the_dead",
+        "mob_hazzali",
+        "mob_narassu",
+        "mob_princes_of_the_sun",
+        "mob_dream_watcher"
+      ],
+      "finalBoss": {
+        "nameCn": "梦境守护者",
+        "nameEn": "Wardens of the Dream",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 77,
+      "dungeonId": "sunken_temple",
+      "dungeonNameCn": "沉没的神庙",
+      "dungeonNameEn": "Sunken Temple",
+      "stageNumber": 4,
+      "stageNameCn": "沉没的神庙-第四关",
+      "monsterGroup": [
+        "mob_drakonid",
+        "mob_sunken_temple_naga_sea_witch",
+        "mob_atal_ai_wasp",
+        "mob_ghostly_observer",
+        "mob_jammal_an_the_dead",
+        "mob_hazzali",
+        "mob_narassu",
+        "mob_princes_of_the_sun",
+        "mob_dream_watcher"
+      ],
+      "finalBoss": {
+        "nameCn": "伊兰尼库斯之影",
+        "nameEn": "Shade of Eranikus",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "其他",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 78,
+      "dungeonId": "blackrock_depths",
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 1,
+      "stageNameCn": "黑石深渊-第一关",
+      "monsterGroup": [
+        "mob_dark_iron_soldier",
+        "mob_dark_iron_technician",
+        "mob_fire_elemental",
+        "mob_shadow_shaman",
+        "mob_war_golem",
+        "mob_anvilrage",
+        "mob_soulbringer",
+        "mob_magmus",
+        "mob_dark_iron_smiths"
+      ],
+      "finalBoss": {
+        "nameCn": "贝恩加",
+        "nameEn": "Bael'gar",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 79,
+      "dungeonId": "blackrock_depths",
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 2,
+      "stageNameCn": "黑石深渊-第二关",
+      "monsterGroup": [
+        "mob_dark_iron_soldier",
+        "mob_dark_iron_technician",
+        "mob_fire_elemental",
+        "mob_shadow_shaman",
+        "mob_war_golem",
+        "mob_anvilrage",
+        "mob_soulbringer",
+        "mob_magmus",
+        "mob_dark_iron_smiths"
+      ],
+      "finalBoss": {
+        "nameCn": "审讯者格斯汗",
+        "nameEn": "High Interrogator Gerstahn",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 80,
+      "dungeonId": "blackrock_depths",
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 3,
+      "stageNameCn": "黑石深渊-第三关",
+      "monsterGroup": [
+        "mob_dark_iron_soldier",
+        "mob_dark_iron_technician",
+        "mob_fire_elemental",
+        "mob_shadow_shaman",
+        "mob_war_golem",
+        "mob_anvilrage",
+        "mob_soulbringer",
+        "mob_magmus",
+        "mob_dark_iron_smiths"
+      ],
+      "finalBoss": {
+        "nameCn": "洛格·罗卡",
+        "nameEn": "Roccor",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 81,
+      "dungeonId": "blackrock_depths",
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 4,
+      "stageNameCn": "黑石深渊-第四关",
+      "monsterGroup": [
+        "mob_dark_iron_soldier",
+        "mob_dark_iron_technician",
+        "mob_fire_elemental",
+        "mob_shadow_shaman",
+        "mob_war_golem",
+        "mob_anvilrage",
+        "mob_soulbringer",
+        "mob_magmus",
+        "mob_dark_iron_smiths"
+      ],
+      "finalBoss": {
+        "nameCn": "犬王格雷布玛",
+        "nameEn": "Houndmaster Grebmar",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 82,
+      "dungeonId": "blackrock_depths",
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 5,
+      "stageNameCn": "黑石深渊-第五关",
+      "monsterGroup": [
+        "mob_dark_iron_soldier",
+        "mob_dark_iron_technician",
+        "mob_fire_elemental",
+        "mob_shadow_shaman",
+        "mob_war_golem",
+        "mob_anvilrage",
+        "mob_soulbringer",
+        "mob_magmus",
+        "mob_dark_iron_smiths"
+      ],
+      "finalBoss": {
+        "nameCn": "灰烬领主因西迪乌斯",
+        "nameEn": "Lord Incendius",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 83,
+      "dungeonId": "blackrock_depths",
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 6,
+      "stageNameCn": "黑石深渊-第六关",
+      "monsterGroup": [
+        "mob_dark_iron_soldier",
+        "mob_dark_iron_technician",
+        "mob_fire_elemental",
+        "mob_shadow_shaman",
+        "mob_war_golem",
+        "mob_anvilrage",
+        "mob_soulbringer",
+        "mob_magmus",
+        "mob_dark_iron_smiths"
+      ],
+      "finalBoss": {
+        "nameCn": "将军安格博格",
+        "nameEn": "General Angerforge",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 84,
+      "dungeonId": "blackrock_depths",
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 7,
+      "stageNameCn": "黑石深渊-第七关",
+      "monsterGroup": [
+        "mob_dark_iron_soldier",
+        "mob_dark_iron_technician",
+        "mob_fire_elemental",
+        "mob_shadow_shaman",
+        "mob_war_golem",
+        "mob_anvilrage",
+        "mob_soulbringer",
+        "mob_magmus",
+        "mob_dark_iron_smiths"
+      ],
+      "finalBoss": {
+        "nameCn": "傀儡领主阿基尔玛",
+        "nameEn": "Golem Lord Argelmach",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 85,
+      "dungeonId": "blackrock_depths",
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 8,
+      "stageNameCn": "黑石深渊-第八关",
+      "monsterGroup": [
+        "mob_dark_iron_soldier",
+        "mob_dark_iron_technician",
+        "mob_fire_elemental",
+        "mob_shadow_shaman",
+        "mob_war_golem",
+        "mob_anvilrage",
+        "mob_soulbringer",
+        "mob_magmus",
+        "mob_dark_iron_smiths"
+      ],
+      "finalBoss": {
+        "nameCn": "赫维·黑潮",
+        "nameEn": "Hurley Blackbreath",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 86,
+      "dungeonId": "blackrock_depths",
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 9,
+      "stageNameCn": "黑石深渊-第九关",
+      "monsterGroup": [
+        "mob_dark_iron_soldier",
+        "mob_dark_iron_technician",
+        "mob_fire_elemental",
+        "mob_shadow_shaman",
+        "mob_war_golem",
+        "mob_anvilrage",
+        "mob_soulbringer",
+        "mob_magmus",
+        "mob_dark_iron_smiths"
+      ],
+      "finalBoss": {
+        "nameCn": "执政官鲜血",
+        "nameEn": "Phalanx",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 87,
+      "dungeonId": "blackrock_depths",
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 10,
+      "stageNameCn": "黑石深渊-第十关",
+      "monsterGroup": [
+        "mob_dark_iron_soldier",
+        "mob_dark_iron_technician",
+        "mob_fire_elemental",
+        "mob_shadow_shaman",
+        "mob_war_golem",
+        "mob_anvilrage",
+        "mob_soulbringer",
+        "mob_magmus",
+        "mob_dark_iron_smiths"
+      ],
+      "finalBoss": {
+        "nameCn": "七贤",
+        "nameEn": "The Seven",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 88,
+      "dungeonId": "blackrock_depths",
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 11,
+      "stageNameCn": "黑石深渊-第十一关",
+      "monsterGroup": [
+        "mob_dark_iron_soldier",
+        "mob_dark_iron_technician",
+        "mob_fire_elemental",
+        "mob_shadow_shaman",
+        "mob_war_golem",
+        "mob_anvilrage",
+        "mob_soulbringer",
+        "mob_magmus",
+        "mob_dark_iron_smiths"
+      ],
+      "finalBoss": {
+        "nameCn": "麦姆·格洛格",
+        "nameEn": "Magmus",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 89,
+      "dungeonId": "blackrock_depths",
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 12,
+      "stageNameCn": "黑石深渊-第十二关",
+      "monsterGroup": [
+        "mob_dark_iron_soldier",
+        "mob_dark_iron_technician",
+        "mob_fire_elemental",
+        "mob_shadow_shaman",
+        "mob_war_golem",
+        "mob_anvilrage",
+        "mob_soulbringer",
+        "mob_magmus",
+        "mob_dark_iron_smiths"
+      ],
+      "finalBoss": {
+        "nameCn": "达格兰·索瑞森",
+        "nameEn": "Emperor Dagran Thaurissan",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 90,
+      "dungeonId": "dire_maul",
+      "dungeonNameCn": "厄运之槌",
+      "dungeonNameEn": "Dire Maul",
+      "stageNumber": 1,
+      "stageNameCn": "厄运之槌-第一关",
+      "monsterGroup": [
+        "mob_warpwood_tangler",
+        "mob_warpwood_guardian",
+        "mob_wild_satyr",
+        "mob_phase_hunter",
+        "mob_twisted_alder",
+        "mob_gordok_ogre",
+        "mob_master_woothes",
+        "mob_hydrospawn_minion",
+        "mob_ghostly_highborne"
+      ],
+      "finalBoss": {
+        "nameCn": "普斯林",
+        "nameEn": "Pusillin",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 91,
+      "dungeonId": "dire_maul",
+      "dungeonNameCn": "厄运之槌",
+      "dungeonNameEn": "Dire Maul",
+      "stageNumber": 2,
+      "stageNameCn": "厄运之槌-第二关",
+      "monsterGroup": [
+        "mob_warpwood_tangler",
+        "mob_warpwood_guardian",
+        "mob_wild_satyr",
+        "mob_phase_hunter",
+        "mob_twisted_alder",
+        "mob_gordok_ogre",
+        "mob_master_woothes",
+        "mob_hydrospawn_minion",
+        "mob_ghostly_highborne"
+      ],
+      "finalBoss": {
+        "nameCn": "泽林·霍恩胡夫",
+        "nameEn": "Zevrim Thornhoof",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "其他",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 92,
+      "dungeonId": "dire_maul",
+      "dungeonNameCn": "厄运之槌",
+      "dungeonNameEn": "Dire Maul",
+      "stageNumber": 3,
+      "stageNameCn": "厄运之槌-第三关",
+      "monsterGroup": [
+        "mob_warpwood_tangler",
+        "mob_warpwood_guardian",
+        "mob_wild_satyr",
+        "mob_phase_hunter",
+        "mob_twisted_alder",
+        "mob_gordok_ogre",
+        "mob_master_woothes",
+        "mob_hydrospawn_minion",
+        "mob_ghostly_highborne"
+      ],
+      "finalBoss": {
+        "nameCn": "海杜斯彭",
+        "nameEn": "Hydrospawn",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "元素",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 93,
+      "dungeonId": "dire_maul",
+      "dungeonNameCn": "厄运之槌",
+      "dungeonNameEn": "Dire Maul",
+      "stageNumber": 4,
+      "stageNameCn": "厄运之槌-第四关",
+      "monsterGroup": [
+        "mob_warpwood_tangler",
+        "mob_warpwood_guardian",
+        "mob_wild_satyr",
+        "mob_phase_hunter",
+        "mob_twisted_alder",
+        "mob_gordok_ogre",
+        "mob_master_woothes",
+        "mob_hydrospawn_minion",
+        "mob_ghostly_highborne"
+      ],
+      "finalBoss": {
+        "nameCn": "利斯坦德里斯",
+        "nameEn": "Lethtendris",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 94,
+      "dungeonId": "dire_maul",
+      "dungeonNameCn": "厄运之槌",
+      "dungeonNameEn": "Dire Maul",
+      "stageNumber": 5,
+      "stageNameCn": "厄运之槌-第五关",
+      "monsterGroup": [
+        "mob_warpwood_tangler",
+        "mob_warpwood_guardian",
+        "mob_wild_satyr",
+        "mob_phase_hunter",
+        "mob_twisted_alder",
+        "mob_gordok_ogre",
+        "mob_master_woothes",
+        "mob_hydrospawn_minion",
+        "mob_ghostly_highborne"
+      ],
+      "finalBoss": {
+        "nameCn": "奥兹恩",
+        "nameEn": "Alzzin the Wildshaper",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "其他",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 95,
+      "dungeonId": "stratholme",
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 1,
+      "stageNameCn": "斯坦索姆-第一关",
+      "monsterGroup": [
+        "mob_ghoul",
+        "mob_stratholme_skeletal_warrior",
+        "mob_stratholme_skeletal_mage",
+        "mob_cult_of_the_damned",
+        "mob_abomination",
+        "mob_plague_spider",
+        "mob_stonespine",
+        "mob_skeletal_servant",
+        "mob_crimson_fanatic"
+      ],
+      "finalBoss": {
+        "nameCn": "不可宽恕者",
+        "nameEn": "The Unforgiven",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 96,
+      "dungeonId": "stratholme",
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 2,
+      "stageNameCn": "斯坦索姆-第二关",
+      "monsterGroup": [
+        "mob_ghoul",
+        "mob_stratholme_skeletal_warrior",
+        "mob_stratholme_skeletal_mage",
+        "mob_cult_of_the_damned",
+        "mob_abomination",
+        "mob_plague_spider",
+        "mob_stonespine",
+        "mob_skeletal_servant",
+        "mob_crimson_fanatic"
+      ],
+      "finalBoss": {
+        "nameCn": "心碎者弗雷斯特恩",
+        "nameEn": "Hearthsinger Forresten",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 97,
+      "dungeonId": "stratholme",
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 3,
+      "stageNameCn": "斯坦索姆-第三关",
+      "monsterGroup": [
+        "mob_ghoul",
+        "mob_stratholme_skeletal_warrior",
+        "mob_stratholme_skeletal_mage",
+        "mob_cult_of_the_damned",
+        "mob_abomination",
+        "mob_plague_spider",
+        "mob_stonespine",
+        "mob_skeletal_servant",
+        "mob_crimson_fanatic"
+      ],
+      "finalBoss": {
+        "nameCn": "残忍的蒂米",
+        "nameEn": "Timmy the Cruel",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 98,
+      "dungeonId": "stratholme",
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 4,
+      "stageNameCn": "斯坦索姆-第四关",
+      "monsterGroup": [
+        "mob_ghoul",
+        "mob_stratholme_skeletal_warrior",
+        "mob_stratholme_skeletal_mage",
+        "mob_cult_of_the_damned",
+        "mob_abomination",
+        "mob_plague_spider",
+        "mob_stonespine",
+        "mob_skeletal_servant",
+        "mob_crimson_fanatic"
+      ],
+      "finalBoss": {
+        "nameCn": "指挥官马洛尔",
+        "nameEn": "Commander Malor",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 99,
+      "dungeonId": "stratholme",
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 5,
+      "stageNameCn": "斯坦索姆-第五关",
+      "monsterGroup": [
+        "mob_ghoul",
+        "mob_stratholme_skeletal_warrior",
+        "mob_stratholme_skeletal_mage",
+        "mob_cult_of_the_damned",
+        "mob_abomination",
+        "mob_plague_spider",
+        "mob_stonespine",
+        "mob_skeletal_servant",
+        "mob_crimson_fanatic"
+      ],
+      "finalBoss": {
+        "nameCn": "威尔·破望者",
+        "nameEn": "Willey Hopebreaker",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 100,
+      "dungeonId": "stratholme",
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 6,
+      "stageNameCn": "斯坦索姆-第六关",
+      "monsterGroup": [
+        "mob_ghoul",
+        "mob_stratholme_skeletal_warrior",
+        "mob_stratholme_skeletal_mage",
+        "mob_cult_of_the_damned",
+        "mob_abomination",
+        "mob_plague_spider",
+        "mob_stonespine",
+        "mob_skeletal_servant",
+        "mob_crimson_fanatic"
+      ],
+      "finalBoss": {
+        "nameCn": "教官加尔福德",
+        "nameEn": "Instructor Galford",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 101,
+      "dungeonId": "stratholme",
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 7,
+      "stageNameCn": "斯坦索姆-第七关",
+      "monsterGroup": [
+        "mob_ghoul",
+        "mob_stratholme_skeletal_warrior",
+        "mob_stratholme_skeletal_mage",
+        "mob_cult_of_the_damned",
+        "mob_abomination",
+        "mob_plague_spider",
+        "mob_stonespine",
+        "mob_skeletal_servant",
+        "mob_crimson_fanatic"
+      ],
+      "finalBoss": {
+        "nameCn": "巴尔纳扎尔",
+        "nameEn": "Balnazzar",
+        "attackType": "远程",
+        "role": "辅助",
+        "creatureType": "亡灵",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 102,
+      "dungeonId": "scholomance",
+      "dungeonNameCn": "通灵学院",
+      "dungeonNameEn": "Scholomance",
+      "stageNumber": 1,
+      "stageNameCn": "通灵学院-第一关",
+      "monsterGroup": [
+        "mob_scholomance_student",
+        "mob_scholomance_adept",
+        "mob_dark_summoner",
+        "mob_scholomance_handler",
+        "mob_scholomance_necrolyte",
+        "mob_scholomance_necromancer",
+        "mob_scholomance_wight",
+        "mob_scholomance_wraith",
+        "mob_scholomance_dark_adept"
+      ],
+      "finalBoss": {
+        "nameCn": "严寒导师",
+        "nameEn": "Instructor Chillheart",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 103,
+      "dungeonId": "scholomance",
+      "dungeonNameCn": "通灵学院",
+      "dungeonNameEn": "Scholomance",
+      "stageNumber": 2,
+      "stageNameCn": "通灵学院-第二关",
+      "monsterGroup": [
+        "mob_scholomance_student",
+        "mob_scholomance_adept",
+        "mob_dark_summoner",
+        "mob_scholomance_handler",
+        "mob_scholomance_necrolyte",
+        "mob_scholomance_necromancer",
+        "mob_scholomance_wight",
+        "mob_scholomance_wraith",
+        "mob_scholomance_dark_adept"
+      ],
+      "finalBoss": {
+        "nameCn": "贾迪斯·巴罗夫",
+        "nameEn": "Jandice Barov",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 104,
+      "dungeonId": "scholomance",
+      "dungeonNameCn": "通灵学院",
+      "dungeonNameEn": "Scholomance",
+      "stageNumber": 3,
+      "stageNameCn": "通灵学院-第三关",
+      "monsterGroup": [
+        "mob_scholomance_student",
+        "mob_scholomance_adept",
+        "mob_dark_summoner",
+        "mob_scholomance_handler",
+        "mob_scholomance_necrolyte",
+        "mob_scholomance_necromancer",
+        "mob_scholomance_wight",
+        "mob_scholomance_wraith",
+        "mob_scholomance_dark_adept"
+      ],
+      "finalBoss": {
+        "nameCn": "骨鳞",
+        "nameEn": "Rattlegore",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 105,
+      "dungeonId": "scholomance",
+      "dungeonNameCn": "通灵学院",
+      "dungeonNameEn": "Scholomance",
+      "stageNumber": 4,
+      "stageNameCn": "通灵学院-第四关",
+      "monsterGroup": [
+        "mob_scholomance_student",
+        "mob_scholomance_adept",
+        "mob_dark_summoner",
+        "mob_scholomance_handler",
+        "mob_scholomance_necrolyte",
+        "mob_scholomance_necromancer",
+        "mob_scholomance_wight",
+        "mob_scholomance_wraith",
+        "mob_scholomance_dark_adept"
+      ],
+      "finalBoss": {
+        "nameCn": "莉莉安·沃斯",
+        "nameEn": "Lilian Voss",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 106,
+      "dungeonId": "scholomance",
+      "dungeonNameCn": "通灵学院",
+      "dungeonNameEn": "Scholomance",
+      "stageNumber": 5,
+      "stageNameCn": "通灵学院-第五关",
+      "monsterGroup": [
+        "mob_scholomance_student",
+        "mob_scholomance_adept",
+        "mob_dark_summoner",
+        "mob_scholomance_handler",
+        "mob_scholomance_necrolyte",
+        "mob_scholomance_necromancer",
+        "mob_scholomance_wight",
+        "mob_scholomance_wraith",
+        "mob_scholomance_dark_adept"
+      ],
+      "finalBoss": {
+        "nameCn": "黑暗院长加丁",
+        "nameEn": "Darkmaster Gandling",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "亡灵",
+        "isFinalBoss": true
+      }
+    },
+    {
+      "chapterIndex": 107,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 1,
+      "stageNameCn": "黑石塔下层-第一关",
+      "monsterGroup": [
+        "mob_blackrock_warrior",
+        "mob_blackrock_sorcerer",
+        "mob_blackrock_drakonid",
+        "mob_flamekin",
+        "mob_molten_destroyer",
+        "mob_shadow_hunter",
+        "mob_warbringer",
+        "mob_warlord",
+        "mob_lower_blackrock_spire_dark_iron_technician",
+        "mob_hellfire_imp"
+      ],
+      "finalBoss": {
+        "nameCn": "奥莫克将军",
+        "nameEn": "Highlord Omokk",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 108,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 2,
+      "stageNameCn": "黑石塔下层-第二关",
+      "monsterGroup": [
+        "mob_blackrock_warrior",
+        "mob_blackrock_sorcerer",
+        "mob_blackrock_drakonid",
+        "mob_flamekin",
+        "mob_molten_destroyer",
+        "mob_shadow_hunter",
+        "mob_warbringer",
+        "mob_warlord",
+        "mob_lower_blackrock_spire_dark_iron_technician",
+        "mob_hellfire_imp"
+      ],
+      "finalBoss": {
+        "nameCn": "暗影猎手沃什加金",
+        "nameEn": "Shadow Hunter Vosh'gajin",
+        "attackType": "远程",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 109,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 3,
+      "stageNameCn": "黑石塔下层-第三关",
+      "monsterGroup": [
+        "mob_blackrock_warrior",
+        "mob_blackrock_sorcerer",
+        "mob_blackrock_drakonid",
+        "mob_flamekin",
+        "mob_molten_destroyer",
+        "mob_shadow_hunter",
+        "mob_warbringer",
+        "mob_warlord",
+        "mob_lower_blackrock_spire_dark_iron_technician",
+        "mob_hellfire_imp"
+      ],
+      "finalBoss": {
+        "nameCn": "战王沃恩",
+        "nameEn": "War Master Voone",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 110,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 4,
+      "stageNameCn": "黑石塔下层-第四关",
+      "monsterGroup": [
+        "mob_blackrock_warrior",
+        "mob_blackrock_sorcerer",
+        "mob_blackrock_drakonid",
+        "mob_flamekin",
+        "mob_molten_destroyer",
+        "mob_shadow_hunter",
+        "mob_warbringer",
+        "mob_warlord",
+        "mob_lower_blackrock_spire_dark_iron_technician",
+        "mob_hellfire_imp"
+      ],
+      "finalBoss": {
+        "nameCn": "阴燃蛛母",
+        "nameEn": "Mother Smolderweb",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 111,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 5,
+      "stageNameCn": "黑石塔下层-第五关",
+      "monsterGroup": [
+        "mob_blackrock_warrior",
+        "mob_blackrock_sorcerer",
+        "mob_blackrock_drakonid",
+        "mob_flamekin",
+        "mob_molten_destroyer",
+        "mob_shadow_hunter",
+        "mob_warbringer",
+        "mob_warlord",
+        "mob_lower_blackrock_spire_dark_iron_technician",
+        "mob_hellfire_imp"
+      ],
+      "finalBoss": {
+        "nameCn": "厄运嚎叫者乌罗克",
+        "nameEn": "Urok Doomhowl",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 112,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 6,
+      "stageNameCn": "黑石塔下层-第六关",
+      "monsterGroup": [
+        "mob_blackrock_warrior",
+        "mob_blackrock_sorcerer",
+        "mob_blackrock_drakonid",
+        "mob_flamekin",
+        "mob_molten_destroyer",
+        "mob_shadow_hunter",
+        "mob_warbringer",
+        "mob_warlord",
+        "mob_lower_blackrock_spire_dark_iron_technician",
+        "mob_hellfire_imp"
+      ],
+      "finalBoss": {
+        "nameCn": "军需官齐格里斯",
+        "nameEn": "Quartermaster Zigris",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 113,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 7,
+      "stageNameCn": "黑石塔下层-第七关",
+      "monsterGroup": [
+        "mob_blackrock_warrior",
+        "mob_blackrock_sorcerer",
+        "mob_blackrock_drakonid",
+        "mob_flamekin",
+        "mob_molten_destroyer",
+        "mob_shadow_hunter",
+        "mob_warbringer",
+        "mob_warlord",
+        "mob_lower_blackrock_spire_dark_iron_technician",
+        "mob_hellfire_imp"
+      ],
+      "finalBoss": {
+        "nameCn": "哈里肯",
+        "nameEn": "Halycon",
+        "attackType": "近战",
+        "role": "输出",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 114,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 8,
+      "stageNameCn": "黑石塔下层-第八关",
+      "monsterGroup": [
+        "mob_blackrock_warrior",
+        "mob_blackrock_sorcerer",
+        "mob_blackrock_drakonid",
+        "mob_flamekin",
+        "mob_molten_destroyer",
+        "mob_shadow_hunter",
+        "mob_warbringer",
+        "mob_warlord",
+        "mob_lower_blackrock_spire_dark_iron_technician",
+        "mob_hellfire_imp"
+      ],
+      "finalBoss": {
+        "nameCn": "奴隶主吉兹鲁尔",
+        "nameEn": "Gizrul the Slavener",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": false
+      }
+    },
+    {
+      "chapterIndex": 115,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 9,
+      "stageNameCn": "黑石塔下层-第九关",
+      "monsterGroup": [
+        "mob_blackrock_warrior",
+        "mob_blackrock_sorcerer",
+        "mob_blackrock_drakonid",
+        "mob_flamekin",
+        "mob_molten_destroyer",
+        "mob_shadow_hunter",
+        "mob_warbringer",
+        "mob_warlord",
+        "mob_lower_blackrock_spire_dark_iron_technician",
+        "mob_hellfire_imp"
+      ],
+      "finalBoss": {
+        "nameCn": "飞龙领主维尔姆萨拉克",
+        "nameEn": "Overlord Wyrmthalak",
+        "attackType": "近战",
+        "role": "坦克",
+        "creatureType": "生物",
+        "isFinalBoss": true
+      }
+    }
+  ]
+}

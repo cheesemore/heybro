@@ -25,6 +25,8 @@ dist-ssr
 
 # Local API keys (gptimage toolkit)
 gptimage/secrets_openai.txt
+# 勿将密钥提交到仓库根目录
+secrets_openai.txt
 gptimage/out_enemies_square/
 gptimage/out_enemies_circle/
 gptimage/新建文件夹/
@@ -32,3 +34,6 @@ gptimage/新建文件夹/
 # Python
 __pycache__/
 *.pyc
+
+# WoW 立绘批量：方图 + 圆图写入临时目录（含 wow-mobs-circle / wow-bosses-circle），再拷到 public/assets
+temp/wow-portraits-staging/

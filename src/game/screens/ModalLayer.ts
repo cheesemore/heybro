@@ -1,5 +1,6 @@
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
+import { drawGoldenSolidPanel, GOLDEN_PANEL_BODY } from '../ui/goldenSolidPanel';
 
 export class ModalLayer extends Container {
   constructor() {
@@ -37,7 +38,7 @@ export class ModalLayer extends Container {
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize,
-        fill: 0xe5e7eb,
+        fill: GOLDEN_PANEL_BODY,
         align: 'center',
         wordWrap: true,
         wordWrapWidth: wrapW,
@@ -58,11 +59,13 @@ export class ModalLayer extends Container {
     const ph = Math.min(maxPh, Math.max(minPh, padTop + contentH + gapBeforeBtn + okH + padBottom));
     const panelY = (GAME_HEIGHT - ph) / 2;
 
-    const panel = new Graphics();
-    panel.roundRect(0, 0, pw, ph, Math.round(18 * LAYOUT_SCALE)).fill(0x1f2937);
-    panel.stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x334155 });
-    panel.position.set((GAME_WIDTH - pw) / 2, panelY);
-    this.addChild(panel);
+    const panelPlate = new Graphics();
+    const panelFrame = new Graphics();
+    drawGoldenSolidPanel(panelPlate, panelFrame, pw, ph, LAYOUT_SCALE);
+    panelPlate.position.set((GAME_WIDTH - pw) / 2, panelY);
+    panelFrame.position.set((GAME_WIDTH - pw) / 2, panelY);
+    this.addChild(panelPlate);
+    this.addChild(panelFrame);
 
     body.position.set(GAME_WIDTH / 2, panelY + padTop);
     this.addChild(body);
