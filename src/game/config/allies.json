@@ -5,7 +5,7 @@
     "maxHp": 520,
     "atk": 15,
     "attackSpeed": 0.55,
-    "range": 42,
+    "range": 10,
     "moveSpeed": 560
   },
   "mage": {
@@ -41,7 +41,7 @@
     "maxHp": 640,
     "atk": 18,
     "attackSpeed": 0.5,
-    "range": 38,
+    "range": 10,
     "moveSpeed": 510
   }
 }

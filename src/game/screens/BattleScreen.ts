@@ -14,12 +14,40 @@ import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import type { AllyClass, BattleOutcome, BossId, EnemyClass, RoundMeta } from '../types';
 import type { RunState } from '../runState';
 import { ALLY_DEFS, ENEMY_DEFS, enemyCombatBaseAtkFromTable, scaledEnemyAtk, scaledEnemyHp } from '../unitDefs';
-import { BOSS_SKILL_COOLDOWN_SEC, getSkillById, skillFiresInBattle, skillParamDesignPx, skillParamNumber } from '../skillsCatalog';
-import { getHeroDef, heroStarStatMult } from '../heroRegistry';
+import {
+  allyInPunchSector,
+  countAlliesInPunchSector,
+  countAlliesNearOpenSegment,
+  distPointToSegment,
+  isBossConfiguredSkill,
+  type BossPunchWindupState,
+  type BossRushChargeState,
+  type BossRushWindupState,
+  type BossSkillCastState,
+} from '../bossConfiguredSkillTypes';
+import { BossPunchSectorWarnFx } from '../bossPunchSectorWarnFx';
+import { BossRushLineWarnFx } from '../bossRushLineWarnFx';
+import { getSkillById, skillFiresInBattle, skillParamDesignPx, skillParamNumber } from '../skillsCatalog';
+import {
+  getHeroDef,
+  heroDisplayNameWithSkillTier,
+  heroQualityAccent,
+  heroStarStatMult,
+  ARCHER_STRONG_STRIKE_BLUE_ID,
+  isArcherStrongStrikeAuraHero,
+  isKnightHolySanctionHero,
+  isMageArcaneMissilesHero,
+  isPriestMassShelterHero,
+  isWarriorWhirlwindHero,
+  KNIGHT_HOLY_SANCTION_BLUE_ID,
+  MAGE_ARCANE_BLUE_ID,
+  PRIEST_SHELTER_BLUE_ID,
+  WARRIOR_WHIRL_BLUE_ID,
+} from '../heroRegistry';
 import type { HeroId } from '../heroRegistry';
 import { getDeployedHeroIds, loadHeroMeta, maxHeroDeploySlots } from '../heroMetaStorage';
 import { bossDisplayName } from '../roundConfig';
-import { bossUidForBookChapter, getWowMob, resolveWowBookBossCombat, WOW_BOOK_BOSS_TABLE_DEFAULT } from '../wowBookData';
+import { bossUidForBookChapter, dungeonIdForBookChapter, getWowMob, resolveWowBookBossCombat } from '../wowBookData';
 import {
   allBondStacks,
   classBondHpAtkMultiplier,
@@ -33,10 +61,10 @@ import type {
   FloatEntry,
   GroundBurnPatch,
   HitSparkBurst,
+  HolySanctionStrikeFx,
   MeteorAnim,
   RayBurstFx,
   RingPulse,
-  ShockwaveBeamFx,
   SlashFx,
   TinySparkFx,
 } from '../battleVisuals';
@@ -44,27 +72,29 @@ import type { ProjectileVisualStyle } from '../battleVisuals';
 import {
   buildProjectileGraphic,
   createKnightAura,
+  createStrongStrikeHeroAura,
+  spawnArcaneTrailSpark,
   spawnDeathTrailSpark,
   spawnShadowTrailSpark,
   spawnDualShotSlash,
+  drawMulanWhirlwindBladeRing,
   spawnFloatNumber,
   spawnHealBurst,
+  spawnHolySanctionStrike,
   spawnMeteorAnim,
   spawnRingPulse,
   spawnGroundBurnPatch,
   spawnHitSparkBurst,
-  spawnTaurenShockwaveBeam,
   tickFloatEntries,
   tickHitSparkBursts,
+  tickHolySanctionStrikes,
   tickMeteorAnims,
   tickRayBurstFx,
   tickRingPulses,
-  tickShockwaveBeamFx,
   tickSlashFx,
   tickTinySparks,
 } from '../battleVisuals';
-import { SynergyOverlay } from './SynergyOverlay';
-import { createStyledGameButton } from '../ui/gameButtons';
+import { mountStretchedBattleFloorBackground } from '../dungeonBackground';
 import {
   BATTLE_ALLY_HP_RING_COLOR,
   BATTLE_ENEMY_HP_RING_COLOR,
@@ -72,7 +102,10 @@ import {
   createBattleEnemyToken,
   createBattleHeroToken,
   redrawHpRingPair,
+  redrawHpRingWithShield,
   unitFloatLabelOffsetYForInnerR,
+  battleTokenDiskFillRadiusPx,
+  battleTokenHpRingOuterRadiusPx,
 } from '../unitCircleTokens';
 
 const KNOCKBACK_TWEEN_DUR = 0.3;
@@ -88,6 +121,32 @@ const ATTACK_LUNGE_DUR = 0.12;
 const DEFAULT_ATTACK_RANGE_SLACK_PX = Math.max(5, Math.round(6 * LAYOUT_SCALE));
 
 const MAGE_SPLASH_RADIUS = Math.round(50 * LAYOUT_SCALE);
+
+/** 法师签名英雄（mage_01 / mage_02）奥术飞弹 */
+const ARCANE_MISSILE_CD_SEC = 12;
+const ARCANE_MISSILE_CHANNEL_SEC = 3;
+const ARCANE_MISSILE_INTERVAL_DEFAULT = 0.5;
+const ARCANE_MISSILE_INTERVAL_BOND10 = 0.3;
+const ARCANE_MISSILE_COEF_BASE = 1.5;
+const ARCANE_MISSILE_COEF_BOND6 = 2.25;
+
+/** 牧师签名英雄（priest_01 / priest_02）群体庇护 */
+const PRIEST_SHELTER_CD_BASE_SEC = 24;
+const PRIEST_SHELTER_CD_BOND6_SEC = 18;
+/** 骑士签名英雄（knight_01 / knight_02）神圣制裁 */
+const HOLY_SANCTION_CD_SEC = 18;
+const HOLY_SANCTION_COEF_BASE = 2;
+const HOLY_SANCTION_COEF_BOND6 = 4;
+const HOLY_SANCTION_STUN_SEC = 10;
+const HOLY_SANCTION_STUN_BOSS_SEC = 1;
+const HOLY_SANCTION_BOND15_CD_PULSE_SEC = 5;
+/** 旋风斩：表定周身逻辑半径（设计 px）；战士签名英雄 warrior_01 / warrior_02 共用 */
+const MULAN_WHIRL_STRIKE_RADIUS_DESIGN_PX = 50;
+const MULAN_WHIRL_R_BASE = Math.round(MULAN_WHIRL_STRIKE_RADIUS_DESIGN_PX * LAYOUT_SCALE);
+/** 触发后禁止再次触发旋风斩（秒），与环效/飘字约 1s 演出对齐 */
+const MULAN_WHIRL_PROC_LOCK_SEC = 1;
+/** 旋风斩刀刃内缘：在环形血条描边外缘之外再留出的设计像素（乘 `LAYOUT_SCALE`） */
+const MULAN_WHIRL_BLADE_OUTSIDE_HP_RING_DESIGN_PX = 2;
 const METEOR_INTERVAL = 20;
 const METEOR_SPLASH_RADIUS = Math.round(300 * LAYOUT_SCALE);
 
@@ -106,8 +165,6 @@ const LEAP_NYOFF_DESIGN_RAIDER = 44;
 const LEAP_NYOFF_DESIGN_BESERKER = 36;
 /** 投石车燃烧区 tick 受击火花概率（演出） */
 const CATAPULT_BURN_SPARK_CHANCE = 0.45;
-/** 剑圣镜像普攻间隔相对本体（分身特性） */
-const BLADEMASTER_MIRROR_ATTACK_INTERVAL_MULT = 1.1;
 
 /** 弹道无有效发射者单位时，用于命中判定的等效半径下限 */
 const PROJECTILE_HIT_BASE = Math.round(28 * LAYOUT_SCALE);
@@ -159,17 +216,34 @@ type DamageCtx = {
   /** 溅射、流星雨等可再走格挡 */
   bypassBlock?: boolean;
   damageTag?: 'crit' | 'magic';
+  /** 为 true 时伤害无视护盾（真实伤害） */
+  trueDamage?: boolean;
   /** 为 false 时不飘字（如盾反的连锁） */
   showFloat?: boolean;
   /** 战士生命共享：防止均摊递归 */
   skipWarriorShare?: boolean;
   /** 近战单位普通攻击（非技能弹道/溅射）；用于概率击退 */
   meleeBasic?: boolean;
+  /** skill_hot_strike：受击目标加强闪红与火花 */
+  hotStrikeHeavy?: boolean;
+};
+
+type MulanWhirlwindRingFx = {
+  g: Graphics;
+  t: number;
+  unitId: number;
+  strikeRadiusPx: number;
+  spin: number;
+  scarlet: boolean;
+  /** 已播伤害飘字档位数 0..10（每 0.1s 一档，共 10 次） */
+  damageFloatEmitted: number;
+  hits: { enemyUnitId: number; parts: readonly number[]; tag: 'crit' | 'magic' }[];
 };
 
 type SimUnit = {
   unitId: number;
   side: 'ally' | 'enemy';
+  /** 战场站位与判距锚点：圆形代币「圆盘几何中心」世界坐标（与碰撞圆心、`hitRadiusPx` 一致） */
   x: number;
   y: number;
   hp: number;
@@ -191,9 +265,12 @@ type SimUnit = {
   body: Container;
   hpRingCur?: Graphics;
   hpRingLost?: Graphics;
+  hpRingShield?: Graphics;
   /** 环形血条几何与配色（战斗代币） */
   tokenRing?: { cx: number; cy: number; ringR: number; thick: number; solidColor: number };
   aura?: Graphics;
+  /** 席拉拉强击光环脚底特效（与骑士 `aura` 分立） */
+  strongStrikeAuraGfx?: Graphics;
   bossId?: BossId;
   allyKind?: AllyClass;
   enemyPaint?: EnemyPaintKind;
@@ -243,8 +320,32 @@ type SimUnit = {
   boomSkipDeathAnim?: boolean;
   /** 暗矛击退：移动速度 -50%，剩余秒数 */
   moveSlowT?: number;
-  /** 牛头人酋长：首次致命伤触发「重生」（先锁 1 血再满血）后已消耗 */
-  taurenRebirthConsumed?: boolean;
+  /** 线性衰减减速（如冲锋击飞）：剩余秒、总时长、峰值比例（0.95 = 最高减 95% 移速） */
+  moveSlowDecayRem?: number;
+  moveSlowDecayDur?: number;
+  moveSlowDecayPeak?: number;
+  /** 穆兰旋风斩：触发后锁定再判定（秒） */
+  mulanWhirlwindProcLockT?: number;
+  /** 艾拉瑞奥术飞弹：引导结束后剩余冷却（秒） */
+  heroArcaneCdRem?: number;
+  /** 奥术飞弹引导中 */
+  heroArcaneChannel?: { targetId: number; t: number; boltsFired: number };
+  /** 当前护盾值（非 buff；上限不超过 maxHp） */
+  shield?: number;
+  /** 群体庇护技能剩余冷却（秒），牧师签名英雄 priest_01 / priest_02 */
+  heroShelterCdRem?: number;
+  /** 神圣制裁剩余冷却（秒），骑士签名英雄 knight_01 / knight_02 */
+  heroHolySanctionCdRem?: number;
+  /** 书本首领：配置型技能蓄力 / 冲锋中（仅 skill_boss_*） */
+  bossSkillCast?: BossSkillCastState;
+  /** skill_berserker：表底攻击力（随阶段乘算后再写入 `atk`） */
+  bossBerserkBaseAtk?: number;
+  /** 累计秒数，满 1 触发一次阶段与攻击力重算 */
+  bossBerserkSecAcc?: number;
+  /** 0 常态；1 一阶段狂暴；2 极度狂暴 */
+  bossBerserkStage?: 0 | 1 | 2;
+  /** 怒火粒子：喷发间隔累积 */
+  bossBerserkSparkAcc?: number;
   /** 击退：ease-out 缓动位移 */
   knockbackTween?: { elapsed: number; dur: number; sx: number; sy: number; tx: number; ty: number };
   /** 非首领死亡：根节点沿抛物线飞出；代币本体绕圆心自转（非绕脚底公转） */
@@ -268,6 +369,10 @@ type SimUnit = {
   tokenInnerR?: number;
 };
 
+/** 开场 3/2/1 各占 0.5s，期间战斗逻辑不推进 */
+const BATTLE_OPENING_COUNTDOWN_SEC = 1.5;
+const BATTLE_OPENING_COUNTDOWN_STEP_SEC = 0.5;
+
 export class BattleScreen extends Container {
   private readonly app: Application;
   private readonly run: RunState;
@@ -282,8 +387,13 @@ export class BattleScreen extends Container {
   private currentEnemyHp = 0;
   private initialAllyHp = 0;
   private currentAllyHp = 0;
-  /** 剑圣周期技等首领技能累计 CD（key: `${unitId}|${skillId}`） */
-  private bossSkillAcc = new Map<string, number>();
+  /** 书本首领配置技能：剩余冷却（秒），key `${unitId}|${skillId}` */
+  private bossSkillCdRemain = new Map<string, number>();
+  /** 上次该技能释放结束时间（用于多技能就绪时轮转） */
+  private bossSkillLastFinish = new Map<string, number>();
+  /** 屏幕振动剩余时间 / 幅度（逻辑像素量级） */
+  private battleShakeRemain = 0;
+  private battleShakeMag = 0;
   private ended = false;
   /** 战斗已分出胜负，延后展示结算（等死亡飞出等播完） */
   private pendingFinishOutcome: BattleOutcome | null = null;
@@ -309,10 +419,11 @@ export class BattleScreen extends Container {
   private readonly floatLayer = new Container();
   private floatWords: FloatEntry[] = [];
   private ringFx: RingPulse[] = [];
+  private mulanWhirlRings: MulanWhirlwindRingFx[] = [];
   private meteors: MeteorAnim[] = [];
   private slashes: SlashFx[] = [];
   private healBursts: RayBurstFx[] = [];
-  private shockBeams: ShockwaveBeamFx[] = [];
+  private holySanctionStrikes: HolySanctionStrikeFx[] = [];
   private projectiles: BattleProjectile[] = [];
   private hitSparks: HitSparkBurst[] = [];
   private catapultBurns: Array<{
@@ -327,9 +438,13 @@ export class BattleScreen extends Container {
   private readonly uiTestBattle: boolean;
   private uiTestSkillAcc = 0;
   private uiTestKeyHandler: ((e: KeyboardEvent) => void) | null = null;
+  /** 开场倒计时剩余（秒）；为 0 时战斗开始 */
+  private openingCountdownT = 0;
+  private readonly countdownGiant: Text;
 
   constructor(app: Application, run: RunState, meta: RoundMeta, onEnd: (outcome: BattleOutcome) => void) {
     super();
+    this.sortableChildren = true;
     this.app = app;
     this.run = run;
     this.meta = meta;
@@ -350,29 +465,17 @@ export class BattleScreen extends Container {
       : (meta.kind === 'boss' ? BOSS_BATTLE_SECONDS : NORMAL_BATTLE_SECONDS) + run.battleTimeBonusSec;
     this.timeLeft = this.timeLimit;
 
+    mountStretchedBattleFloorBackground(this, dungeonIdForBookChapter(this.run.bookChapterId));
+
+    /** 顶 HUD：棕色实底，高度至敌方总血量条下缘 +10 设计 px；底区仍半透明压暗 */
+    const hudTopPlateH = Math.round((126 + 20 + 10) * LAYOUT_SCALE);
     const bg = new Graphics();
-    bg.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(0x030712);
-    bg.rect(0, 0, GAME_WIDTH, Math.round(420 * LAYOUT_SCALE)).fill({ color: 0x0f172a, alpha: 0.55 });
+    bg.rect(0, 0, GAME_WIDTH, hudTopPlateH).fill(0x3d2e1f);
     bg.rect(0, Math.round(1380 * LAYOUT_SCALE), GAME_WIDTH, GAME_HEIGHT - Math.round(1380 * LAYOUT_SCALE)).fill({
       color: 0x020617,
-      alpha: 0.65,
+      alpha: 0.5,
     });
     this.addChild(bg);
-
-    const arenaPad = Math.round(12 * LAYOUT_SCALE);
-    const arenaTop = Math.round(188 * LAYOUT_SCALE);
-    const arenaH = Math.round(1012 * LAYOUT_SCALE);
-    const arena = new Graphics();
-    arena
-      .roundRect(arenaPad, arenaTop, GAME_WIDTH - arenaPad * 2, arenaH, Math.round(22 * LAYOUT_SCALE))
-      .fill({ color: 0x0c1222, alpha: 0.98 })
-      .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x3b5998, alpha: 0.55 });
-    this.addChild(arena);
-    const arenaRim = new Graphics();
-    arenaRim
-      .roundRect(arenaPad - 3, arenaTop - 3, GAME_WIDTH - (arenaPad - 3) * 2, arenaH + 6, Math.round(24 * LAYOUT_SCALE))
-      .stroke({ width: Math.max(3, Math.round(3 * LAYOUT_SCALE)), color: 0x38bdf8, alpha: 0.28 });
-    this.addChild(arenaRim);
 
     const stars = new Graphics();
     for (let i = 0; i < 130; i++) {
@@ -384,21 +487,21 @@ export class BattleScreen extends Container {
     this.addChild(stars);
 
     const hudPad = Math.round(28 * LAYOUT_SCALE);
-    const hint = new Text({
-      text: meta.uiTestBattle
-        ? `UI技能测试：约每 2.75s 自动触发复合特效 · 按 T 手动触发 · 歼敌或倒计时结束`
-        : `开打阶段：${meta.label} · 自动战斗`,
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(20 * LAYOUT_SCALE),
-        fill: meta.uiTestBattle ? 0xfbbf24 : 0x64748b,
-        wordWrap: true,
-        wordWrapWidth: GAME_WIDTH - Math.round(56 * LAYOUT_SCALE),
-        lineHeight: Math.round(28 * LAYOUT_SCALE),
-      },
-    });
-    hint.position.set(hudPad, Math.round(176 * LAYOUT_SCALE));
-    this.addChild(hint);
+    if (meta.uiTestBattle) {
+      const hint = new Text({
+        text: 'UI技能测试：约每 2.75s 自动触发复合特效 · 按 T 手动触发 · 歼敌或倒计时结束',
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontSize: Math.round(20 * LAYOUT_SCALE),
+          fill: 0xfbbf24,
+          wordWrap: true,
+          wordWrapWidth: GAME_WIDTH - Math.round(56 * LAYOUT_SCALE),
+          lineHeight: Math.round(28 * LAYOUT_SCALE),
+        },
+      });
+      hint.position.set(hudPad, Math.round(176 * LAYOUT_SCALE));
+      this.addChild(hint);
+    }
 
     this.addChild(this.unitLayer);
     const alliesSpawned = this.spawnAllies();
@@ -408,6 +511,26 @@ export class BattleScreen extends Container {
     this.jitterChaosSpawnPositions();
     this.applyRevengeSpiritOpening();
     this.applyUnitCollisionSeparation(5);
+    const devHooks = this.run.devBattleHooks;
+    const devHp = devHooks?.postSpawnHpMult;
+    const devHpSkipBoss = devHooks?.postSpawnHpMultSkipBoss === true;
+    if (typeof devHp === 'number' && devHp > 0 && devHp !== 1) {
+      for (const u of this.units) {
+        if (devHpSkipBoss && u.bossId) continue;
+        u.maxHp = Math.max(1, Math.round(u.maxHp * devHp));
+        u.hp = Math.min(u.maxHp, Math.round(u.hp * devHp));
+      }
+    }
+    const devBossHp = devHooks?.postSpawnBossHpMult;
+    if (typeof devBossHp === 'number' && devBossHp > 0 && devBossHp !== 1) {
+      for (const u of this.units) {
+        if (!u.bossId) continue;
+        u.maxHp = Math.max(1, Math.round(u.maxHp * devBossHp));
+        u.hp = Math.min(u.maxHp, Math.round(u.hp * devBossHp));
+      }
+    }
+    if (this.run.devBattleHooks) this.run.devBattleHooks = undefined;
+
     this.initialEnemyHp = this.units.filter((u) => u.side === 'enemy').reduce((s, u) => s + u.maxHp, 0);
     this.currentEnemyHp = this.units.filter((u) => u.side === 'enemy').reduce((s, u) => s + u.hp, 0);
     this.initialAllyHp = this.units.filter((u) => u.side === 'ally').reduce((s, u) => s + u.maxHp, 0);
@@ -459,24 +582,22 @@ export class BattleScreen extends Container {
     this.hudEnemyBar.position.set(hudPad, Math.round(126 * LAYOUT_SCALE));
     this.addChild(this.hudEnemyBar);
 
-    const bondW = Math.round(176 * LAYOUT_SCALE);
-    const bondH = Math.round(44 * LAYOUT_SCALE);
-    const bondBtn = createStyledGameButton('battleBond', {
-      text: '羁绊 / 策略',
-      width: bondW,
-      height: bondH,
-      fontSize: Math.round(20 * LAYOUT_SCALE),
+    this.openingCountdownT = this.uiTestBattle ? 0 : BATTLE_OPENING_COUNTDOWN_SEC;
+    this.countdownGiant = new Text({
+      text: '3',
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontSize: Math.round(220 * LAYOUT_SCALE),
+        fill: 0xf8fafc,
+        fontWeight: '900',
+        dropShadow: { alpha: 0.88, blur: 16, color: 0x000000, distance: 5 },
+      },
     });
-    bondBtn.position.set(GAME_WIDTH - hudPad - bondW, Math.round(44 * LAYOUT_SCALE));
-    bondBtn.on('pointertap', (e) => {
-      e.stopPropagation();
-      const ov = new SynergyOverlay(this.run, () => {
-        this.removeChild(ov);
-        ov.destroy({ children: true });
-      });
-      this.addChild(ov);
-    });
-    this.addChild(bondBtn);
+    this.countdownGiant.anchor.set(0.5, 0.5);
+    this.countdownGiant.position.set(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+    this.countdownGiant.zIndex = 5000;
+    this.countdownGiant.visible = this.openingCountdownT > 0;
+    this.addChild(this.countdownGiant);
 
     if (this.uiTestBattle) {
       this.uiTestKeyHandler = (e: KeyboardEvent): void => {
@@ -499,6 +620,10 @@ export class BattleScreen extends Container {
       window.removeEventListener('keydown', this.uiTestKeyHandler);
       this.uiTestKeyHandler = null;
     }
+    for (const r of this.mulanWhirlRings) {
+      r.g.destroy();
+    }
+    this.mulanWhirlRings.length = 0;
     this.app.ticker.remove(this._tick);
     super.destroy({ children: true });
   }
@@ -541,6 +666,33 @@ export class BattleScreen extends Container {
     return unitFloatLabelOffsetYForInnerR(u.hitRadiusPx);
   }
 
+  /** 代币 root 相对圆心向下的偏移（屏幕 +Y）；与 `unitCircleTokens` 圆盘局部圆心 (0,-innerR) 一致 */
+  private unitTokenRootYOffsetPx(u: SimUnit): number {
+    return u.tokenInnerR ?? u.hitRadiusPx;
+  }
+
+  /** root 原点世界 Y（代币底部）；仅用于头顶飘字锚点推导，环状/受击 FX 用 `u.y`（硬币中心） */
+  private unitTokenRootWorldY(u: SimUnit): number {
+    return u.y + this.unitTokenRootYOffsetPx(u);
+  }
+
+  private syncUnitRootFromStance(u: SimUnit): void {
+    const ir = this.unitTokenRootYOffsetPx(u);
+    u.root.position.set(u.x, u.y + ir);
+  }
+
+  /** 头顶飘字锚点 Y：与「站位=圆心」前 `rootY - floatLabelY` 世界位置一致 */
+  private floatAnchorY(u: SimUnit): number {
+    return this.unitTokenRootWorldY(u) - this.floatLabelY(u);
+  }
+
+  /**
+   * 战斗圆形代币圆盘几何中心世界坐标；与 `SimUnit.x` / `SimUnit.y`（站位圆心）一致。
+   */
+  private unitBattleTokenCenterXY(u: SimUnit): { x: number; y: number } {
+    return { x: u.x, y: u.y };
+  }
+
   /** 开发 · uiTestBattle：一次性打出多种飘字与 FX，便于验收层级与可读性 */
   private fireUiTestSkillBurst(): void {
     const refR = Math.round(ALLY_DEFS.warrior.hitRadius * LAYOUT_SCALE);
@@ -556,17 +708,31 @@ export class BattleScreen extends Container {
     const aOff = ally ? this.floatLabelY(ally) : fallbackOff;
     const eOff = enemy ? this.floatLabelY(enemy) : fallbackOff;
 
-    this.floatWords.push(spawnFloatNumber(this.floatLayer, ex, ey - eOff, '-99', 'damage'));
-    this.floatWords.push(spawnFloatNumber(this.floatLayer, ex, ey - eOff - 36, '-222', 'crit'));
-    this.floatWords.push(spawnFloatNumber(this.floatLayer, ex, ey - eOff - 72, '-88', 'magic'));
-    this.floatWords.push(spawnFloatNumber(this.floatLayer, ax, ay - aOff, '+55', 'heal'));
-    this.floatWords.push(spawnFloatNumber(this.floatLayer, ax, ay - aOff - 34, '格挡', 'block'));
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, ex, enemy ? this.floatAnchorY(enemy) : ey - eOff, '-99', 'damage'),
+    );
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, ex, enemy ? this.floatAnchorY(enemy) - 36 : ey - eOff - 36, '-222', 'crit'),
+    );
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, ex, enemy ? this.floatAnchorY(enemy) - 72 : ey - eOff - 72, '-88', 'magic'),
+    );
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, ax, ally ? this.floatAnchorY(ally) : ay - aOff, '+55', 'heal'),
+    );
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, ax, ally ? this.floatAnchorY(ally) - 34 : ay - aOff - 34, '格挡', 'block'),
+    );
     this.floatWords.push(spawnFloatNumber(this.floatLayer, cx, cy - fallbackOff, '测试技能', 'buff'));
 
-    this.ringFx.push(spawnRingPulse(this.fxLayer, ex, ey - 18, 52, 0x38bdf8, 0.42));
-    this.ringFx.push(spawnRingPulse(this.fxLayer, ax, ay - 22, 64, 0x4ade80, 0.38));
+    this.ringFx.push(
+      spawnRingPulse(this.fxLayer, ex, enemy ? enemy.y : ey, 52, 0x38bdf8, 0.42),
+    );
+    this.ringFx.push(
+      spawnRingPulse(this.fxLayer, ax, ally ? ally.y : ay, 64, 0x4ade80, 0.38),
+    );
     this.hitSparks.push(spawnHitSparkBurst(this.floatLayer, ex, ey));
-    this.hitSparks.push(spawnHitSparkBurst(this.floatLayer, ax, ay - 10));
+    this.hitSparks.push(spawnHitSparkBurst(this.floatLayer, ax, ay));
     this.healBursts.push(spawnHealBurst(this.fxLayer, ax, ay));
     this.slashes.push(spawnDualShotSlash(this.fxLayer, ex, ey));
     this.meteors.push(spawnMeteorAnim(this.fxLayer, ex, ey + Math.round(24 * LAYOUT_SCALE), METEOR_SPLASH_RADIUS));
@@ -596,24 +762,29 @@ export class BattleScreen extends Container {
   private syncUnitMoveSpeed(u: SimUnit): void {
     if (u.dead) return;
     if (u.speedBase == null) u.speedBase = u.speed;
-    const slow = (u.moveSlowT ?? 0) > 0 ? 0.5 : 1;
-    u.speed = u.speedBase * slow;
+    let slowMult = 1;
+    if ((u.moveSlowT ?? 0) > 0) slowMult = 0.5;
+    if ((u.moveSlowDecayRem ?? 0) > 0 && (u.moveSlowDecayDur ?? 0) > 0 && (u.moveSlowDecayPeak ?? 0) > 0) {
+      const ratio = (u.moveSlowDecayRem ?? 0) / (u.moveSlowDecayDur ?? 1);
+      slowMult *= 1 - (u.moveSlowDecayPeak ?? 0) * ratio;
+    }
+    u.speed = u.speedBase * slowMult;
   }
 
-  /** 受击者沿远离攻击者方向被推开（ease-out，首领受击者不触发 probability knockback 由调用方保证） */
+  /** 受击者沿远离攻击者方向被推开（ease-out）；首领不受击退 */
   private knockbackTargetFromAttacker(target: SimUnit, attacker: SimUnit, dist: number): void {
-    if (target.dead || (target.invulnerable && target.side === 'ally')) return;
+    if (target.dead || target.bossId || (target.invulnerable && target.side === 'ally')) return;
     const dx = target.x - attacker.x;
     const dy = target.y - attacker.y;
     const d = Math.hypot(dx, dy) || 1;
     let tx = target.x + (dx / d) * dist;
     let ty = target.y + (dy / d) * dist;
     if (target.side === 'ally') {
-      const c = this.clampAllyKnockbackXY(tx, ty);
+      const c = this.clampAllyKnockbackXY(tx, ty, this.unitTokenRootYOffsetPx(target));
       tx = c.x;
       ty = c.y;
     } else {
-      const c = this.clampEnemyKnockbackXY(tx, ty);
+      const c = this.clampEnemyKnockbackXY(tx, ty, this.unitTokenRootYOffsetPx(target));
       tx = c.x;
       ty = c.y;
     }
@@ -629,7 +800,7 @@ export class BattleScreen extends Container {
       this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x, target.y));
     }
     this.floatWords.push(
-      spawnFloatNumber(this.floatLayer, target.x, target.y - this.floatLabelY(target) - 36, '击退', 'magic'),
+      spawnFloatNumber(this.floatLayer, target.x, this.floatAnchorY(target) - 36, '击退', 'magic'),
     );
   }
 
@@ -641,7 +812,7 @@ export class BattleScreen extends Container {
     const d = Math.hypot(dx, dy) || 1;
     let tx = a.x + (dx / d) * dist;
     let ty = a.y + (dy / d) * dist;
-    const c = this.clampAllyKnockbackXY(tx, ty);
+    const c = this.clampAllyKnockbackXY(tx, ty, this.unitTokenRootYOffsetPx(a));
     tx = c.x;
     ty = c.y;
     a.knockbackTween = {
@@ -654,18 +825,20 @@ export class BattleScreen extends Container {
     };
   }
 
-  private clampAllyKnockbackXY(x: number, y: number): { x: number; y: number } {
+  private clampAllyKnockbackXY(x: number, y: number, rootYOffset: number): { x: number; y: number } {
     return {
       x: Math.max(KNOCKBACK_PAD_X, Math.min(GAME_WIDTH - KNOCKBACK_PAD_X, x)),
-      y: Math.max(ARENA_Y_MIN, Math.min(ARENA_Y_MAX, y)),
+      y: Math.max(ARENA_Y_MIN - rootYOffset, Math.min(ARENA_Y_MAX - rootYOffset, y)),
     };
   }
 
-  private clampEnemyKnockbackXY(x: number, y: number): { x: number; y: number } {
+  private clampEnemyKnockbackXY(x: number, y: number, rootYOffset: number): { x: number; y: number } {
     const padX = Math.round(38 * LAYOUT_SCALE);
+    const yLo = Math.round(195 * LAYOUT_SCALE);
+    const yHi = Math.round(1100 * LAYOUT_SCALE);
     return {
       x: Math.max(padX, Math.min(GAME_WIDTH - padX, x)),
-      y: Math.max(Math.round(195 * LAYOUT_SCALE), Math.min(Math.round(1100 * LAYOUT_SCALE), y)),
+      y: Math.max(yLo - rootYOffset, Math.min(yHi - rootYOffset, y)),
     };
   }
 
@@ -673,37 +846,19 @@ export class BattleScreen extends Container {
     if (attacker.side !== 'enemy' || !this.unitHasSkill(attacker, 'skill_darkspear_slow_knockback') || target.side !== 'ally' || target.dead) return;
     const ds = getSkillById('skill_darkspear_slow_knockback');
     if (Math.random() >= skillParamNumber(ds, 0, 0.1)) return;
+    this.logBattleSkill('skill_darkspear_slow_knockback', attacker, `→ ${this.unitDebugLabel(target)}`);
     this.knockbackAllyFromPoint(target, attacker.x, attacker.y, skillParamDesignPx(ds, 1, 100));
     target.stunT = Math.max(target.stunT ?? 0, skillParamNumber(ds, 2, 1));
     target.moveSlowT = skillParamNumber(ds, 3, 5);
     this.syncUnitMoveSpeed(target);
     this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x, target.y));
     this.slashes.push(spawnDualShotSlash(this.fxLayer, target.x, target.y));
-    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y - 18, 52, 0x2dd4bf, 0.42));
-    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y - 20, 76, 0x0d9488, 0.5));
-    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y - 14, 34, 0xf0fdfa, 0.32));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y, 52, 0x2dd4bf, 0.42));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y, 76, 0x0d9488, 0.5));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y, 34, 0xf0fdfa, 0.32));
     this.floatWords.push(
-      spawnFloatNumber(this.floatLayer, target.x, target.y - this.floatLabelY(target) - 48, '击退', 'magic'),
+      spawnFloatNumber(this.floatLayer, target.x, this.floatAnchorY(target) - 48, '击退', 'magic'),
     );
-  }
-
-  /** 牛头人酋长专属：「重生」满血特效 */
-  private procTaurenRebirthVfx(u: SimUnit): void {
-    this.floatWords.push(
-      spawnFloatNumber(this.floatLayer, u.x, u.y - this.floatLabelY(u) - 78, '重生', 'heal'),
-    );
-    const cols = [0xfef08a, 0xfbbf24, 0x22c55e, 0x38bdf8, 0xe9d5ff] as const;
-    for (let k = 0; k < 6; k++) {
-      this.ringFx.push(
-        spawnRingPulse(this.fxLayer, u.x, u.y - 18 - k * 4, 64 + k * 38, cols[k % cols.length]!, 0.42 + k * 0.05),
-      );
-    }
-    this.ringFx.push(spawnRingPulse(this.fxLayer, u.x, u.y - 26, 220, 0xfacc15, 0.28));
-    for (let i = 0; i < 4; i++) {
-      this.hitSparks.push(
-        spawnHitSparkBurst(this.fxLayer, u.x + (Math.random() - 0.5) * 40 * LAYOUT_SCALE, u.y + (Math.random() - 0.5) * 30 * LAYOUT_SCALE),
-      );
-    }
   }
 
   private abominationCleaveFollowup(attacker: SimUnit, primary: SimUnit): void {
@@ -724,11 +879,17 @@ export class BattleScreen extends Container {
       this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, a.x, a.y));
     }
     if (extras.length) {
-      this.ringFx.push(spawnRingPulse(this.fxLayer, primary.x, primary.y - 18, 56, 0x4ade80, 0.35));
+      this.logBattleSkill('skill_abomination_cleave', attacker, `extras=${extras.length} primary=#${primary.unitId}`);
+      this.ringFx.push(spawnRingPulse(this.fxLayer, primary.x, primary.y, 56, 0x4ade80, 0.35));
     }
   }
 
   private applyBloodlustBuff(_caster: SimUnit, recipient: SimUnit): void {
+    this.logBattleSkill(
+      'skill_shaman_bloodlust',
+      _caster,
+      `→ ${this.unitDebugLabel(recipient)}`,
+    );
     const sh = getSkillById('skill_shaman_bloodlust');
     const buffSec = skillParamNumber(sh, 2, 12);
     const atkMul = skillParamNumber(sh, 3, 1.5);
@@ -737,11 +898,11 @@ export class BattleScreen extends Container {
     recipient.attackIntervalBase = base;
     recipient.attackInterval = base / atkMul;
     this.floatWords.push(
-      spawnFloatNumber(this.floatLayer, recipient.x, recipient.y - this.floatLabelY(recipient) - 40, '嗜血术', 'buff'),
+      spawnFloatNumber(this.floatLayer, recipient.x, this.floatAnchorY(recipient) - 40, '嗜血术', 'buff'),
     );
     for (let k = 0; k < 3; k++) {
       this.ringFx.push(
-        spawnRingPulse(this.fxLayer, recipient.x, recipient.y - 16 + k * 3, 52 + k * 12, 0xdc2626, 0.36 + k * 0.05),
+        spawnRingPulse(this.fxLayer, recipient.x, recipient.y + k * 3, 52 + k * 12, 0xdc2626, 0.36 + k * 0.05),
       );
     }
   }
@@ -827,9 +988,10 @@ export class BattleScreen extends Container {
     const yMax = Math.round(1108 * LAYOUT_SCALE);
 
     const clampOne = (u: SimUnit): void => {
+      const ir = this.unitTokenRootYOffsetPx(u);
       u.x = Math.max(padX, Math.min(GAME_WIDTH - padX, u.x));
-      u.y = Math.max(yMin, Math.min(yMax, u.y));
-      u.root.position.set(u.x, u.y);
+      u.y = Math.max(yMin - ir, Math.min(yMax - ir, u.y));
+      this.syncUnitRootFromStance(u);
     };
 
     for (let it = 0; it < iterations; it++) {
@@ -847,10 +1009,18 @@ export class BattleScreen extends Container {
           const push = (minD - dist) * (bothAlly ? 0.34 : 0.52);
           const nx = dx / dist;
           const ny = dy / dist;
-          a.x -= nx * push;
-          a.y -= ny * push;
-          b.x += nx * push;
-          b.y += ny * push;
+          if (a.bossId && !b.bossId) {
+            b.x += nx * push * 2;
+            b.y += ny * push * 2;
+          } else if (b.bossId && !a.bossId) {
+            a.x -= nx * push * 2;
+            a.y -= ny * push * 2;
+          } else {
+            a.x -= nx * push;
+            a.y -= ny * push;
+            b.x += nx * push;
+            b.y += ny * push;
+          }
         }
       }
     }
@@ -901,6 +1071,14 @@ export class BattleScreen extends Container {
     const mirrorY = arenaTop + arenaH * 0.4;
     const ac = this.allyGridAnchor(4);
     return { ax: ac.x, ay: 2 * mirrorY - ac.y };
+  }
+
+  /** 敌方前排锚点（靠战场中线、贴近我方一侧；与近战小怪扎堆 y 一致） */
+  private enemyFrontLineSpawnXY(): { x: number; y: number } {
+    const { ax, ay } = this.enemyHordeAnchorXY();
+    const yStretch = Math.round(165 * LAYOUT_SCALE);
+    const yFront = ay + yStretch * 0.48;
+    return this.clampBattleSpawnXY(ax, yFront);
   }
 
   /** 开局站位：约束在 arena 内（与背景战场框一致） */
@@ -974,10 +1152,6 @@ export class BattleScreen extends Container {
     return out;
   }
 
-  private countAllyBodies(list: SimUnit[], cls: AllyClass): number {
-    return list.filter((u) => u.side === 'ally' && !u.heroId && u.allyKind === cls).length;
-  }
-
   /**
    * 已部署英雄登场点：场上已有同职业非英雄单位时，落在其位置质心附近；
    * 否则落在九宫「最前排」（slot 6–8，row 最大、靠敌侧）中心一带。
@@ -1008,10 +1182,11 @@ export class BattleScreen extends Container {
     return { x: cx + ox + sc.jx * 0.18, y: cy + sc.jy * 0.22 };
   }
 
-  /** 强化界面部署的英雄；含星级与「同职业兵」被动叠乘；登场点见 heroDeployedSpawnXY */
+  /** 强化界面部署的英雄；含星级与职业羁绊乘区；登场点见 heroDeployedSpawnXY */
   private spawnDeployedHeroes(boardAllies: SimUnit[]): SimUnit[] {
-    const cap = maxHeroDeploySlots();
-    const deployed = getDeployedHeroIds();
+    const hooks = this.run.devBattleHooks;
+    const cap = hooks ? Math.min(3, Math.max(1, Math.floor(hooks.heroSlotCap))) : maxHeroDeploySlots();
+    const deployed = hooks?.heroDeploy ?? getDeployedHeroIds();
     const meta = loadHeroMeta();
     const priestM = priestBondTeamMultiplier(this.bondStacks.priest);
     const bossHpM = this.meta.kind === 'boss' ? this.run.bossHpDerivedFinalHpMult : 1;
@@ -1036,18 +1211,24 @@ export class BattleScreen extends Container {
       const cls = hd.allyClass;
       const classM = classBondHpAtkMultiplier(this.bondStacks[cls]);
       const mult = classM * priestM;
-      const matchN = this.countAllyBodies(boardAllies, cls);
-      const bondAllyMult = 1 + 0.08 * matchN;
-      const eachHp = Math.max(
+      let eachHp = Math.max(
         1,
-        Math.round(hd.maxHp * starM * mult * bossHpM * growHp * bondAllyMult),
+        Math.round(hd.maxHp * starM * mult * bossHpM * growHp),
       );
-      const eachAtk = Math.max(
+      if (hid === PRIEST_SHELTER_BLUE_ID) {
+        eachHp = Math.max(1, Math.round(eachHp * 1.1));
+      }
+      let eachAtk = Math.max(
         1,
-        Math.round(hd.atk * starM * mult * bossAtkM * growAtk * bondAllyMult),
+        Math.round(hd.atk * starM * mult * bossAtkM * growAtk),
       );
+      if (hid === KNIGHT_HOLY_SANCTION_BLUE_ID) {
+        eachAtk = Math.max(1, Math.round(eachAtk * 1.1));
+      }
       let range = hd.range;
       if (cls === 'archer' && this.bondArcher12) range += 150;
+      if (hid === ARCHER_STRONG_STRIKE_BLUE_ID) range += 50;
+      const heroBonusCrit = hid === MAGE_ARCANE_BLUE_ID ? 0.1 : 0;
       const { x: sx, y: sy } = this.heroDeployedSpawnXY(boardAllies, cls, hi, nHero);
       hi += 1;
       if (cls === 'knight') {
@@ -1060,7 +1241,7 @@ export class BattleScreen extends Container {
             knightBond12: this.bondKnight12,
             knightDeathDenyLeft: this.bondKnight12 ? 1 : 0,
             invulnerable: true,
-            bonusCrit: 0,
+            bonusCrit: heroBonusCrit,
             hitRadiusDesign: hd.hitRadius,
             heroId: hid,
           }),
@@ -1069,7 +1250,7 @@ export class BattleScreen extends Container {
         out.push(
           this.makeUnit('ally', sx, sy, eachHp, eachAtk, hd.attackSpeed, range, hd.moveSpeed, hd.name, {
             allyKind: cls,
-            bonusCrit: 0,
+            bonusCrit: heroBonusCrit,
             hitRadiusDesign: hd.hitRadius,
             heroId: hid,
           }),
@@ -1110,9 +1291,10 @@ export class BattleScreen extends Container {
     const ymin = Math.round(220 * LAYOUT_SCALE);
     const ymax = Math.round(1040 * LAYOUT_SCALE);
     for (const u of this.units) {
+      const ir = this.unitTokenRootYOffsetPx(u);
       u.x = xmin + Math.random() * (xmax - xmin);
-      u.y = ymin + Math.random() * (ymax - ymin);
-      u.root.position.set(u.x, u.y);
+      u.y = ymin + Math.random() * (ymax - ymin) - ir;
+      this.syncUnitRootFromStance(u);
     }
   }
 
@@ -1172,16 +1354,12 @@ export class BattleScreen extends Container {
         const bc = resolveWowBookBossCombat(this.run.bookChapterId);
         const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable * 10, bookM);
         const atk = scaledEnemyAtk(chapter, ri, bc.combatBaseAtk, bookM);
-        const bj = this.scatterOffset(ri * 3 + 101 + bosses.length * 31);
         const bossLabel =
           wave.wowBossDisplayName && wave.wowBossDisplayName.trim().length > 0
             ? wave.wowBossDisplayName.trim()
             : bossDisplayName(wave.bossId);
         const bossCircleUid = bossUidForBookChapter(this.run.bookChapterId) ?? undefined;
-        const anchor = this.enemyHordeAnchorXY();
-        const bossX = anchor.ax + bj.jx * 0.28;
-        const bossY = anchor.ay - Math.round(118 * LAYOUT_SCALE) + bj.jy * 0.28;
-        const bp = this.clampBattleSpawnXY(bossX, bossY);
+        const bp = this.enemyFrontLineSpawnXY();
         bosses.push(
           this.makeUnit(
             'enemy',
@@ -1239,7 +1417,8 @@ export class BattleScreen extends Container {
                   enemyPaint: paint,
                   hitRadiusDesign: mob.hitRadius,
                   wowCirclePortraitUid: mob.monsterUid,
-                  ...(mob.skillIds !== undefined ? { enemySkillIds: [...mob.skillIds] } : {}),
+                  /** 仅书本行 `skillIds`（缺省或省略 = 无技能）；不按 `enemyPaint` 模板回填 */
+                  enemySkillIds: [...(mob.skillIds ?? [])],
                 }),
           });
         }
@@ -1288,6 +1467,10 @@ export class BattleScreen extends Container {
     return [...bosses, ...minions];
   }
 
+  /**
+   * 创建战斗单位。`x` / `y` 为代币 **root** 世界坐标（与圆形代币子节点局部 (0,-innerR) 圆心衔接）；
+   * `SimUnit.x` / `SimUnit.y` 存为圆盘几何中心（站位与判距锚点）。
+   */
   private makeUnit(
     side: 'ally' | 'enemy',
     x: number,
@@ -1316,8 +1499,9 @@ export class BattleScreen extends Container {
       /** 用书圆形代币立绘：`monsterUid` 或 `bossUid` */
       wowCirclePortraitUid?: string;
       /**
-       * 非首领小怪：`wowBookMonsters` 条目的 `skillIds`。
-       * 未传时仍用 `ENEMY_DEFS[enemyPaint].skillIds`（旧模板怪）；传空数组表示无技能。
+       * 非首领小怪：
+       * - 书本 `wowMobId`：`enemySkillIds` 必传，且仅来自该行的 `skillIds`（缺省 = `[]`），**不回填** `ENEMY_DEFS[enemyPaint]`。
+       * - 仅 `enemyPaint`（无书本 id）：`enemySkillIds` 未传时用 `ENEMY_DEFS[enemyPaint].skillIds`（与 `wowBookMonsters` 中同名 id 行一致）。
        */
       enemySkillIds?: string[];
       /**
@@ -1327,20 +1511,27 @@ export class BattleScreen extends Container {
     } = {},
   ): SimUnit {
     const root = new Container();
-    root.position.set(x, y);
 
     const hitRadiusPx = Math.round((opts.hitRadiusDesign ?? ENEMY_DEFS.grunt.hitRadius) * LAYOUT_SCALE);
 
     let aura: Graphics | undefined;
+    let strongStrikeAuraGfx: Graphics | undefined;
     if (side === 'ally' && opts.allyKind === 'knight') {
-      aura = createKnightAura(-hitRadiusPx);
+      aura = createKnightAura(hitRadiusPx);
+      aura.position.set(0, -hitRadiusPx);
       aura.visible = !!opts.invulnerable;
       root.addChild(aura);
+    }
+    if (side === 'ally' && opts.heroId && isArcherStrongStrikeAuraHero(opts.heroId)) {
+      strongStrikeAuraGfx = createStrongStrikeHeroAura(hitRadiusPx);
+      strongStrikeAuraGfx.position.set(0, -hitRadiusPx);
+      root.addChildAt(strongStrikeAuraGfx, 0);
     }
 
     let body: Container;
     let hpRingCur: Graphics | undefined;
     let hpRingLost: Graphics | undefined;
+    let hpRingShield: Graphics | undefined;
     let tokenRing: SimUnit['tokenRing'];
     let tokenDisk: Container | undefined;
     let tokenLetter: Text | undefined;
@@ -1353,6 +1544,7 @@ export class BattleScreen extends Container {
       body = parts.root;
       hpRingCur = parts.ringCur;
       hpRingLost = parts.ringLost;
+      hpRingShield = parts.ringShield;
       tokenDisk = parts.disk;
       tokenLetter = parts.letter;
       tokenInnerR = hitRadiusPx;
@@ -1371,6 +1563,7 @@ export class BattleScreen extends Container {
       body = parts.root;
       hpRingCur = parts.ringCur;
       hpRingLost = parts.ringLost;
+      hpRingShield = parts.ringShield;
       tokenDisk = parts.disk;
       tokenLetter = parts.letter;
       tokenInnerR = hitRadiusPx;
@@ -1393,6 +1586,27 @@ export class BattleScreen extends Container {
     }
     root.addChild(body);
 
+    if (opts.heroId) {
+      const hd = getHeroDef(opts.heroId);
+      if (hd) {
+        const nameStr = heroDisplayNameWithSkillTier(hd.name, this.bondStacks[hd.allyClass]);
+        const fy = unitFloatLabelOffsetYForInnerR(hitRadiusPx);
+        const nameTag = new Text({
+          text: nameStr,
+          style: {
+            fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+            fontSize: Math.max(10, Math.round(12 * LAYOUT_SCALE)),
+            fill: heroQualityAccent(hd.quality),
+            fontWeight: '700',
+            stroke: { color: 0x0f172a, width: Math.max(1, Math.round(1 * LAYOUT_SCALE)) },
+          },
+        });
+        nameTag.anchor.set(0.5, 1);
+        nameTag.position.set(0, -fy - Math.round(2 * LAYOUT_SCALE));
+        root.addChild(nameTag);
+      }
+    }
+
     let hitFlashOverlay: Graphics | undefined;
     if (tokenInnerR != null) {
       hitFlashOverlay = new Graphics();
@@ -1403,8 +1617,20 @@ export class BattleScreen extends Container {
     const enemyPaint: EnemyPaintKind | undefined =
       side === 'enemy' ? (opts.bossId ? this.bossEnemyPaint(opts.bossId) : opts.enemyPaint ?? 'grunt') : undefined;
 
+    const stanceIr = tokenInnerR ?? hitRadiusPx;
+    const stanceX = x;
+    const stanceY = y - stanceIr;
+
     let skillIds: string[] = [];
-    if (side === 'enemy') {
+    if (side === 'ally' && opts.heroId && isMageArcaneMissilesHero(opts.heroId)) {
+      skillIds = ['skill_hero_mage_arcane_missiles'];
+    } else if (side === 'ally' && opts.heroId && isPriestMassShelterHero(opts.heroId)) {
+      skillIds = ['skill_hero_priest_mass_shelter'];
+    } else if (side === 'ally' && opts.heroId && isArcherStrongStrikeAuraHero(opts.heroId)) {
+      skillIds = ['skill_hero_archer_strong_strike_aura'];
+    } else if (side === 'ally' && opts.heroId && isKnightHolySanctionHero(opts.heroId)) {
+      skillIds = ['skill_hero_knight_holy_sanction'];
+    } else if (side === 'enemy') {
       if (opts.bossId) {
         skillIds = opts.bossSkillIds !== undefined ? [...opts.bossSkillIds] : [];
       } else if (opts.enemyPaint) {
@@ -1419,8 +1645,8 @@ export class BattleScreen extends Container {
     const u: SimUnit = {
       unitId: this.allocUnitId(),
       side,
-      x,
-      y,
+      x: stanceX,
+      y: stanceY,
       hp,
       maxHp: hp,
       atk,
@@ -1436,12 +1662,14 @@ export class BattleScreen extends Container {
       body,
       hpRingCur,
       hpRingLost,
+      hpRingShield,
       tokenRing,
       tokenDisk,
       tokenLetter,
       tokenInnerR,
       hitFlashOverlay,
       aura,
+      strongStrikeAuraGfx,
       bossId: opts.bossId,
       allyKind: opts.allyKind,
       enemyPaint,
@@ -1470,6 +1698,13 @@ export class BattleScreen extends Container {
       evilFrenzyBuffT: side === 'enemy' && skillIds.includes('skill_evil_strenth') ? 0 : undefined,
       heroId: opts.heroId,
     };
+    if (side === 'enemy' && skillIds.includes('skill_berserker')) {
+      u.bossBerserkBaseAtk = atk;
+      u.bossBerserkSecAcc = 0;
+      u.bossBerserkStage = 0;
+      u.bossBerserkSparkAcc = 0;
+    }
+    this.syncUnitRootFromStance(u);
     if (opts.heroId) {
       u.root.scale.set(1.06);
     }
@@ -1481,9 +1716,16 @@ export class BattleScreen extends Container {
     const tr = u.tokenRing;
     const rc = u.hpRingCur;
     const rl = u.hpRingLost;
+    const rs = u.hpRingShield;
     if (!tr || !rc || !rl) return;
+    u.shield = Math.min(u.maxHp, Math.max(0, Math.floor(u.shield ?? 0)));
     const ratio = u.hp / Math.max(1, u.maxHp);
-    redrawHpRingPair(rc, rl, tr.cx, tr.cy, tr.ringR, tr.thick, ratio, tr.solidColor);
+    const shRatio = (u.shield ?? 0) / Math.max(1, u.maxHp);
+    if (rs) {
+      redrawHpRingWithShield(rc, rl, rs, tr.cx, tr.cy, tr.ringR, tr.thick, ratio, shRatio, tr.solidColor);
+    } else {
+      redrawHpRingPair(rc, rl, tr.cx, tr.cy, tr.ringR, tr.thick, ratio, tr.solidColor);
+    }
   }
 
   private syncHitFlash(u: SimUnit, dt: number): void {
@@ -1507,7 +1749,7 @@ export class BattleScreen extends Container {
     const e = 1 - (1 - p) ** 3;
     u.x = kb.sx + (kb.tx - kb.sx) * e;
     u.y = kb.sy + (kb.ty - kb.sy) * e;
-    u.root.position.set(u.x, u.y);
+    this.syncUnitRootFromStance(u);
     if (p >= 1) {
       delete u.knockbackTween;
       return false;
@@ -1627,21 +1869,26 @@ export class BattleScreen extends Container {
     const jx = (Math.random() - 0.5) * Math.round(150 * LAYOUT_SCALE);
     const nx = Math.max(arenaL, Math.min(arenaR, anchor.x + jx));
     const nyOff = this.leapBacklineNyOffDesign(u);
-    const ny = Math.max(arenaT, Math.min(arenaB, anchor.y + nyOff * LAYOUT_SCALE));
+    const ny = Math.max(
+      arenaT,
+      Math.min(arenaB, anchor.y + this.unitTokenRootYOffsetPx(anchor) + nyOff * LAYOUT_SCALE),
+    );
 
     const ox = u.x;
     const oy = u.y;
+    const irU = this.unitTokenRootYOffsetPx(u);
+    const oldRootY = oy + irU;
     u.x = nx;
     u.y = ny;
-    u.root.position.set(u.x, u.y);
+    this.syncUnitRootFromStance(u);
 
-    this.ringFx.push(spawnRingPulse(this.fxLayer, ox, oy - 18, 46, 0xf97316, 0.42));
-    this.ringFx.push(spawnRingPulse(this.fxLayer, nx, ny - 18, 58, 0xfbbf24, 0.52));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, ox, oldRootY - 18, 46, 0xf97316, 0.42));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, nx, u.y, 58, 0xfbbf24, 0.52));
 
     if (this.unitHasSkill(u, 'skill_raider_leap')) {
       const rd = getSkillById('skill_raider_leap');
       u.raiderLeapBuffT = skillParamNumber(rd, 0, 5);
-      this.ringFx.push(spawnRingPulse(this.fxLayer, nx, ny - 22, 72, 0xfde047, 0.48));
+      this.ringFx.push(spawnRingPulse(this.fxLayer, nx, u.y, 72, 0xfde047, 0.48));
     }
 
     if (this.unitHasSkill(u, 'skill_batrider_leap')) {
@@ -1655,16 +1902,44 @@ export class BattleScreen extends Container {
           this.applyDamage(a, dmgEach, { attacker: u, damageTag: 'magic' });
         }
       }
-      this.ringFx.push(spawnRingPulse(this.fxLayer, nx, ny - 14, Math.max(40, Math.round(rAo * 0.9)), 0xa855f7, 0.55));
+      this.ringFx.push(spawnRingPulse(this.fxLayer, nx, u.y, Math.max(40, Math.round(rAo * 0.9)), 0xa855f7, 0.55));
     }
 
     const baseCd = this.leapBacklineCdBase(u);
     u.enemyLeapCd = baseCd + Math.random() * 2.2;
+    const leapSkillId =
+      MINION_LEAP_SKILL_IDS.find((id) => u.skillIds.includes(id)) ?? 'skill_unknown_leap';
+    this.logBattleSkill(leapSkillId, u, `→(${Math.round(nx)},${Math.round(ny)})`);
     return true;
   }
 
   private unitHasSkill(u: SimUnit, skillId: string): boolean {
     return u.skillIds.length > 0 && u.skillIds.includes(skillId);
+  }
+
+  private unitDebugLabel(u: SimUnit): string {
+    if (u.bossId) return `boss:${u.bossId}#${u.unitId}`;
+    if (u.heroId) return `hero:${u.heroId}#${u.unitId}`;
+    if (u.allyKind) return `ally:${u.allyKind}#${u.unitId}`;
+    if (u.enemyPaint) return `enemy:${u.enemyPaint}#${u.unitId}`;
+    return `${u.side}#${u.unitId}`;
+  }
+
+  /**
+   * 与 `logDevBattleTest` 同 sink：写入 `RunState.devBattleTestLog`（首领/技能测试页右下面板等）。
+   * 行前缀 `[battle-skill]`；表外事件用 `nameCn` + 任意 `eventId`。
+   */
+  private logBattleEvent(nameCn: string, eventId: string, caster: SimUnit, detail?: string): void {
+    const extra = detail ? ` | ${detail}` : '';
+    this.logDevBattleTest(
+      `[battle-skill] t=${this.elapsed.toFixed(2)}s ${nameCn} (${eventId}) caster=${this.unitDebugLabel(caster)}${extra}`,
+    );
+  }
+
+  /** `skillId` 须存在于 `skills.json`（名称取 `nameCn`）；输出见 `logBattleEvent`。 */
+  private logBattleSkill(skillId: string, caster: SimUnit, detail?: string): void {
+    const sk = getSkillById(skillId);
+    this.logBattleEvent(sk?.nameCn ?? skillId, skillId, caster, detail);
   }
 
   /** 对战士/法师/射手/骑士脆弱：乘区叠乘；含英雄（同 allyKind）。 */
@@ -1697,8 +1972,9 @@ export class BattleScreen extends Container {
     const cdSec = skillParamNumber(def, 0, 10);
     u.evilFrenzyBuffT = buffSec;
     u.evilFrenzyCdRem = cdSec;
-    this.ringFx.push(spawnRingPulse(this.fxLayer, u.x, u.y - 18, 52, 0xdc2626, 0.48));
-    this.ringFx.push(spawnRingPulse(this.fxLayer, u.x, u.y - 16, 78, 0xf87171, 0.4));
+    this.logBattleSkill('skill_evil_strenth', u, `buffSec=${buffSec.toFixed(1)} cdSec=${cdSec.toFixed(1)}`);
+    this.ringFx.push(spawnRingPulse(this.fxLayer, u.x, u.y, 52, 0xdc2626, 0.48));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, u.x, u.y, 78, 0xf87171, 0.4));
   }
 
   private tickEnemyShadowBoltTry(u: SimUnit, dt: number): void {
@@ -1714,6 +1990,7 @@ export class BattleScreen extends Container {
     const dist = Math.hypot(tgt.x - u.x, tgt.y - u.y);
     if (dist > this.effectiveSkillRangeTo(u, tgt)) return;
     u.shadowBoltCdRem = period;
+    this.logBattleSkill('skill_shadow_bot', u, `→ ${this.unitDebugLabel(tgt)}`);
     const uid = u.unitId;
     const tid = tgt.unitId;
     const pct = skillParamNumber(def, 1, 300) / 100;
@@ -1728,9 +2005,9 @@ export class BattleScreen extends Container {
         this.applyDamage(t, dps, { attacker: a, damageTag: 'magic' });
         const tx = t.x;
         const ty = t.y;
-        this.ringFx.push(spawnRingPulse(this.fxLayer, tx, ty - 12, 22, 0x581c87, 0.36));
-        this.ringFx.push(spawnRingPulse(this.fxLayer, tx, ty - 10, 48, 0x7e22ce, 0.42));
-        this.ringFx.push(spawnRingPulse(this.fxLayer, tx, ty - 8, 72, 0xc4b5fd, 0.38));
+        this.ringFx.push(spawnRingPulse(this.fxLayer, tx, t.y, 22, 0x581c87, 0.36));
+        this.ringFx.push(spawnRingPulse(this.fxLayer, tx, t.y, 48, 0x7e22ce, 0.42));
+        this.ringFx.push(spawnRingPulse(this.fxLayer, tx, t.y, 72, 0xc4b5fd, 0.38));
         this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, tx, ty));
       },
       { style: 'enemy_shadow_bolt', speedMul: 0.88 },
@@ -1740,6 +2017,7 @@ export class BattleScreen extends Container {
   private procSkillBoomExplosion(dead: SimUnit): void {
     const bo = getSkillById('skill_boom');
     if (!bo) return;
+    this.logBattleSkill('skill_boom', dead, 'death_explosion');
     const r = skillParamDesignPx(bo, 0, 50);
     const pct = skillParamNumber(bo, 1, 100) / 100;
     const base = Math.max(1, Math.round(dead.atk * pct));
@@ -1749,10 +2027,10 @@ export class BattleScreen extends Container {
     const cols = [0xf97316, 0xfbbf24, 0xfca5a5, 0xfef08a] as const;
     for (let k = 0; k < 4; k++) {
       this.ringFx.push(
-        spawnRingPulse(this.fxLayer, cx, cy - 14, Math.round(28 * LAYOUT_SCALE) + k * Math.round(42 * LAYOUT_SCALE), cols[k]!, 0.42 + k * 0.06),
+        spawnRingPulse(this.fxLayer, cx, dead.y, Math.round(28 * LAYOUT_SCALE) + k * Math.round(42 * LAYOUT_SCALE), cols[k]!, 0.42 + k * 0.06),
       );
     }
-    this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, cx, cy - 14));
+    this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, cx, dead.y));
     for (const a of this.alive('ally')) {
       if (Math.hypot(a.x - cx, a.y - cy) <= r + this.hitRadius(a) + deadR) {
         this.applyDamage(a, base, { attacker: dead, damageTag: 'magic', bypassBlock: true });
@@ -1794,7 +2072,7 @@ export class BattleScreen extends Container {
       }
       if (
         u.enemyPaint === 'headhunter' ||
-        this.unitHasSkill(u, 'skill_darkspear_slow_knockback') ||
+        u.enemyPaint === 'darkspear' ||
         this.unitHasSkill(u, 'skill_batrider_leap')
       ) {
         return 'enemy_headhunter';
@@ -1812,19 +2090,20 @@ export class BattleScreen extends Container {
     const style = opts?.style ?? this.projectileStyleFor(attacker);
     const speedMul = opts?.speedMul ?? 1;
     const gfx = buildProjectileGraphic(style);
-    gfx.position.set(attacker.x, attacker.y - 18);
+    gfx.position.set(attacker.x, attacker.y);
     this.fxLayer.addChild(gfx);
     this.projectiles.push({
       gfx,
       x: attacker.x,
-      y: attacker.y - 18,
+      y: attacker.y,
       speed: Math.round(800 * LAYOUT_SCALE * speedMul),
       targetId,
       attackerId: attacker.unitId,
       life: 0,
       onHit,
       style,
-      shadowTrailAcc: style === 'enemy_shadow_bolt' ? 0 : undefined,
+      shadowTrailAcc:
+        style === 'enemy_shadow_bolt' || style === 'ally_arcane_missile' ? 0 : undefined,
     });
   }
 
@@ -1844,7 +2123,7 @@ export class BattleScreen extends Container {
         continue;
       }
       const tx = tgt.x;
-      const ty = tgt.y - 18;
+      const ty = tgt.y;
       const dx = tx - p.x;
       const dy = ty - p.y;
       const dist = Math.hypot(dx, dy) || 1;
@@ -1868,6 +2147,12 @@ export class BattleScreen extends Container {
           p.shadowTrailAcc = (p.shadowTrailAcc ?? 0) - 0.024;
           this.deathTrailSparks.push(spawnShadowTrailSpark(this.fxLayer, p.x, p.y));
         }
+      } else if (p.style === 'ally_arcane_missile') {
+        p.shadowTrailAcc = (p.shadowTrailAcc ?? 0) + dt;
+        while ((p.shadowTrailAcc ?? 0) >= 0.022) {
+          p.shadowTrailAcc = (p.shadowTrailAcc ?? 0) - 0.022;
+          this.deathTrailSparks.push(spawnArcaneTrailSpark(this.fxLayer, p.x, p.y));
+        }
       }
       const pulse = 1 + 0.14 * Math.sin(p.life * 28);
       p.gfx.scale.set(LAYOUT_SCALE * pulse);
@@ -1877,16 +2162,24 @@ export class BattleScreen extends Container {
   private beginDefaultAttack(u: SimUnit, target: SimUnit, dist: number, dx: number, dy: number): void {
     let dmg = u.atk;
     let enemyTag: DamageCtx['damageTag'] | undefined;
-    const bm = getSkillById('skill_blademaster_crit');
-    if (u.side === 'enemy' && this.unitHasSkill(u, 'skill_blademaster_crit') && Math.random() < skillParamNumber(bm, 0, 0.35)) {
-      dmg *= skillParamNumber(bm, 1, 2);
-      enemyTag = 'crit';
-    } else if (u.side === 'enemy' && this.unitHasSkill(u, 'skill_normal_crit')) {
-      const nc = getSkillById('skill_normal_crit');
-      const pCrit = skillParamNumber(nc, 0, 20) / 100;
-      if (Math.random() < pCrit) {
-        dmg *= skillParamNumber(nc, 1, 2);
+    if (u.side === 'enemy') {
+      const bc = getSkillById('skill_boss_crit');
+      if (this.unitHasSkill(u, 'skill_boss_crit') && Math.random() < skillParamNumber(bc, 0, 20) / 100) {
+        dmg *= skillParamNumber(bc, 1, 3);
         enemyTag = 'crit';
+      } else {
+        const bm = getSkillById('skill_blademaster_crit');
+        if (this.unitHasSkill(u, 'skill_blademaster_crit') && Math.random() < skillParamNumber(bm, 0, 0.35)) {
+          dmg *= skillParamNumber(bm, 1, 2);
+          enemyTag = 'crit';
+        } else if (this.unitHasSkill(u, 'skill_normal_crit')) {
+          const nc = getSkillById('skill_normal_crit');
+          const pCrit = skillParamNumber(nc, 0, 20) / 100;
+          if (Math.random() < pCrit) {
+            dmg *= skillParamNumber(nc, 1, 2);
+            enemyTag = 'crit';
+          }
+        }
       }
     }
     u.cd = Math.max(0.25, this.effectiveAttackInterval(u));
@@ -1918,6 +2211,11 @@ export class BattleScreen extends Container {
       if (u.side === 'ally') {
         this.dealAllyHit(u, target, dmgF);
         this.maybeDoubleShotArcher(u, target, u.atk);
+      } else if (this.unitHasSkill(u, 'skill_hot_strike')) {
+        this.applyBossHotStrikeMelee(u, target, dmgF, enemyTag);
+        if (this.unitHasSkill(u, 'skill_abomination_cleave')) {
+          this.abominationCleaveFollowup(u, target);
+        }
       } else {
         this.applyDamage(target, dmgF, { attacker: u, damageTag: enemyTag, meleeBasic: true });
         if (this.unitHasSkill(u, 'skill_abomination_cleave')) {
@@ -1927,6 +2225,87 @@ export class BattleScreen extends Container {
       u.atkLungeT = ATTACK_LUNGE_DUR;
       u.atkLungeDx = nx;
       u.atkLungeDy = ny;
+    }
+  }
+
+  /**
+   * skill_hot_strike：近战普攻在 params[0] 个额外目标与主目标之间分摊 (1+params[0]) 倍普攻伤害；
+   * 范围内人数不足时由命中单位分摊总倍率（见 `skills.json` logicEffectCn）。
+   */
+  private applyBossHotStrikeMelee(
+    u: SimUnit,
+    primary: SimUnit,
+    baseDmg: number,
+    damageTag: DamageCtx['damageTag'] | undefined,
+  ): void {
+    const hs = getSkillById('skill_hot_strike');
+    const extra = Math.max(0, Math.round(skillParamNumber(hs, 0, 2)));
+    const cap = 1 + extra;
+    const pad = Math.round(5 * LAYOUT_SCALE);
+    const inMelee = (a: SimUnit): boolean => {
+      const d = Math.hypot(a.x - u.x, a.y - u.y);
+      const aim = this.effectiveSkillRangeTo(u, a) + this.meleeEngagementMarginPx(u, a) + pad;
+      return d <= aim;
+    };
+    let candidates = this.alive('ally').filter(inMelee);
+    if (!candidates.some((c) => c.unitId === primary.unitId)) {
+      candidates = [primary, ...candidates.filter((c) => c.unitId !== primary.unitId)];
+    }
+    let hits: SimUnit[];
+    if (candidates.length === 0) {
+      hits = [primary];
+    } else if (candidates.length <= cap) {
+      hits = [...candidates];
+    } else {
+      const rest = candidates.filter((c) => c.unitId !== primary.unitId);
+      for (let i = rest.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = rest[i]!;
+        rest[i] = rest[j]!;
+        rest[j] = tmp;
+      }
+      hits = [primary, ...rest.slice(0, cap - 1)];
+    }
+    const per = Math.max(1, Math.round((baseDmg * cap) / Math.max(1, hits.length)));
+    for (const t of hits) {
+      this.applyDamage(t, per, {
+        attacker: u,
+        damageTag,
+        meleeBasic: true,
+        hotStrikeHeavy: true,
+      });
+    }
+  }
+
+  /** skill_berserker：每秒按生命百分比刷新阶段、攻击力与飘字 */
+  private tickBossBerserkerSecond(u: SimUnit): void {
+    if (!this.unitHasSkill(u, 'skill_berserker') || u.dead) return;
+    const base = u.bossBerserkBaseAtk ?? u.atk;
+    const sk = getSkillById('skill_berserker');
+    const p0 = skillParamNumber(sk, 0, 40);
+    const p1 = skillParamNumber(sk, 1, 50);
+    const p2 = skillParamNumber(sk, 2, 15);
+    const p3 = skillParamNumber(sk, 3, 100);
+    const hpP = (u.hp / Math.max(1, u.maxHp)) * 100;
+    let stage: 0 | 1 | 2 = 0;
+    let mult = 1;
+    if (hpP <= p2) {
+      stage = 2;
+      mult = 1 + p3 / 100;
+    } else if (hpP <= p0) {
+      stage = 1;
+      mult = 1 + p1 / 100;
+    }
+    const prev = u.bossBerserkStage ?? 0;
+    u.bossBerserkStage = stage;
+    u.atk = Math.max(1, Math.round(base * mult));
+    if (stage !== prev) {
+      const fy = this.floatAnchorY(u) - Math.round(52 * LAYOUT_SCALE);
+      if (stage === 1) {
+        this.floatWords.push(spawnFloatNumber(this.floatLayer, u.x, fy, '狂暴', 'crit'));
+      } else if (stage === 2) {
+        this.floatWords.push(spawnFloatNumber(this.floatLayer, u.x, fy, '极度狂暴', 'crit'));
+      }
     }
   }
 
@@ -2019,18 +2398,116 @@ export class BattleScreen extends Container {
     if (src?.allyKind === 'priest') {
       const ir = target.hitRadiusPx;
       const cx = target.x;
-      const cy = target.y - ir;
+      const cy = target.y;
       this.ringFx.push(spawnRingPulse(this.fxLayer, cx, cy, ir * 1.06, 0xbef264, 0.24));
       this.ringFx.push(spawnRingPulse(this.fxLayer, cx, cy, ir * 1.38, 0xd9f99d, 0.28));
       this.ringFx.push(spawnRingPulse(this.fxLayer, cx, cy, ir * 1.78, 0xf7fee7, 0.32));
       this.ringFx.push(spawnRingPulse(this.fxLayer, cx, cy, ir * 2.05, 0xffffff, 0.26));
     }
     this.floatWords.push(
-      spawnFloatNumber(this.floatLayer, target.x, target.y - this.floatLabelY(target), `+${gained}`, 'heal'),
+      spawnFloatNumber(this.floatLayer, target.x, this.floatAnchorY(target), `+${gained}`, 'heal'),
     );
-    this.healBursts.push(spawnHealBurst(this.fxLayer, target.x, target.y - 10));
-    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y - 20, 40, 0x4ade80, 0.45));
-    if (src) this.ringFx.push(spawnRingPulse(this.fxLayer, src.x, src.y - 18, 24, 0xa7f3d0, 0.35));
+    this.healBursts.push(spawnHealBurst(this.fxLayer, target.x, target.y));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y, 40, 0x4ade80, 0.45));
+    if (src) this.ringFx.push(spawnRingPulse(this.fxLayer, src.x, src.y, 24, 0xa7f3d0, 0.35));
+  }
+
+  /** 为任意单位叠加护盾（数值，上限 maxHp） */
+  private grantUnitShield(u: SimUnit, add: number, src?: SimUnit): void {
+    if (u.dead || add <= 0) return;
+    const cap = u.maxHp;
+    const cur = Math.max(0, Math.floor(u.shield ?? 0));
+    u.shield = Math.min(cap, cur + Math.round(add));
+    const cx = u.x;
+    const ir = u.hitRadiusPx;
+    this.ringFx.push(spawnRingPulse(this.fxLayer, cx, u.y, ir * 1.05, 0xc084fc, 0.38));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, cx, u.y, ir * 1.25, 0xa855f7, 0.42));
+    if (src) {
+      this.ringFx.push(spawnRingPulse(this.fxLayer, src.x, src.y, 22, 0xe9d5ff, 0.32));
+    }
+  }
+
+  /** 塞拉菲群体庇护；无存活友方时返回 false（不进入冷却） */
+  private tryCastPriestMassShelter(hero: SimUnit): boolean {
+    const allies = this.alive('ally');
+    if (!allies.length) return false;
+    const priestN = allies.filter((a) => a.allyKind === 'priest').length;
+    const pb = this.bondStacks.priest;
+    const maxT = pb >= 15 ? allies.length : Math.min(Math.max(0, priestN), allies.length);
+    if (maxT <= 0) return false;
+    const sorted = [...allies].sort((a, b) => {
+      const sa = (a.shield ?? 0) > 0 ? 1 : 0;
+      const sb = (b.shield ?? 0) > 0 ? 1 : 0;
+      if (sa !== sb) return sa - sb;
+      return a.hp - b.hp;
+    });
+    const addShield = Math.max(0, Math.round(hero.atk));
+    for (let i = 0; i < maxT && i < sorted.length; i++) {
+      const t = sorted[i]!;
+      this.grantUnitShield(t, addShield, hero);
+      if (pb >= 10 && t.hp / Math.max(1, t.maxHp) < 0.5) {
+        const healAmt = hero.atk * (this.bondPriest12 ? 2 : 1);
+        this.applyHeal(t, healAmt, hero);
+      }
+    }
+    return true;
+  }
+
+  /** 羁绊15：首领进入蓄力或冲锋引导时，格温妮神圣制裁冷却中则 -5s */
+  private pulseKnightHolySanctionCdFromBossCast(): void {
+    if (this.bondStacks.knight < 15) return;
+    for (const u of this.alive('ally')) {
+      if (!isKnightHolySanctionHero(u.heroId)) continue;
+      const cd = u.heroHolySanctionCdRem ?? 0;
+      if (cd <= 1e-4) continue;
+      u.heroHolySanctionCdRem = Math.max(0, cd - HOLY_SANCTION_BOND15_CD_PULSE_SEC);
+    }
+  }
+
+  private tryCastKnightHeroHolySanction(hero: SimUnit, target: SimUnit): boolean {
+    if (target.dead) return false;
+    const kb = this.bondStacks.knight;
+    const coef = kb >= 6 ? HOLY_SANCTION_COEF_BOND6 : HOLY_SANCTION_COEF_BASE;
+    const dmg = Math.max(1, Math.round(hero.atk * coef));
+    this.holySanctionStrikes.push(
+      spawnHolySanctionStrike(this.fxLayer, target.x, target.y, target.hitRadiusPx),
+    );
+    this.applyDamage(target, dmg, { attacker: hero });
+    if (!target.dead) {
+      const stunT = target.bossId ? HOLY_SANCTION_STUN_BOSS_SEC : HOLY_SANCTION_STUN_SEC;
+      target.stunT = Math.max(target.stunT ?? 0, stunT);
+    }
+    if (kb >= 10) {
+      this.applyHeal(hero, hero.maxHp * 0.1, hero);
+    }
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, target.x, this.floatAnchorY(target) - 38, '神圣制裁', 'magic'),
+    );
+    this.ringFx.push(
+      spawnRingPulse(this.fxLayer, target.x, target.y, target.hitRadiusPx * 2.4, 0xfef9c3, 0.42),
+    );
+    const stunLog = target.dead ? 'dead' : `${target.bossId ? HOLY_SANCTION_STUN_BOSS_SEC : HOLY_SANCTION_STUN_SEC}s`;
+    this.logBattleSkill('skill_hero_knight_holy_sanction', hero, `dmg=${dmg} stun=${stunLog} boss=${!!target.bossId}`);
+    return true;
+  }
+
+  private tickKnightHeroHolySanction(u: SimUnit, dt: number): void {
+    const cdLeft = u.heroHolySanctionCdRem ?? 0;
+    if (cdLeft > 0) {
+      u.heroHolySanctionCdRem = Math.max(0, cdLeft - dt);
+      return;
+    }
+    const tgt = this.nearestEnemy(u);
+    if (!tgt) return;
+    const dx = tgt.x - u.x;
+    const dy = tgt.y - u.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const reach = this.effectiveSkillRangeTo(u, tgt);
+    const margin = this.meleeEngagementMarginPx(u, tgt);
+    if (dist > reach + margin) return;
+    if (this.tryCastKnightHeroHolySanction(u, tgt)) {
+      u.heroHolySanctionCdRem = HOLY_SANCTION_CD_SEC;
+    }
   }
 
   private applyDamage(target: SimUnit, amount: number, ctx?: DamageCtx): void {
@@ -2094,12 +2571,47 @@ export class BattleScreen extends Container {
       }
     }
 
+    const showFloat = ctx?.showFloat !== false;
+    let blockedLabel = false;
+    if (!ctx?.bypassBlock && target.side === 'ally' && target.allyKind === 'warrior' && ctx?.attacker && ctx.attacker.side === 'enemy') {
+      const srcRanged = ctx.attacker.range >= RANGED_ATTACK_RANGE_THRESHOLD;
+      let block = srcRanged || this.bondWarrior12;
+      if (
+        !block &&
+        !srcRanged &&
+        target.heroId === WARRIOR_WHIRL_BLUE_ID &&
+        Math.random() < 0.1
+      ) {
+        block = true;
+      }
+      if (block) {
+        const before = amt;
+        amt *= 0.5;
+        if (before > amt + 0.01) blockedLabel = true;
+        if (this.bondWarrior12 && ctx.attacker && Math.random() < 0.3) {
+          this.applyDamage(ctx.attacker, target.atk * 1.0, { attacker: target, bypassBlock: true });
+          target.flashT = 0.14;
+          this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y, 52, 0xfde047, 0.42));
+        }
+      }
+    }
+
+    let dmgToHp = Math.max(0, Math.round(amt));
+    if (!ctx?.trueDamage && dmgToHp > 0) {
+      const sh0 = Math.floor(target.shield ?? 0);
+      if (sh0 > 0) {
+        const absorb = Math.min(sh0, dmgToHp);
+        target.shield = Math.max(0, sh0 - absorb);
+        dmgToHp -= absorb;
+      }
+    }
+
     if (
       target.side === 'ally' &&
       target.allyKind === 'knight' &&
       target.knightBond12 &&
       (target.knightDeathDenyLeft ?? 0) > 0 &&
-      amt >= target.hp
+      dmgToHp >= target.hp
     ) {
       target.knightDeathDenyLeft = 0;
       target.hp = Math.max(1, Math.round(target.maxHp * 0.12));
@@ -2111,73 +2623,47 @@ export class BattleScreen extends Container {
     }
 
     const prevHp = target.hp;
-    const showFloat = ctx?.showFloat !== false;
-    let blockedLabel = false;
-    if (!ctx?.bypassBlock && target.side === 'ally' && target.allyKind === 'warrior' && ctx?.attacker && ctx.attacker.side === 'enemy') {
-      const srcRanged = ctx.attacker.range >= RANGED_ATTACK_RANGE_THRESHOLD;
-      const block = srcRanged || this.bondWarrior12;
-      if (block) {
-        const before = amt;
-        amt *= 0.5;
-        if (before > amt + 0.01) blockedLabel = true;
-        if (this.bondWarrior12 && ctx.attacker && Math.random() < 0.3) {
-          this.applyDamage(ctx.attacker, target.atk * 1.0, { attacker: target, bypassBlock: true });
-          target.flashT = 0.14;
-          this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y - 22, 52, 0xfde047, 0.42));
-        }
-      }
-    }
-
-    const rawAfter = target.hp - amt;
-    if (target.bossId === 'tauren' && !target.taurenRebirthConsumed && rawAfter <= 0) {
-      /** 重生：先锁 1 血再满血，避免 hp 经过 0 与「敌全灭」等判定产生竞态 */
-      target.taurenRebirthConsumed = true;
-      target.hp = 1;
-      this.procTaurenRebirthVfx(target);
-      target.hp = target.maxHp;
-      target.dead = false;
-      target.root.visible = true;
-    } else {
-      target.hp = Math.min(target.maxHp, Math.max(0, rawAfter));
-      if (target.hp <= 0) {
-        target.hp = 0;
-        target.dead = true;
-        if (!target.bossId) {
-          if (target.hpRingCur) target.hpRingCur.visible = false;
-          if (target.hpRingLost) target.hpRingLost.visible = false;
-          if (this.unitHasSkill(target, 'skill_boom')) {
-            this.procSkillBoomExplosion(target);
-            target.boomSkipDeathAnim = true;
-            target.root.visible = false;
-          } else {
-            const launch = this.buildDeathLaunch(target.x);
-            target.deathAnim = {
-              elapsed: 0,
-              maxT: launch.maxT,
-              wx: target.x,
-              wy: target.y,
-              vx: launch.vx,
-              vy: launch.vy,
-              g: launch.g,
-              spin: (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 32),
-              trailTimer: 0,
-            };
-            target.root.visible = true;
-            target.root.alpha = 1;
-            target.body.rotation = 0;
-            const ir = target.tokenInnerR ?? target.hitRadiusPx;
-            target.body.origin.set(0, -ir);
-          }
-        } else {
+    const rawAfter = target.hp - dmgToHp;
+    target.hp = Math.min(target.maxHp, Math.max(0, rawAfter));
+    if (target.hp <= 0) {
+      target.hp = 0;
+      target.dead = true;
+      if (!target.bossId) {
+        if (target.hpRingCur) target.hpRingCur.visible = false;
+        if (target.hpRingLost) target.hpRingLost.visible = false;
+        if (target.hpRingShield) target.hpRingShield.visible = false;
+        if (this.unitHasSkill(target, 'skill_boom')) {
+          this.procSkillBoomExplosion(target);
+          target.boomSkipDeathAnim = true;
           target.root.visible = false;
+        } else {
+          const launch = this.buildDeathLaunch(target.x);
+          const ir = target.tokenInnerR ?? target.hitRadiusPx;
+          target.deathAnim = {
+            elapsed: 0,
+            maxT: launch.maxT,
+            wx: target.x,
+            wy: target.y + ir,
+            vx: launch.vx,
+            vy: launch.vy,
+            g: launch.g,
+            spin: (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 32),
+            trailTimer: 0,
+          };
+          target.root.visible = true;
+          target.root.alpha = 1;
+          target.body.rotation = 0;
+          target.body.origin.set(0, -ir);
         }
+      } else {
+        target.root.visible = false;
       }
     }
     this.recomputeEnemyHp();
 
     const lost = Math.max(0, Math.round(prevHp - target.hp));
     if (lost > 0 && target.hitFlashOverlay) {
-      target.hitFlashT = HIT_FLASH_DUR;
+      target.hitFlashT = ctx?.hotStrikeHeavy ? HIT_FLASH_DUR * 2.75 : HIT_FLASH_DUR;
     }
     if (ctx?.attacker && !target.dead && ctx.attacker.side === 'enemy' && target.side === 'ally') {
       this.maybeDarkspearKnockback(ctx.attacker, target);
@@ -2188,6 +2674,7 @@ export class BattleScreen extends Container {
       ctx.damageTag !== 'magic' &&
       ctx.attacker &&
       !ctx.attacker.dead &&
+      ctx.attacker.side === 'ally' &&
       !target.bossId &&
       ctx.attacker.range < RANGED_ATTACK_RANGE_THRESHOLD &&
       Math.random() < 0.2
@@ -2199,15 +2686,21 @@ export class BattleScreen extends Container {
       const kind =
         ctx?.damageTag === 'crit' ? 'crit' : ctx?.damageTag === 'magic' ? 'magic' : 'damage';
       this.floatWords.push(
-        spawnFloatNumber(this.floatLayer, target.x, target.y - this.floatLabelY(target), `-${lost}`, kind),
+        spawnFloatNumber(this.floatLayer, target.x, this.floatAnchorY(target), `-${lost}`, kind),
       );
-      if (Math.random() < 0.45) {
+      if (ctx?.hotStrikeHeavy) {
+        this.hitSparks.push(spawnHitSparkBurst(this.floatLayer, target.x, target.y));
+        this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x, target.y - target.hitRadiusPx * 0.2));
+        this.ringFx.push(
+          spawnRingPulse(this.fxLayer, target.x, target.y, target.hitRadiusPx * 1.35, 0xef4444, 0.38),
+        );
+      } else if (Math.random() < 0.45) {
         this.hitSparks.push(spawnHitSparkBurst(this.floatLayer, target.x, target.y));
       }
     }
     if (blockedLabel && showFloat && target.allyKind === 'warrior') {
       this.floatWords.push(
-        spawnFloatNumber(this.floatLayer, target.x, target.y - this.floatLabelY(target) - 28, '格挡', 'block'),
+        spawnFloatNumber(this.floatLayer, target.x, this.floatAnchorY(target) - 28, '格挡', 'block'),
       );
     }
   }
@@ -2224,24 +2717,57 @@ export class BattleScreen extends Container {
     return 1;
   }
 
+  /** 存活强击光环英雄（绿/蓝弓手）在场时强击光环生效 */
+  private allyStrongStrikeAuraHeroAlive(): boolean {
+    return this.alive('ally').some((u) => isArcherStrongStrikeAuraHero(u.heroId));
+  }
+
+  /** 远程单位额外暴击率（按射手备战羁绊档 6→12%） */
+  private strongStrikeAuraRangedCritBonus(): number {
+    if (!this.allyStrongStrikeAuraHeroAlive()) return 0;
+    return this.bondStacks.archer >= 6 ? 0.12 : 0.06;
+  }
+
+  /** 远程单位暴击伤害额外比例（羁绊≥10 时 +24%，与暴伤倍率叠乘为 ×(1+本值)） */
+  private strongStrikeAuraRangedCritDmgAdd(): number {
+    if (!this.allyStrongStrikeAuraHeroAlive()) return 0;
+    return this.bondStacks.archer >= 10 ? 0.24 : 0;
+  }
+
+  /** 羁绊15：射手专注换目标不清层 */
+  private archerFocusPersistOnTargetSwitch(): boolean {
+    return this.allyStrongStrikeAuraHeroAlive() && this.bondStacks.archer >= 15;
+  }
+
+  /** 强击光环受益方：法师 / 射手（含对应英雄），不含骑士等其它高射程单位 */
+  private isStrongStrikeAuraRangedClass(u: SimUnit): boolean {
+    return u.allyKind === 'mage' || u.allyKind === 'archer';
+  }
+
   private dealAllyHit(u: SimUnit, target: SimUnit, baseDmg: number, ctx?: DamageCtx): void {
     let dmg = baseDmg * this.allyOutgoingDamageMult(u);
+    const rangedAura = this.isStrongStrikeAuraRangedClass(u);
+    const auraCrit = rangedAura ? this.strongStrikeAuraRangedCritBonus() : 0;
+    const auraCritDmg = rangedAura ? this.strongStrikeAuraRangedCritDmgAdd() : 0;
     if (u.allyKind === 'archer') {
       if (u.archerLastTargetId !== target.unitId) {
         u.archerLastTargetId = target.unitId;
-        u.archerFocusStacks = 0;
+        if (!this.archerFocusPersistOnTargetSwitch()) {
+          u.archerFocusStacks = 0;
+        }
       }
       const st = Math.min(30, u.archerFocusStacks ?? 0);
       dmg *= 1 + 0.03 * st;
       u.archerFocusStacks = Math.min(30, st + 1);
     }
     let damageTag: DamageCtx['damageTag'] = u.allyKind === 'mage' ? 'magic' : ctx?.damageTag;
-    let critP = (u.bonusCrit ?? 0) + this.run.chaoticAllyCritBonus;
+    let critP = (u.bonusCrit ?? 0) + this.run.chaoticAllyCritBonus + auraCrit;
     if (u.allyKind === 'mage') critP += this.run.mageCritChance;
     if (u.allyKind === 'archer') critP += this.run.archerCritChance;
     if (Math.random() < critP) {
-      if (u.allyKind === 'archer') dmg *= this.run.archerCritDamageMult;
-      else dmg *= 1.5;
+      const k = 1 + auraCritDmg;
+      if (u.allyKind === 'archer') dmg *= this.run.archerCritDamageMult * k;
+      else dmg *= 1.5 * k;
       damageTag = 'crit';
     }
     this.applyDamage(target, dmg, {
@@ -2250,17 +2776,318 @@ export class BattleScreen extends Container {
       damageTag,
       meleeBasic: !this.isRangedAttacker(u),
     });
+    this.maybeMulanWhirlwindAfterAllyHit(u, target);
     if (Math.random() < 0.55) {
       this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x, target.y));
     }
     if (u.allyKind === 'mage') {
-      this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y - 20, MAGE_SPLASH_RADIUS, 0x38bdf8, 0.38));
+      this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y, MAGE_SPLASH_RADIUS, 0x38bdf8, 0.38));
       for (const e of this.alive('enemy')) {
         if (e.unitId === target.unitId) continue;
         const d = Math.hypot(e.x - target.x, e.y - target.y);
         if (d <= MAGE_SPLASH_RADIUS) {
           this.applyDamage(e, u.atk * 0.5, { attacker: u, damageTag: 'magic' });
         }
+      }
+    }
+  }
+
+  private interruptHeroArcaneMissilesChannel(u: SimUnit): void {
+    if (!u.heroArcaneChannel) return;
+    u.heroArcaneChannel = undefined;
+    u.heroArcaneCdRem = ARCANE_MISSILE_CD_SEC;
+  }
+
+  private finishHeroArcaneMissilesChannel(u: SimUnit): void {
+    u.heroArcaneChannel = undefined;
+    u.heroArcaneCdRem = ARCANE_MISSILE_CD_SEC;
+  }
+
+  /** 法师签名英雄（mage_01 / mage_02）：奥术飞弹引导；返回 true 时本帧不再走通用普攻/移动尾段 */
+  private tickHeroMageArcaneMissiles(u: SimUnit, dt: number, kbActive: boolean): boolean {
+    const mageBond = this.bondStacks.mage;
+    const interval = mageBond >= 10 ? ARCANE_MISSILE_INTERVAL_BOND10 : ARCANE_MISSILE_INTERVAL_DEFAULT;
+    const maxBolts = Math.ceil(ARCANE_MISSILE_CHANNEL_SEC / interval - 1e-9);
+    const ch = u.heroArcaneChannel;
+
+    if (ch) {
+      const target = this.byId(ch.targetId);
+      if (!target || target.dead) {
+        this.interruptHeroArcaneMissilesChannel(u);
+        return false;
+      }
+      const dx = target.x - u.x;
+      const dy = target.y - u.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const reach = this.effectiveSkillRangeTo(u, target);
+      const margin = this.meleeEngagementMarginPx(u, target);
+      const aimDist = reach + margin;
+      const rangeSlack = Math.max(8, Math.round(10 * LAYOUT_SCALE));
+      if (dist > aimDist + rangeSlack) {
+        this.interruptHeroArcaneMissilesChannel(u);
+        return false;
+      }
+
+      ch.t += dt;
+      const coef = mageBond >= 6 ? ARCANE_MISSILE_COEF_BOND6 : ARCANE_MISSILE_COEF_BASE;
+      while (ch.boltsFired < maxBolts && ch.t + 1e-8 >= ch.boltsFired * interval) {
+        const uid = u.unitId;
+        const tid = ch.targetId;
+        ch.boltsFired += 1;
+        this.queueProjectile(
+          u,
+          tid,
+          () => {
+            this.dealHeroArcaneMissileHit(uid, tid, coef);
+          },
+          { style: 'ally_arcane_missile', speedMul: 1.2 },
+        );
+      }
+
+      if (ch.t >= ARCANE_MISSILE_CHANNEL_SEC) {
+        this.finishHeroArcaneMissilesChannel(u);
+      }
+
+      if (!kbActive && dist > aimDist) {
+        const nx = dx / dist;
+        const ny = dy / dist;
+        const stepLen = u.speed * dt;
+        const travel = Math.min(stepLen, Math.max(0, dist - aimDist));
+        u.x += nx * travel;
+        u.y += ny * travel;
+        this.syncUnitRootFromStance(u);
+      }
+      return true;
+    }
+
+    const cdLeft = u.heroArcaneCdRem ?? 0;
+    if (cdLeft > 0) {
+      u.heroArcaneCdRem = Math.max(0, cdLeft - dt);
+    }
+    if ((u.heroArcaneCdRem ?? 0) > 0) return false;
+    if (kbActive) return false;
+
+    const target = this.nearestEnemy(u);
+    if (!target) return false;
+    const dx = target.x - u.x;
+    const dy = target.y - u.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const reach = this.effectiveSkillRangeTo(u, target);
+    const margin = this.meleeEngagementMarginPx(u, target);
+    const aimDist = reach + margin;
+    if (dist > aimDist) return false;
+
+    u.heroArcaneChannel = { targetId: target.unitId, t: 0, boltsFired: 0 };
+    return true;
+  }
+
+  private dealHeroArcaneMissileHit(attackerUid: number, targetUid: number, coef: number): void {
+    const attacker = this.byId(attackerUid);
+    const target = this.byId(targetUid);
+    if (!attacker || !target || attacker.dead || target.dead) return;
+    const mageBond = this.bondStacks.mage;
+    let dmg = Math.max(1, Math.round(attacker.atk * coef * this.allyOutgoingDamageMult(attacker)));
+    const rangedAura = this.isStrongStrikeAuraRangedClass(attacker);
+    const auraCrit = rangedAura ? this.strongStrikeAuraRangedCritBonus() : 0;
+    let critP = (attacker.bonusCrit ?? 0) + this.run.chaoticAllyCritBonus + this.run.mageCritChance + auraCrit;
+    let critMul = 1.5;
+    if (mageBond >= 15 && target.bossId) {
+      critP += 0.5;
+      critMul *= 1.5;
+    }
+    let damageTag: DamageCtx['damageTag'] = 'magic';
+    if (Math.random() < critP) {
+      const k = 1 + (rangedAura ? this.strongStrikeAuraRangedCritDmgAdd() : 0);
+      dmg = Math.max(1, Math.round(dmg * critMul * k));
+      damageTag = 'crit';
+    }
+    this.applyDamage(target, dmg, { attacker, damageTag });
+    this.ringFx.push(
+      spawnRingPulse(
+        this.floatLayer,
+        target.x,
+        target.y,
+        Math.round(36 * LAYOUT_SCALE),
+        0x7dd3fc,
+        0.42,
+      ),
+    );
+    if (Math.random() < 0.5) {
+      this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x, target.y));
+    }
+  }
+
+  /** 旋风斩刀刃外沿：`strike` + 自身碰撞 + 存活敌方最大碰撞（与伤害 `reach` 外扩一致） */
+  private mulanWhirlwindOuterRadiusPx(u: SimUnit, strikeR: number): number {
+    const ru = this.hitRadius(u);
+    let maxRe = Math.round(18 * LAYOUT_SCALE);
+    for (const e of this.alive('enemy')) maxRe = Math.max(maxRe, this.hitRadius(e));
+    return strikeR + ru + maxRe;
+  }
+
+  /**
+   * 旋风斩**播放**用几何：原点为圆盘中心；内缘在环形血条外缘外 `MULAN_WHIRL_BLADE_OUTSIDE_HP_RING_DESIGN_PX`（设计 px）；
+   * 外缘为 `mulanWhirlwindOuterRadiusPx`（与伤害判距外扩一致），每帧随场上敌人更新。
+   */
+  private mulanWhirlwindBladeGeometry(
+    u: SimUnit,
+    strikeRadiusPx: number,
+  ): { innerR: number; outerR: number } | null {
+    const ir = u.tokenInnerR ?? u.hitRadiusPx;
+    const strike = strikeRadiusPx;
+    if (!(strike > 0 && ir >= 0 && Number.isFinite(strike) && Number.isFinite(ir))) return null;
+    const outerR = this.mulanWhirlwindOuterRadiusPx(u, strike);
+    const tr = u.tokenRing;
+    let innerR: number;
+    if (tr) {
+      const hpOuter = battleTokenHpRingOuterRadiusPx(tr.ringR, tr.thick);
+      innerR = hpOuter + Math.round(MULAN_WHIRL_BLADE_OUTSIDE_HP_RING_DESIGN_PX * LAYOUT_SCALE);
+    } else {
+      const fillR = battleTokenDiskFillRadiusPx(ir);
+      const hubPad = Math.max(2, 2 * LAYOUT_SCALE);
+      innerR = fillR + hubPad;
+    }
+    const minBlade = Math.max(2.5, 3 * LAYOUT_SCALE);
+    const bladeLen = outerR - innerR;
+    if (!(bladeLen > minBlade && outerR > innerR)) return null;
+    return { innerR, outerR };
+  }
+
+  /** 开发测试页右下日志：`devBattleTestLog`；含旋风斩分段与 `[battle-skill]`。 */
+  private logDevBattleTest(line: string): void {
+    this.run.devBattleTestLog?.(line);
+  }
+
+  /** 战士签名英雄（warrior_01 / warrior_02）：普攻命中后对周身敌方追加旋风斩（数值档与 `heroRegistry` 文案一致） */
+  private maybeMulanWhirlwindAfterAllyHit(u: SimUnit, _primary: SimUnit): void {
+    if (u.side !== 'ally' || !isWarriorWhirlwindHero(u.heroId)) return;
+    if ((u.mulanWhirlwindProcLockT ?? 0) > 0) return;
+    const w = this.bondStacks.warrior;
+    const procP = w >= 10 ? 0.25 : 0.15;
+    if (Math.random() >= procP) return;
+    u.mulanWhirlwindProcLockT = MULAN_WHIRL_PROC_LOCK_SEC;
+    const dmgCoef = w >= 6 ? 0.8 : 0.4;
+    const radius = MULAN_WHIRL_R_BASE;
+    this.logBattleEvent('旋风斩', 'hero_mulan_whirlwind', u, `warriorBond=${w} strikeDesignPx=${MULAN_WHIRL_STRIKE_RADIUS_DESIGN_PX}`);
+    const whirlRed = w >= 15;
+    const basePer = u.atk * dmgCoef;
+    const hits: { enemyUnitId: number; parts: readonly number[]; tag: 'crit' | 'magic' }[] = [];
+    let healTargetCount = 0;
+    const ru = this.hitRadius(u);
+    for (const e of this.alive('enemy')) {
+      const d = Math.hypot(e.x - u.x, e.y - u.y);
+      /** 表定旋风半径为「周身」逻辑距离；判距为圆心距叠加双方碰撞圆 */
+      const reach = radius + ru + this.hitRadius(e);
+      if (d > reach) continue;
+      let hit = basePer;
+      if (whirlRed && e.hp / Math.max(1, e.maxHp) <= 0.5) hit *= 2;
+      const rounded = Math.max(1, Math.round(hit));
+      const tag: 'crit' | 'magic' = whirlRed ? 'crit' : 'magic';
+      this.applyDamage(e, rounded, { attacker: u, damageTag: tag, showFloat: false });
+      this.logDevBattleTest(`旋风斩·伤害 entity=${e.unitId} ${rounded}`);
+      hits.push({ enemyUnitId: e.unitId, parts: this.splitDamageIntoTenParts(rounded), tag });
+      healTargetCount += 1;
+    }
+    const geom = this.mulanWhirlwindBladeGeometry(u, radius);
+    if (!geom) {
+      this.logDevBattleTest(`旋风斩·无飘字(几何) 仍结算命中=${hits.length}`);
+      if (w >= 10 && healTargetCount > 0) {
+        const heal = Math.max(1, Math.round(u.maxHp * 0.03 * healTargetCount));
+        this.applyHeal(u, heal, u);
+      }
+      return;
+    }
+    const c = this.unitBattleTokenCenterXY(u);
+    const irTok = u.tokenInnerR ?? u.hitRadiusPx;
+    this.floatWords.push(
+      spawnFloatNumber(
+        this.floatLayer,
+        c.x,
+        c.y - unitFloatLabelOffsetYForInnerR(irTok) * 0.42,
+        '旋风斩',
+        'buff',
+      ),
+    );
+    const g = new Graphics();
+    this.fxLayer.addChild(g);
+    this.mulanWhirlRings.push({
+      g,
+      t: 0,
+      unitId: u.unitId,
+      strikeRadiusPx: radius,
+      spin: 0,
+      scarlet: whirlRed,
+      damageFloatEmitted: 0,
+      hits,
+    });
+    if (w >= 10 && healTargetCount > 0) {
+      const heal = Math.max(1, Math.round(u.maxHp * 0.03 * healTargetCount));
+      this.applyHeal(u, heal, u);
+    }
+  }
+
+  /** 将整数总伤拆成 10 份（之和等于 total），用于旋风斩 1 秒内 10 次飘字表现 */
+  private splitDamageIntoTenParts(total: number): number[] {
+    const t = Math.max(0, Math.round(total));
+    const parts = Array.from({ length: 10 }, () => 0);
+    if (t === 0) return parts;
+    const base = Math.floor(t / 10);
+    let rem = t - base * 10;
+    for (let i = 0; i < 10; i++) parts[i] = base;
+    for (let i = 0; i < rem; i++) parts[i]! += 1;
+    return parts;
+  }
+
+  private tickMulanWhirlwindRings(dt: number): void {
+    for (let i = this.mulanWhirlRings.length - 1; i >= 0; i--) {
+      const r = this.mulanWhirlRings[i]!;
+      const u = this.byId(r.unitId);
+      if (!u || u.dead) {
+        r.g.destroy();
+        this.mulanWhirlRings.splice(i, 1);
+        continue;
+      }
+      r.t += dt;
+      const geom = this.mulanWhirlwindBladeGeometry(u, r.strikeRadiusPx);
+      if (!geom) {
+        r.g.destroy();
+        this.mulanWhirlRings.splice(i, 1);
+        continue;
+      }
+      const { innerR, outerR } = geom;
+      const c = this.unitBattleTokenCenterXY(u);
+      r.g.position.set(c.x, c.y);
+      r.spin += dt * Math.PI * 26;
+      drawMulanWhirlwindBladeRing(r.g, innerR, outerR, r.spin, r.scarlet);
+
+      while (r.damageFloatEmitted < 10 && r.t + 1e-9 >= (r.damageFloatEmitted + 1) * 0.1) {
+        const k = r.damageFloatEmitted;
+        r.damageFloatEmitted += 1;
+        for (const h of r.hits) {
+          const chunk = h.parts[k] ?? 0;
+          if (chunk <= 0) continue;
+          const e = this.byId(h.enemyUnitId);
+          if (!e || e.dead) continue;
+          const jx = ((((h.enemyUnitId * 17 + k * 5) % 11) - 5) * LAYOUT_SCALE) / 1.2;
+          const jy = ((((h.enemyUnitId * 3 + k * 7) % 9) - 4) * LAYOUT_SCALE) / 1.4;
+          const kind = h.tag === 'crit' ? 'crit' : 'magic';
+          this.logDevBattleTest(`旋风斩·数字 ${k + 1}/10 entity=${h.enemyUnitId} ${chunk}`);
+          this.floatWords.push(
+            spawnFloatNumber(
+              this.floatLayer,
+              e.x + jx,
+              this.floatAnchorY(e) + jy * 0.35,
+              `-${chunk}`,
+              kind,
+            ),
+          );
+          this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, e.x + jx * 0.35, e.y + jy * 0.25));
+        }
+      }
+
+      if (r.t >= MULAN_WHIRL_PROC_LOCK_SEC) {
+        r.g.destroy();
+        this.mulanWhirlRings.splice(i, 1);
       }
     }
   }
@@ -2293,8 +3120,10 @@ export class BattleScreen extends Container {
     const sumAtk = mages.reduce((s, m) => s + m.atk, 0);
     let dmg = Math.max(1, Math.round(sumAtk));
     let meteorTag: 'crit' | 'magic' = 'magic';
-    if (this.run.mageMeteorCrits && this.run.mageCritChance > 0 && Math.random() < this.run.mageCritChance) {
-      dmg = Math.round(dmg * 1.5);
+    const meteorCritP = this.run.mageCritChance + this.strongStrikeAuraRangedCritBonus();
+    if (this.run.mageMeteorCrits && Math.random() < meteorCritP) {
+      const k = 1 + this.strongStrikeAuraRangedCritDmgAdd();
+      dmg = Math.round(dmg * 1.5 * k);
       meteorTag = 'crit';
     }
     this.meteors.push(spawnMeteorAnim(this.fxLayer, epicenter.x, epicenter.y, METEOR_SPLASH_RADIUS));
@@ -2327,7 +3156,7 @@ export class BattleScreen extends Container {
     const chargeHitDist = KNIGHT_CHARGE_HIT_DIST + rSum;
     if (dist <= chargeHitDist) {
       const mul = u.knightState === 'death_charge' ? 3 : 3;
-      this.ringFx.push(spawnRingPulse(this.fxLayer, tgt.x, tgt.y - 18, 70, 0xfbbf24, 0.42));
+      this.ringFx.push(spawnRingPulse(this.fxLayer, tgt.x, tgt.y, 70, 0xfbbf24, 0.42));
       let dmgHit = u.atk * mul;
       if (tgt.bossId) dmgHit *= this.run.knightVsBossDamageMult;
       this.applyDamage(tgt, dmgHit, { attacker: u });
@@ -2344,10 +3173,24 @@ export class BattleScreen extends Container {
     const travel = Math.min(step, Math.max(0, dist - chargeHitDist * 0.85));
     u.x += nx * travel;
     u.y += ny * travel;
-    u.root.position.set(u.x, u.y);
+    this.syncUnitRootFromStance(u);
   }
 
   private tickPriest(u: SimUnit, dt: number, targetEnemy: SimUnit | null): void {
+    if (u.heroId && isPriestMassShelterHero(u.heroId)) {
+      const cdCap = this.bondStacks.priest >= 6 ? PRIEST_SHELTER_CD_BOND6_SEC : PRIEST_SHELTER_CD_BASE_SEC;
+      const rem = u.heroShelterCdRem ?? 0;
+      if (rem > 0) {
+        u.heroShelterCdRem = Math.max(0, rem - dt);
+      } else {
+        if (this.tryCastPriestMassShelter(u)) {
+          u.heroShelterCdRem = cdCap;
+        } else {
+          u.heroShelterCdRem = 0.35;
+        }
+      }
+    }
+
     const healPick = this.pickPriestHealTarget(u);
     const healAmt = u.atk * (this.bondPriest12 ? 2 : 1);
 
@@ -2375,7 +3218,7 @@ export class BattleScreen extends Container {
         const travel = Math.min(stepLen, Math.max(0, dist - healAim));
         u.x += nx * travel;
         u.y += ny * travel;
-        u.root.position.set(u.x, u.y);
+        this.syncUnitRootFromStance(u);
       }
       return;
     }
@@ -2424,251 +3267,436 @@ export class BattleScreen extends Container {
       const ny = dy / dist;
       u.x += nx * travelAtk;
       u.y += ny * travelAtk;
-      u.root.position.set(u.x, u.y);
+      this.syncUnitRootFromStance(u);
     }
   }
 
-  /** 闪电链首个目标：当前生命最低；并列时百分比更低者优先 */
-  private pickLowestHpAllyForChain(exclude: ReadonlySet<number>): SimUnit | null {
-    let best: SimUnit | null = null;
-    for (const a of this.alive('ally')) {
-      if (exclude.has(a.unitId)) continue;
-      if (!best) {
-        best = a;
-        continue;
-      }
-      if (a.hp < best.hp) {
-        best = a;
-        continue;
-      }
-      if (a.hp === best.hp) {
-        const ra = a.hp / Math.max(1, a.maxHp);
-        const rb = best.hp / Math.max(1, best.maxHp);
-        if (ra < rb) best = a;
-      }
-    }
-    return best;
-  }
+  /** 蓄力轰击：扇形半角 15°（弧度） */
+  private static readonly BOSS_PUNCH_HALF_RAD = ((75 / 2) / 180) * Math.PI;
 
-  private pickNearestAllyToPoint(px: number, py: number, exclude: ReadonlySet<number>): SimUnit | null {
-    let best: SimUnit | null = null;
-    let bestD = Number.POSITIVE_INFINITY;
-    for (const a of this.alive('ally')) {
-      if (exclude.has(a.unitId)) continue;
-      const d = Math.hypot(a.x - px, a.y - py);
-      if (d < bestD) {
-        bestD = d;
-        best = a;
-      }
-    }
-    return best;
-  }
-
-  private spawnScaledGruntEnemy(worldX: number, worldY: number, seed: number): SimUnit {
-    const { chapter } = this.meta;
-    const ri = this.run.currentRoundIndex;
-    const bookM = this.run.bookChapterStrengthMult();
-    const def = ENEMY_DEFS.grunt;
-    const hp = scaledEnemyHp(chapter, ri, def.baseMaxHp, bookM);
-    const atk = scaledEnemyAtk(chapter, ri, def.baseAtk, bookM);
-    const ej = this.scatterOffset(seed);
-    return this.makeUnit(
-      'enemy',
-      worldX + ej.jx,
-      worldY + ej.jy,
-      hp,
-      atk,
-      def.attackSpeed,
-      def.range,
-      def.moveSpeed,
-      def.name,
-      { enemyPaint: 'grunt', hitRadiusDesign: def.hitRadius },
-    );
-  }
-
-  /** 先知：闪电链（段数、衰减、首段倍率见 skills.json skill_farseer_chain_lightning.params） */
-  private castFarseerChainLightning(boss: SimUnit): void {
-    const def = getSkillById('skill_farseer_chain_lightning');
-    const maxHops = Math.floor(skillParamNumber(def, 0, 8));
-    const decay = skillParamNumber(def, 1, 0.78);
-    const firstMul = skillParamNumber(def, 2, 3);
-    const hit = new Set<number>();
-    let lastX = boss.x;
-    let lastY = boss.y;
-    let hop = 0;
-    while (hop <= maxHops) {
-      const next =
-        hop === 0
-          ? this.pickLowestHpAllyForChain(hit)
-          : this.pickNearestAllyToPoint(lastX, lastY, hit);
-      if (!next) break;
-      hit.add(next.unitId);
-      const mul = firstMul * Math.pow(decay, hop);
-      const dmg = Math.max(1, Math.round(boss.atk * mul));
-      this.applyDamage(next, dmg, { attacker: boss, bypassBlock: true, damageTag: 'magic' });
-      this.ringFx.push(spawnRingPulse(this.fxLayer, next.x, next.y - 18, 52 + hop * 6, 0x7dd3fc, 0.38));
-      this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, next.x, next.y));
-      lastX = next.x;
-      lastY = next.y;
-      hop += 1;
-    }
-  }
-
-  private castFarseerSummonGrunts(boss: SimUnit): void {
-    const sg = getSkillById('skill_farseer_summon_grunts');
-    const summonCap = Math.floor(skillParamNumber(sg, 0, 6));
-    const enemyCap = Math.floor(skillParamNumber(sg, 1, 34));
-    const alive = this.alive('enemy').length;
-    const room = Math.max(0, enemyCap - alive);
-    const n = Math.min(summonCap, room);
-    const baseY = boss.y + Math.round(88 * LAYOUT_SCALE);
-    for (let k = 0; k < n; k++) {
-      const angle = (k / summonCap) * Math.PI * 2 + boss.unitId * 0.37;
-      const rad = Math.round(96 * LAYOUT_SCALE) + (k % 4) * Math.round(24 * LAYOUT_SCALE);
-      const wx = boss.x + Math.cos(angle) * rad * 0.5;
-      const wy = baseY + Math.sin(angle) * rad * 0.35;
-      const grunt = this.spawnScaledGruntEnemy(wx, wy, boss.unitId * 900 + k * 19);
-      this.units.push(grunt);
-      this.unitLayer.addChild(grunt.root);
-      this.initialEnemyHp += grunt.maxHp;
-    }
-    this.recomputeEnemyHp();
-    this.ringFx.push(spawnRingPulse(this.fxLayer, boss.x, boss.y - 22, 130, 0x34d399, 0.48));
-  }
-
-  private castTaurenShockwave(boss: SimUnit): void {
-    const tw = getSkillById('skill_tauren_shockwave');
-    const L = skillParamDesignPx(tw, 0, 780);
-    const halfW = skillParamDesignPx(tw, 1, 70);
-    const coeff = skillParamNumber(tw, 2, (0.95 / 4) * 2 * 1.5);
-    const bx = boss.x;
-    const by = boss.y;
-    const tgt = this.nearestAlly(boss);
-    let dx = tgt ? tgt.x - bx : GAME_WIDTH * 0.5 - bx;
-    let dy = tgt ? tgt.y - by : (ARENA_Y_MIN + ARENA_Y_MAX) * 0.5 - by;
-    const d0 = Math.hypot(dx, dy);
-    if (d0 < 1e-3) {
-      dx = 1;
-      dy = 0;
-    } else {
-      dx /= d0;
-      dy /= d0;
-    }
-    for (const a of this.alive('ally')) {
-      const vx = a.x - bx;
-      const vy = a.y - by;
-      const along = vx * dx + vy * dy;
-      if (along < 0 || along > L) continue;
-      const perp = Math.abs(vx * dy - vy * dx);
-      if (perp > halfW + this.hitRadius(a) * 0.85) continue;
-      const falloff = 1 - along / L;
-      const dmg = Math.max(1, Math.round(boss.atk * coeff * falloff));
-      /** 冲击波：仅伤害，不施加眩晕（与踩地板区分） */
-      this.applyDamage(a, dmg, { attacker: boss, damageTag: 'magic' });
-    }
-    this.shockBeams.push(spawnTaurenShockwaveBeam(this.fxLayer, bx, by, dx, dy, L, halfW));
-    this.hitSparks.push(
-      spawnHitSparkBurst(this.fxLayer, bx + dx * (L * 0.38), by + dy * (L * 0.38)),
-    );
-  }
-
-  private castTaurenStomp(boss: SimUnit): void {
-    const st = getSkillById('skill_tauren_stomp');
-    const stompCoeff = skillParamNumber(st, 0, 0.105);
-    const stunSec = skillParamNumber(st, 1, 2.6);
-    const r = skillParamDesignPx(st, 2, 680);
-    for (const a of this.alive('ally')) {
-      if (Math.hypot(a.x - boss.x, a.y - boss.y) > r + this.hitRadius(boss) + this.hitRadius(a)) continue;
-      this.applyDamage(a, Math.max(1, Math.round(boss.atk * stompCoeff)), { attacker: boss });
-      a.stunT = Math.max(a.stunT ?? 0, stunSec);
-    }
-    this.ringFx.push(spawnRingPulse(this.fxLayer, boss.x, boss.y - 14, Math.round(r * 0.38), 0xc4b5fd, 0.5));
-    this.ringFx.push(spawnRingPulse(this.fxLayer, boss.x, boss.y - 12, Math.round(r * 0.48), 0xe9d5ff, 0.48));
-  }
-
-  private bossSkillAccKey(boss: SimUnit, skillId: string): string {
+  private bossSkillStateKey(boss: SimUnit, skillId: string): string {
     return `${boss.unitId}|${skillId}`;
   }
 
-  private castBossSkillById(boss: SimUnit, skillId: string): void {
-    switch (skillId) {
-      case 'skill_farseer_chain_lightning':
-        this.castFarseerChainLightning(boss);
-        break;
-      case 'skill_farseer_summon_grunts':
-        this.castFarseerSummonGrunts(boss);
-        break;
-      case 'skill_tauren_shockwave':
-        this.castTaurenShockwave(boss);
-        break;
-      case 'skill_tauren_stomp':
-        this.castTaurenStomp(boss);
-        break;
-      case 'skill_blademaster_bladestorm': {
-        const bs = getSkillById('skill_blademaster_bladestorm');
-        const aoeCoeff = skillParamNumber(bs, 0, 0.275);
-        const maxEnemyWithMirror = Math.floor(skillParamNumber(bs, 1, 14));
-        const mirrorHpRatio = skillParamNumber(bs, 2, 0.09);
-        const mirrorAtkRatio = skillParamNumber(bs, 3, 0.175);
-        for (const a of this.alive('ally')) this.applyDamage(a, boss.atk * aoeCoeff, { attacker: boss });
-        if (this.alive('enemy').length < maxEnemyWithMirror) {
-          const c = this.makeUnit(
-            'enemy',
-            boss.x + 70 * LAYOUT_SCALE,
-            boss.y + 40 * LAYOUT_SCALE,
-            Math.round(boss.maxHp * mirrorHpRatio),
-            Math.round(boss.atk * mirrorAtkRatio),
-            boss.attackInterval * BLADEMASTER_MIRROR_ATTACK_INTERVAL_MULT,
-            boss.range,
-            boss.speed * 1.05,
-            '镜像',
-            { enemyPaint: 'mirror', hitRadiusDesign: WOW_BOOK_BOSS_TABLE_DEFAULT.hitRadius },
-          );
-          this.units.push(c);
-          this.unitLayer.addChild(c.root);
-          this.initialEnemyHp += c.maxHp;
-          this.recomputeEnemyHp();
-        }
-        break;
+  private ensureBossConfiguredCdInit(boss: SimUnit): void {
+    for (const sid of boss.skillIds) {
+      if (!isBossConfiguredSkill(sid)) continue;
+      const def = getSkillById(sid);
+      if (!skillFiresInBattle(def)) continue;
+      const k = this.bossSkillStateKey(boss, sid);
+      if (this.bossSkillCdRemain.has(k)) continue;
+      this.bossSkillCdRemain.set(k, skillParamNumber(def, 1, 0));
+    }
+  }
+
+  private tickBossConfiguredSkillCds(boss: SimUnit, dt: number, skipSkillId: string | null): void {
+    for (const sid of boss.skillIds) {
+      if (!isBossConfiguredSkill(sid)) continue;
+      const def = getSkillById(sid);
+      if (!skillFiresInBattle(def)) continue;
+      if (skipSkillId && sid === skipSkillId) continue;
+      const k = this.bossSkillStateKey(boss, sid);
+      const cur = this.bossSkillCdRemain.get(k) ?? 0;
+      this.bossSkillCdRemain.set(k, Math.max(0, cur - dt));
+    }
+  }
+
+  private pickReadyBossSkill(boss: SimUnit): string | null {
+    let best: string | null = null;
+    let bestFinish = Number.POSITIVE_INFINITY;
+    let bestOrder = 999;
+    const allies = this.alive('ally');
+    if (!allies.length) return null;
+    boss.skillIds.forEach((sid, ord) => {
+      if (!isBossConfiguredSkill(sid)) return;
+      const def = getSkillById(sid);
+      if (!skillFiresInBattle(def)) return;
+      const k = this.bossSkillStateKey(boss, sid);
+      const cd = this.bossSkillCdRemain.get(k) ?? 0;
+      if (cd > 1e-4) return;
+      const fin = this.bossSkillLastFinish.get(k) ?? -1e9;
+      if (fin < bestFinish || (fin === bestFinish && ord < bestOrder)) {
+        bestFinish = fin;
+        bestOrder = ord;
+        best = sid;
       }
-      default:
-        break;
+    });
+    return best;
+  }
+
+  private startBossSkillFromReady(boss: SimUnit, skillId: string): void {
+    if (skillId === 'skill_boss_punch') this.startBossPunchWindup(boss);
+    else if (skillId === 'skill_boss_rush') this.startBossRushWindup(boss);
+  }
+
+  private bossArenaRayMaxDist(x: number, y: number, dx: number, dy: number): number {
+    const arenaPad = Math.round(12 * LAYOUT_SCALE);
+    const arenaTop = Math.round(188 * LAYOUT_SCALE);
+    const arenaH = Math.round(1012 * LAYOUT_SCALE);
+    const margin = Math.round(52 * LAYOUT_SCALE);
+    const minX = arenaPad + margin;
+    const maxX = GAME_WIDTH - arenaPad - margin;
+    const minY = arenaTop + margin;
+    const maxY = arenaTop + arenaH - margin;
+    let tMax = 1e9;
+    if (dx > 1e-6) tMax = Math.min(tMax, (maxX - x) / dx);
+    else if (dx < -1e-6) tMax = Math.min(tMax, (minX - x) / dx);
+    if (dy > 1e-6) tMax = Math.min(tMax, (maxY - y) / dy);
+    else if (dy < -1e-6) tMax = Math.min(tMax, (minY - y) / dy);
+    return Math.max(0, tMax);
+  }
+
+  private pickBossPunchAimAngle(boss: SimUnit): number {
+    const allies = this.alive('ally').map((a) => ({ x: a.x, y: a.y, hitRadiusPx: a.hitRadiusPx }));
+    if (!allies.length) return 0;
+    const def = getSkillById('skill_boss_punch');
+    const rTab = skillParamDesignPx(def, 2, 200);
+    const rOuter = rTab + this.hitRadius(boss);
+    let bestA = 0;
+    let bestN = -1;
+    for (let deg = 0; deg < 360; deg += 4) {
+      const ang = (deg / 180) * Math.PI;
+      const n = countAlliesInPunchSector(allies, boss.x, boss.y, ang, BattleScreen.BOSS_PUNCH_HALF_RAD, rOuter);
+      if (n > bestN) {
+        bestN = n;
+        bestA = ang;
+      }
+    }
+    return bestA;
+  }
+
+  private pickBossRushLine(boss: SimUnit, lineLen: number): { dirx: number; diry: number; effLen: number } {
+    const allies = this.alive('ally').map((a) => ({ x: a.x, y: a.y, hitRadiusPx: a.hitRadiusPx }));
+    const bx = boss.x;
+    const by = boss.y;
+    const halfW = this.hitRadius(boss);
+    let bestDx = 1;
+    let bestDy = 0;
+    let bestScore = -1;
+    for (let deg = 0; deg < 360; deg += 4) {
+      const ang = (deg / 180) * Math.PI;
+      const dx = Math.cos(ang);
+      const dy = Math.sin(ang);
+      const tEdge = this.bossArenaRayMaxDist(bx, by, dx, dy) - Math.round(4 * LAYOUT_SCALE);
+      const eff = Math.min(lineLen, tEdge);
+      const ex = bx + dx * eff;
+      const ey = by + dy * eff;
+      const n = countAlliesNearOpenSegment(allies, bx, by, ex, ey, halfW);
+      if (n > bestScore) {
+        bestScore = n;
+        bestDx = dx;
+        bestDy = dy;
+      }
+    }
+    const tEdge = this.bossArenaRayMaxDist(bx, by, bestDx, bestDy) - Math.round(4 * LAYOUT_SCALE);
+    const effLen = Math.max(Math.round(24 * LAYOUT_SCALE), Math.min(lineLen, tEdge));
+    return { dirx: bestDx, diry: bestDy, effLen };
+  }
+
+  private startBossPunchWindup(boss: SimUnit): void {
+    const def = getSkillById('skill_boss_punch');
+    if (!def) return;
+    const dur = skillParamNumber(def, 3, 3);
+    const rTab = skillParamDesignPx(def, 2, 200);
+    const aim = this.pickBossPunchAimAngle(boss);
+    const rOuter = rTab + this.hitRadius(boss);
+    const warnFx = new BossPunchSectorWarnFx({
+      cx: boss.x,
+      cy: boss.y,
+      aimAngle: aim,
+      halfSpreadRad: BattleScreen.BOSS_PUNCH_HALF_RAD,
+      rOuter,
+      windupSec: dur,
+    });
+    this.fxLayer.addChildAt(warnFx, 0);
+    boss.bossSkillCast = {
+      kind: 'punch_windup',
+      skillId: 'skill_boss_punch',
+      t: 0,
+      dur,
+      aimAngle: aim,
+      rOuter,
+      cx: boss.x,
+      cy: boss.y,
+      warnFx,
+    };
+    this.logBattleSkill('skill_boss_punch', boss, '蓄力开始');
+    this.pulseKnightHolySanctionCdFromBossCast();
+  }
+
+  private startBossRushWindup(boss: SimUnit): void {
+    const def = getSkillById('skill_boss_rush');
+    if (!def) return;
+    const dur = skillParamNumber(def, 3, 3);
+    const lineLen = skillParamDesignPx(def, 2, 600);
+    const { dirx, diry, effLen } = this.pickBossRushLine(boss, lineLen);
+    const halfW = this.hitRadius(boss);
+    const sx = boss.x;
+    const sy = boss.y;
+    const warnFx = new BossRushLineWarnFx({
+      startX: sx,
+      startY: sy,
+      dirx,
+      diry,
+      lineLen: effLen,
+      halfW,
+      windupSec: dur,
+    });
+    this.fxLayer.addChildAt(warnFx, 0);
+    boss.bossSkillCast = {
+      kind: 'rush_windup',
+      skillId: 'skill_boss_rush',
+      t: 0,
+      dur,
+      lineLen: effLen,
+      halfW,
+      dirx,
+      diry,
+      endX: sx + dirx * effLen,
+      endY: sy + diry * effLen,
+      startX: sx,
+      startY: sy,
+      warnFx,
+    };
+    this.logBattleSkill('skill_boss_rush', boss, '冲锋蓄力');
+    this.pulseKnightHolySanctionCdFromBossCast();
+  }
+
+  private bossPutSkillOnCooldown(boss: SimUnit, skillId: string): void {
+    const def = getSkillById(skillId);
+    const cd = skillParamNumber(def, 0, 12);
+    const k = this.bossSkillStateKey(boss, skillId);
+    this.bossSkillCdRemain.set(k, cd);
+    this.bossSkillLastFinish.set(k, this.elapsed);
+  }
+
+  private applyBossPunchImpact(boss: SimUnit, st: BossPunchWindupState): void {
+    const def = getSkillById('skill_boss_punch');
+    const coeff = skillParamNumber(def, 4, 200) / 100;
+    let any = false;
+    for (const a of this.alive('ally')) {
+      if (
+        !allyInPunchSector(
+          a.x,
+          a.y,
+          a.hitRadiusPx,
+          st.cx,
+          st.cy,
+          st.aimAngle,
+          BattleScreen.BOSS_PUNCH_HALF_RAD,
+          st.rOuter,
+        )
+      ) {
+        continue;
+      }
+      any = true;
+      const dmg = Math.max(1, Math.round(boss.atk * coeff));
+      this.applyDamage(a, dmg, { attacker: boss, damageTag: 'magic', bypassBlock: true });
+      if (a.hitFlashOverlay) a.hitFlashT = HIT_FLASH_DUR * 2.6;
+      for (let k = 0; k < 3; k++) {
+        this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, a.x + (k - 1) * 8 * LAYOUT_SCALE, a.y));
+      }
+    }
+    this.bossPutSkillOnCooldown(boss, 'skill_boss_punch');
+    this.logBattleSkill('skill_boss_punch', boss, any ? '轰击结算' : '未命中');
+    this.triggerBattleScreenShake(0.22, Math.round(12 * LAYOUT_SCALE));
+  }
+
+  private beginBossRushCharge(boss: SimUnit, st: BossRushWindupState): void {
+    const def = getSkillById('skill_boss_rush');
+    const spd = Math.round(500 * LAYOUT_SCALE);
+    const coeff = skillParamNumber(def, 4, 100) / 100;
+    boss.bossSkillCast = {
+      kind: 'rush_charge',
+      skillId: 'skill_boss_rush',
+      dirx: st.dirx,
+      diry: st.diry,
+      remainDist: st.lineLen,
+      speed: spd,
+      dmgCoeff: coeff,
+      bossRadius: this.hitRadius(boss),
+      halfW: st.halfW,
+      prevX: boss.x,
+      prevY: boss.y,
+      hitIds: new Set(),
+      warnFx: st.warnFx,
+    };
+    this.pulseKnightHolySanctionCdFromBossCast();
+  }
+
+  private knockbackAllyFromRushHit(a: SimUnit, footX: number, footY: number, bossRadius: number): void {
+    if (a.side !== 'ally' || a.dead || a.invulnerable) return;
+    const dx = a.x - footX;
+    const dy = a.y - footY;
+    const d = Math.hypot(dx, dy) || 1;
+    const nx = dx / d;
+    const ny = dy / d;
+    const wantDist = bossRadius * (1 + Math.random() * 2);
+    const ir = this.unitTokenRootYOffsetPx(a);
+    const capped = this.clampAllyKnockbackXY(a.x + nx * wantDist, a.y + ny * wantDist, ir);
+    a.knockbackTween = {
+      elapsed: 0,
+      dur: KNOCKBACK_TWEEN_DUR,
+      sx: a.x,
+      sy: a.y,
+      tx: capped.x,
+      ty: capped.y,
+    };
+    a.moveSlowDecayRem = 3;
+    a.moveSlowDecayDur = 3;
+    a.moveSlowDecayPeak = 0.95;
+    this.syncUnitMoveSpeed(a);
+    this.floatWords.push(spawnFloatNumber(this.floatLayer, a.x, this.floatAnchorY(a) - 40, '击飞', 'magic'));
+    this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, a.x, a.y));
+  }
+
+  private disposeBossRushWarnFx(st: { warnFx?: BossRushLineWarnFx }): void {
+    if (!st.warnFx) return;
+    st.warnFx.destroy({ children: true });
+    st.warnFx = undefined;
+  }
+
+  private tickBossRushChargeFrame(boss: SimUnit, st: BossRushChargeState, dt: number): void {
+    if ((boss.stunT ?? 0) > 0) {
+      if (st.warnFx) this.disposeBossRushWarnFx(st);
+      boss.bossSkillCast = undefined;
+      this.bossPutSkillOnCooldown(boss, 'skill_boss_rush');
+      this.logBattleSkill('skill_boss_rush', boss, '冲锋打断');
+      return;
+    }
+    const step = Math.min(st.remainDist, st.speed * dt);
+    const nx = boss.x + st.dirx * step;
+    const ny = boss.y + st.diry * step;
+    const c = this.clampBattleSpawnXY(nx, ny);
+    if (Math.abs(c.x - nx) > 0.5 || Math.abs(c.y - ny) > 0.5) {
+      if (st.warnFx) this.disposeBossRushWarnFx(st);
+      boss.bossSkillCast = undefined;
+      this.bossPutSkillOnCooldown(boss, 'skill_boss_rush');
+      this.logBattleSkill('skill_boss_rush', boss, '撞边结束');
+      boss.x = c.x;
+      boss.y = c.y;
+      this.syncUnitRootFromStance(boss);
+      return;
+    }
+    boss.x = nx;
+    boss.y = ny;
+    this.syncUnitRootFromStance(boss);
+    st.remainDist -= step;
+    const x0 = st.prevX;
+    const y0 = st.prevY;
+    const x1 = boss.x;
+    const y1 = boss.y;
+    for (const a of this.alive('ally')) {
+      const d = distPointToSegment(a.x, a.y, x0, y0, x1, y1);
+      if (d > st.halfW + a.hitRadiusPx) continue;
+      if (!st.hitIds.has(a.unitId)) {
+        st.hitIds.add(a.unitId);
+        const dmg = Math.max(1, Math.round(boss.atk * st.dmgCoeff));
+        this.applyDamage(a, dmg, { attacker: boss, damageTag: 'magic', bypassBlock: true });
+        const tAlong = (a.x - x0) * st.dirx + (a.y - y0) * st.diry;
+        const cx = x0 + st.dirx * tAlong;
+        const cy = y0 + st.diry * tAlong;
+        this.knockbackAllyFromRushHit(a, cx, cy, st.bossRadius);
+      }
+    }
+    st.prevX = boss.x;
+    st.prevY = boss.y;
+    if (st.remainDist <= 0.5) {
+      if (st.warnFx) this.disposeBossRushWarnFx(st);
+      boss.bossSkillCast = undefined;
+      this.bossPutSkillOnCooldown(boss, 'skill_boss_rush');
+      this.logBattleSkill('skill_boss_rush', boss, '冲锋完成');
+    }
+  }
+
+  private tickBossSkillCast(boss: SimUnit, dt: number): void {
+    const st = boss.bossSkillCast;
+    if (!st) return;
+    if (st.kind === 'punch_windup' || st.kind === 'rush_windup') {
+      if ((boss.stunT ?? 0) > 0) {
+        const sid = st.skillId;
+        st.warnFx.destroy({ children: true });
+        boss.bossSkillCast = undefined;
+        this.bossPutSkillOnCooldown(boss, sid);
+        this.logBattleSkill(sid, boss, '蓄力·眩晕打断');
+        return;
+      }
+    }
+    if (st.kind === 'punch_windup') {
+      st.t += dt;
+      st.cx = boss.x;
+      st.cy = boss.y;
+      st.warnFx.setCenter(boss.x, boss.y);
+      const fx = st.warnFx.tick(dt);
+      if (fx.impactNow && !st.impactApplied) {
+        st.impactApplied = true;
+        this.applyBossPunchImpact(boss, st);
+      }
+      if (fx.done) {
+        st.warnFx.destroy({ children: true });
+        boss.bossSkillCast = undefined;
+      }
+      return;
+    }
+    if (st.kind === 'rush_windup') {
+      st.t += dt;
+      const fx = st.warnFx.tick(dt);
+      if (fx.impactNow && !st.chargeStarted) {
+        st.chargeStarted = true;
+        this.beginBossRushCharge(boss, st);
+      }
+      return;
+    }
+    if (st.kind === 'rush_charge') {
+      if (st.warnFx) {
+        const wfx = st.warnFx.tick(dt);
+        if (wfx.done) this.disposeBossRushWarnFx(st);
+      }
+      this.tickBossRushChargeFrame(boss, st, dt);
     }
   }
 
   private bossSkills(dt: number): void {
     const boss = this.units.find((u) => u.bossId && !u.dead);
     if (!boss?.bossId) return;
-    for (const skillId of boss.skillIds) {
-      const def = getSkillById(skillId);
-      if (!skillFiresInBattle(def)) continue;
-      const period = BOSS_SKILL_COOLDOWN_SEC[skillId];
-      if (period == null) continue;
-      const k = this.bossSkillAccKey(boss, skillId);
-      const acc = (this.bossSkillAcc.get(k) ?? 0) + dt;
-      if (acc >= period) {
-        this.bossSkillAcc.set(k, acc - period);
-        this.castBossSkillById(boss, skillId);
-      } else {
-        this.bossSkillAcc.set(k, acc);
-      }
+    this.ensureBossConfiguredCdInit(boss);
+    const cur = boss.bossSkillCast;
+    const skip =
+      cur?.kind === 'rush_charge'
+        ? 'skill_boss_rush'
+        : cur?.kind === 'punch_windup'
+          ? 'skill_boss_punch'
+          : cur?.kind === 'rush_windup'
+            ? 'skill_boss_rush'
+            : null;
+    this.tickBossConfiguredSkillCds(boss, dt, skip);
+    if (boss.bossSkillCast) {
+      this.tickBossSkillCast(boss, dt);
+      return;
     }
+    if ((boss.stunT ?? 0) > 0) return;
+    const next = this.pickReadyBossSkill(boss);
+    if (!next) return;
+    this.startBossSkillFromReady(boss, next);
   }
 
-  private updateFrame(dt: number): void {
-    if (this.ended) return;
-    const inFinishDelay = this.pendingFinishOutcome != null;
-    if (this.uiTestBattle) {
-      this.uiTestSkillAcc += dt;
-      if (this.uiTestSkillAcc >= 2.75) {
-        this.uiTestSkillAcc = 0;
-        this.fireUiTestSkillBurst();
-      }
+  private triggerBattleScreenShake(sec: number, mag: number): void {
+    this.battleShakeRemain = Math.max(this.battleShakeRemain, sec);
+    this.battleShakeMag = Math.max(this.battleShakeMag, mag);
+  }
+
+  private tickBattleScreenShake(dt: number): void {
+    if (this.battleShakeRemain <= 0) {
+      this.position.set(0, 0);
+      this.battleShakeMag = 0;
+      return;
     }
-    this.elapsed += dt;
-    if (!inFinishDelay) {
-      this.timeLeft -= dt;
-    }
+    this.battleShakeRemain -= dt;
+    const mag = this.battleShakeMag * Math.min(1, this.battleShakeRemain / 0.06);
+    this.position.set((Math.random() - 0.5) * 2 * mag, (Math.random() - 0.5) * 2 * mag);
+  }
+
+  private refreshHudTimerAndHpBars(): void {
     this.hudTimer.text = `剩余时间：${Math.max(0, this.timeLeft).toFixed(1)}s / ${this.timeLimit}s`;
 
     this.currentEnemyHp = this.alive('enemy').reduce((s, u) => s + u.hp, 0);
@@ -2693,21 +3721,52 @@ export class BattleScreen extends Container {
     this.hudEnemyBar
       .roundRect(0, 0, barW * Math.max(0, Math.min(1, ratioE)), barH, barR)
       .fill(0xef4444);
+  }
+
+  private updateFrame(dt: number): void {
+    if (this.ended) return;
+    this.tickBattleScreenShake(dt);
+    const inFinishDelay = this.pendingFinishOutcome != null;
+
+    const remOpen = this.openingCountdownT;
+    if (remOpen > 0) {
+      const digit = Math.min(3, Math.ceil(remOpen / BATTLE_OPENING_COUNTDOWN_STEP_SEC));
+      this.countdownGiant.text = String(digit);
+      this.countdownGiant.visible = true;
+      this.openingCountdownT = Math.max(0, remOpen - dt);
+      this.refreshHudTimerAndHpBars();
+      return;
+    }
+    this.countdownGiant.visible = false;
+
+    if (this.uiTestBattle) {
+      this.uiTestSkillAcc += dt;
+      if (this.uiTestSkillAcc >= 2.75) {
+        this.uiTestSkillAcc = 0;
+        this.fireUiTestSkillBurst();
+      }
+    }
+    this.elapsed += dt;
+    if (!inFinishDelay) {
+      this.timeLeft -= dt;
+    }
+    this.refreshHudTimerAndHpBars();
 
     this.tickDeathAnimations(dt);
     tickTinySparks(this.deathTrailSparks, dt);
 
     this.bossSkills(dt);
     this.tickMeteor(dt);
+    this.tickMulanWhirlwindRings(dt);
     tickFloatEntries(this.floatWords, dt);
     tickRingPulses(this.ringFx, dt);
-    tickShockwaveBeamFx(this.shockBeams, dt);
     tickHitSparkBursts(this.hitSparks, dt);
     this.tickShamanBloodlustAll(dt);
     this.tickCatapultBurns(dt);
     tickMeteorAnims(this.meteors, dt);
     tickSlashFx(this.slashes, dt);
     tickRayBurstFx(this.healBursts, dt);
+    tickHolySanctionStrikes(this.holySanctionStrikes, dt);
     this.tickProjectiles(dt);
 
     for (const u of this.units) {
@@ -2719,15 +3778,30 @@ export class BattleScreen extends Container {
         this.tickEnemyShadowBoltTry(u, dt);
       }
 
+      if (u.bossId && this.unitHasSkill(u, 'skill_berserker') && u.bossBerserkBaseAtk != null) {
+        u.bossBerserkSecAcc = (u.bossBerserkSecAcc ?? 0) + dt;
+        while ((u.bossBerserkSecAcc ?? 0) >= 1) {
+          u.bossBerserkSecAcc = (u.bossBerserkSecAcc ?? 0) - 1;
+          this.tickBossBerserkerSecond(u);
+        }
+      }
+
       const kbActive = this.tickKnockbackTween(u, dt);
       this.syncHitFlash(u, dt);
 
       if ((u.moveSlowT ?? 0) > 0) {
         u.moveSlowT = Math.max(0, (u.moveSlowT ?? 0) - dt);
       }
+      if ((u.moveSlowDecayRem ?? 0) > 0) {
+        u.moveSlowDecayRem = Math.max(0, (u.moveSlowDecayRem ?? 0) - dt);
+      }
+      if ((u.mulanWhirlwindProcLockT ?? 0) > 0) {
+        u.mulanWhirlwindProcLockT = Math.max(0, (u.mulanWhirlwindProcLockT ?? 0) - dt);
+      }
       this.syncUnitMoveSpeed(u);
 
       if ((u.stunT ?? 0) > 0) {
+        if (u.heroArcaneChannel) this.interruptHeroArcaneMissilesChannel(u);
         u.stunT = Math.max(0, (u.stunT ?? 0) - dt);
         if (u.allyKind === 'knight' && (u.knightState === 'charge' || u.knightState === 'death_charge')) {
           u.knightState = 'fight';
@@ -2760,13 +3834,18 @@ export class BattleScreen extends Container {
         const near = this.alive('ally').filter((a) => Math.hypot(a.x - u.x, a.y - u.y) <= rAss);
         if (near.length) {
           u.dreadAssaultUsed = true;
+          this.logBattleSkill(
+            'skill_dread_warrior_assault',
+            u,
+            `hit=${near.filter((a) => !a.invulnerable).length}/${near.length}`,
+          );
           for (const a of near) {
             if (a.invulnerable) continue;
             this.applyDamage(a, Math.max(1, Math.round(u.atk * skillParamNumber(dw, 1, 1.2))), { attacker: u });
             this.knockbackAllyFromPoint(a, u.x, u.y, skillParamDesignPx(dw, 3, 300));
             a.stunT = Math.max(a.stunT ?? 0, skillParamNumber(dw, 2, 5));
           }
-          this.ringFx.push(spawnRingPulse(this.fxLayer, u.x, u.y - 20, 110, 0xc084fc, 0.55));
+          this.ringFx.push(spawnRingPulse(this.fxLayer, u.x, u.y, 110, 0xc084fc, 0.55));
           this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, u.x, u.y));
           continue;
         }
@@ -2778,6 +3857,11 @@ export class BattleScreen extends Container {
         if (u.aura.visible) u.aura.rotation += dt * 3.8;
       }
 
+      if (u.strongStrikeAuraGfx && u.heroId && isArcherStrongStrikeAuraHero(u.heroId)) {
+        u.strongStrikeAuraGfx.visible = !u.dead;
+        if (u.strongStrikeAuraGfx.visible) u.strongStrikeAuraGfx.rotation += dt * 2.1;
+      }
+
       if ((u.flashT ?? 0) > 0) {
         u.flashT = Math.max(0, (u.flashT ?? 0) - dt);
         u.body.tint = u.flashT > 0 ? 0xffe066 : 0xffffff;
@@ -2787,12 +3871,34 @@ export class BattleScreen extends Container {
         u.body.tint = 0xfde047;
       } else if ((u.evilFrenzyBuffT ?? 0) > 0 && this.unitHasSkill(u, 'skill_evil_strenth')) {
         u.body.tint = 0xf97369;
+      } else if (u.bossId && this.unitHasSkill(u, 'skill_berserker') && (u.bossBerserkStage ?? 0) >= 2) {
+        u.body.tint = 0xff3333;
+      } else if (u.bossId && this.unitHasSkill(u, 'skill_berserker') && (u.bossBerserkStage ?? 0) >= 1) {
+        u.body.tint = 0xff8f66;
       } else if ((u.bloodlustT ?? 0) > 0 && u.side === 'enemy') {
         u.body.tint = 0xf9a8d4;
-      } else if ((u.moveSlowT ?? 0) > 0 && u.side === 'ally') {
+      } else if (u.heroArcaneChannel) {
+        u.body.tint = 0x93c5fc;
+      } else if (((u.moveSlowT ?? 0) > 0 || (u.moveSlowDecayRem ?? 0) > 0) && u.side === 'ally') {
         u.body.tint = 0x5eead4;
       } else {
         u.body.tint = 0xffffff;
+      }
+
+      if (
+        u.bossId &&
+        this.unitHasSkill(u, 'skill_berserker') &&
+        (u.bossBerserkStage ?? 0) > 0 &&
+        !u.dead
+      ) {
+        u.bossBerserkSparkAcc = (u.bossBerserkSparkAcc ?? 0) + dt;
+        const interval = (u.bossBerserkStage ?? 0) >= 2 ? 0.05 : 0.085;
+        while ((u.bossBerserkSparkAcc ?? 0) >= interval) {
+          u.bossBerserkSparkAcc = (u.bossBerserkSparkAcc ?? 0) - interval;
+          const ox = (Math.random() - 0.5) * u.hitRadiusPx * 1.4;
+          const oy = (Math.random() - 0.5) * u.hitRadiusPx * 0.55;
+          this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, u.x + ox, u.y + oy));
+        }
       }
 
       const lun = u.atkLungeT ?? 0;
@@ -2818,7 +3924,14 @@ export class BattleScreen extends Container {
         continue;
       }
 
+      if (u.side === 'ally' && u.heroId && isMageArcaneMissilesHero(u.heroId) && this.tickHeroMageArcaneMissiles(u, dt, kbActive)) {
+        continue;
+      }
+
       if (u.side === 'ally' && u.allyKind === 'knight' && u.knightState === 'fight') {
+        if (u.heroId && isKnightHolySanctionHero(u.heroId)) {
+          this.tickKnightHeroHolySanction(u, dt);
+        }
         u.knightCooldown = Math.max(0, (u.knightCooldown ?? 0) - dt);
         if ((u.knightCooldown ?? 0) <= 0) {
           u.knightState = 'charge';
@@ -2831,6 +3944,10 @@ export class BattleScreen extends Container {
       }
 
       if (u.side === 'enemy' && this.tickEnemyBacklineLeap(u, dt)) {
+        continue;
+      }
+
+      if (u.bossId && u.bossSkillCast) {
         continue;
       }
 
@@ -2861,7 +3978,7 @@ export class BattleScreen extends Container {
         } else {
           u.x += nx * travel;
           u.y += ny * travel;
-          u.root.position.set(u.x, u.y);
+          this.syncUnitRootFromStance(u);
         }
       }
     }

@@ -92,11 +92,3 @@ export function formatSkillNamesCn(skillIds: readonly string[]): string {
   return skillIds.map((id) => byId.get(id)?.nameCn ?? id).join('、');
 }
 
-/** 与 `BattleScreen` 中首领周期技 CD 一致（秒） */
-export const BOSS_SKILL_COOLDOWN_SEC: Record<string, number> = {
-  skill_farseer_chain_lightning: 5,
-  skill_farseer_summon_grunts: 15,
-  skill_tauren_shockwave: 5.5,
-  skill_tauren_stomp: 7.5,
-  skill_blademaster_bladestorm: 2.4,
-};

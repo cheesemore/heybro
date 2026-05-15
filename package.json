@@ -17,10 +17,12 @@
     "enemy:placeholders:all": "node scripts/write-all-enemy-placeholders.mjs",
     "enemy:portraits:batch": "python gptimage/batch_enemy_portraits.py",
     "enemy:portraits:publish": "python gptimage/publish_enemy_portraits_to_game.py",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "assets:backup-compress-resize": "node scripts/asset-backup-compress-resize.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
+    "pngquant-bin": "^9.0.0",
     "sharp": "^0.34.5",
     "typescript": "~6.0.2",
     "vite": "^8.0.10"

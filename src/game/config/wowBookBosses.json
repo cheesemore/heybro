@@ -23,9 +23,12 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [
+        "skill_boss_punch",
+        "skill_boss_rush"
+      ]
     },
     {
       "id": "boss_ch2_taragaman_the_hungerer",
@@ -47,9 +50,13 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [
+        "skill_hot_strike",
+        "skill_boss_crit",
+        "skill_berserker"
+      ]
     },
     {
       "id": "boss_ch3_jergosh_the_invoker",
@@ -95,7 +102,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -119,7 +126,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -143,7 +150,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -191,7 +198,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -215,7 +222,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -239,7 +246,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -287,7 +294,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -311,7 +318,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -359,7 +366,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -383,7 +390,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -407,7 +414,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -431,7 +438,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -455,7 +462,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -479,7 +486,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -503,7 +510,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -527,7 +534,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -575,7 +582,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -623,7 +630,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -647,7 +654,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -671,7 +678,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -695,7 +702,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -743,7 +750,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -767,7 +774,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -791,7 +798,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -839,7 +846,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -911,7 +918,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -959,7 +966,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -983,7 +990,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1055,7 +1062,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1103,7 +1110,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1127,7 +1134,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1151,7 +1158,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1223,7 +1230,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1247,7 +1254,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1271,7 +1278,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1295,7 +1302,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1319,7 +1326,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1343,7 +1350,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1367,7 +1374,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1415,7 +1422,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1439,7 +1446,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1511,7 +1518,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1559,7 +1566,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1583,7 +1590,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1607,7 +1614,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1703,7 +1710,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1727,7 +1734,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1751,7 +1758,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1775,7 +1782,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1823,7 +1830,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1847,7 +1854,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1871,7 +1878,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1919,7 +1926,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -1991,7 +1998,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2015,7 +2022,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2063,7 +2070,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2111,7 +2118,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2135,7 +2142,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2183,7 +2190,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2207,7 +2214,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2255,7 +2262,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2279,7 +2286,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2327,7 +2334,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2351,7 +2358,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2375,7 +2382,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2495,7 +2502,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2519,7 +2526,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2567,7 +2574,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2615,7 +2622,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2639,7 +2646,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2663,7 +2670,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2687,7 +2694,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2711,7 +2718,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2735,7 +2742,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     },
@@ -2759,7 +2766,7 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 210,
+      "range": 10,
       "moveSpeed": 540,
       "skillIds": []
     }

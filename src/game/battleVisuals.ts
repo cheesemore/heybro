@@ -358,6 +358,46 @@ export function tickRingPulses(rings: RingPulse[], dt: number): void {
   }
 }
 
+/** 神圣制裁：竖直白光 + 地面亮斑；`groundY` 为受击者脚底世界 Y */
+export type HolySanctionStrikeFx = { g: Graphics; t: number; max: number };
+
+export function spawnHolySanctionStrike(
+  layer: Container,
+  x: number,
+  groundY: number,
+  hitRadiusPx: number,
+): HolySanctionStrikeFx {
+  const g = new Graphics();
+  const scale = Math.max(0.85, Math.min(2.5, hitRadiusPx / Math.max(1, 34 * LAYOUT_SCALE)));
+  const beamW = Math.round((16 + 22 * scale) * LAYOUT_SCALE);
+  const beamH = Math.round((360 + 180 * scale) * LAYOUT_SCALE);
+  const rx = hitRadiusPx * (1.05 + 0.4 * scale);
+  const ry = hitRadiusPx * 0.4;
+  g.position.set(x, groundY);
+  g.roundRect(-beamW * 0.5, -beamH, beamW, beamH, Math.round(8 * LAYOUT_SCALE)).fill({ color: 0xfffffc, alpha: 0.38 });
+  g.ellipse(0, 0, rx, ry)
+    .fill({ color: 0xf8fafc, alpha: 0.7 })
+    .stroke({ width: Math.max(2, 2.4 * LAYOUT_SCALE), color: 0xffffff, alpha: 0.5 });
+  g.ellipse(0, -hitRadiusPx * 0.28, rx * 0.52, ry * 0.48).fill({ color: 0xffffff, alpha: 0.4 });
+  layer.addChild(g);
+  return { g, t: 0, max: 0.36 };
+}
+
+export function tickHolySanctionStrikes(list: HolySanctionStrikeFx[], dt: number): void {
+  for (let i = list.length - 1; i >= 0; i--) {
+    const s = list[i]!;
+    s.t += dt;
+    const k = Math.min(1, s.t / s.max);
+    s.g.alpha = Math.max(0, 1 - k * k);
+    const sc = 1 + k * 0.08;
+    s.g.scale.set(sc, sc);
+    if (s.t >= s.max) {
+      s.g.destroy();
+      list.splice(i, 1);
+    }
+  }
+}
+
 export type MeteorAnim = {
   streak: Graphics;
   boom: Graphics;
@@ -572,6 +612,38 @@ export function tickHitSparkBursts(list: HitSparkBurst[], dt: number): void {
   }
 }
 
+/**
+ * 穆兰旋风斩：周身高速旋转刀片。局部原点为**圆盘中心**；`innerR` 为血条外缘 + 2 设计 px；`outerR` 与战场红圈一致（strike+自碰+敌方最大碰）。
+ */
+export function drawMulanWhirlwindBladeRing(
+  g: Graphics,
+  innerR: number,
+  outerR: number,
+  angleRad: number,
+  scarlet: boolean,
+): void {
+  g.clear();
+  const bladeCount = 8;
+  const strokeW = Math.max(4.5, 5.8 * LAYOUT_SCALE);
+  const core = scarlet ? 0xc21414 : 0x64748b;
+  const edge = scarlet ? 0xff6b6b : 0xf8fafc;
+  for (let i = 0; i < bladeCount; i++) {
+    const a = angleRad + (i / bladeCount) * Math.PI * 2;
+    const c = Math.cos(a);
+    const sn = Math.sin(a);
+    const x0 = c * innerR;
+    const y0 = sn * innerR;
+    const x1 = c * outerR;
+    const y1 = sn * outerR;
+    g.moveTo(x0, y0)
+      .lineTo(x1, y1)
+      .stroke({ width: strokeW, color: core, alpha: 0.94, cap: 'round', join: 'round' });
+    g.moveTo(x0, y0)
+      .lineTo(x1, y1)
+      .stroke({ width: Math.max(1.4, strokeW * 0.34), color: edge, alpha: 0.82, cap: 'round' });
+  }
+}
+
 /** 投石车地面燃烧：椭圆火场，由战斗逻辑驱动伤害，此处仅表现 */
 export type GroundBurnPatch = { g: Graphics; t: number; max: number; x: number; y: number; r: number };
 
@@ -642,17 +714,20 @@ export function tickBloodStains(list: BloodStainFx[], dt: number): void {
   }
 }
 
-/** @param centerYPx 与我方圆盘中心 Y（战场坐标，脚点在 0）一致 */
-export function createKnightAura(centerYPx: number): Graphics {
+/**
+ * 骑士无敌脚底金环。几何以 (0,0) 为圆心；由 BattleScreen 将节点置于 root 的 (0,-hitRadiusPx)，
+ * 与代币圆心重合，便于 `rotation` 绕硬币中心转。
+ */
+export function createKnightAura(_hitRadiusPx: number): Graphics {
   const g = new Graphics();
   const ro = Math.round(36 * LAYOUT_SCALE);
   const ri = Math.round(30 * LAYOUT_SCALE);
-  g.circle(0, centerYPx, ro).stroke({
+  g.circle(0, 0, ro).stroke({
     width: Math.max(2, Math.round(3 * LAYOUT_SCALE)),
     color: 0xfacc15,
     alpha: 0.78,
   });
-  g.circle(0, centerYPx, ri).stroke({
+  g.circle(0, 0, ri).stroke({
     width: Math.max(1, Math.round(2 * LAYOUT_SCALE)),
     color: 0xfef9c3,
     alpha: 0.5,
@@ -660,8 +735,44 @@ export function createKnightAura(centerYPx: number): Graphics {
   return g;
 }
 
+/**
+ * 席拉拉强击光环：外环半径 = 2×英雄碰撞半径；几何以 (0,0) 为圆心，
+ * BattleScreen 将节点置于 (0,-hitRadiusPx) 与代币圆心对齐，`rotation` 绕圆心转。
+ */
+export function createStrongStrikeHeroAura(hitRadiusPx: number): Graphics {
+  const g = new Graphics();
+  const R = Math.max(4, hitRadiusPx);
+  const ro = Math.round(2 * R);
+  const ri = Math.round(Math.max(3, R * 1.32));
+  const arcR = Math.round(Math.max(4, R * 1.7));
+  g.circle(0, 0, ro).stroke({
+    width: Math.max(2, Math.round(2.5 * LAYOUT_SCALE)),
+    color: 0x15803d,
+    alpha: 0.72,
+  });
+  g.circle(0, 0, ri).stroke({
+    width: Math.max(1.5, Math.round(2 * LAYOUT_SCALE)),
+    color: 0x4ade80,
+    alpha: 0.55,
+  });
+  g.arc(0, 0, arcR, -0.55, 0.55, false).stroke({
+    width: Math.max(2, Math.round(2.2 * LAYOUT_SCALE)),
+    color: 0xfbbf24,
+    alpha: 0.5,
+    cap: 'round',
+  });
+  g.arc(0, 0, arcR, Math.PI - 0.55, Math.PI + 0.55, false).stroke({
+    width: Math.max(2, Math.round(2.2 * LAYOUT_SCALE)),
+    color: 0xfbbf24,
+    alpha: 0.5,
+    cap: 'round',
+  });
+  return g;
+}
+
 export type ProjectileVisualStyle =
   | 'ally_mage'
+  | 'ally_arcane_missile'
   | 'ally_archer'
   | 'ally_priest'
   | 'ally_generic'
@@ -678,6 +789,14 @@ export function buildProjectileGraphic(style: ProjectileVisualStyle): Graphics {
       g.circle(0, 0, 7).fill(0x60a5fa).stroke(o);
       g.poly([0, -9, 6, 0, 0, 9, -6, 0]).fill(0x38bdf8).stroke(o);
       break;
+    case 'ally_arcane_missile': {
+      const o2 = { width: 1.4, color: 0x0c4a6e, alpha: 0.55 };
+      g.ellipse(-18, 0, 16, 6).fill({ color: 0x0369a1, alpha: 0.45 }).stroke(o2);
+      g.ellipse(-10, 0, 10, 4).fill({ color: 0x0ea5e9, alpha: 0.55 }).stroke(o2);
+      g.circle(0, 0, 8).fill({ color: 0x38bdf8, alpha: 0.98 }).stroke({ width: 1.6, color: 0xe0f2fe, alpha: 0.9 });
+      g.circle(3, -2, 3).fill({ color: 0xf0f9ff, alpha: 0.95 });
+      break;
+    }
     case 'ally_archer':
       g.moveTo(10, 0).lineTo(-8, -4).lineTo(-8, 4).closePath().fill(0x4ade80).stroke(o);
       break;
@@ -746,6 +865,18 @@ export function spawnShadowTrailSpark(layer: Container, x: number, y: number): T
   g.position.set(x + (Math.random() - 0.5) * 10 * LAYOUT_SCALE, y + (Math.random() - 0.5) * 10 * LAYOUT_SCALE);
   layer.addChild(g);
   return { g, t: 0, max: 0.09 + Math.random() * 0.05 };
+}
+
+/** 奥术飞弹拖尾（青蓝） */
+export function spawnArcaneTrailSpark(layer: Container, x: number, y: number): TinySparkFx {
+  const g = new Graphics();
+  const pal = [0xe0f2fe, 0x7dd3fc, 0x38bdf8, 0x0284c7] as const;
+  const c = pal[Math.floor(Math.random() * pal.length)]!;
+  const rr = (1.2 + Math.random() * 2.6) * LAYOUT_SCALE;
+  g.circle(0, 0, rr).fill({ color: c, alpha: 0.9 });
+  g.position.set(x + (Math.random() - 0.5) * 9 * LAYOUT_SCALE, y + (Math.random() - 0.5) * 9 * LAYOUT_SCALE);
+  layer.addChild(g);
+  return { g, t: 0, max: 0.08 + Math.random() * 0.045 };
 }
 
 export function tickTinySparks(list: TinySparkFx[], dt: number): void {

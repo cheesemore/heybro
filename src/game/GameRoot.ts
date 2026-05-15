@@ -1,5 +1,5 @@
 import { Application, Container } from 'pixi.js';
-import { GAME_HEIGHT, GAME_WIDTH } from './constants';
+import { GAME_HEIGHT, GAME_WIDTH, PLAYER_START_HP } from './constants';
 import type { BattleOutcome } from './types';
 import { RunState } from './runState';
 import { ROUNDS } from './roundConfig';
@@ -19,10 +19,11 @@ import {
   markChapterFullyCleared,
   recordCombatRoundBestStar,
 } from './chapterProgressStorage';
+import { syncLotteryTicketsFromChapterProgress } from './heroMetaStorage';
 import { preloadEnemyTextures } from './enemyBodyFactory';
 import { preloadAllyPortraitTextures } from './allyPortraitAssets';
 import { preloadHeroPortraitTextures } from './heroPortraitAssets';
-import { seedUiTestRunBoard, UI_TEST_ROUND_META } from './uiTestBattle';
+import { seedUiTestRunBoard, UI_TEST_BLUE_FPM_HERO_DEPLOY, UI_TEST_ROUND_META } from './uiTestBattle';
 
 export class GameRoot extends Container {
   readonly run = new RunState();
@@ -62,6 +63,11 @@ export class GameRoot extends Container {
       await preloadHeroPortraitTextures().catch(() => {});
       const testRun = new RunState();
       seedUiTestRunBoard(testRun);
+      testRun.devBattleHooks = {
+        heroDeploy: [...UI_TEST_BLUE_FPM_HERO_DEPLOY],
+        heroSlotCap: 3,
+        postSpawnHpMult: 1,
+      };
       this.clearLayer();
       const battle = new BattleScreen(this.app, testRun, UI_TEST_ROUND_META, () => {
         this.modal.alert('UI 技能测试结束', () => this.showTitle());
@@ -98,8 +104,9 @@ export class GameRoot extends Container {
           () => this.showStrengthenScreen(fromMap),
           (chapterId, star) => {
             cheatChapterFullClearWithStar(chapterId, star);
+            syncLotteryTicketsFromChapterProgress();
             this.modal.alert(
-              `测试：第 ${chapterId} 章已记为通关（全部战斗关 ${star}★，已写入本地存档）`,
+              `测试：第 ${chapterId} 章已记为通关（全部战斗关 ${star}★，已写入本地存档；抽奖次数已按累计星同步）`,
               () => this.showChapterSelect(fromMap),
             );
           },
@@ -136,6 +143,18 @@ export class GameRoot extends Container {
             });
           });
         },
+        onCheatChapterClear: (star) => {
+          cheatChapterFullClearWithStar(this.run.bookChapterId, star);
+          syncLotteryTicketsFromChapterProgress();
+          this.run.bookChapterRunFailed = false;
+          if (this.run.playerHp <= 0) this.run.playerHp = PLAYER_START_HP;
+          this.run.clampPlayerHpToMax();
+          this.run.currentRoundIndex = ROUNDS.length;
+          this.modal.alert(
+            `作弊通关：第 ${this.run.bookChapterId} 章已写入存档（全部战斗关 ${star}★）；抽奖次数已按累计星同步`,
+            () => this.showLevelMap(),
+          );
+        },
       });
       this.layer.addChild(map);
     })();
@@ -146,7 +165,10 @@ export class GameRoot extends Container {
     if (this.run.isGameLost()) {
       const msg =
         this.run.playerHp <= 0 ? '游戏结束：生命值已耗尽' : '本章通关失败（规则失败等）。';
-      this.modal.alert(msg, () => this.showLevelMap());
+      this.modal.alert(msg, () => {
+        this.run.resetRun();
+        this.showChapterSelect(false);
+      });
       return;
     }
     if (this.run.isGameWon()) {
@@ -229,44 +251,50 @@ export class GameRoot extends Container {
     this.run.bossHpDerivedFinalAtkMult = 1;
     this.run.bossHpDerivedFinalHpMult = 1;
 
+    const goChapterSelectAfterDeath = (): void => {
+      this.run.resetRun();
+      this.showChapterSelect(false);
+    };
+
     if (metaDone.kind === 'boss' && !cleared) {
       const res = resolveAftermath(idx, outcome.perfect, outcome.enemyHpRatioRemaining);
       this.run.playerHp += res.playerHpDelta;
       this.run.clampPlayerHpToMax();
-      const tail = [...res.lines, `当前生命：${this.run.playerHp}`].join('\n');
-      const econ = this.run.grantRoundEndEconomy(metaDone, outcome).join('\n');
-      const full = `${tail}\n\n── 回合收入 ──\n${econ}`;
+      const econ = this.run.grantRoundEndEconomy(metaDone, outcome, 'compact').join('\n');
+      const detail = ['首领未击退', ...res.lines, `生命 ${this.run.playerHp}`, econ].join('\n');
       if (this.run.playerHp <= 0) {
-        this.modal.alert(`首领未击退\n${full}\n\n生命值耗尽，本章失败。`, () => this.showLevelMap());
+        this.modal.alertBattleSettlement(`${detail}\n生命耗尽 · 本章失败`, () => goChapterSelectAfterDeath());
         return;
       }
-      this.modal.alert(`首领未击退\n${full}\n\n生命未耗尽，可从地图再次挑战首领。`, () => this.showLevelMap());
+      this.modal.alertBattleSettlement(`${detail}\n返回地图再战首领`, () => this.showLevelMap());
       return;
     }
 
     const res = resolveAftermath(idx, outcome.perfect, outcome.enemyHpRatioRemaining);
     this.run.playerHp += res.playerHpDelta;
     this.run.clampPlayerHpToMax();
+
+    const tailBase = [...res.lines, `生命 ${this.run.playerHp}`].join('\n');
+    if (this.run.playerHp <= 0) {
+      const econ = this.run.grantRoundEndEconomy(metaDone, outcome, 'compact').join('\n');
+      this.modal.alertBattleSettlement(`${tailBase}\n${econ}\n生命耗尽 · 本章失败`, () => goChapterSelectAfterDeath());
+      return;
+    }
+
     if (cleared && isCombat) {
       recordCombatRoundBestStar(this.run.bookChapterId, idx, this.run.playerHp);
+      syncLotteryTicketsFromChapterProgress();
     }
     this.run.currentRoundIndex += 1;
-    const tail = [...res.lines, `当前生命：${this.run.playerHp}`].join('\n');
-    if (this.run.playerHp <= 0) {
-      this.modal.alert(`战斗结算\n${tail}\n\n失败：生命值小于等于 0`, () => this.showLevelMap());
-      return;
-    }
-    const econ = this.run.grantRoundEndEconomy(metaDone, outcome).join('\n');
-    const full = `${tail}\n\n── 回合收入 ──\n${econ}`;
+    const tail = [...res.lines, `生命 ${this.run.playerHp}`].join('\n');
+    const econ = this.run.grantRoundEndEconomy(metaDone, outcome, 'compact').join('\n');
+    const detail = `${tail}\n${econ}`;
     if (this.run.isGameWon()) {
       markChapterFullyCleared(this.run.bookChapterId);
-      this.modal.alert(
-        `战斗结算\n${full}\n\n胜利：已通关本章全部关卡！\n进度已保存（本地）。`,
-        () => this.showLevelMap(),
-      );
+      this.modal.alertBattleSettlement(`${detail}\n本章通关 · 进度已保存`, () => this.showLevelMap());
       return;
     }
-    this.modal.alert(`战斗结算\n${full}`, () => this.showLevelMap());
+    this.modal.alertBattleSettlement(detail, () => this.showLevelMap());
   }
 
   /**

@@ -1,6 +1,6 @@
-import { loadChapterProgress } from './chapterProgressStorage';
+import { getTotalStarFilledCount, loadChapterProgress } from './chapterProgressStorage';
 import type { HeroId } from './heroRegistry';
-import { HERO_REGISTRY, getHeroDef, HERO_IDS, HERO_STAR_COST } from './heroRegistry';
+import { HERO_REGISTRY, getHeroDef, HERO_IDS, HERO_STAR_COST, type HeroQuality } from './heroRegistry';
 
 const STORAGE_KEY = 'heybro.heroMeta.v1';
 
@@ -24,7 +24,7 @@ export type HeroMetaFile = {
   heroes: Record<string, HeroSaveEntry>;
   /** 最多 3 个上阵位，值为英雄 id 或 null */
   deployed: [HeroId | null, HeroId | null, HeroId | null];
-  /** 剩余英雄抽奖次数（战斗升星获得，抽卡消耗） */
+  /** 剩余英雄抽奖次数（= 各章评价星总和 − 已抽次数，见 syncLotteryTicketsFromChapterProgress） */
   lotteryTicketsRemaining: number;
   /** 抽奖结果时间线，新在前 */
   lotteryHistory: LotteryDrawLogEntry[];
@@ -98,14 +98,13 @@ function parse(raw: string | null): HeroMetaFile {
     const { heroes, deployed } = parseHeroesAndDeployed(o);
     if (Object.keys(heroes).length === 0) return defaultFirstRun();
 
-    let lotteryTicketsRemaining = 0;
     let lotteryHistory: LotteryDrawLogEntry[] = [];
     if (ver === 2) {
-      if (typeof o.lotteryTicketsRemaining === 'number') {
-        lotteryTicketsRemaining = Math.max(0, Math.min(99999, Math.floor(o.lotteryTicketsRemaining)));
-      }
       lotteryHistory = parseLotteryHistory(o.lotteryHistory);
     }
+
+    const earned = getTotalStarFilledCount();
+    const lotteryTicketsRemaining = Math.max(0, Math.min(99999, earned - lotteryHistory.length));
 
     return {
       version: 2,
@@ -135,7 +134,19 @@ export function saveHeroMeta(data: HeroMetaFile): void {
   }
 }
 
-/** 战斗关历史最高星每提升 1 星调用一次，增加可抽奖次数 */
+/**
+ * 按章节存档里「各战斗关累计星」与本地抽奖历史条数，重算剩余抽奖次数。
+ * 规则：剩余 = **各章评价星之和**（`getTotalStarFilledCount`，每章已通关时 0～3，即章节卡片亮星）− 已抽次数（`lotteryHistory` 每条计 1 次，含十连的 10 条）。
+ */
+export function syncLotteryTicketsFromChapterProgress(): void {
+  const cur = loadHeroMeta();
+  const earned = getTotalStarFilledCount();
+  const spent = cur.lotteryHistory.length;
+  cur.lotteryTicketsRemaining = Math.max(0, Math.min(99999, earned - spent));
+  saveHeroMeta(cur);
+}
+
+/** @deprecated 抽奖次数改由 syncLotteryTicketsFromChapterProgress 按累计星统一重算；保留供旧脚本或一次性补偿调用 */
 export function grantLotteryTickets(n: number): void {
   if (n <= 0) return;
   const cur = loadHeroMeta();
@@ -174,6 +185,53 @@ function applyAddHeroDuplicateToMeta(meta: HeroMetaFile, id: HeroId): void {
   tryConsumePromote(prev);
 }
 
+/** 抽卡档位基础权重（未解锁档视为 0 后按剩余比例缩放） */
+const LOTTERY_QUALITY_WEIGHT: Readonly<Record<HeroQuality, number>> = {
+  1: 50,
+  2: 33,
+  3: 12,
+  4: 4,
+  5: 1,
+};
+
+function allHeroesOfQualityOwned(meta: HeroMetaFile, q: HeroQuality): boolean {
+  const list = HERO_REGISTRY.filter((h) => h.quality === q);
+  if (!list.length) return true;
+  return list.every((h) => !!meta.heroes[h.id]);
+}
+
+/**
+ * 当前随机 roll 可命中的最高品质档 Q：品质 1..Q-1 已全部解锁，且 Q 为首个尚有未集齐的档（全齐时为 5）。
+ */
+function maxRollableQuality(meta: HeroMetaFile): HeroQuality {
+  for (let t = 1; t <= 5; t++) {
+    const q = t as HeroQuality;
+    if (!allHeroesOfQualityOwned(meta, q)) return q;
+  }
+  return 5;
+}
+
+function pickHeroIdForLotteryFromMeta(meta: HeroMetaFile): HeroId {
+  const maxQ = maxRollableQuality(meta);
+  let sum = 0;
+  for (let q = 1; q <= maxQ; q++) sum += LOTTERY_QUALITY_WEIGHT[q as HeroQuality];
+  if (sum <= 0) return HERO_REGISTRY[0]!.id;
+  let r = Math.random() * sum;
+  let chosenQ: HeroQuality = 1;
+  for (let q = 1; q <= maxQ; q++) {
+    const w = LOTTERY_QUALITY_WEIGHT[q as HeroQuality];
+    r -= w;
+    if (r < 0) {
+      chosenQ = q as HeroQuality;
+      break;
+    }
+    chosenQ = q as HeroQuality;
+  }
+  const pool = HERO_REGISTRY.filter((h) => h.quality === chosenQ);
+  if (!pool.length) return HERO_REGISTRY[0]!.id;
+  return pool[Math.floor(Math.random() * pool.length)]!.id;
+}
+
 /**
  * 消耗 1 次抽奖次数，随机获得英雄或同名素材；结果写入存档。
  * @returns wasDuplicate 表示抽到前是否已拥有该英雄（用于文案）
@@ -183,9 +241,7 @@ export function performHeroLotteryDraw():
   | { ok: false; reason: 'no_tickets' } {
   const cur = loadHeroMeta();
   if (cur.lotteryTicketsRemaining < 1) return { ok: false, reason: 'no_tickets' };
-  const pick = HERO_REGISTRY[Math.floor(Math.random() * HERO_REGISTRY.length)];
-  if (!pick) return { ok: false, reason: 'no_tickets' };
-  const id = pick.id;
+  const id = pickHeroIdForLotteryFromMeta(cur);
   const wasDuplicate = !!cur.heroes[id];
   cur.lotteryTicketsRemaining -= 1;
   applyAddHeroDuplicateToMeta(cur, id);
@@ -194,6 +250,23 @@ export function performHeroLotteryDraw():
   cur.lotteryHistory = nextHist;
   saveHeroMeta(cur);
   return { ok: true, id, wasDuplicate };
+}
+
+/**
+ * 十连抽：消耗 10 次抽奖次数，等价于 10 次独立单抽（每次按当时存档重算池与权重），最后统一返回。
+ */
+export function performHeroLotteryTenDraw():
+  | { ok: true; results: { id: HeroId; wasDuplicate: boolean }[] }
+  | { ok: false; reason: 'no_tickets' } {
+  const first = loadHeroMeta();
+  if (first.lotteryTicketsRemaining < 10) return { ok: false, reason: 'no_tickets' };
+  const results: { id: HeroId; wasDuplicate: boolean }[] = [];
+  for (let i = 0; i < 10; i++) {
+    const r = performHeroLotteryDraw();
+    if (!r.ok) return { ok: false, reason: 'no_tickets' };
+    results.push({ id: r.id, wasDuplicate: r.wasDuplicate });
+  }
+  return { ok: true, results };
 }
 
 /** 通关第 1 / 3 / 5 章各解锁 1 个栏位，最多 3 */

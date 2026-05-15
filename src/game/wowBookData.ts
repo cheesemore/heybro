@@ -26,7 +26,7 @@ export type WowMob = {
   attackSpeed: number;
   range: number;
   moveSpeed: number;
-  /** 与 `wowBookMonsters` / `unitDefs` 同步的可选挂载技能 */
+  /** 与 `wowBookMonsters` / `unitDefs` 同步的可选挂载技能；省略则战场视为无技能（不按立绘模板回填） */
   skillIds?: string[];
 };
 
@@ -100,7 +100,7 @@ export const WOW_BOOK_BOSS_TABLE_DEFAULT = {
   baseMaxHp: 1680,
   baseAtk: 27,
   attackSpeed: 0.65,
-  range: 210,
+  range: 10,
   moveSpeed: 540,
 } as const;
 

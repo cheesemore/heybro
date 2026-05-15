@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>书本首领技能 · 网页战斗测试（开发）</title>
+  </head>
+  <body style="margin: 0; background: #070b14; color: #e2e8f0; font-family: system-ui, sans-serif">
+    <div
+      id="hud"
+      style="
+        position: fixed;
+        z-index: 20;
+        top: 10px;
+        left: 10px;
+        max-width: min(420px, 92vw);
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.92);
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        font-size: 14px;
+        line-height: 1.45;
+      "
+    >
+      <div style="font-weight: 700; margin-bottom: 6px">书本首领技能 · 网页测试</div>
+      <p style="margin: 0 0 8px">
+        本页独立入口（<code>http://localhost:5173/book-boss-skill-test.html</code>），无需进主游戏。点击「开始测试」进入第 2
+        章关底首领「饥饿者塔拉加曼」；备战为战/法/射/牧各 <strong>1</strong> 个小兵，上阵英雄为<strong>蓝法师 / 蓝牧师 / 蓝弓手</strong>。开战生成后我方血量 ×10，首领血量 <strong>×10</strong>。右下为开发战斗日志（含
+        <code>[battle-skill]</code>）。
+      </p>
+      <button
+        id="start"
+        type="button"
+        style="
+          padding: 8px 14px;
+          border-radius: 8px;
+          border: none;
+          cursor: pointer;
+          font-weight: 600;
+          background: #0ea5e9;
+          color: #0f172a;
+        "
+      >
+        开始测试
+      </button>
+      <p id="status" style="margin: 8px 0 0; font-size: 13px; color: #94a3b8"></p>
+    </div>
+    <div
+      id="log-panel"
+      style="
+        position: fixed;
+        z-index: 21;
+        right: 10px;
+        bottom: 10px;
+        width: min(380px, 94vw);
+        max-height: min(52vh, 420px);
+        display: flex;
+        flex-direction: column;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.95);
+        border: 1px solid rgba(248, 113, 113, 0.35);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      "
+    >
+      <div style="font-weight: 700; font-size: 13px; margin-bottom: 6px; color: #fecaca">开发战斗日志</div>
+      <div style="font-size: 11px; color: #94a3b8; margin-bottom: 6px">技能与首领行为；开战前清空。</div>
+      <pre
+        id="battle-log"
+        style="
+          margin: 0;
+          flex: 1;
+          overflow: auto;
+          font-size: 12px;
+          line-height: 1.4;
+          color: #e2e8f0;
+          white-space: pre-wrap;
+          word-break: break-word;
+        "
+      ></pre>
+    </div>
+    <div id="app"></div>
+    <script type="module" src="/src/test/bookBossSkillTestPage.ts"></script>
+  </body>
+</html>

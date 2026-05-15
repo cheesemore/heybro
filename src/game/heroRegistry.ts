@@ -17,25 +17,62 @@ export function heroDisplayNameWithSkillTier(baseName: string, classStacksOnBoar
 
 export type HeroId = string;
 
+/** 英雄稀有度：与卡面编号 1～5 对应（绿/蓝/紫/橙/红） */
+export type HeroQuality = 1 | 2 | 3 | 4 | 5;
+
+/** 外框与名称强调色（与品质一致） */
+export const HERO_QUALITY_ACCENT: Readonly<Record<HeroQuality, number>> = {
+  1: 0x22c55e,
+  2: 0x3b82f6,
+  3: 0xa855f7,
+  4: 0xf97316,
+  5: 0xef4444,
+};
+
+export function heroQualityAccent(q: HeroQuality): number {
+  return HERO_QUALITY_ACCENT[q];
+}
+
 /** 穆兰（战士）英雄 id，旋风斩等逻辑与此绑定 */
 export const MULAN_HERO_ID = 'warrior_01' as const;
 
-const MULAN_PASSIVE_AND_SKILL_DESC = [
-  '【阵型】场上每有 1 个我方战士单位，本英雄最大生命 +8%、攻击 +8%（按该职业我方在场单位数叠加，不含英雄自身）。',
-  '',
-  '【旋风斩·主动】每次攻击有 15% 概率对自身周围半径 50 内的所有敌方单位额外造成攻击力 40% 的伤害，并飘字「旋风斩」；周身有旋风特效。',
-  '· 战士羁绊总层数 ≥6：旋风斩伤害系数提升至 80%。',
-  '· 战士羁绊总层数 ≥10：触发概率提升至 25%；且每命中一名敌方单位，回复自身 3% 最大生命。',
-  '· 战士羁绊总层数 ≥15：旋风半径提升至 100，旋风与特效变为猩红色；对当前生命不高于 50% 最大生命的敌方，旋风斩伤害翻倍。',
-  '以上随备战棋盘战士总层数在战斗内实时变化。',
-].join('\n');
+/** 艾拉瑞（绿色法师）英雄 id，奥术飞弹等逻辑与此绑定 */
+export const MAGE_HERO_ARCANE_ID: HeroId = 'mage_01';
 
-/** 英雄详情「主动技能」摘要（无则界面显示暂无） */
-export function getHeroActiveSkillSummary(id: HeroId): string | null {
-  if (id === MULAN_HERO_ID) {
-    return '旋风斩：概率触发周身旋风，对附近敌方造成额外伤害；战士 6/10/15 羁绊可强化威力、触发率、吸血与范围（详见上文）。';
-  }
-  return null;
+/** 塞拉菲（绿色牧师）英雄 id，群体庇护等逻辑与此绑定 */
+export const PRIEST_HERO_SHELTER_ID: HeroId = 'priest_01';
+
+/** 席拉拉（绿色射手）英雄 id，被动强击光环等逻辑与此绑定 */
+export const ARCHER_HERO_STRONG_STRIKE_ID: HeroId = 'archer_01';
+
+/** 格温妮（绿色骑士）英雄 id，神圣制裁等逻辑与此绑定 */
+export const KNIGHT_HERO_HOLY_SANCTION_ID: HeroId = 'knight_01';
+
+/** 各职业蓝色英雄（编号 02）：与对应绿色英雄共用同一套签名技能与强度 */
+export const WARRIOR_WHIRL_BLUE_ID: HeroId = 'warrior_02';
+export const MAGE_ARCANE_BLUE_ID: HeroId = 'mage_02';
+export const PRIEST_SHELTER_BLUE_ID: HeroId = 'priest_02';
+export const ARCHER_STRONG_STRIKE_BLUE_ID: HeroId = 'archer_02';
+export const KNIGHT_HOLY_SANCTION_BLUE_ID: HeroId = 'knight_02';
+
+export function isWarriorWhirlwindHero(id: HeroId | undefined): boolean {
+  return id === MULAN_HERO_ID || id === WARRIOR_WHIRL_BLUE_ID;
+}
+
+export function isMageArcaneMissilesHero(id: HeroId | undefined): boolean {
+  return id === MAGE_HERO_ARCANE_ID || id === MAGE_ARCANE_BLUE_ID;
+}
+
+export function isPriestMassShelterHero(id: HeroId | undefined): boolean {
+  return id === PRIEST_HERO_SHELTER_ID || id === PRIEST_SHELTER_BLUE_ID;
+}
+
+export function isArcherStrongStrikeAuraHero(id: HeroId | undefined): boolean {
+  return id === ARCHER_HERO_STRONG_STRIKE_ID || id === ARCHER_STRONG_STRIKE_BLUE_ID;
+}
+
+export function isKnightHolySanctionHero(id: HeroId | undefined): boolean {
+  return id === KNIGHT_HERO_HOLY_SANCTION_ID || id === KNIGHT_HOLY_SANCTION_BLUE_ID;
 }
 
 /** 中文奇幻风展示名（与立绘性别对应，与资源 id 一致） */
@@ -70,6 +107,8 @@ const HERO_DISPLAY_NAMES: Record<string, string> = {
 export type HeroDef = {
   id: HeroId;
   name: string;
+  /** 1=绿 … 5=红，与职业内编号 01～05 一致 */
+  quality: HeroQuality;
   allyClass: AllyClass;
   hitRadius: number;
   maxHp: number;
@@ -82,6 +121,32 @@ export type HeroDef = {
 };
 
 /** 与 gptimage 出图命名一致：warrior_01 … knight_05 */
+function passiveDescForHeroId(id: HeroId): string {
+  const basePassive = '无通用阵型被动。';
+  if (id === WARRIOR_WHIRL_BLUE_ID) {
+    return '被动：格挡概率+10%（与旋风斩并存；近战受敌普攻时额外 10% 概率触发格挡减半，可与战士羁绊格挡规则叠用）。';
+  }
+  if (isWarriorWhirlwindHero(id)) return '无';
+  if (id === MAGE_ARCANE_BLUE_ID) {
+    return '主动：奥术飞弹（详见英雄说明）。被动：暴击率+10%。';
+  }
+  if (id === MAGE_HERO_ARCANE_ID) return '主动：奥术飞弹（详见英雄说明）';
+  if (isPriestMassShelterHero(id)) {
+    return id === PRIEST_SHELTER_BLUE_ID
+      ? '主动：群体庇护（详见英雄说明）。被动：最大生命+10%。'
+      : '主动：群体庇护（详见英雄说明）';
+  }
+  if (id === ARCHER_STRONG_STRIKE_BLUE_ID) {
+    return '被动：强击光环（详见英雄说明）。被动：射程+50（720 设计坐标系像素）。';
+  }
+  if (isArcherStrongStrikeAuraHero(id)) return '被动：强击光环（详见英雄说明）';
+  if (id === KNIGHT_HOLY_SANCTION_BLUE_ID) {
+    return '主动：神圣制裁（详见英雄说明）。被动：攻击力+10%。';
+  }
+  if (isKnightHolySanctionHero(id)) return '主动：神圣制裁（详见英雄说明）';
+  return basePassive;
+}
+
 function buildHeroRegistry(): HeroDef[] {
   const out: HeroDef[] = [];
   for (const c of ALLY_CLASSES) {
@@ -91,10 +156,11 @@ function buildHeroRegistry(): HeroDef[] {
       const maxHp = Math.max(1, Math.round(d.maxHp * 2 * t));
       const atk = Math.max(1, Math.round(d.atk * 1.3 * t));
       const id = `${c}_${String(n).padStart(2, '0')}`;
-      const basePassive = `场上每有 1 个我方${d.name}单位，本英雄最大生命 +8%、攻击 +8%（按该职业我方在场单位数叠加，不含英雄自身）。`;
+      const quality = n as HeroQuality;
       out.push({
         id,
         name: HERO_DISPLAY_NAMES[id] ?? id,
+        quality,
         allyClass: c,
         hitRadius: d.hitRadius,
         maxHp,
@@ -102,7 +168,7 @@ function buildHeroRegistry(): HeroDef[] {
         attackSpeed: d.attackSpeed,
         range: d.range,
         moveSpeed: d.moveSpeed,
-        passiveDesc: id === MULAN_HERO_ID ? MULAN_PASSIVE_AND_SKILL_DESC : basePassive,
+        passiveDesc: passiveDescForHeroId(id),
       });
     }
   }

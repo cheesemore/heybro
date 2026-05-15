@@ -24,6 +24,8 @@ type Handlers = {
   onEnterRound: () => void;
   /** 二次确认后重置本章进度并回到章节选择 */
   onRequestExitChapter: () => void;
+  /** 与章节选择 U 键作弊一致：指定星数记本章通关（写入本地进度） */
+  onCheatChapterClear?: (star: 1 | 2 | 3) => void;
 };
 
 /** 16 关节点坐标（三行：5+5+6），间距压缩以腾出下方情报板 */
@@ -220,6 +222,33 @@ export class LevelMapScreen extends Container {
     };
     refreshHud();
 
+    if (this.h.onCheatChapterClear) {
+      const cw = Math.round(76 * LAYOUT_SCALE);
+      const ch = Math.round(40 * LAYOUT_SCALE);
+      const cgap = Math.round(6 * LAYOUT_SCALE);
+      const rowW = cw * 3 + cgap * 2;
+      const cheatRow = new Container();
+      cheatRow.position.set(GAME_WIDTH - pad - rowW, hudY);
+      const mkStar = (sx: number, label: string, st: 1 | 2 | 3): void => {
+        const b = createStyledGameButton('classic', {
+          text: label,
+          width: cw,
+          height: ch,
+          fontSize: Math.round(15 * LAYOUT_SCALE),
+        });
+        b.position.set(sx, 0);
+        b.on('pointertap', (e) => {
+          e.stopPropagation();
+          this.h.onCheatChapterClear?.(st);
+        });
+        cheatRow.addChild(b);
+      };
+      mkStar(0, '1★', 1);
+      mkStar(cw + cgap, '2★', 2);
+      mkStar((cw + cgap) * 2, '3★', 3);
+      this.addChild(cheatRow);
+    }
+
     attachScreenDebugLabel(this, 'LevelMapScreen');
   }
 
@@ -233,7 +262,7 @@ export class LevelMapScreen extends Container {
 
     const plate = new Graphics();
     const frame = new Graphics();
-    drawGoldenSolidPanel(plate, frame, bw, panelH, LAYOUT_SCALE);
+    drawGoldenSolidPanel(plate, frame, bw, panelH, LAYOUT_SCALE, { plateAlpha: 0.56 });
     block.addChild(plate);
     block.addChild(frame);
 

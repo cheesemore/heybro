@@ -24,7 +24,7 @@ export function resolveAftermath(
   if (cleared) {
     return {
       playerHpDelta: 2,
-      lines: ['完美通关（敌方全灭）：生命值 +2'],
+      lines: ['完美 · 生命 +2'],
     };
   }
 
@@ -33,11 +33,7 @@ export function resolveAftermath(
   const dmg = base * mult;
   const extra = imperfectClearExtraPenalty(roundIndex);
   const total = dmg + extra;
-  const lines = [
-    `未全歼敌方：敌方剩余约 ${(enemyHpRatioRemaining * 100).toFixed(0)}% 总血量`,
-    `基础战败伤害 ${base}（每 10% 余血 1 点 + 未全灭 1 点）× 章节倍率 ${mult} = ${dmg}`,
-    `额外惩罚（未完美通关）：-${extra}（2-1 及之后为 10，3-1 及之后为 15）`,
-    `合计扣血 ${total}`,
-  ];
+  const pctRounded = Math.min(100, Math.max(0, Math.round(pct)));
+  const lines = [`余敌约 ${pctRounded}%`, `扣血 ${total}`];
   return { playerHpDelta: -total, lines };
 }

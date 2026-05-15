@@ -1,7 +1,7 @@
 import type { Application } from 'pixi.js';
 import { Container, FederatedPointerEvent, FederatedWheelEvent, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
-import { HERO_REGISTRY, getHeroDef } from '../heroRegistry';
+import { HERO_REGISTRY, getHeroDef, heroQualityAccent } from '../heroRegistry';
 import type { HeroId } from '../heroRegistry';
 import { mountHeroInfoPanelContent } from '../ui/heroInfoPanel';
 import {
@@ -14,6 +14,7 @@ import {
   maxHeroDeploySlots,
   nextStarCost,
   performHeroLotteryDraw,
+  performHeroLotteryTenDraw,
   tryDeployHero,
   undeployHeroById,
 } from '../heroMetaStorage';
@@ -76,6 +77,7 @@ export class StrengthenScreen extends Container {
   private readonly tabGachaBadge = new Container();
   private readonly gachaHint: Text;
   private lotteryBtn!: GameButton;
+  private tenLotteryBtn!: GameButton;
   private readonly lotteryDynamicText: Text;
 
   private tab: 'hero' | 'gacha' = 'hero';
@@ -224,8 +226,8 @@ export class StrengthenScreen extends Container {
     this.gachaHint = new Text({
       text:
         '【抽奖规则】\n' +
-        '· 战斗关每提升 1 点历史最高星（单关 1～3★），可获得 1 次抽奖次数，可累计。\n' +
-        '· 每次抽奖消耗 1 次次数，随机获得一名新英雄或已有英雄的同名素材。\n' +
+        '· 各章「评价星」（章节卡片上 0～3 颗星，已通关章才计入；多章相加为总星数）。剩余抽奖次数 = 总星数 − 已抽次数（单抽、十连各按次数扣减）。重复打关若未提高该章评价星，不会增加次数。\n' +
+        '· 单抽消耗 1 次次数；十连抽消耗 10 次次数，等价于连续 10 次单抽后一并展示结果。\n' +
         '· 升至 2 / 3 / 4 / 5 星分别需要 2、3、5、8 张同名卡；达到数量会自动升星。\n' +
         '· 剩余次数、消耗次数与抽中结果均保存在本地存档。',
       style: {
@@ -242,8 +244,9 @@ export class StrengthenScreen extends Container {
 
     const lotW = Math.round(280 * LAYOUT_SCALE);
     const lotH = Math.round(56 * LAYOUT_SCALE);
+    const lotBtnGap = Math.round(12 * LAYOUT_SCALE);
     this.lotteryBtn = createStyledGameButton('accent', {
-      text: '抽奖',
+      text: '单抽（1次）',
       width: lotW,
       height: lotH,
       fontSize: Math.round(20 * LAYOUT_SCALE),
@@ -251,6 +254,16 @@ export class StrengthenScreen extends Container {
     this.lotteryBtn.position.set(PAD, this.gachaHint.y + this.gachaHint.height + Math.round(18 * LAYOUT_SCALE));
     this.lotteryBtn.on('pointertap', () => this.doHeroLottery());
     this.gachaRoot.addChild(this.lotteryBtn);
+
+    this.tenLotteryBtn = createStyledGameButton('accent', {
+      text: '十连抽（10次）',
+      width: lotW,
+      height: lotH,
+      fontSize: Math.round(20 * LAYOUT_SCALE),
+    });
+    this.tenLotteryBtn.position.set(PAD, this.lotteryBtn.y + lotH + lotBtnGap);
+    this.tenLotteryBtn.on('pointertap', () => this.doHeroLotteryTen());
+    this.gachaRoot.addChild(this.tenLotteryBtn);
 
     this.lotteryDynamicText = new Text({
       text: '',
@@ -263,7 +276,10 @@ export class StrengthenScreen extends Container {
         lineHeight: Math.round(22 * LAYOUT_SCALE),
       },
     });
-    this.lotteryDynamicText.position.set(PAD, this.lotteryBtn.y + lotH + Math.round(16 * LAYOUT_SCALE));
+    this.lotteryDynamicText.position.set(
+      PAD,
+      this.lotteryBtn.y + lotH + Math.round(16 * LAYOUT_SCALE),
+    );
     this.gachaRoot.addChild(this.lotteryDynamicText);
 
     this.sheetLayer.visible = false;
@@ -388,11 +404,11 @@ export class StrengthenScreen extends Container {
       '【操作说明】',
       '· 在下方列表点击英雄卡片，打开详情面板，可上阵或下阵。',
       '· 已上阵的英雄也可点击上方栏位中的头像进行下阵。',
-      '· 列表中带金色边框的英雄表示当前已上阵。',
+      '· 列表中带品质色外框的英雄表示当前已上阵。',
       '· 英雄技能的强化与备战「职业羁绊」层数相关（如穆兰旋风斩随战士羁绊变化）。',
       '',
       '【抽奖】',
-      '· 战斗关历史最高星每提升 1★，获得 1 次抽奖次数；在「抽卡」页消耗次数随机得英雄或同名卡。',
+      '· 各章评价星（章节卡片亮星，每章 0～3）之和决定可抽总次数；已抽次数从记录中扣减。单抽或十连在「抽卡」页消耗次数随机得英雄或同名卡。',
       '',
       '【栏位解锁】',
       '· 第 1 个上阵栏：通关第 1 章后解锁',
@@ -407,7 +423,7 @@ export class StrengthenScreen extends Container {
     const r = performHeroLotteryDraw();
     if (!r.ok) {
       this.modal.alert(
-        '抽奖次数不足。\n\n战斗关提升历史最高星可获得次数（每提升 1★ 获得 1 次），详见抽卡页说明。',
+        '抽奖次数不足。\n\n总次数为各章评价星之和；提高尚未满星的已通关章节可增加总星数，详见抽卡页说明。',
         () => {},
       );
       return;
@@ -422,6 +438,22 @@ export class StrengthenScreen extends Container {
       return;
     }
     this.modal.alertNewHeroUnlock(r.id, () => {
+      this.refreshAll();
+      this.refreshGachaChrome();
+    });
+  }
+
+  private doHeroLotteryTen(): void {
+    const r = performHeroLotteryTenDraw();
+    if (!r.ok) {
+      this.modal.alert(
+        '抽奖次数不足。\n\n十连抽需要至少 10 次次数；总次数由各章评价星（每章最多 3）相加后减去已抽次数得到。',
+        () => {},
+      );
+      return;
+    }
+    const ids = r.results.map((x) => x.id);
+    this.modal.alertTenPullHeroResults(ids, () => {
       this.refreshAll();
       this.refreshGachaChrome();
     });
@@ -494,7 +526,7 @@ export class StrengthenScreen extends Container {
             style: {
               fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
               fontSize: Math.round(13 * LAYOUT_SCALE),
-              fill: 0xe2e8f0,
+              fill: heroQualityAccent(def.quality),
               align: 'center',
               fontWeight: '600',
             },
@@ -551,14 +583,14 @@ export class StrengthenScreen extends Container {
       const unlocked = !!meta.heroes[h.id];
       const deployed = findDeployedSlotIndex(h.id) != null;
       const entry = meta.heroes[h.id];
-      const stars = entry?.stars ?? 1;
+      const stars = unlocked ? (entry?.stars ?? 1) : 0;
       const dup = entry?.duplicates ?? 0;
       const need = nextStarCost(stars);
 
       const wrap = new Container();
       wrap.position.set(x, y);
       wrap.eventMode = 'static';
-      wrap.cursor = 'pointer';
+      wrap.cursor = unlocked ? 'pointer' : 'default';
       wrap.hitArea = new Rectangle(0, 0, cellW, cellH);
       wrap.on('pointertap', (e) => {
         e.stopPropagation();
@@ -566,39 +598,38 @@ export class StrengthenScreen extends Container {
           this.blockNextHeroCardTap = false;
           return;
         }
-        if (!unlocked) {
-          this.modal.alert('尚未获得该英雄。', () => {});
-          return;
-        }
+        if (!unlocked) return;
         this.openHeroSheet(h.id);
       });
 
       const bg = new Graphics();
       bg.eventMode = 'none';
+      const strokeColor = deployed ? heroQualityAccent(h.quality) : unlocked ? 0x334155 : 0x1e293b;
+      const strokeW = deployed ? Math.max(3, Math.round(3 * LAYOUT_SCALE)) : Math.max(1, Math.round(1.5 * LAYOUT_SCALE));
       bg
         .roundRect(0, 0, cellW, cellH, Math.round(14 * LAYOUT_SCALE))
         .fill(unlocked ? 0x111827 : 0x0c1222)
         .stroke({
-          width: deployed ? Math.max(3, Math.round(3 * LAYOUT_SCALE)) : Math.max(1, Math.round(1.5 * LAYOUT_SCALE)),
-          color: deployed ? 0xf59e0b : unlocked ? 0x334155 : 0x1e293b,
+          width: strokeW,
+          color: strokeColor,
         });
       wrap.addChild(bg);
 
       const avatarWrap = new Container();
       avatarWrap.position.set(cellW / 2, avatarBottomY);
-      const tok = createDraftHeroToken(h.id, h.allyClass, avatarD);
+      const tok = createDraftHeroToken(h.id, h.allyClass, avatarD, { portraitLocked: !unlocked });
       tok.eventMode = 'none';
-      tok.alpha = unlocked ? 1 : 0.32;
+      tok.alpha = 1;
       avatarWrap.addChild(tok);
       avatarWrap.eventMode = 'none';
       wrap.addChild(avatarWrap);
 
       const nameT = new Text({
-        text: h.name,
+        text: unlocked ? h.name : '???',
         style: {
           fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
           fontSize: Math.round(16 * LAYOUT_SCALE),
-          fill: unlocked ? 0xf1f5f9 : 0x475569,
+          fill: heroQualityAccent(h.quality),
           fontWeight: '700',
           align: 'center',
         },
@@ -735,6 +766,7 @@ export class StrengthenScreen extends Container {
       titleAlign: 'left',
       heroId: id,
       classStacksOnBoard: 0,
+      heroIntroBondLineTint: 'allActive',
       tokenDia: dia,
       gapAfterTitle: 0,
       gapAfterToken: Math.round(14 * LAYOUT_SCALE),

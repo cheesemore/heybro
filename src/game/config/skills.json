@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "editConvention": "全局技能主数据。`id` 唯一；`limit` minion/boss/any；`powerTag` strong|medium|weak|negative（强/中/弱/负面，缺省 medium）供图鉴编辑器「属性重算」叠乘；`codeStatus` written/missing/pending_changes（待修改为手工标记）；`descriptionCn`/`logicEffectCn` 见各条。`params` **仅关键战斗调参**（伤害系数、范围/半径设计值、冷却间隔、眩晕与嗜血持续、触发概率等）；落点偏移、受击火花、镜像攻速节奏、召唤散布角度等**技能实现特性**写在代码里。设计像素乘 LAYOUT_SCALE 用 `skillParamDesignPx`/`skillParamNumber`。单位 `skillIds` 挂载。首领周期技秒数见 `BOSS_SKILL_COOLDOWN_SEC`。",
+  "editConvention": "全局技能主数据。`id` 唯一；`limit` minion/boss/any；`powerTag` strong|medium|weak|negative（强/中/弱/负面，缺省 medium）供图鉴编辑器「属性重算」叠乘；`codeStatus` written/missing/pending_changes（待修改为手工标记）；`descriptionCn`/`logicEffectCn` 见各条。`params` **仅关键战斗调参**（伤害系数、范围/半径设计值、冷却间隔、眩晕与嗜血持续、触发概率等）；落点偏移、受击火花、镜像攻速节奏、召唤散布角度等**技能实现特性**写在代码里。设计像素乘 LAYOUT_SCALE 用 `skillParamDesignPx`/`skillParamNumber`。单位 `skillIds` 挂载。书本关底首领配置型技能（如 skill_boss_*）的冷却与初动见该条 `params[0]`、`params[1]`，由 `BattleScreen` 调度。",
   "skills": [
     {
       "id": "skill_farseer_chain_lightning",
@@ -308,6 +308,123 @@
       "params": [
         50
       ]
+    },
+    {
+      "id": "skill_boss_punch",
+      "nameCn": "蓄力轰击",
+      "limit": "boss",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "蓄力后造成强力一击，可打断。",
+      "logicEffectCn": "param[0]为冷却时间，param[1]为初始剩余冷却时间，技能发动时Boss蓄力此时Boss不会普攻和放其它技能，蓄力时会生成一个总张角约75度的扇形、半径为param[2]（未包含Boss本身半径，实际范围要加上Boss本身半径）的蓄力警示器，蓄力param[3]秒，蓄力时间内被打断那么技能立刻进入冷却（需要有晕眩效果才能打断，击退不行）。蓄力后瞬间造成param[4]%*Boss攻击力的伤害。至此技能释放完毕。 如果被打断技能算立刻释放完毕。 蓄力警示器中间需要有扫光效果。  蓄力后造成伤害时所有受到伤害的目标身上播放强烈被命中效果，并且屏幕配合一次性振动。 技能发动时会尽量选中更多目标。",
+      "params": [
+        6,
+        4,
+        200,
+        2,
+        200
+      ]
+    },
+    {
+      "id": "skill_boss_rush",
+      "nameCn": "蓄力冲锋",
+      "limit": "boss",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "发起冲锋，沿途击退所有目标。",
+      "logicEffectCn": "param[0]为冷却时间，param[1]为初始剩余冷却时间，技能发动时Boss蓄力此时Boss不会普攻和放其它技能，蓄力时会生成一片长度为param[2]，宽度相当于自身直径的冲锋警示线区域。蓄力param[3]秒，蓄力时间内被打断那么技能立刻进入冷却（需要有晕眩效果才能打断，击退不行）。蓄力后冲锋向警示线终点，对沿途目标造成param[4]%*Boss攻击力的伤害并且将他们击飞，击飞角度为垂直冲锋路径，击飞距离等同于Boss半径，冲锋速度为500像素1秒。至此技能释放完毕。 如果被打断技能算立刻释放完毕。 冲锋过程中如果遇到打断会立刻终止，冲锋碰到场地边缘也会终止。  会尽量选择人多的方向冲锋。",
+      "params": [
+        10,
+        3,
+        600,
+        2,
+        200
+      ]
+    },
+    {
+      "id": "skill_hot_strike",
+      "nameCn": "灼热打击",
+      "limit": "boss",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "普通攻击会额外找寻2个目标，如果目标不足，剩余单位受到的伤害会提升。",
+      "logicEffectCn": "被动，普通攻击会额外寻找params[0]名在近战范围内（+5半径以防索敌有问题）一起打击，如果寻找不到，那么对目标造成多倍伤害。（举个例子，系数为2，指额外找2个目标，如果范围内只有2个目标（只能额外找到1个），那么2个人分摊总计3倍的普通攻击伤害，如果超过3个目标，那么随机选3个）。这个效果是可以暴击的。这个效果发动时受到攻击的目标会有很大很红的受攻击效果。",
+      "params": [
+        2
+      ]
+    },
+    {
+      "id": "skill_boss_crit",
+      "nameCn": "致命一击",
+      "limit": "boss",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "普攻有20%几率造成3倍暴击",
+      "logicEffectCn": "beginDefaultAttack：敌方且挂载本技能时，以 params[0]/100 概率将本次普攻伤害乘 params[1]，飘字 kind=crit（与首领致命一击样式一致）。不与 skill_blademaster_crit 同单位叠加判定链：先判首领致命，否则再判本技能。",
+      "params": [
+        20,
+        3
+      ]
+    },
+    {
+      "id": "skill_hero_mage_arcane_missiles",
+      "nameCn": "奥术飞弹",
+      "limit": "any",
+      "codeStatus": "written",
+      "descriptionCn": "引导约 3 秒内向目标连续发射魔法飞弹；每发攻击力×150% 伤害。引导结束后冷却 12 秒。法师羁绊可强化伤害、射速与对首领暴击。",
+      "logicEffectCn": "英雄 mage_01（艾拉瑞）与 mage_02（西里昂，同技能）。BattleScreen.tickHeroMageArcaneMissiles：冷却在引导结束后置 12s；引导内不普攻；眩晕或目标死亡/失距则打断并进入冷却。法师羁绊≥6 系数 225%；≥10 发射间隔 0.3s；≥15 对首领该技能暴击率+50%、暴击伤害×1.5（与全局暴击叠乘）。弹道样式 ally_arcane_missile。",
+      "params": [
+        12,
+        3,
+        0.5,
+        1.5
+      ],
+      "powerTag": "strong"
+    },
+    {
+      "id": "skill_hero_priest_mass_shelter",
+      "nameCn": "群体庇护",
+      "limit": "any",
+      "codeStatus": "written",
+      "descriptionCn": "周期性为友方施加护盾（=攻击力×100%，上限同生命）；优先低生命且无护盾者。牧师羁绊可缩短冷却、低血追加治疗、或庇护全体。",
+      "logicEffectCn": "英雄 priest_01（塞拉菲）与 priest_02（莉奥拉，同技能）。护盾为数值字段 shield≤maxHp；非 trueDamage 伤害先扣护盾再扣生命。BattleScreen.tryCastPriestMassShelter：冷却 24s，牧师羁绊≥6 为 18s；目标数 min(存活牧师数, 友方数)，≥15 为全体；羁绊≥10 且目标当前生命&lt;50% 最大生命时额外 applyHeal（同牧师普攻治疗量）。环形紫盾条 redrawHpRingWithShield。",
+      "params": [
+        24,
+        18,
+        1,
+        0.5
+      ],
+      "powerTag": "strong"
+    },
+    {
+      "id": "skill_hero_archer_strong_strike_aura",
+      "nameCn": "强击光环",
+      "limit": "any",
+      "codeStatus": "written",
+      "descriptionCn": "被动：当场上有本英雄存活时，全场法师与射手友方获得额外暴击率；射手羁绊可强化暴击率、追加暴击伤害，或使射手专注换目标不清层。",
+      "logicEffectCn": "英雄 archer_01（席拉拉）与 archer_02（奇兰，同技能）。BattleScreen：allyStrongStrikeAuraHeroAlive 时 allyKind 为 mage/archer 的友方暴击率 +6%（羁绊≥6 为 +12%）；暴击时在原有倍率上再×(1+24%)（羁绊≥10）；陨石暴击判定叠加同暴击率且暴伤受加成；奥术飞弹同。羁绊≥15 时射手换目标不重置 archerFocusStacks。脚底 createStrongStrikeHeroAura。",
+      "params": [
+        6,
+        12,
+        24
+      ],
+      "powerTag": "strong"
+    },
+    {
+      "id": "skill_hero_knight_holy_sanction",
+      "nameCn": "神圣制裁",
+      "limit": "any",
+      "codeStatus": "written",
+      "descriptionCn": "18 秒冷却：对单体造成攻击力×200% 伤害并眩晕 10 秒（首领 1 秒），可打断首领蓄力与引导；冲锋中不施放。骑士羁绊可强化伤害、施放时自疗，或在首领蓄力/引导时削减冷却。",
+      "logicEffectCn": "英雄 knight_01（格温妮）与 knight_02（帕西瓦尔，同技能）。BattleScreen.tickKnightHeroHolySanction：fight 态且非冲锋；系数 2 或羁绊≥6 为 4；眩晕非首领 10s、首领 1s；羁绊≥10 自疗 maxHp×10%；羁绊≥15 时在 startBossPunchWindup、startBossRushWindup、beginBossRushCharge 后若制裁 CD>0 则 -5s。特效 spawnHolySanctionStrike。首领已有 rush_charge 眩晕打断逻辑。",
+      "params": [
+        18,
+        2,
+        4,
+        10,
+        1
+      ],
+      "powerTag": "strong"
     }
   ]
 }

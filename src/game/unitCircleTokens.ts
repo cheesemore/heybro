@@ -1,7 +1,7 @@
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import { getAllyPortraitTexture } from './allyPortraitAssets';
 import { getHeroPortraitTexture } from './heroPortraitAssets';
-import type { HeroId } from './heroRegistry';
+import { getHeroDef, heroQualityAccent, type HeroId } from './heroRegistry';
 import { getEnemyPortraitTexture, getWowCirclePortraitTexture } from './enemyPortraitTextures';
 import { LAYOUT_SCALE } from './constants';
 import type { AllyClass } from './types';
@@ -42,6 +42,8 @@ export const ENEMY_BOSS_DISK = 0xfecaca;
 
 export const BATTLE_ALLY_HP_RING_COLOR = 0x22c55e;
 export const BATTLE_ENEMY_HP_RING_COLOR = 0xef4444;
+/** 护盾弧（紫），叠在血条缺口上；溢出段在外环反向延伸 */
+export const BATTLE_SHIELD_RING_PURPLE = 0xa855f7;
 const LOST_ALPHA = 0.2;
 
 function allyLetter(kind: AllyClass): string {
@@ -70,6 +72,8 @@ export type BattleTokenParts = {
   root: Container;
   ringCur: Graphics;
   ringLost: Graphics;
+  /** 护盾环形条（紫），位于 ringLost 之上、ringCur 之下 */
+  ringShield: Graphics;
   /** 圆内脸：纯色盘+字，或已加载时的立绘 Sprite + 描边 */
   disk: Container;
   letter: Text;
@@ -81,6 +85,22 @@ export type BattleTokenParts = {
 
 function diskOutlineWidth(innerR: number): number {
   return Math.max(1.5, Math.round(Math.min(2.5, innerR * 0.06)));
+}
+
+/**
+ * 环形血条描边外缘到圆盘中心的距离（与 `redrawHpRingPair` 的 `circle(cx,cy,ringR).stroke({width:thick})` 一致：描边以 ringR 为中心线）。
+ */
+export function battleTokenHpRingOuterRadiusPx(ringR: number, thick: number): number {
+  return ringR + thick * 0.5;
+}
+
+/**
+ * 战斗圆形代币：肖像/色盘填充圆半径（与 `buildAllyDiskAndLetter` 中 `rFill` 一致），
+ * 圆心为圆盘几何中心；旋风斩刀刃内缘见 `battleTokenHpRingOuterRadiusPx` + 间隙。
+ */
+export function battleTokenDiskFillRadiusPx(innerRadiusPx: number): number {
+  const outline = diskOutlineWidth(innerRadiusPx);
+  return Math.max(2, innerRadiusPx - outline);
 }
 
 /** 盟友：有预加载立绘则圆内贴图，否则同色盘 + 简称字 */
@@ -129,14 +149,46 @@ function buildAllyDiskAndLetter(innerR: number, kind: AllyClass): { disk: Contai
   return { disk, letter: letterNode };
 }
 
-/** 英雄：有预加载立绘则圆内贴图，否则同色盘 + 职业简称（与盟友一致） */
-function buildHeroDiskAndLetter(innerR: number, heroId: HeroId, allyKind: AllyClass): { disk: Container; letter: Text } {
-  const tex = getHeroPortraitTexture(heroId);
+/** 英雄：有预加载立绘则圆内贴图，否则同色盘 + 职业简称；`portraitLocked` 时隐藏立绘仅显示「?」占位 */
+function buildHeroDiskAndLetter(
+  innerR: number,
+  heroId: HeroId,
+  allyKind: AllyClass,
+  portraitLocked: boolean,
+): { disk: Container; letter: Text } {
   const cx = 0;
   const cy = -innerR;
   const disk = new Container();
   const outline = diskOutlineWidth(innerR);
   const rFill = Math.max(2, innerR - outline);
+  const q = getHeroDef(heroId)?.quality ?? 1;
+  const qFill = heroQualityAccent(q);
+
+  if (portraitLocked) {
+    const g = new Graphics();
+    g.circle(cx, cy, rFill).fill(0x334155).stroke({
+      width: outline,
+      color: 0x0f172a,
+      alpha: 0.55,
+    });
+    disk.addChild(g);
+    const fs = Math.max(14, Math.round(innerR * 1.05));
+    const letterNode = new Text({
+      text: '?',
+      style: {
+        fontFamily: 'system-ui, Segoe UI, "Microsoft YaHei", sans-serif',
+        fontSize: fs,
+        fill: qFill,
+        fontWeight: '900',
+      },
+    });
+    letterNode.anchor.set(0.5, 0.55);
+    letterNode.position.set(cx, cy - innerR * 0.06);
+    letterNode.visible = true;
+    return { disk, letter: letterNode };
+  }
+
+  const tex = getHeroPortraitTexture(heroId);
 
   if (tex) {
     const sprite = new Sprite(tex);
@@ -175,16 +227,21 @@ function buildHeroDiskAndLetter(innerR: number, heroId: HeroId, allyKind: AllyCl
   return { disk, letter: letterNode };
 }
 
-/** 英雄外圈金边（战斗：画在环形血条半径之外；应叠在血环与圆盘之上才看得见） */
-function buildHeroGoldRingOutsideHp(cx: number, cy: number, ringR: number, hpRingThick: number): Graphics {
+/** 英雄品质外圈（战斗：画在环形血条半径之外；叠在血环与圆盘之上） */
+function buildHeroQualityRingOutsideHp(
+  cx: number,
+  cy: number,
+  ringR: number,
+  hpRingThick: number,
+  ringColor: number,
+): Graphics {
   const g = new Graphics();
   g.eventMode = 'none';
-  const goldThick = Math.max(2.5, hpRingThick * 0.5);
-  /** 血环中心线在 ringR，外缘约 ringR+hpRingThick/2；金环中心线再外移 */
-  const goldR = ringR + hpRingThick * 0.55 + goldThick * 0.38;
-  g.circle(cx, cy, goldR).stroke({
-    width: goldThick,
-    color: 0xc8941a,
+  const ringThick = Math.max(2.5, hpRingThick * 0.5);
+  const ringOuterR = ringR + hpRingThick * 0.55 + ringThick * 0.38;
+  g.circle(cx, cy, ringOuterR).stroke({
+    width: ringThick,
+    color: ringColor,
     alpha: 1,
     cap: 'round',
     join: 'round',
@@ -192,17 +249,17 @@ function buildHeroGoldRingOutsideHp(cx: number, cy: number, ringR: number, hpRin
   return g;
 }
 
-/** 英雄外圈金边（无血环 UI：贴在肖像圆外缘；叠在圆盘之上） */
-function buildHeroDraftGoldRing(cx: number, cy: number, innerR: number): Graphics {
+/** 英雄品质外圈（无血环 UI：贴在肖像圆外缘） */
+function buildHeroDraftQualityRing(cx: number, cy: number, innerR: number, ringColor: number): Graphics {
   const outline = diskOutlineWidth(innerR);
   const rFill = Math.max(2, innerR - outline);
   const g = new Graphics();
   g.eventMode = 'none';
-  const goldThick = Math.max(2.5, innerR * 0.078);
-  const goldR = rFill + goldThick * 0.44;
-  g.circle(cx, cy, goldR).stroke({
-    width: goldThick,
-    color: 0xc8941a,
+  const ringThick = Math.max(2.5, innerR * 0.078);
+  const ringR = rFill + ringThick * 0.44;
+  g.circle(cx, cy, ringR).stroke({
+    width: ringThick,
+    color: ringColor,
     alpha: 1,
     cap: 'round',
     join: 'round',
@@ -302,6 +359,61 @@ export function redrawHpRingPair(
     .stroke({ width: thick, color: solidColor, alpha: LOST_ALPHA, cap: 'butt', join: 'round' });
 }
 
+/**
+ * 环形血条 + 护盾：先绘 HP（同 `redrawHpRingPair`），再绘紫色护盾。
+ * 护盾量以 `shieldRatio = shield/maxHp`（0～1）计：优先填满当前血条缺口（已损失弧段），溢出部分在外环沿反向延伸。
+ */
+export function redrawHpRingWithShield(
+  ringCur: Graphics,
+  ringLost: Graphics,
+  ringShield: Graphics,
+  cx: number,
+  cy: number,
+  ringR: number,
+  thick: number,
+  hpRatio: number,
+  shieldRatio: number,
+  solidColor: number,
+): void {
+  redrawHpRingPair(ringCur, ringLost, cx, cy, ringR, thick, hpRatio, solidColor);
+  ringShield.clear();
+  const sh = Math.max(0, Math.min(1, shieldRatio));
+  if (sh < 1e-5) return;
+  const hp = Math.max(0, Math.min(1, hpRatio));
+  const start = -Math.PI / 2;
+  const hpSweep = Math.PI * 2 * hp;
+  const endHp = start + hpSweep;
+  const lostSweep = Math.PI * 2 - hpSweep;
+  const shieldRad = Math.PI * 2 * sh;
+  const onLost = Math.min(shieldRad, lostSweep);
+  const strokeGap = {
+    width: Math.max(2, thick * 0.9),
+    color: BATTLE_SHIELD_RING_PURPLE,
+    alpha: 0.92,
+    cap: 'butt' as const,
+    join: 'round' as const,
+  };
+  if (onLost > 1e-5) {
+    const e2 = endHp + onLost;
+    ringShield.arc(cx, cy, ringR, endHp, e2, false).stroke(strokeGap);
+  }
+  const over = shieldRad - onLost;
+  if (over > 1e-5) {
+    const outerR = ringR + thick * 0.62;
+    const a0 = start;
+    const a1 = start - over;
+    ringShield
+      .arc(cx, cy, outerR, a0, a1, true)
+      .stroke({
+        width: Math.max(2, thick * 0.78),
+        color: BATTLE_SHIELD_RING_PURPLE,
+        alpha: 0.88,
+        cap: 'butt',
+        join: 'round',
+      });
+  }
+}
+
 export function createBattleAllyToken(kind: AllyClass, innerRadiusPx: number): BattleTokenParts {
   const innerR = innerRadiusPx;
   const cx = 0;
@@ -311,16 +423,18 @@ export function createBattleAllyToken(kind: AllyClass, innerRadiusPx: number): B
 
   const root = new Container();
   const ringLost = new Graphics();
+  const ringShield = new Graphics();
   const ringCur = new Graphics();
   const { disk, letter } = buildAllyDiskAndLetter(innerR, kind);
 
   root.addChild(ringLost);
+  root.addChild(ringShield);
   root.addChild(ringCur);
   root.addChild(disk);
   root.addChild(letter);
 
-  redrawHpRingPair(ringCur, ringLost, cx, cy, ringR, thick, 1, BATTLE_ALLY_HP_RING_COLOR);
-  return { root, ringCur, ringLost, disk, letter, ringR, thick, cx, cy };
+  redrawHpRingWithShield(ringCur, ringLost, ringShield, cx, cy, ringR, thick, 1, 0, BATTLE_ALLY_HP_RING_COLOR);
+  return { root, ringCur, ringLost, ringShield, disk, letter, ringR, thick, cx, cy };
 }
 
 export function createBattleHeroToken(
@@ -337,14 +451,18 @@ export function createBattleHeroToken(
 
   const root = new Container();
   const ringLost = new Graphics();
+  const ringShield = new Graphics();
   const ringCur = new Graphics();
-  const { disk, letter } = buildHeroDiskAndLetter(innerR, heroId, allyKind);
-  const goldRing = buildHeroGoldRingOutsideHp(cx, cy, ringR, thick);
+  const { disk, letter } = buildHeroDiskAndLetter(innerR, heroId, allyKind, false);
+  const def = getHeroDef(heroId);
+  const ringColor = heroQualityAccent(def?.quality ?? 1);
+  const qualityRing = buildHeroQualityRingOutsideHp(cx, cy, ringR, thick, ringColor);
 
   root.addChild(ringLost);
+  root.addChild(ringShield);
   root.addChild(ringCur);
   root.addChild(disk);
-  root.addChild(goldRing);
+  root.addChild(qualityRing);
   root.addChild(letter);
   if (skillTierSuffix) {
     const tag = new Text({
@@ -362,8 +480,8 @@ export function createBattleHeroToken(
     root.addChild(tag);
   }
 
-  redrawHpRingPair(ringCur, ringLost, cx, cy, ringR, thick, 1, BATTLE_ALLY_HP_RING_COLOR);
-  return { root, ringCur, ringLost, disk, letter, ringR, thick, cx, cy };
+  redrawHpRingWithShield(ringCur, ringLost, ringShield, cx, cy, ringR, thick, 1, 0, ringColor);
+  return { root, ringCur, ringLost, ringShield, disk, letter, ringR, thick, cx, cy };
 }
 
 export type BattleEnemyTokenOptions = {
@@ -384,16 +502,18 @@ export function createBattleEnemyToken(
 
   const root = new Container();
   const ringLost = new Graphics();
+  const ringShield = new Graphics();
   const ringCur = new Graphics();
   const { disk, letter } = buildEnemyDiskAndLetter(innerR, paint, opts?.wowCirclePortraitUid);
 
   root.addChild(ringLost);
+  root.addChild(ringShield);
   root.addChild(ringCur);
   root.addChild(disk);
   root.addChild(letter);
 
-  redrawHpRingPair(ringCur, ringLost, cx, cy, ringR, thick, 1, ringColor);
-  return { root, ringCur, ringLost, disk, letter, ringR, thick, cx, cy };
+  redrawHpRingWithShield(ringCur, ringLost, ringShield, cx, cy, ringR, thick, 1, 0, ringColor);
+  return { root, ringCur, ringLost, ringShield, disk, letter, ringR, thick, cx, cy };
 }
 
 /** 肉鸽 / 预览：仅圆 + 占位字，无血环 */
@@ -406,16 +526,23 @@ export function createDraftAllyToken(kind: AllyClass, diameterPx: number): Conta
   return root;
 }
 
-/** 强化 / 选牌右侧：按英雄 id 显示圆形立绘，缺图时回退职业色盘 */
-export function createDraftHeroToken(heroId: HeroId, allyKind: AllyClass, diameterPx: number): Container {
+/** 强化 / 选牌右侧：按英雄 id 显示圆形立绘；`portraitLocked` 时头像为问号，品质外框仍显示 */
+export function createDraftHeroToken(
+  heroId: HeroId,
+  allyKind: AllyClass,
+  diameterPx: number,
+  opts?: { portraitLocked?: boolean },
+): Container {
   const innerR = Math.max(10, diameterPx / 2);
   const cx = 0;
   const cy = -innerR;
   const root = new Container();
-  const { disk, letter } = buildHeroDiskAndLetter(innerR, heroId, allyKind);
-  const goldRing = buildHeroDraftGoldRing(cx, cy, innerR);
+  const def = getHeroDef(heroId);
+  const ringColor = heroQualityAccent(def?.quality ?? 1);
+  const { disk, letter } = buildHeroDiskAndLetter(innerR, heroId, allyKind, !!opts?.portraitLocked);
+  const qualityRing = buildHeroDraftQualityRing(cx, cy, innerR, ringColor);
   root.addChild(disk);
-  root.addChild(goldRing);
+  root.addChild(qualityRing);
   root.addChild(letter);
   return root;
 }

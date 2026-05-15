@@ -8,7 +8,7 @@
   - 编辑 src/game/config/wowBookMonsters.json：小怪数值与 skillIds 等。
   - 读取 src/game/config/wowBookChapters.json：小怪/首领列表按主线章节与副本顺序排序。
   - 左侧列表：已「应用」到内存但与上次保存的 JSON 不一致的条目以蓝色显示；刷新列表时尽量保持选中项与左侧焦点；弹窗关闭后会再次把焦点拉回列表。
-  - 编辑 src/game/config/wowBookBosses.json：书本关卡首领元数据与战斗基准（血攻防速射程等）；缺省字段由运行时 WOW_BOOK_BOSS_TABLE_DEFAULT 补齐。combatBossId 仅作文案/兼容字段。
+  - 编辑 src/game/config/wowBookBosses.json：书本关卡首领元数据与战斗基准（血攻防速射程等）；缺省字段由运行时 WOW_BOOK_BOSS_TABLE_DEFAULT 补齐；首领页「设置基础属性」一键写入与上表一致的表底数值（射程按近战/远程推断）。combatBossId 仅作文案/兼容字段。
 
 用法（在项目根目录）:
   python scripts/魔兽图鉴配置编辑器.py
@@ -130,6 +130,31 @@ def format_skill_id_list_json(skills: Any) -> str:
 RANGED_ATTACK_RANGE_THRESHOLD = 100
 MELEE_BASELINE_HP_ATK_INTERVAL = (270, 11, 0.62)
 RANGED_BASELINE_HP_ATK_INTERVAL = (268, 14, 0.78)
+
+# 与 src/game/wowBookData.ts WOW_BOOK_BOSS_TABLE_DEFAULT、scripts/generate-wow-book-tables.mjs DEFAULT_BOOK_BOSS_COMBAT 一致
+BOOK_BOSS_TABLE_DEFAULT_COMBAT: Dict[str, Any] = {
+    "hitRadius": 80,
+    "baseMaxHp": 1680,
+    "baseAtk": 27,
+    "attackSpeed": 0.65,
+    "moveSpeed": 540,
+}
+BOOK_BOSS_MELEE_DEFAULT_RANGE = 10
+BOOK_BOSS_RANGED_DEFAULT_RANGE = 210
+
+
+def book_boss_baseline_range_px(boss: Dict[str, Any]) -> int:
+    """按 attackType；否则按当前 range 是否≥阈值 推断近战/远程，返回默认射程（像素）。"""
+    at = str(boss.get("attackType") or "").strip()
+    if at == "远程":
+        return BOOK_BOSS_RANGED_DEFAULT_RANGE
+    if at == "近战":
+        return BOOK_BOSS_MELEE_DEFAULT_RANGE
+    try:
+        rng = int(float(boss.get("range")))
+    except (TypeError, ValueError):
+        rng = 0
+    return BOOK_BOSS_RANGED_DEFAULT_RANGE if rng >= RANGED_ATTACK_RANGE_THRESHOLD else BOOK_BOSS_MELEE_DEFAULT_RANGE
 
 
 def baseline_hp_atk_attack_speed(mob: Dict[str, Any]) -> Tuple[int, int, float]:
@@ -1192,11 +1217,39 @@ class WowBookConfigEditorApp(tk.Tk):
 
     # ========== 首领 wowBookBosses.json ==========
 
+    def _bind_vertical_scroll_wheel(self, canvas: tk.Canvas, root_widget: tk.Misc) -> None:
+        """在控件子树上绑定滚轮，使表单区可纵向滚动（Windows MouseWheel / Linux Button-4/5）。"""
+
+        def on_wheel(event: tk.Event) -> str:
+            if getattr(event, "delta", 0):
+                canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            elif getattr(event, "num", None) == 4:
+                canvas.yview_scroll(-1, "units")
+            elif getattr(event, "num", None) == 5:
+                canvas.yview_scroll(1, "units")
+            return "break"
+
+        def bind_tree(w: tk.Misc) -> None:
+            w.bind("<MouseWheel>", on_wheel)
+            w.bind("<Button-4>", on_wheel)
+            w.bind("<Button-5>", on_wheel)
+            try:
+                for c in w.winfo_children():
+                    bind_tree(c)
+            except tk.TclError:
+                pass
+
+        bind_tree(root_widget)
+        canvas.bind("<MouseWheel>", on_wheel)
+        canvas.bind("<Button-4>", on_wheel)
+        canvas.bind("<Button-5>", on_wheel)
+
     def _build_bosses_tab(self) -> None:
         top = ttk.Frame(self.tab_bosses)
         top.pack(fill=tk.X, padx=4, pady=4)
         ttk.Button(top, text="重载全部 JSON", command=self.reload_all_files).pack(side=tk.LEFT, padx=2)
         ttk.Button(top, text="保存 wowBookBosses.json", command=self.save_wow_bosses_file).pack(side=tk.LEFT, padx=2)
+        ttk.Button(top, text="设置基础属性", command=self.boss_set_table_default_combat).pack(side=tk.LEFT, padx=2)
         ttk.Label(top, text="筛选 id / 名 / 副本 / 关卡:").pack(side=tk.LEFT, padx=(12, 2))
         self.boss_filter = ttk.Entry(top, width=26)
         self.boss_filter.pack(side=tk.LEFT, padx=2)
@@ -1204,7 +1257,7 @@ class WowBookConfigEditorApp(tk.Tk):
 
         ttk.Label(
             self.tab_bosses,
-            text="战场数值（血攻防速射程等）在本表逐章填写；缺项由游戏内 WOW_BOOK_BOSS_TABLE_DEFAULT 补齐。combatBossId 为历史兼容字段，运行时不读 bosses.json。",
+            text="战场数值（血攻防速射程等）在本表逐章填写；缺项由游戏内 WOW_BOOK_BOSS_TABLE_DEFAULT 补齐。combatBossId 为历史兼容字段，运行时不读 bosses.json。右侧表单可滚轮或拖动滚动条。",
             wraplength=900,
         ).pack(fill=tk.X, padx=10, pady=(0, 4))
 
@@ -1219,8 +1272,32 @@ class WowBookConfigEditorApp(tk.Tk):
 
         right = ttk.Frame(paned)
         paned.add(right, weight=1)
+        right.rowconfigure(0, weight=1)
+        right.columnconfigure(0, weight=1)
 
-        self.boss_fields: Dict[str, ttk.Entry] = {}
+        boss_canvas = tk.Canvas(right, highlightthickness=0, bd=0)
+        try:
+            boss_canvas.configure(bg=ttk.Style(self).lookup("TFrame", "background"))
+        except tk.TclError:
+            pass
+        boss_vsb = ttk.Scrollbar(right, orient=tk.VERTICAL, command=boss_canvas.yview)
+        boss_canvas.configure(yscrollcommand=boss_vsb.set)
+        boss_canvas.grid(row=0, column=0, sticky=tk.NSEW)
+        boss_vsb.grid(row=0, column=1, sticky=tk.NS)
+
+        form = ttk.Frame(boss_canvas)
+        boss_inner_win = boss_canvas.create_window((0, 0), window=form, anchor=tk.NW)
+
+        def _boss_inner_configure(_e: tk.Event) -> None:
+            boss_canvas.configure(scrollregion=boss_canvas.bbox("all"))
+
+        def _boss_canvas_configure(e: tk.Event) -> None:
+            boss_canvas.itemconfigure(boss_inner_win, width=max(int(e.width) - 2, 1))
+
+        form.bind("<Configure>", _boss_inner_configure)
+        boss_canvas.bind("<Configure>", _boss_canvas_configure)
+
+        self.boss_fields = {}
         row = 0
         for label, key, readonly in [
             ("id（只读）", "id", True),
@@ -1236,26 +1313,32 @@ class WowBookConfigEditorApp(tk.Tk):
             ("attackType", "attackType", False),
             ("role", "role", False),
             ("creatureType", "creatureType", False),
+            ("hitRadius（碰撞/代币半径）", "hitRadius", False),
+            ("baseMaxHp（表底生命，进场×10）", "baseMaxHp", False),
+            ("baseAtk（表底攻击，战场再乘 GLOBAL）", "baseAtk", False),
+            ("attackSpeed（秒/次）", "attackSpeed", False),
+            ("range（设计射程 px）", "range", False),
+            ("moveSpeed", "moveSpeed", False),
             ("combatBossId（战场模板 id）", "combatBossId", False),
         ]:
-            ttk.Label(right, text=label).grid(row=row, column=0, sticky=tk.W, padx=4, pady=2)
-            ent = ttk.Entry(right, width=56)
+            ttk.Label(form, text=label).grid(row=row, column=0, sticky=tk.W, padx=4, pady=2)
+            ent = ttk.Entry(form, width=56)
             ent.grid(row=row, column=1, sticky=tk.EW, padx=4, pady=2)
             if readonly:
                 ent.configure(state="readonly")
             self.boss_fields[key] = ent
             row += 1
 
-        ttk.Label(right, text="isFinalBoss").grid(row=row, column=0, sticky=tk.W, padx=4, pady=2)
+        ttk.Label(form, text="isFinalBoss").grid(row=row, column=0, sticky=tk.W, padx=4, pady=2)
         self.boss_is_final = tk.BooleanVar(value=False)
-        ttk.Checkbutton(right, variable=self.boss_is_final).grid(row=row, column=1, sticky=tk.W, padx=4, pady=2)
+        ttk.Checkbutton(form, variable=self.boss_is_final).grid(row=row, column=1, sticky=tk.W, padx=4, pady=2)
         row += 1
 
-        ttk.Label(right, text="skillIds（skills.json）").grid(
+        ttk.Label(form, text="skillIds（skills.json）").grid(
             row=row, column=0, columnspan=2, sticky=tk.W, padx=4, pady=(6, 2)
         )
         row += 1
-        boss_skill_row = ttk.Frame(right)
+        boss_skill_row = ttk.Frame(form)
         boss_skill_row.grid(row=row, column=0, columnspan=2, sticky=tk.EW, padx=4, pady=2)
         boss_skill_row.columnconfigure(0, weight=1)
         self.boss_skill_ids_entry = ttk.Entry(boss_skill_row, width=48)
@@ -1265,10 +1348,51 @@ class WowBookConfigEditorApp(tk.Tk):
         )
         row += 1
 
-        right.columnconfigure(1, weight=1)
-        ttk.Button(right, text="应用当前首领到内存", command=self.boss_apply_to_memory).grid(
+        form.columnconfigure(1, weight=1)
+        ttk.Button(form, text="应用当前首领到内存", command=self.boss_apply_to_memory).grid(
             row=row, column=1, sticky=tk.W, padx=4, pady=8
         )
+
+        self._bind_vertical_scroll_wheel(boss_canvas, form)
+
+    def boss_set_table_default_combat(self) -> None:
+        """将当前首领的战斗表底字段设为与 WOW_BOOK_BOSS_TABLE_DEFAULT 一致；射程按近战/远程推断（不改元数据与 skillIds）。"""
+        sel = self.boss_list.curselection()
+        if not sel:
+            messagebox.showwarning("提示", "请先选择一个首领。")
+            return
+        line = self.boss_list.get(sel[0])
+        bid = line.split()[0]
+        bosses = self.data_wow_bosses_doc.setdefault("bosses", [])
+        idx = next((i for i, x in enumerate(bosses) if x.get("id") == bid), -1)
+        if idx < 0:
+            messagebox.showerror("错误", "找不到该首领。")
+            self._defer_restore_listbox(self.boss_list, bid)
+            return
+        b = bosses[idx]
+        rng = book_boss_baseline_range_px(b)
+        snap = "远程" if rng >= RANGED_ATTACK_RANGE_THRESHOLD else "近战"
+        d = BOOK_BOSS_TABLE_DEFAULT_COMBAT
+        if not messagebox.askyesno(
+            "设置基础属性",
+            f"将「{bid}」表底战斗字段写入与 WOW_BOOK_BOSS_TABLE_DEFAULT 一致（射程按「{snap}」）：\n"
+            f"hitRadius={d['hitRadius']}, baseMaxHp={d['baseMaxHp']}, baseAtk={d['baseAtk']}, "
+            f"attackSpeed={d['attackSpeed']}, range={rng}, moveSpeed={d['moveSpeed']}\n\n"
+            "不改 id、名称、副本、skillIds 等；确定后请保存 wowBookBosses.json。",
+        ):
+            self._defer_restore_listbox(self.boss_list, bid)
+            return
+        b["hitRadius"] = int(d["hitRadius"])
+        b["baseMaxHp"] = int(d["baseMaxHp"])
+        b["baseAtk"] = int(d["baseAtk"])
+        b["attackSpeed"] = float(d["attackSpeed"])
+        b["range"] = int(rng)
+        b["moveSpeed"] = int(d["moveSpeed"])
+        bosses[idx] = b
+        self._boss_snapshot = copy.deepcopy(b)
+        self.boss_load_selection()
+        self._refresh_boss_list(keep_id=bid)
+        self._defer_restore_listbox(self.boss_list, bid)
 
     def _all_wow_bosses(self) -> List[Dict[str, Any]]:
         return list(self.data_wow_bosses_doc.get("bosses") or [])
@@ -1360,6 +1484,25 @@ class WowBookConfigEditorApp(tk.Tk):
             self._defer_restore_listbox(self.boss_list, str(oid))
             return
 
+        try:
+            hit = int(float(self.boss_fields["hitRadius"].get()))
+            hp = int(float(self.boss_fields["baseMaxHp"].get()))
+            atk = int(float(self.boss_fields["baseAtk"].get()))
+            asp = float(self.boss_fields["attackSpeed"].get())
+            rng = int(float(self.boss_fields["range"].get()))
+            mv = int(float(self.boss_fields["moveSpeed"].get()))
+        except ValueError as e:
+            messagebox.showerror("数值错误", str(e))
+            self._defer_restore_listbox(self.boss_list, str(oid))
+            return
+        if hit < 1 or hp < 1 or atk < 1 or rng < 0 or mv < 1 or asp <= 0:
+            messagebox.showerror(
+                "数值错误",
+                "请检查：hitRadius/baseMaxHp/baseAtk ≥1，range≥0，moveSpeed≥1，attackSpeed>0。",
+            )
+            self._defer_restore_listbox(self.boss_list, str(oid))
+            return
+
         bosses = self.data_wow_bosses_doc.setdefault("bosses", [])
         idx = next((i for i, x in enumerate(bosses) if x.get("id") == oid), -1)
         if idx < 0:
@@ -1378,6 +1521,12 @@ class WowBookConfigEditorApp(tk.Tk):
         new["attackType"] = self.boss_fields["attackType"].get().strip()
         new["role"] = self.boss_fields["role"].get().strip()
         new["creatureType"] = self.boss_fields["creatureType"].get().strip()
+        new["hitRadius"] = hit
+        new["baseMaxHp"] = hp
+        new["baseAtk"] = atk
+        new["attackSpeed"] = asp
+        new["range"] = rng
+        new["moveSpeed"] = mv
         new["combatBossId"] = self.boss_fields["combatBossId"].get().strip()
         new["isFinalBoss"] = bool(self.boss_is_final.get())
         new["skillIds"] = skills

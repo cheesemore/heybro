@@ -1,6 +1,6 @@
 import type { Application } from 'pixi.js';
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
-import { BOARD_CELL_MAX_STACKS, GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
+import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { allBondStacks } from '../battleBonds';
 import { ALLY_CLASSES } from '../constants';
@@ -16,7 +16,7 @@ import { createDraftAllyToken, createDraftHeroToken } from '../unitCircleTokens'
 import { mountStretchedDungeonBackground } from '../dungeonBackground';
 import { dungeonIdForBookChapter } from '../wowBookData';
 import { getDeployedHeroIds, maxHeroDeploySlots } from '../heroMetaStorage';
-import { getHeroDef, heroDisplayNameWithSkillTier, type HeroId } from '../heroRegistry';
+import { getHeroDef, heroDisplayNameWithSkillTier, heroQualityAccent, type HeroId } from '../heroRegistry';
 import { mountHeroInfoPanelContent } from '../ui/heroInfoPanel';
 import { SynergyOverlay } from './SynergyOverlay';
 import { PARCHMENT_BTN_TEXT, drawParchmentCardTopBottomRules } from '../ui/parchmentButtonFill';
@@ -26,12 +26,39 @@ import { drawGoldenSolidPanel } from '../ui/goldenSolidPanel';
 
 const PAD_X = Math.round(20 * LAYOUT_SCALE);
 /** 选牌页右侧英雄竖条宽度（与九宫格并排） */
-const HERO_RAIL_W = Math.round(118 * LAYOUT_SCALE);
-const HERO_RAIL_GAP = Math.round(14 * LAYOUT_SCALE);
+const HERO_RAIL_W = Math.round(128 * LAYOUT_SCALE);
+const HERO_RAIL_GAP = Math.round(18 * LAYOUT_SCALE);
 /** 正文区比全宽略收，避免贴边裁切与换行异常 */
 const TEXT_INSET = Math.round(14 * LAYOUT_SCALE);
 const HEADER_Y = Math.round(20 * LAYOUT_SCALE);
 const TRIO_CARD_H = Math.round(278 * LAYOUT_SCALE);
+
+/** 招募卡第三行：职业特性（不再显示移速） */
+function allyRecruitTraitText(kind: AllyClass): string {
+  switch (kind) {
+    case 'warrior':
+      return '格挡远程伤害';
+    case 'knight':
+      return '冲锋';
+    case 'mage':
+      return '范围溅射';
+    case 'archer':
+      return '越射越快';
+    case 'priest':
+      return '治疗';
+    default:
+      return '';
+  }
+}
+
+function findDeployedHeroIdForClass(cls: AllyClass): HeroId | null {
+  for (const hid of getDeployedHeroIds()) {
+    if (!hid) continue;
+    if (getHeroDef(hid)?.allyClass === cls) return hid;
+  }
+  return null;
+}
+
 /** 三选一卡片区顶端（下移后为规则区留出空间） */
 const TRIO_TOP = Math.round(268 * LAYOUT_SCALE);
 /** 三选一与备战之间的长说明区 */
@@ -107,7 +134,8 @@ export class DraftScreen extends Container {
   private dragMode: DragMode = null;
   private dragFromSlot: number | null = null;
   private tip: Text;
-  private goldText: Text;
+  private hpText!: Text;
+  private goldText!: Text;
   private pickHint: Text;
   private bondBtnRoot: Container | null = null;
   /** 上一帧各职业棋盘层数，用于检测羁绊档位上升 */
@@ -176,7 +204,7 @@ export class DraftScreen extends Container {
 
     const band = new Graphics();
     band
-      .roundRect(PAD_X, Math.round(72 * LAYOUT_SCALE), GAME_WIDTH - PAD_X * 2, Math.round(168 * LAYOUT_SCALE), Math.round(16 * LAYOUT_SCALE))
+      .roundRect(PAD_X, Math.round(72 * LAYOUT_SCALE), GAME_WIDTH - PAD_X * 2, Math.round((168 + 80) * LAYOUT_SCALE), Math.round(16 * LAYOUT_SCALE))
       .fill({ color: 0x111827, alpha: 0.85 });
     this.addChild(band);
 
@@ -219,20 +247,31 @@ export class DraftScreen extends Container {
     this.addChild(bondBtn);
     this.bondBtnRoot = bondBtn;
 
+    this.hpText = new Text({
+      text: '',
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
+        fontSize: Math.round(26 * LAYOUT_SCALE),
+        fill: 0xf87171,
+        fontWeight: '600',
+      },
+    });
+    this.addChild(this.hpText);
+
     this.goldText = new Text({
       text: '',
       style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(30 * LAYOUT_SCALE),
+        fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
+        fontSize: Math.round(26 * LAYOUT_SCALE),
         fill: 0xfbbf24,
+        fontWeight: '600',
       },
     });
-    this.goldText.position.set(PAD_X, Math.round(82 * LAYOUT_SCALE));
     this.addChild(this.goldText);
 
     const wrapW = GAME_WIDTH - PAD_X * 2 - TEXT_INSET;
     const shortRule = new Text({
-      text: `上方三选一：5 兵种随机 3 张，点一张加入备战（单格叠层上限 ${BOARD_CELL_MAX_STACKS}）。卡面数字为选牌价；首次选牌免费。`,
+      text: '相同卡牌达到3/6/10/15/21时会激活强力羁绊。',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(19 * LAYOUT_SCALE),
@@ -243,7 +282,7 @@ export class DraftScreen extends Container {
         breakWords: true,
       },
     });
-    shortRule.position.set(PAD_X, Math.round(112 * LAYOUT_SCALE));
+    shortRule.position.set(PAD_X, Math.round((112 + 20) * LAYOUT_SCALE));
     this.addChild(shortRule);
 
     this.pickHint = new Text({
@@ -261,7 +300,7 @@ export class DraftScreen extends Container {
     this.pickHint.position.set(PAD_X, TRIO_TOP - Math.round(48 * LAYOUT_SCALE));
     this.addChild(this.pickHint);
 
-    const boardBandH = Math.round(400 * LAYOUT_SCALE);
+    const boardBandH = Math.round((400 + 80) * LAYOUT_SCALE);
     const boardBandY = BOARD_GRID_TOP - Math.round(14 * LAYOUT_SCALE);
     const boardBand = new Graphics();
     boardBand
@@ -332,12 +371,12 @@ export class DraftScreen extends Container {
   }
 
   private boardGridMetrics(): { originX: number; originY: number; cell: number; gap: number; gridW: number } {
-    const cell = Math.round(108 * LAYOUT_SCALE);
-    const gap = Math.round(16 * LAYOUT_SCALE);
+    const cell = Math.round(124 * LAYOUT_SCALE);
+    const gap = Math.round(18 * LAYOUT_SCALE);
     const gridW = cell * 3 + gap * 2;
     const totalW = gridW + HERO_RAIL_GAP + HERO_RAIL_W;
-    const originX = PAD_X + (GAME_WIDTH - PAD_X * 2 - totalW) / 2;
-    const originY = BOARD_GRID_TOP;
+    const originX = PAD_X + (GAME_WIDTH - PAD_X * 2 - totalW) / 2 - Math.round(25 * LAYOUT_SCALE);
+    const originY = BOARD_GRID_TOP + Math.round(25 * LAYOUT_SCALE);
     return { originX, originY, cell, gap, gridW };
   }
 
@@ -367,15 +406,12 @@ export class DraftScreen extends Container {
   }
 
   private refreshHud(): void {
+    this.hpText.text = `★生命：${this.run.playerHp}`;
     this.goldText.text = `金币：${this.run.gold}`;
-    if (this.picksThisRound === 0) {
-      this.pickHint.text = `本轮已选 0 次 · 首次选牌免费（折扣兵种后续更便宜）`;
-    } else {
-      const c0 = roguePickGoldCost(this.run, this.choices[0]!, this.picksThisRound);
-      const c1 = roguePickGoldCost(this.run, this.choices[1]!, this.picksThisRound);
-      const c2 = roguePickGoldCost(this.run, this.choices[2]!, this.picksThisRound);
-      this.pickHint.text = `本轮已选 ${this.picksThisRound} 次 · 当前三张费用：${c0} / ${c1} / ${c2} 金`;
-    }
+    const hudY = Math.round(82 * LAYOUT_SCALE);
+    this.hpText.position.set(PAD_X, hudY);
+    this.goldText.position.set(PAD_X + this.hpText.width + Math.round(28 * LAYOUT_SCALE), hudY);
+    this.pickHint.text = '每一关开始前首次卡牌免费';
   }
 
   private rollChoices(): void {
@@ -425,24 +461,61 @@ export class DraftScreen extends Container {
       portrait.position.set(cardW / 2, cardH * 0.44 + portraitDiameter / 2);
       card.addChild(portrait);
 
+      const depHeroId = findDeployedHeroIdForClass(kind);
+      if (depHeroId) {
+        const smallD = Math.max(20, Math.round(portraitDiameter * 0.34));
+        const mini = createDraftHeroToken(depHeroId, kind, smallD);
+        mini.eventMode = 'none';
+        const cx = cardW / 2;
+        const cy = cardH * 0.44;
+        const R = portraitDiameter / 2;
+        const tuck = smallD * 0.18;
+        mini.position.set(cx + R - tuck, cy + R - tuck + smallD / 2);
+        card.addChild(mini);
+      }
+
       const padX = Math.round(10 * LAYOUT_SCALE);
-      const t = new Text({
-        text: `${def.name}\nHP${def.maxHp} 攻${def.atk}\n速${def.moveSpeed}`,
+      const statFs = Math.round(17 * LAYOUT_SCALE);
+      const traitFs = Math.round(15 * LAYOUT_SCALE);
+      const wrapCard = Math.max(40, cardW - padX * 2);
+      const statLine = new Text({
+        text: `生命${def.maxHp} 攻击${def.atk}`,
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(17 * LAYOUT_SCALE),
+          fontSize: statFs,
           fill: PARCHMENT_BTN_TEXT,
           align: 'center',
           lineHeight: Math.round(22 * LAYOUT_SCALE),
           fontWeight: '600',
           wordWrap: true,
-          wordWrapWidth: Math.max(40, cardW - padX * 2),
+          wordWrapWidth: wrapCard,
           breakWords: true,
         },
       });
-      t.anchor.set(0.5, 1);
-      t.position.set(cardW / 2, cardH - Math.round(12 * LAYOUT_SCALE));
-      card.addChild(t);
+      statLine.anchor.set(0.5, 0);
+      const traitLine = new Text({
+        text: allyRecruitTraitText(kind),
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontSize: traitFs,
+          fill: 0x64748b,
+          align: 'center',
+          lineHeight: Math.round(20 * LAYOUT_SCALE),
+          fontWeight: '500',
+          wordWrap: true,
+          wordWrapWidth: wrapCard,
+          breakWords: true,
+        },
+      });
+      traitLine.anchor.set(0.5, 0);
+      traitLine.position.set(0, statLine.height + Math.round(6 * LAYOUT_SCALE));
+      const textBlock = new Container();
+      textBlock.addChild(statLine);
+      textBlock.addChild(traitLine);
+      const blockH = traitLine.y + traitLine.height;
+      textBlock.pivot.set(0, blockH);
+      textBlock.position.set(cardW / 2, cardH - Math.round(12 * LAYOUT_SCALE));
+      card.addChild(textBlock);
 
       const idx = i;
       card.on('pointertap', () => this.pickChoice(idx));
@@ -607,7 +680,7 @@ export class DraftScreen extends Container {
     this.closeHeroIntro();
     for (const c of [...this.children]) {
       const u = (c as { userData?: string }).userData;
-      if (u === 'board-slot' || u === 'hero-rail') c.destroy();
+      if (u === 'board-slot' || u === 'hero-rail' || u === 'board-sep') c.destroy();
     }
     for (let i = 0; i < 9; i++) {
       const b = this.boardSlotRect(i);
@@ -635,7 +708,7 @@ export class DraftScreen extends Container {
           text: artifactMark(art),
           style: {
             fontFamily: 'system-ui, sans-serif',
-            fontSize: Math.round(28 * LAYOUT_SCALE),
+            fontSize: Math.round(32 * LAYOUT_SCALE),
             fill: 0xffffff,
             fontWeight: '800',
           },
@@ -645,7 +718,7 @@ export class DraftScreen extends Container {
         wrap.addChild(am);
       }
       if (slot) {
-        const portraitDiameter = Math.min(b.w * 0.62, Math.round(112 * LAYOUT_SCALE));
+        const portraitDiameter = Math.min(b.w * 0.62, Math.round(128 * LAYOUT_SCALE));
         const portrait = createDraftAllyToken(slot.kind, portraitDiameter);
         portrait.position.set(b.w / 2, b.h * 0.38 + portraitDiameter / 2);
         wrap.addChild(portrait);
@@ -663,10 +736,10 @@ export class DraftScreen extends Container {
         text: label,
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: slot || art ? Math.round(15 * LAYOUT_SCALE) : Math.round(19 * LAYOUT_SCALE),
+          fontSize: slot || art ? Math.round(17 * LAYOUT_SCALE) : Math.round(21 * LAYOUT_SCALE),
           fill: slot ? bondNameFill(bondTotal) : art ? 0xd4d4d4 : 0x9ca3af,
           align: 'center',
-          lineHeight: Math.round(20 * LAYOUT_SCALE),
+          lineHeight: Math.round(22 * LAYOUT_SCALE),
           fontWeight: slot || art ? '600' : '400',
           wordWrap: true,
           wordWrapWidth: Math.max(32, b.w - Math.round(8 * LAYOUT_SCALE)),
@@ -682,6 +755,17 @@ export class DraftScreen extends Container {
       });
       this.addChild(wrap);
     }
+    const mSep = this.boardGridMetrics();
+    const sepX = mSep.originX + mSep.gridW + HERO_RAIL_GAP / 2 + Math.round(15 * LAYOUT_SCALE);
+    const sepTop = mSep.originY;
+    const sepBot = mSep.originY + mSep.cell * 3 + mSep.gap * 2 + Math.round(25 * LAYOUT_SCALE);
+    const sepG = new Graphics();
+    sepG
+      .moveTo(sepX, sepTop)
+      .lineTo(sepX, sepBot)
+      .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x475569, alpha: 0.95 });
+    (sepG as Container & { userData?: string }).userData = 'board-sep';
+    this.addChild(sepG);
     this.drawHeroRail();
     if (this.dragMode === 'slot' && this.dragFromSlot !== null) {
       this.paintBoardDragOutline();
@@ -748,6 +832,7 @@ export class DraftScreen extends Container {
       titleAlign: 'left',
       heroId: hid,
       classStacksOnBoard: stacks,
+      heroIntroBondLineTint: 'respectStacks',
       tokenDia: Math.round(88 * LAYOUT_SCALE),
       gapAfterTitle: Math.round(10 * LAYOUT_SCALE),
       gapAfterToken: Math.round(12 * LAYOUT_SCALE),
@@ -777,7 +862,7 @@ export class DraftScreen extends Container {
     const m = this.boardGridMetrics();
     const cap = maxHeroDeploySlots();
     const dep = getDeployedHeroIds();
-    const railX = m.originX + m.gridW + HERO_RAIL_GAP;
+    const railX = m.originX + m.gridW + HERO_RAIL_GAP + Math.round(15 * LAYOUT_SCALE);
     const slotH = Math.round((m.cell * 3 + m.gap * 2) / 3);
     const gapY = Math.round(8 * LAYOUT_SCALE);
     const stacksBy = allBondStacks(this.run.board);
@@ -806,14 +891,15 @@ export class DraftScreen extends Container {
           portrait.position.set(HERO_RAIL_W / 2, slotH * 0.42 + dia / 2);
           wrap.addChild(portrait);
           const nm = heroDisplayNameWithSkillTier(def.name, stacksBy[def.allyClass]);
+          const railTitle = `${ALLY_DEFS[def.allyClass].name}英雄 ${nm}`;
           const lab = new Text({
-            text: `英雄\n${nm}`,
+            text: railTitle,
             style: {
               fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-              fontSize: Math.round(12 * LAYOUT_SCALE),
-              fill: 0xe9d5ff,
+              fontSize: Math.round(14 * LAYOUT_SCALE),
+              fill: heroQualityAccent(def.quality),
               align: 'center',
-              lineHeight: Math.round(16 * LAYOUT_SCALE),
+              lineHeight: Math.round(18 * LAYOUT_SCALE),
               wordWrap: true,
               wordWrapWidth: HERO_RAIL_W - 6,
             },
@@ -827,10 +913,10 @@ export class DraftScreen extends Container {
           text: cap === 0 ? '栏位\n未解锁' : '空\n栏位',
           style: {
             fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-            fontSize: Math.round(13 * LAYOUT_SCALE),
+            fontSize: Math.round(15 * LAYOUT_SCALE),
             fill: 0x64748b,
             align: 'center',
-            lineHeight: Math.round(18 * LAYOUT_SCALE),
+            lineHeight: Math.round(20 * LAYOUT_SCALE),
             wordWrap: true,
             wordWrapWidth: HERO_RAIL_W - 4,
           },

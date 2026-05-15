@@ -1,10 +1,10 @@
 import { Container, FederatedPointerEvent, FederatedWheelEvent, Graphics, Rectangle, Text } from 'pixi.js';
 import { LAYOUT_SCALE } from '../constants';
-import { buildHeroIntroBodyText } from '../heroIntroCopy';
+import { buildHeroIntroBodySegments, type HeroIntroBondLineTintMode } from '../heroIntroCopy';
 import type { HeroId } from '../heroRegistry';
 import { getHeroDef } from '../heroRegistry';
 import { createDraftHeroToken } from '../unitCircleTokens';
-import { GOLDEN_PANEL_BODY, GOLDEN_PANEL_TITLE } from './goldenSolidPanel';
+import { GOLDEN_PANEL_TITLE } from './goldenSolidPanel';
 
 export type MountHeroInfoPanelContentOpts = {
   parent: Container;
@@ -22,6 +22,10 @@ export type MountHeroInfoPanelContentOpts = {
   heroId: HeroId;
   /** 备战该职业总层数；无棋盘上下文用 0 */
   classStacksOnBoard: number;
+  /**
+   * 穆兰羁绊 6/10/15 行着色：`respectStacks` 未达层数灰色；`allActive` 一律激活色（招募/强化等无棋盘时）。
+   */
+  heroIntroBondLineTint?: HeroIntroBondLineTintMode;
   tokenDia: number;
   gapAfterTitle: number;
   gapAfterToken: number;
@@ -36,7 +40,7 @@ export type MountHeroInfoPanelContentOpts = {
 };
 
 /**
- * 在 `parent` 上追加：可选标题 + 头像代币 + **可滚轮/拖拽**的正文区（`buildHeroIntroBodyText`）。
+ * 在 `parent` 上追加：可选标题 + 头像代币 + **可滚轮/拖拽**的正文区（`buildHeroIntroBodySegments`）。
  * 坐标均为与 `parent` 相同的屏幕空间（通常为全屏 overlay 根）。
  * @returns `dispose` 须在移除 `parent` 子节点前调用，以卸载 wheel / document 监听。
  */
@@ -44,6 +48,7 @@ export function mountHeroInfoPanelContent(o: MountHeroInfoPanelContentOpts): () 
   const gapAboveFooter = o.gapAboveFooter ?? Math.round(10 * LAYOUT_SCALE);
   const scrollBottomY = o.py + o.ph - o.footerReserve - gapAboveFooter;
   const wrapW = o.pw - o.padX * 2;
+  const bondLineTint = o.heroIntroBondLineTint ?? 'allActive';
 
   let cursorY = o.py + o.padTop;
   let title: Text | null = null;
@@ -99,22 +104,31 @@ export function mountHeroInfoPanelContent(o: MountHeroInfoPanelContentOpts): () 
 
   const scrollContent = new Container();
   scrollContent.eventMode = 'passive';
-  const body = new Text({
-    text: buildHeroIntroBodyText(o.heroId, o.classStacksOnBoard),
-    style: {
-      fontFamily: 'system-ui, "Microsoft YaHei", Segoe UI, sans-serif',
-      fontSize: o.bodyFontSize,
-      fill: GOLDEN_PANEL_BODY,
-      wordWrap: true,
-      wordWrapWidth: wrapW,
-      lineHeight: o.bodyLineHeight,
-      breakWords: true,
-    },
-  });
-  scrollContent.addChild(body);
+
+  const segments = buildHeroIntroBodySegments(o.heroId, o.classStacksOnBoard, { bondLineTint });
+  let bodyY = 0;
+  for (const seg of segments) {
+    const t = new Text({
+      text: seg.text,
+      style: {
+        fontFamily: 'system-ui, "Microsoft YaHei", Segoe UI, sans-serif',
+        fontSize: o.bodyFontSize,
+        fill: seg.fill,
+        wordWrap: true,
+        wordWrapWidth: wrapW,
+        lineHeight: o.bodyLineHeight,
+        breakWords: true,
+      },
+    });
+    t.position.set(0, bodyY);
+    bodyY += t.height + (seg.marginBottom ?? 0);
+    scrollContent.addChild(t);
+  }
+
+  const bodyHeight = bodyY;
   viewport.addChild(scrollContent);
 
-  const scrollMinY = (): number => Math.min(0, scrollH - body.height);
+  const scrollMinY = (): number => Math.min(0, scrollH - bodyHeight);
 
   const clampScroll = (): void => {
     scrollContent.y = Math.min(0, Math.max(scrollMinY(), scrollContent.y));

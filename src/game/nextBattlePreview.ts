@@ -71,7 +71,7 @@ const ENEMY_TRAIT: Record<EnemyClass, string> = {
   ultralisk: '大体型近战；受法师伤害翻倍。',
   abomination: '近战挥砍有概率对身边友军追加溅射伤害。',
   headhunter: '远程投掷。',
-  darkspear: '远程；普攻概率击退并减速我方。',
+  darkspear: '远程输出。',
   shaman: '远程；周期性为附近友军嗜血术。',
   batrider: '远程；跃入后排脚下，落地范围伤。',
   catapult: '远程；攻击附带地面燃烧区域。',

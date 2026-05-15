@@ -2,22 +2,7 @@ import { Container, Graphics, Sprite } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH } from './constants';
 import { loadPublicTexture, publicAssetUrl } from './loadPublicTexture';
 
-/** `public/assets/dungeon-bgs/<dungeonId>.png`，强制拉伸铺满逻辑 1080×1920 底板 */
-export function dungeonBackgroundImageUrl(dungeonId: string): string {
-  return publicAssetUrl(`assets/dungeon-bgs/${dungeonId}.png`);
-}
-
-/**
- * 在容器最底层插入全屏拉伸底图（非等比，对齐 GAME_WIDTH×GAME_HEIGHT），其上可选压一层半透明色便于读字。
- * 异步加载；失败时铺深色占位。
- */
-export function mountStretchedDungeonBackground(
-  parent: Container,
-  dungeonId: string,
-  options?: { dimAlpha?: number },
-): void {
-  const dimAlpha = options?.dimAlpha ?? 0.36;
-  const url = dungeonBackgroundImageUrl(dungeonId);
+function mountStretchedImageBackground(parent: Container, url: string, dimAlpha: number): void {
   void loadPublicTexture(url)
     .then((tex) => {
       if (parent.destroyed) {
@@ -44,4 +29,37 @@ export function mountStretchedDungeonBackground(
       g.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(0x0a0f1c);
       parent.addChildAt(g, 0);
     });
+}
+
+/** `public/assets/dungeon-bgs/<dungeonId>.png`，强制拉伸铺满逻辑 1080×1920 底板 */
+export function dungeonBackgroundImageUrl(dungeonId: string): string {
+  return publicAssetUrl(`assets/dungeon-bgs/${dungeonId}.png`);
+}
+
+/** 战场环境底板：`public/assets/battle-floor-bgs/<dungeonId>.png`（文件名与招募 `dungeonId` 一致，便于逐副本替换俯视图） */
+export function battleFloorBackgroundImageUrl(dungeonId: string): string {
+  return publicAssetUrl(`assets/battle-floor-bgs/${dungeonId}.png`);
+}
+
+/**
+ * 在容器最底层插入全屏拉伸底图（非等比，对齐 GAME_WIDTH×GAME_HEIGHT），其上可选压一层半透明色便于读字。
+ * 异步加载；失败时铺深色占位。
+ */
+export function mountStretchedDungeonBackground(
+  parent: Container,
+  dungeonId: string,
+  options?: { dimAlpha?: number },
+): void {
+  const dimAlpha = options?.dimAlpha ?? 0.36;
+  mountStretchedImageBackground(parent, dungeonBackgroundImageUrl(dungeonId), dimAlpha);
+}
+
+/** 战斗场景最底层地面/环境图（与 `mountStretchedDungeonBackground` 相同拉伸规则，资源目录不同） */
+export function mountStretchedBattleFloorBackground(
+  parent: Container,
+  dungeonId: string,
+  options?: { dimAlpha?: number },
+): void {
+  const dimAlpha = options?.dimAlpha ?? 0.22;
+  mountStretchedImageBackground(parent, battleFloorBackgroundImageUrl(dungeonId), dimAlpha);
 }

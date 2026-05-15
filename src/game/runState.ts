@@ -1,5 +1,6 @@
 import type { AllyClass, BattleOutcome, BoardCell, RoundMeta } from './types';
 import type { ArtifactKind } from './strategyTypes';
+import type { HeroId } from './heroRegistry';
 import { bookChapterStrengthPercent } from './bookChapterConfig';
 import {
   INITIAL_GOLD,
@@ -18,6 +19,21 @@ export type ExternalGrowthSnapshot = {
   permanentDamageMult: number;
   /** 永久生命乘区 */
   permanentMaxHpMult: number;
+};
+
+/**
+ * 仅开发/独立测试页注入：正式流程不赋值。删除测试入口时可连同字段与 BattleScreen 内读取处一并移除。
+ */
+export type RunDevBattleHooks = {
+  heroDeploy: readonly (HeroId | null)[];
+  /** 本场可读上阵栏位数（用于跳过章节解锁限制） */
+  heroSlotCap: number;
+  /** 全部单位生成并分离后，将 maxHp/hp 乘此值（如 10 = 1000%） */
+  postSpawnHpMult: number;
+  /** 为 true 时跳过带 `bossId` 的单位（仅乘我方/小怪等，便于测首领按生命百分比触发的被动） */
+  postSpawnHpMultSkipBoss?: boolean;
+  /** 仅对带 `bossId` 的单位再乘一次生命（在 `postSpawnHpMult` 之后应用，如 3 = 首领血量×3） */
+  postSpawnBossHpMult?: number;
 };
 
 export class RunState {
@@ -81,6 +97,15 @@ export class RunState {
     permanentMaxHpMult: 1,
   };
 
+  /** 见 `RunDevBattleHooks` */
+  devBattleHooks?: RunDevBattleHooks;
+
+  /**
+   * 仅独立测试页：右下「开发战斗日志」面板（与 `[battle-skill]` 等共用）。
+   * 正式流程勿赋值。
+   */
+  devBattleTestLog?: (line: string) => void;
+
   bookChapterStrengthMult(): number {
     return bookChapterStrengthPercent(this.bookChapterId) / 100;
   }
@@ -115,6 +140,8 @@ export class RunState {
     this.chaoticBattle = false;
     this.chaoticAllyCritBonus = 0;
     this.strategyPicks = [];
+    this.devBattleHooks = undefined;
+    this.devBattleTestLog = undefined;
   }
 
   /** 恶魔契约：进入任意回合（从地图点「进入」）时触发 */
@@ -141,41 +168,66 @@ export class RunState {
    * 若本关为普通战或首领且战斗胜利（敌方全灭），连胜+1 并按连胜场次给钱（单场最多 5）。
    * 抉择/奖励：只发利息与固定金，不改连胜。
    */
-  grantRoundEndEconomy(meta: RoundMeta, battleOutcome: BattleOutcome | null): string[] {
+  grantRoundEndEconomy(
+    meta: RoundMeta,
+    battleOutcome: BattleOutcome | null,
+    linesStyle: 'verbose' | 'compact' = 'verbose',
+  ): string[] {
     const lines: string[] = [];
+    const compact = linesStyle === 'compact';
     const g0 = this.gold;
     const bankCap = this.interestBankCapOverride ?? INTEREST_BANK_CAP;
     const intCap = this.interestMaxGoldOverride ?? INTEREST_MAX_GOLD;
     const interestBase = Math.min(g0, bankCap);
     const interest = Math.min(intCap, Math.floor(interestBase / 10));
     this.gold += interest;
-    lines.push(`利息 +${interest} 金（持有 ${g0} 金，计息封顶 ${bankCap}，利息上限 ${intCap}）`);
+    if (compact) {
+      lines.push(`利息 +${interest}`);
+    } else {
+      lines.push(`利息 +${interest} 金（持有 ${g0} 金，计息封顶 ${bankCap}，利息上限 ${intCap}）`);
+    }
 
     this.gold += ROUND_END_FIXED_GOLD;
-    lines.push(`回合结束 +${ROUND_END_FIXED_GOLD} 金`);
+    if (compact) {
+      lines.push(`回合 +${ROUND_END_FIXED_GOLD}`);
+    } else {
+      lines.push(`回合结束 +${ROUND_END_FIXED_GOLD} 金`);
+    }
 
     const isCombat = meta.kind === 'normal' || meta.kind === 'boss';
     if (isCombat && battleOutcome) {
       const cleared = battleOutcome.enemyHpRatioRemaining <= 0.0001;
       if (cleared && this.extraGoldOnBattleWin > 0) {
         this.gold += this.extraGoldOnBattleWin;
-        lines.push(`策略加成：战斗胜利额外 +${this.extraGoldOnBattleWin} 金`);
+        lines.push(
+          compact
+            ? `加成 +${this.extraGoldOnBattleWin}`
+            : `策略加成：战斗胜利额外 +${this.extraGoldOnBattleWin} 金`,
+        );
       }
       if (!cleared && this.extraGoldOnBattleLoss > 0) {
         this.gold += this.extraGoldOnBattleLoss;
-        lines.push(`策略加成：战斗失败额外 +${this.extraGoldOnBattleLoss} 金`);
+        lines.push(
+          compact
+            ? `战败加成 +${this.extraGoldOnBattleLoss}`
+            : `策略加成：战斗失败额外 +${this.extraGoldOnBattleLoss} 金`,
+        );
       }
       if (battleOutcome.perfect) {
         this.winStreak += 1;
         const bonus = Math.min(this.winStreak, WIN_STREAK_BONUS_CAP);
         this.gold += bonus;
-        lines.push(`战斗胜利（敌方全灭）· 连胜 ${this.winStreak}，额外 +${bonus} 金（本场封顶 ${WIN_STREAK_BONUS_CAP}）`);
-      } else {
+        if (compact) {
+          lines.push(`连胜 +${bonus}`);
+        } else {
+          lines.push(`战斗胜利（敌方全灭）· 连胜 ${this.winStreak}，额外 +${bonus} 金（本场封顶 ${WIN_STREAK_BONUS_CAP}）`);
+        }
+      } else if (!compact) {
         lines.push(`战斗未胜利（敌方未全灭）：无连胜奖励，连胜保持为 ${this.winStreak}`);
       }
     }
 
-    lines.push(`当前金币：${this.gold}`);
+    lines.push(compact ? `金 ${this.gold}` : `当前金币：${this.gold}`);
     return lines;
   }
 
