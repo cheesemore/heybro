@@ -12,6 +12,7 @@
     "gen:gear-items": "node scripts/generate-gear-items.mjs",
     "gen:dungeon-drops": "node scripts/generate-dungeon-gear-drops.mjs",
     "gear:placeholders": "node scripts/write-gear-icon-placeholders.mjs",
+    "gear:icons:gui": "python tools/饥荒风格装备图标生成.py",
     "gen:wow-famine-md": "python tools/generate_wow_famine_prompt_md.py",
     "enemy:art": "node scripts/enemy-art-pipeline.mjs",
     "enemy:art:grunt": "node scripts/enemy-art-pipeline.mjs --id grunt",

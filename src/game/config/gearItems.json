@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "generator": "scripts/generate-gear-items.mjs",
   "purpose": "副本装备表：每件装备有稳定 gearId；每座副本固定 14 条。dungeons[] 为副本级等级区间与品质概率；items[] 冗余相同字段便于查表。规则源见 gearGenerationRules.json。",
-  "editConvention": "【自动生成】dungeons / items 的等级与品质字段由 gearGenerationRules + registry 生成；dungeons[].topGearSetGs、combatPowerIndex 由脚本按 GS 公式写入；nodeProgressMax 默认 6.5（关内节点进度曲线上限）。【可手填】items[].nameCn；dungeons[] 整条设 manual:true 可锁定该副本规则不被覆盖。【可手填】dungeons[].drops 等扩展字段（重跑时保留 manual 副本）。",
+  "editConvention": "【自动生成】dungeons / items 的等级与品质字段由 gearGenerationRules + registry 生成；dungeons[].topGearSetGs、combatPowerIndex 由脚本按 GS 公式写入；nodeProgressMax 默认 6.5（关内节点进度曲线上限）。【可手填】items[].nameCn / nameEn（默认来自 tools/classic-vanilla-dungeon-equipment.json；npm run gen:gear-items 会保留已写入名称）；dungeons[] 整条设 manual:true 可锁定该副本规则不被覆盖。【可手填】dungeons[].drops 等扩展字段（重跑时保留 manual 副本）。",
   "relatedTables": {
     "wowBookRegistry": "副本列表与 dungeonId",
     "gearGenerationRules": "等级步进与品质分档概率",
@@ -463,7 +463,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "怒焰裂谷·头盔",
+      "nameCn": "灼热穴居人头盔",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -471,7 +471,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Molten Trogg Helm"
     },
     {
       "gearId": "ragefire_chasm.neck",
@@ -479,7 +480,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "怒焰裂谷·项链",
+      "nameCn": "燃刃邪徽",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -487,7 +488,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Searing Blade Pendant"
     },
     {
       "gearId": "ragefire_chasm.shoulder",
@@ -495,7 +497,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "怒焰裂谷·护肩",
+      "nameCn": "熔岩护肩",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -503,7 +505,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Lava-Forged Pauldrons"
     },
     {
       "gearId": "ragefire_chasm.chest",
@@ -511,7 +514,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "怒焰裂谷·胸甲",
+      "nameCn": "邪能长袍",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -519,7 +522,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Robe of Evocation"
     },
     {
       "gearId": "ragefire_chasm.waist",
@@ -527,7 +531,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "怒焰裂谷·腰带",
+      "nameCn": "燃刃腰带",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -535,7 +539,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Searing Blade Cinch"
     },
     {
       "gearId": "ragefire_chasm.legs",
@@ -543,7 +548,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "怒焰裂谷·护腿",
+      "nameCn": "黑曜石护腿",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -551,7 +556,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Obsidian Legguards"
     },
     {
       "gearId": "ragefire_chasm.feet",
@@ -559,7 +565,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "怒焰裂谷·长靴",
+      "nameCn": "熔岩行者之靴",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -567,7 +573,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Lava Walker Boots"
     },
     {
       "gearId": "ragefire_chasm.wrist",
@@ -575,7 +582,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "怒焰裂谷·护腕",
+      "nameCn": "穴居人护腕",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -583,7 +590,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Cavedweller Bracers"
     },
     {
       "gearId": "ragefire_chasm.hands",
@@ -591,7 +599,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "怒焰裂谷·手套",
+      "nameCn": "燃烧执行者手套",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -599,7 +607,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Searing Enforcer Gauntlets"
     },
     {
       "gearId": "ragefire_chasm.finger",
@@ -607,7 +616,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "怒焰裂谷·戒指",
+      "nameCn": "邪火指环",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -615,7 +624,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Felfire Ring"
     },
     {
       "gearId": "ragefire_chasm.trinket",
@@ -623,7 +633,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "怒焰裂谷·饰品",
+      "nameCn": "饥饿者之心",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -631,7 +641,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Heart of the Hungerer"
     },
     {
       "gearId": "ragefire_chasm.back",
@@ -639,7 +650,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "怒焰裂谷·披风",
+      "nameCn": "地下披风",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -647,7 +658,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Subterranean Cape"
     },
     {
       "gearId": "ragefire_chasm.mainHand",
@@ -655,7 +667,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "怒焰裂谷·武器",
+      "nameCn": "诅咒魔刃",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -663,7 +675,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Cursed Felblade"
     },
     {
       "gearId": "ragefire_chasm.offHand",
@@ -671,7 +684,7 @@
       "dungeonOrdinal": 1,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "怒焰裂谷·副手",
+      "nameCn": "暗影议程之书",
       "levelMin": 1,
       "levelMax": 5,
       "qualities": [
@@ -679,7 +692,8 @@
       ],
       "qualityWeightsPercent": {
         "common": 100
-      }
+      },
+      "nameEn": "Tome of Shadow Council"
     },
     {
       "gearId": "deadmines.head",
@@ -687,7 +701,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "死亡矿井·头盔",
+      "nameCn": "迪菲亚矿工帽",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -697,7 +711,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Defias Miner's Cap"
     },
     {
       "gearId": "deadmines.neck",
@@ -705,7 +720,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "死亡矿井·项链",
+      "nameCn": "迪菲亚徽章",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -715,7 +730,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Defias Brotherhood Badge"
     },
     {
       "gearId": "deadmines.shoulder",
@@ -723,7 +739,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "死亡矿井·护肩",
+      "nameCn": "黑铁肩甲",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -733,7 +749,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Blackened Defias Pauldrons"
     },
     {
       "gearId": "deadmines.chest",
@@ -741,7 +758,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "死亡矿井·胸甲",
+      "nameCn": "黑化迪菲亚胸甲",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -751,7 +768,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Blackened Defias Armor"
     },
     {
       "gearId": "deadmines.waist",
@@ -759,7 +777,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "死亡矿井·腰带",
+      "nameCn": "黑化迪菲亚腰带",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -769,7 +787,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Blackened Defias Belt"
     },
     {
       "gearId": "deadmines.legs",
@@ -777,7 +796,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "死亡矿井·护腿",
+      "nameCn": "黑化迪菲亚护腿",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -787,7 +806,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Blackened Defias Leggings"
     },
     {
       "gearId": "deadmines.feet",
@@ -795,7 +815,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "死亡矿井·长靴",
+      "nameCn": "黑化迪菲亚长靴",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -805,7 +825,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Blackened Defias Boots"
     },
     {
       "gearId": "deadmines.wrist",
@@ -813,7 +834,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "死亡矿井·护腕",
+      "nameCn": "金匠护腕",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -823,7 +844,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Gold-flecked Gloves"
     },
     {
       "gearId": "deadmines.hands",
@@ -831,7 +853,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "死亡矿井·手套",
+      "nameCn": "黑化迪菲亚手套",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -841,7 +863,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Blackened Defias Gloves"
     },
     {
       "gearId": "deadmines.finger",
@@ -849,7 +872,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "死亡矿井·戒指",
+      "nameCn": "华丽的宝石戒指",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -859,7 +882,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Lavishly Jeweled Ring"
     },
     {
       "gearId": "deadmines.trinket",
@@ -867,7 +891,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "死亡矿井·饰品",
+      "nameCn": "船长之哨",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -877,7 +901,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Captain's Whistle"
     },
     {
       "gearId": "deadmines.back",
@@ -885,7 +910,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "死亡矿井·披风",
+      "nameCn": "兄弟会披风",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -895,7 +920,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Cape of the Brotherhood"
     },
     {
       "gearId": "deadmines.mainHand",
@@ -903,7 +929,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "死亡矿井·武器",
+      "nameCn": "残忍倒钩",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -913,7 +939,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Cruel Barb"
     },
     {
       "gearId": "deadmines.offHand",
@@ -921,7 +948,7 @@
       "dungeonOrdinal": 2,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "死亡矿井·副手",
+      "nameCn": "厨师的搅棒",
       "levelMin": 4,
       "levelMax": 8,
       "qualities": [
@@ -931,7 +958,8 @@
       "qualityWeightsPercent": {
         "common": 70,
         "uncommon": 30
-      }
+      },
+      "nameEn": "Cookie's Stirring Rod"
     },
     {
       "gearId": "wailing_caverns.head",
@@ -939,7 +967,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "哀嚎洞穴·头盔",
+      "nameCn": "鳞片兜帽",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -951,7 +979,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Serpent Scale Hood"
     },
     {
       "gearId": "wailing_caverns.neck",
@@ -959,7 +988,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "哀嚎洞穴·项链",
+      "nameCn": "蛇牙项链",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -971,7 +1000,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Fang of the Cobrahn"
     },
     {
       "gearId": "wailing_caverns.shoulder",
@@ -979,7 +1009,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "哀嚎洞穴·护肩",
+      "nameCn": "堕夜德鲁伊披风",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -991,7 +1021,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Druid of the Fang Mantle"
     },
     {
       "gearId": "wailing_caverns.chest",
@@ -999,7 +1030,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "哀嚎洞穴·胸甲",
+      "nameCn": "鳞片长袍",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -1011,7 +1042,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Scale of the Naga"
     },
     {
       "gearId": "wailing_caverns.waist",
@@ -1019,7 +1051,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "哀嚎洞穴·腰带",
+      "nameCn": "毒牙腰带",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -1031,7 +1063,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Venomfang Belt"
     },
     {
       "gearId": "wailing_caverns.legs",
@@ -1039,7 +1072,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "哀嚎洞穴·护腿",
+      "nameCn": "荆棘护腿",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -1051,7 +1084,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Brambleweed Leggings"
     },
     {
       "gearId": "wailing_caverns.feet",
@@ -1059,7 +1093,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "哀嚎洞穴·长靴",
+      "nameCn": "毒蛇之靴",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -1071,7 +1105,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Cobrahn's Boots"
     },
     {
       "gearId": "wailing_caverns.wrist",
@@ -1079,7 +1114,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "哀嚎洞穴·护腕",
+      "nameCn": "堕夜护腕",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -1091,7 +1126,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Druid of the Fang Bracers"
     },
     {
       "gearId": "wailing_caverns.hands",
@@ -1099,7 +1135,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "哀嚎洞穴·手套",
+      "nameCn": "自然守护者手套",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -1111,7 +1147,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Nature's Guardian Gloves"
     },
     {
       "gearId": "wailing_caverns.finger",
@@ -1119,7 +1156,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "哀嚎洞穴·戒指",
+      "nameCn": "蛇眼指环",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -1131,7 +1168,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Serpent's Eye Ring"
     },
     {
       "gearId": "wailing_caverns.trinket",
@@ -1139,7 +1177,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "哀嚎洞穴·饰品",
+      "nameCn": "吞噬者之卵",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -1151,7 +1189,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Egg of the Devourer"
     },
     {
       "gearId": "wailing_caverns.back",
@@ -1159,7 +1198,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "哀嚎洞穴·披风",
+      "nameCn": "毒雾披风",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -1171,7 +1210,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Miasmic Shroud"
     },
     {
       "gearId": "wailing_caverns.mainHand",
@@ -1179,7 +1219,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "哀嚎洞穴·武器",
+      "nameCn": "波汉之牙",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -1191,7 +1231,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Boahn's Fang"
     },
     {
       "gearId": "wailing_caverns.offHand",
@@ -1199,7 +1240,7 @@
       "dungeonOrdinal": 3,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "哀嚎洞穴·副手",
+      "nameCn": "德鲁伊法典",
       "levelMin": 7,
       "levelMax": 11,
       "qualities": [
@@ -1211,7 +1252,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Druidic Tome of Growth"
     },
     {
       "gearId": "shadowfang_keep.head",
@@ -1219,7 +1261,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "影牙城堡·头盔",
+      "nameCn": "暗影狼人头骨面具",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1231,7 +1273,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Shadowfang Worgen Skull"
     },
     {
       "gearId": "shadowfang_keep.neck",
@@ -1239,7 +1282,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "影牙城堡·项链",
+      "nameCn": "阿鲁高之眼",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1251,7 +1294,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Eye of Archmage Arugal"
     },
     {
       "gearId": "shadowfang_keep.shoulder",
@@ -1259,7 +1303,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "影牙城堡·护肩",
+      "nameCn": "银色森林肩甲",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1271,7 +1315,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Silverpine Pauldrons"
     },
     {
       "gearId": "shadowfang_keep.chest",
@@ -1279,7 +1324,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "影牙城堡·胸甲",
+      "nameCn": "暗影十字军胸甲",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1291,7 +1336,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Shadowfang Vestments"
     },
     {
       "gearId": "shadowfang_keep.waist",
@@ -1299,7 +1345,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "影牙城堡·腰带",
+      "nameCn": "亡魂束带",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1311,7 +1357,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Banshee's Sash"
     },
     {
       "gearId": "shadowfang_keep.legs",
@@ -1319,7 +1366,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "影牙城堡·护腿",
+      "nameCn": "骷髅骑士护腿",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1331,7 +1378,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Skeletal Knight Greaves"
     },
     {
       "gearId": "shadowfang_keep.feet",
@@ -1339,7 +1387,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "影牙城堡·长靴",
+      "nameCn": "墓穴行者长靴",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1351,7 +1399,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Cryptwalker Boots"
     },
     {
       "gearId": "shadowfang_keep.wrist",
@@ -1359,7 +1408,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "影牙城堡·护腕",
+      "nameCn": "暗影萨满护腕",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1371,7 +1420,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Shadow Shaman Wristguards"
     },
     {
       "gearId": "shadowfang_keep.hands",
@@ -1379,7 +1429,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "影牙城堡·手套",
+      "nameCn": "狼人撕裂者手套",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1391,7 +1441,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Worgen Ripper Gloves"
     },
     {
       "gearId": "shadowfang_keep.finger",
@@ -1399,7 +1450,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "影牙城堡·戒指",
+      "nameCn": "灵魂虹吸戒指",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1411,7 +1462,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Soulrender's Band"
     },
     {
       "gearId": "shadowfang_keep.trinket",
@@ -1419,7 +1471,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "影牙城堡·饰品",
+      "nameCn": "狼人之心",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1431,7 +1483,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Worgen Heart"
     },
     {
       "gearId": "shadowfang_keep.back",
@@ -1439,7 +1492,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "影牙城堡·披风",
+      "nameCn": "暗影之影披风",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1451,7 +1504,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Shroud of the Shadow"
     },
     {
       "gearId": "shadowfang_keep.mainHand",
@@ -1459,7 +1513,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "影牙城堡·武器",
+      "nameCn": "吞噬者之爪",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1471,7 +1525,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Fenrus's Claw"
     },
     {
       "gearId": "shadowfang_keep.offHand",
@@ -1479,7 +1534,7 @@
       "dungeonOrdinal": 4,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "影牙城堡·副手",
+      "nameCn": "阿鲁高的魔典",
       "levelMin": 10,
       "levelMax": 14,
       "qualities": [
@@ -1491,7 +1546,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Arugal's Grimoire"
     },
     {
       "gearId": "blackfathom_deeps.head",
@@ -1499,7 +1555,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "黑暗深渊·头盔",
+      "nameCn": "娜迦海头盔",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1511,7 +1567,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Naga Seawater Helm"
     },
     {
       "gearId": "blackfathom_deeps.neck",
@@ -1519,7 +1576,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "黑暗深渊·项链",
+      "nameCn": "深渊珍珠项链",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1531,7 +1588,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Pearl of the Deep"
     },
     {
       "gearId": "blackfathom_deeps.shoulder",
@@ -1539,7 +1597,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "黑暗深渊·护肩",
+      "nameCn": "娜迦护肩",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1551,7 +1609,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Naga Council Mantle"
     },
     {
       "gearId": "blackfathom_deeps.chest",
@@ -1559,7 +1618,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "黑暗深渊·胸甲",
+      "nameCn": "深海水鳞胸甲",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1571,7 +1630,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Deepwater Scale Cuirass"
     },
     {
       "gearId": "blackfathom_deeps.waist",
@@ -1579,7 +1639,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "黑暗深渊·腰带",
+      "nameCn": "潮汐腰带",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1591,7 +1651,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Tidecaller's Belt"
     },
     {
       "gearId": "blackfathom_deeps.legs",
@@ -1599,7 +1660,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "黑暗深渊·护腿",
+      "nameCn": "深渊行者护腿",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1611,7 +1672,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Deepwalker Trousers"
     },
     {
       "gearId": "blackfathom_deeps.feet",
@@ -1619,7 +1681,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "黑暗深渊·长靴",
+      "nameCn": "海底漫游者之靴",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1631,7 +1693,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Abyssal Moccasins"
     },
     {
       "gearId": "blackfathom_deeps.wrist",
@@ -1639,7 +1702,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "黑暗深渊·护腕",
+      "nameCn": "娜迦侍女护腕",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1651,7 +1714,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Naga Keeper Bracers"
     },
     {
       "gearId": "blackfathom_deeps.hands",
@@ -1659,7 +1723,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "黑暗深渊·手套",
+      "nameCn": "潮汐使者手套",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1671,7 +1735,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Tidebringer Gauntlets"
     },
     {
       "gearId": "blackfathom_deeps.finger",
@@ -1679,7 +1744,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "黑暗深渊·戒指",
+      "nameCn": "暮光领主的戒指",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1691,7 +1756,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Twilight Lord's Band"
     },
     {
       "gearId": "blackfathom_deeps.trinket",
@@ -1699,7 +1765,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "黑暗深渊·饰品",
+      "nameCn": "暮光之赐",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1711,7 +1777,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Gift of the Twilight"
     },
     {
       "gearId": "blackfathom_deeps.back",
@@ -1719,7 +1786,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "黑暗深渊·披风",
+      "nameCn": "深渊披风",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1731,7 +1798,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Cloak of the Depths"
     },
     {
       "gearId": "blackfathom_deeps.mainHand",
@@ -1739,7 +1807,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "黑暗深渊·武器",
+      "nameCn": "深渊吞噬者之爪",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1751,7 +1819,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Aku'mai's Talon"
     },
     {
       "gearId": "blackfathom_deeps.offHand",
@@ -1759,7 +1828,7 @@
       "dungeonOrdinal": 5,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "黑暗深渊·副手",
+      "nameCn": "娜迦三叉戟之珠",
       "levelMin": 13,
       "levelMax": 17,
       "qualities": [
@@ -1771,7 +1840,8 @@
         "common": 40,
         "uncommon": 35,
         "rare": 25
-      }
+      },
+      "nameEn": "Trident Pearl of the Naga"
     },
     {
       "gearId": "gnomeregan.head",
@@ -1779,7 +1849,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "诺莫瑞根·头盔",
+      "nameCn": "辐射防护头盔",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -1793,7 +1863,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Irradiated Goggles"
     },
     {
       "gearId": "gnomeregan.neck",
@@ -1801,7 +1872,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "诺莫瑞根·项链",
+      "nameCn": "齿轮动力核心项链",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -1815,7 +1886,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Gnoggn's Gear Necklace"
     },
     {
       "gearId": "gnomeregan.shoulder",
@@ -1823,7 +1895,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "诺莫瑞根·护肩",
+      "nameCn": "机械护肩",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -1837,7 +1909,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Mechanized Pauldrons"
     },
     {
       "gearId": "gnomeregan.chest",
@@ -1845,7 +1918,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "诺莫瑞根·胸甲",
+      "nameCn": "黄铜蒸汽胸甲",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -1859,7 +1932,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Brass Steam Cuirass"
     },
     {
       "gearId": "gnomeregan.waist",
@@ -1867,7 +1941,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "诺莫瑞根·腰带",
+      "nameCn": "工程师工具腰带",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -1881,7 +1955,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Engineer's Tool Belt"
     },
     {
       "gearId": "gnomeregan.legs",
@@ -1889,7 +1964,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "诺莫瑞根·护腿",
+      "nameCn": "机械外骨骼护腿",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -1903,7 +1978,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Exoskeletal Greaves"
     },
     {
       "gearId": "gnomeregan.feet",
@@ -1911,7 +1987,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "诺莫瑞根·长靴",
+      "nameCn": "沉重工靴",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -1925,7 +2001,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Heavy Treads"
     },
     {
       "gearId": "gnomeregan.wrist",
@@ -1933,7 +2010,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "诺莫瑞根·护腕",
+      "nameCn": "焊工护腕",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -1947,7 +2024,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Welder's Wristguards"
     },
     {
       "gearId": "gnomeregan.hands",
@@ -1955,7 +2033,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "诺莫瑞根·手套",
+      "nameCn": "精密操作手套",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -1969,7 +2047,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Precision Grip Gloves"
     },
     {
       "gearId": "gnomeregan.finger",
@@ -1977,7 +2056,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "诺莫瑞根·戒指",
+      "nameCn": "能量环",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -1991,7 +2070,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Voltaic Ring"
     },
     {
       "gearId": "gnomeregan.trinket",
@@ -1999,7 +2079,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "诺莫瑞根·饰品",
+      "nameCn": "瑟玛普莱格的炸弹",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -2013,7 +2093,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Thermaplugg's Bomb"
     },
     {
       "gearId": "gnomeregan.back",
@@ -2021,7 +2102,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "诺莫瑞根·披风",
+      "nameCn": "辐射防护披风",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -2035,7 +2116,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Radiation Cloak"
     },
     {
       "gearId": "gnomeregan.mainHand",
@@ -2043,7 +2125,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "诺莫瑞根·武器",
+      "nameCn": "电击者之拳",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -2057,7 +2139,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Electrocutioner's Fist"
     },
     {
       "gearId": "gnomeregan.offHand",
@@ -2065,7 +2148,7 @@
       "dungeonOrdinal": 6,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "诺莫瑞根·副手",
+      "nameCn": "爆炸装置控制器",
       "levelMin": 16,
       "levelMax": 20,
       "qualities": [
@@ -2079,7 +2162,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Detonation Controller"
     },
     {
       "gearId": "razorfen_kraul.head",
@@ -2087,7 +2171,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "剃刀沼泽·头盔",
+      "nameCn": "野猪人头骨盔",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2101,7 +2185,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Quillboar Skull Helm"
     },
     {
       "gearId": "razorfen_kraul.neck",
@@ -2109,7 +2194,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "剃刀沼泽·项链",
+      "nameCn": "血牙项链",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2123,7 +2208,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Blood-Tusk Necklace"
     },
     {
       "gearId": "razorfen_kraul.shoulder",
@@ -2131,7 +2217,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "剃刀沼泽·护肩",
+      "nameCn": "骨棘护肩",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2145,7 +2231,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Bone Spike Mantle"
     },
     {
       "gearId": "razorfen_kraul.chest",
@@ -2153,7 +2240,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "剃刀沼泽·胸甲",
+      "nameCn": "哈卡祭司胸甲",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2167,7 +2254,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Hakkari Priest Tunic"
     },
     {
       "gearId": "razorfen_kraul.waist",
@@ -2175,7 +2263,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "剃刀沼泽·腰带",
+      "nameCn": "荒野猎人腰带",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2189,7 +2277,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Beastmaster Belt"
     },
     {
       "gearId": "razorfen_kraul.legs",
@@ -2197,7 +2286,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "剃刀沼泽·护腿",
+      "nameCn": "野猪人护腿",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2211,7 +2300,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Quillboar Stalklegs"
     },
     {
       "gearId": "razorfen_kraul.feet",
@@ -2219,7 +2309,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "剃刀沼泽·长靴",
+      "nameCn": "泥沼行者长靴",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2233,7 +2323,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Bogwalker Boots"
     },
     {
       "gearId": "razorfen_kraul.wrist",
@@ -2241,7 +2332,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "剃刀沼泽·护腕",
+      "nameCn": "萨满护腕",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2255,7 +2346,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Shamanic Wristguards"
     },
     {
       "gearId": "razorfen_kraul.hands",
@@ -2263,7 +2355,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "剃刀沼泽·手套",
+      "nameCn": "爪击手套",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2277,7 +2369,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Talonthresher Gloves"
     },
     {
       "gearId": "razorfen_kraul.finger",
@@ -2285,7 +2378,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "剃刀沼泽·戒指",
+      "nameCn": "先祖之环",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2299,7 +2392,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Ancestral Ring"
     },
     {
       "gearId": "razorfen_kraul.trinket",
@@ -2307,7 +2401,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "剃刀沼泽·饰品",
+      "nameCn": "哈卡之魂碎片",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2321,7 +2415,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Shard of Hakkar's Soul"
     },
     {
       "gearId": "razorfen_kraul.back",
@@ -2329,7 +2424,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "剃刀沼泽·披风",
+      "nameCn": "暗影猎手披风",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2343,7 +2438,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Shadowhunter's Cape"
     },
     {
       "gearId": "razorfen_kraul.mainHand",
@@ -2351,7 +2447,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "剃刀沼泽·武器",
+      "nameCn": "灵魂收割者",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2365,7 +2461,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Soulreaper Spear"
     },
     {
       "gearId": "razorfen_kraul.offHand",
@@ -2373,7 +2470,7 @@
       "dungeonOrdinal": 7,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "剃刀沼泽·副手",
+      "nameCn": "巫毒头颅",
       "levelMin": 19,
       "levelMax": 23,
       "qualities": [
@@ -2387,7 +2484,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Voodoo Head"
     },
     {
       "gearId": "scarlet_monastery.head",
@@ -2395,7 +2493,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "血色修道院·头盔",
+      "nameCn": "血色十字军头盔",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2409,7 +2507,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Crusader's Helm"
     },
     {
       "gearId": "scarlet_monastery.neck",
@@ -2417,7 +2516,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "血色修道院·项链",
+      "nameCn": "圣光十字项链",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2431,7 +2530,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Holy Light Cross"
     },
     {
       "gearId": "scarlet_monastery.shoulder",
@@ -2439,7 +2539,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "血色修道院·护肩",
+      "nameCn": "审判者护肩",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2453,7 +2553,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Zealot's Mantle"
     },
     {
       "gearId": "scarlet_monastery.chest",
@@ -2461,7 +2562,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "血色修道院·胸甲",
+      "nameCn": "血色十字军战袍",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2475,7 +2576,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Scarlet Crusade Tabard"
     },
     {
       "gearId": "scarlet_monastery.waist",
@@ -2483,7 +2585,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "血色修道院·腰带",
+      "nameCn": "忏悔者束带",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2497,7 +2599,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Penitent's Cinch"
     },
     {
       "gearId": "scarlet_monastery.legs",
@@ -2505,7 +2608,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "血色修道院·护腿",
+      "nameCn": "血色狂热者护腿",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2519,7 +2622,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Fanatic's Leggings"
     },
     {
       "gearId": "scarlet_monastery.feet",
@@ -2527,7 +2631,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "血色修道院·长靴",
+      "nameCn": "圣战军靴",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2541,7 +2645,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Crusader's Greaves"
     },
     {
       "gearId": "scarlet_monastery.wrist",
@@ -2549,7 +2654,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "血色修道院·护腕",
+      "nameCn": "血色护卫护腕",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2563,7 +2668,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Monastery Guard Vambraces"
     },
     {
       "gearId": "scarlet_monastery.hands",
@@ -2571,7 +2677,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "血色修道院·手套",
+      "nameCn": "驱邪者手套",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2585,7 +2691,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Exorcist's Gauntlets"
     },
     {
       "gearId": "scarlet_monastery.finger",
@@ -2593,7 +2700,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "血色修道院·戒指",
+      "nameCn": "信仰之戒",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2607,7 +2714,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Band of Devotion"
     },
     {
       "gearId": "scarlet_monastery.trinket",
@@ -2615,7 +2723,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "血色修道院·饰品",
+      "nameCn": "血色狂热者徽章",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2629,7 +2737,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Crimson Fanatic Badge"
     },
     {
       "gearId": "scarlet_monastery.back",
@@ -2637,7 +2746,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "血色修道院·披风",
+      "nameCn": "圣火披风",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2651,7 +2760,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Sanctified Flame Cloak"
     },
     {
       "gearId": "scarlet_monastery.mainHand",
@@ -2659,7 +2769,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "血色修道院·武器",
+      "nameCn": "制裁之锤",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2673,7 +2783,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Hammer of Righteousness"
     },
     {
       "gearId": "scarlet_monastery.offHand",
@@ -2681,7 +2792,7 @@
       "dungeonOrdinal": 8,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "血色修道院·副手",
+      "nameCn": "灵魂收割者法杖",
       "levelMin": 22,
       "levelMax": 26,
       "qualities": [
@@ -2695,7 +2806,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Soulrender's Focus"
     },
     {
       "gearId": "razorfen_downs.head",
@@ -2703,7 +2815,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "剃刀高地·头盔",
+      "nameCn": "冰霜巫医面具",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2717,7 +2829,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Frost Witch Doctor Mask"
     },
     {
       "gearId": "razorfen_downs.neck",
@@ -2725,7 +2838,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "剃刀高地·项链",
+      "nameCn": "寒冰之心",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2739,7 +2852,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Heart of Frost"
     },
     {
       "gearId": "razorfen_downs.shoulder",
@@ -2747,7 +2861,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "剃刀高地·护肩",
+      "nameCn": "幽灵野猪人披风",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2761,7 +2875,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Ghostly Quillboar Mantle"
     },
     {
       "gearId": "razorfen_downs.chest",
@@ -2769,7 +2884,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "剃刀高地·胸甲",
+      "nameCn": "火焰之眼胸甲",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2783,7 +2898,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Fire Eye Cuirass"
     },
     {
       "gearId": "razorfen_downs.waist",
@@ -2791,7 +2907,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "剃刀高地·腰带",
+      "nameCn": "死者之语腰带",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2805,7 +2921,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Death Speaker's Sash"
     },
     {
       "gearId": "razorfen_downs.legs",
@@ -2813,7 +2930,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "剃刀高地·护腿",
+      "nameCn": "蘑菇怪护腿",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2827,7 +2944,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Mushlump Sporelegg Leggings"
     },
     {
       "gearId": "razorfen_downs.feet",
@@ -2835,7 +2953,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "剃刀高地·长靴",
+      "nameCn": "冰霜蝙蝠之靴",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2849,7 +2967,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Frostbat Boots"
     },
     {
       "gearId": "razorfen_downs.wrist",
@@ -2857,7 +2976,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "剃刀高地·护腕",
+      "nameCn": "幽灵护腕",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2871,7 +2990,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Phantom Wristguards"
     },
     {
       "gearId": "razorfen_downs.hands",
@@ -2879,7 +2999,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "剃刀高地·手套",
+      "nameCn": "冰冷触手套",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2893,7 +3013,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Icy Touch Gloves"
     },
     {
       "gearId": "razorfen_downs.finger",
@@ -2901,7 +3022,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "剃刀高地·戒指",
+      "nameCn": "冰霜之环",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2915,7 +3036,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Ring of Absolute Zero"
     },
     {
       "gearId": "razorfen_downs.trinket",
@@ -2923,7 +3045,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "剃刀高地·饰品",
+      "nameCn": "寒冷使者的碎片",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2937,7 +3059,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Fragment of the Coldbringer"
     },
     {
       "gearId": "razorfen_downs.back",
@@ -2945,7 +3068,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "剃刀高地·披风",
+      "nameCn": "死者披风",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2959,7 +3082,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Shroud of the Departed"
     },
     {
       "gearId": "razorfen_downs.mainHand",
@@ -2967,7 +3091,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "剃刀高地·武器",
+      "nameCn": "冰霜之矛",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -2981,7 +3105,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Spear of the Coldbringer"
     },
     {
       "gearId": "razorfen_downs.offHand",
@@ -2989,7 +3114,7 @@
       "dungeonOrdinal": 9,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "剃刀高地·副手",
+      "nameCn": "冰霜宝珠",
       "levelMin": 25,
       "levelMax": 29,
       "qualities": [
@@ -3003,7 +3128,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Orb of Frost Storm"
     },
     {
       "gearId": "uldaman.head",
@@ -3011,7 +3137,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "奥达曼·头盔",
+      "nameCn": "远古石灵头盔",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3025,7 +3151,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Archaedas' Stone Helm"
     },
     {
       "gearId": "uldaman.neck",
@@ -3033,7 +3160,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "奥达曼·项链",
+      "nameCn": "泰坦印记",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3047,7 +3174,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Titan's Mark"
     },
     {
       "gearId": "uldaman.shoulder",
@@ -3055,7 +3183,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "奥达曼·护肩",
+      "nameCn": "黑曜石哨兵肩甲",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3069,7 +3197,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Obsidian Sentinel Pauldrons"
     },
     {
       "gearId": "uldaman.chest",
@@ -3077,7 +3206,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "奥达曼·胸甲",
+      "nameCn": "土灵板甲胸",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3091,7 +3220,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Earthen Plate Cuirass"
     },
     {
       "gearId": "uldaman.waist",
@@ -3099,7 +3229,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "奥达曼·腰带",
+      "nameCn": "岩石锻造腰带",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3113,7 +3243,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Stoneforged Belt"
     },
     {
       "gearId": "uldaman.legs",
@@ -3121,7 +3252,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "奥达曼·护腿",
+      "nameCn": "熔岩行者护腿",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3135,7 +3266,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Lava Walker Greaves"
     },
     {
       "gearId": "uldaman.feet",
@@ -3143,7 +3275,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "奥达曼·长靴",
+      "nameCn": "泰坦巨像之靴",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3157,7 +3289,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Titan Colossus Treads"
     },
     {
       "gearId": "uldaman.wrist",
@@ -3165,7 +3298,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "奥达曼·护腕",
+      "nameCn": "岩石巨人护腕",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3179,7 +3312,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Rock Giant Vambraces"
     },
     {
       "gearId": "uldaman.hands",
@@ -3187,7 +3321,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "奥达曼·手套",
+      "nameCn": "石拳手套",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3201,7 +3335,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Stonefist Gauntlets"
     },
     {
       "gearId": "uldaman.finger",
@@ -3209,7 +3344,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "奥达曼·戒指",
+      "nameCn": "守护者之戒",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3223,7 +3358,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Keeper's Band"
     },
     {
       "gearId": "uldaman.trinket",
@@ -3231,7 +3367,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "奥达曼·饰品",
+      "nameCn": "远古碎片",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3245,7 +3381,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Shard of Ancient Power"
     },
     {
       "gearId": "uldaman.back",
@@ -3253,7 +3390,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "奥达曼·披风",
+      "nameCn": "古代披风",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3267,7 +3404,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Ancient's Shroud"
     },
     {
       "gearId": "uldaman.mainHand",
@@ -3275,7 +3413,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "奥达曼·武器",
+      "nameCn": "火焰锤",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3289,7 +3427,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Galgann's Firehammer"
     },
     {
       "gearId": "uldaman.offHand",
@@ -3297,7 +3436,7 @@
       "dungeonOrdinal": 10,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "奥达曼·副手",
+      "nameCn": "泰坦之心",
       "levelMin": 28,
       "levelMax": 32,
       "qualities": [
@@ -3311,7 +3450,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Heart of the Titans"
     },
     {
       "gearId": "zul_farrak.head",
@@ -3319,7 +3459,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "祖尔法拉克·头盔",
+      "nameCn": "安图苏尔之王冠",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3333,7 +3473,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Antu'sul's Crown"
     },
     {
       "gearId": "zul_farrak.neck",
@@ -3341,7 +3482,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "祖尔法拉克·项链",
+      "nameCn": "沙怒之牙项链",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3355,7 +3496,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Sandfury Fang Necklace"
     },
     {
       "gearId": "zul_farrak.shoulder",
@@ -3363,7 +3505,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "祖尔法拉克·护肩",
+      "nameCn": "水术师护肩",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3377,7 +3519,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Hydromancer's Mantle"
     },
     {
       "gearId": "zul_farrak.chest",
@@ -3385,7 +3528,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "祖尔法拉克·胸甲",
+      "nameCn": "祖尔祭司长袍",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3399,7 +3542,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Zul'Priest Robes"
     },
     {
       "gearId": "zul_farrak.waist",
@@ -3407,7 +3551,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "祖尔法拉克·腰带",
+      "nameCn": "巫医祖姆拉之带",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3421,7 +3565,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Zum'rah's Sash"
     },
     {
       "gearId": "zul_farrak.legs",
@@ -3429,7 +3574,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "祖尔法拉克·护腿",
+      "nameCn": "迅猛龙皮护腿",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3443,7 +3588,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Raptorhide Leggings"
     },
     {
       "gearId": "zul_farrak.feet",
@@ -3451,7 +3597,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "祖尔法拉克·长靴",
+      "nameCn": "沙丘漫游者靴",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3465,7 +3611,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Dune Strider Boots"
     },
     {
       "gearId": "zul_farrak.wrist",
@@ -3473,7 +3620,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "祖尔法拉克·护腕",
+      "nameCn": "祖尔追随者护腕",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3487,7 +3634,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Zul'Moram Wristguards"
     },
     {
       "gearId": "zul_farrak.hands",
@@ -3495,7 +3643,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "祖尔法拉克·手套",
+      "nameCn": "利爪手套",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3509,7 +3657,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Savage Claw Gloves"
     },
     {
       "gearId": "zul_farrak.finger",
@@ -3517,7 +3666,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "祖尔法拉克·戒指",
+      "nameCn": "邪契之环",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3531,7 +3680,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Blood Pact Ring"
     },
     {
       "gearId": "zul_farrak.trinket",
@@ -3539,7 +3689,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "祖尔法拉克·饰品",
+      "nameCn": "哈卡面具碎片",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3553,7 +3703,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Hakkari Mask Fragment"
     },
     {
       "gearId": "zul_farrak.back",
@@ -3561,7 +3712,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "祖尔法拉克·披风",
+      "nameCn": "沙怒首领披风",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3575,7 +3726,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Sandfury Chieftain's Cape"
     },
     {
       "gearId": "zul_farrak.mainHand",
@@ -3583,7 +3735,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "祖尔法拉克·武器",
+      "nameCn": "沙怒战斧",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3597,7 +3749,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Sandfury War Axe"
     },
     {
       "gearId": "zul_farrak.offHand",
@@ -3605,7 +3758,7 @@
       "dungeonOrdinal": 11,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "祖尔法拉克·副手",
+      "nameCn": "巫毒头颅",
       "levelMin": 31,
       "levelMax": 35,
       "qualities": [
@@ -3619,7 +3772,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Voodoo Skull"
     },
     {
       "gearId": "maraudon.head",
@@ -3627,7 +3781,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "玛拉顿·头盔",
+      "nameCn": "半人马王子头盔",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3641,7 +3795,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Centaur Prince Helm"
     },
     {
       "gearId": "maraudon.neck",
@@ -3649,7 +3804,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "玛拉顿·项链",
+      "nameCn": "腐化之心项链",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3663,7 +3818,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Corrupted Heart Amulet"
     },
     {
       "gearId": "maraudon.shoulder",
@@ -3671,7 +3827,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "玛拉顿·护肩",
+      "nameCn": "藤蔓缠绕护肩",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3685,7 +3841,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Thornwrack Mantle"
     },
     {
       "gearId": "maraudon.chest",
@@ -3693,7 +3850,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "玛拉顿·胸甲",
+      "nameCn": "瑟莱德丝公主胸甲",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3707,7 +3864,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Princess Theradras Cuirass"
     },
     {
       "gearId": "maraudon.waist",
@@ -3715,7 +3873,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "玛拉顿·腰带",
+      "nameCn": "兰斯利德之带",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3729,7 +3887,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Landslide Girdle"
     },
     {
       "gearId": "maraudon.legs",
@@ -3737,7 +3896,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "玛拉顿·护腿",
+      "nameCn": "诺克希恩腐蚀护腿",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3751,7 +3910,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Noxxion's Corrosive Leggings"
     },
     {
       "gearId": "maraudon.feet",
@@ -3759,7 +3919,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "玛拉顿·长靴",
+      "nameCn": "扎尔之子之靴",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3773,7 +3933,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Zaetar's Progeny Treads"
     },
     {
       "gearId": "maraudon.wrist",
@@ -3781,7 +3942,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "玛拉顿·护腕",
+      "nameCn": "水晶收割者护腕",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3795,7 +3956,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Crystal Harvester Bracers"
     },
     {
       "gearId": "maraudon.hands",
@@ -3803,7 +3965,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "玛拉顿·手套",
+      "nameCn": "锐刺鞭笞者手套",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3817,7 +3979,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Razorlash Gauntlets"
     },
     {
       "gearId": "maraudon.finger",
@@ -3825,7 +3988,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "玛拉顿·戒指",
+      "nameCn": "塞瑟斯的诅咒之戒",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3839,7 +4002,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Curse of Sethephim Ring"
     },
     {
       "gearId": "maraudon.trinket",
@@ -3847,7 +4011,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "玛拉顿·饰品",
+      "nameCn": "扎尔的眼泪",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3861,7 +4025,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Tear of the Earthmother"
     },
     {
       "gearId": "maraudon.back",
@@ -3869,7 +4034,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "玛拉顿·披风",
+      "nameCn": "林地幽魂披风",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3883,7 +4048,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Woodland Spirit Shroud"
     },
     {
       "gearId": "maraudon.mainHand",
@@ -3891,7 +4057,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "玛拉顿·武器",
+      "nameCn": "岩石地震使者",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3905,7 +4071,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Earthshaker Boulder"
     },
     {
       "gearId": "maraudon.offHand",
@@ -3913,7 +4080,7 @@
       "dungeonOrdinal": 12,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "玛拉顿·副手",
+      "nameCn": "被诅咒的塔罗牌",
       "levelMin": 34,
       "levelMax": 38,
       "qualities": [
@@ -3927,7 +4094,8 @@
         "uncommon": 30,
         "rare": 25,
         "epic": 15
-      }
+      },
+      "nameEn": "Cursed Tarot Deck"
     },
     {
       "gearId": "sunken_temple.head",
@@ -3935,7 +4103,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "沉没的神庙·头盔",
+      "nameCn": "梦境守护者头盔",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -3951,7 +4119,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Dream Watcher Helm"
     },
     {
       "gearId": "sunken_temple.neck",
@@ -3959,7 +4128,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "沉没的神庙·项链",
+      "nameCn": "翡翠龙鳞项链",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -3975,7 +4144,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Emerald Dragon Scale Pendant"
     },
     {
       "gearId": "sunken_temple.shoulder",
@@ -3983,7 +4153,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "沉没的神庙·护肩",
+      "nameCn": "预言者披风",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -3999,7 +4169,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Prophet's Mantle"
     },
     {
       "gearId": "sunken_temple.chest",
@@ -4007,7 +4178,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "沉没的神庙·胸甲",
+      "nameCn": "绿龙梦魇胸甲",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -4023,7 +4194,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Green Dragon Nightmare Chest"
     },
     {
       "gearId": "sunken_temple.waist",
@@ -4031,7 +4203,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "沉没的神庙·腰带",
+      "nameCn": "神谕者束带",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -4047,7 +4219,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Oracle's Sash"
     },
     {
       "gearId": "sunken_temple.legs",
@@ -4055,7 +4228,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "沉没的神庙·护腿",
+      "nameCn": "梦境行者护腿",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -4071,7 +4244,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Dreamwalker Leggings"
     },
     {
       "gearId": "sunken_temple.feet",
@@ -4079,7 +4253,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "沉没的神庙·长靴",
+      "nameCn": "星尘漫游者之靴",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -4095,7 +4269,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Stardust Walker Boots"
     },
     {
       "gearId": "sunken_temple.wrist",
@@ -4103,7 +4278,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "沉没的神庙·护腕",
+      "nameCn": "阿塔哈卡护腕",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -4119,7 +4294,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Atal'ai Bracers"
     },
     {
       "gearId": "sunken_temple.hands",
@@ -4127,7 +4303,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "沉没的神庙·手套",
+      "nameCn": "梦境织造手套",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -4143,7 +4319,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Dreamweaver Gloves"
     },
     {
       "gearId": "sunken_temple.finger",
@@ -4151,7 +4328,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "沉没的神庙·戒指",
+      "nameCn": "永恒噩梦之戒",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -4167,7 +4344,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Ring of Eternal Nightmare"
     },
     {
       "gearId": "sunken_temple.trinket",
@@ -4175,7 +4353,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "沉没的神庙·饰品",
+      "nameCn": "梦境精华碎片",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -4191,7 +4369,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Dream Essence Shard"
     },
     {
       "gearId": "sunken_temple.back",
@@ -4199,7 +4378,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "沉没的神庙·披风",
+      "nameCn": "绿龙之翼披风",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -4215,7 +4394,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Green Dragon Wing Cloak"
     },
     {
       "gearId": "sunken_temple.mainHand",
@@ -4223,7 +4403,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "沉没的神庙·武器",
+      "nameCn": "哈卡之魂之杖",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -4239,7 +4419,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Staff of Hakkar's Soul"
     },
     {
       "gearId": "sunken_temple.offHand",
@@ -4247,7 +4428,7 @@
       "dungeonOrdinal": 13,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "沉没的神庙·副手",
+      "nameCn": "绿龙之心",
       "levelMin": 37,
       "levelMax": 41,
       "qualities": [
@@ -4263,7 +4444,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Heart of the Green Dragon"
     },
     {
       "gearId": "blackrock_depths.head",
@@ -4271,7 +4453,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "黑石深渊·头盔",
+      "nameCn": "熔火征服者头盔",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4287,7 +4469,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Molten Core Visage"
     },
     {
       "gearId": "blackrock_depths.neck",
@@ -4295,7 +4478,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "黑石深渊·项链",
+      "nameCn": "帝王宝石",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4311,7 +4494,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Imperial Amethyst"
     },
     {
       "gearId": "blackrock_depths.shoulder",
@@ -4319,7 +4503,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "黑石深渊·护肩",
+      "nameCn": "乌钢肩甲",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4335,7 +4519,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Dark Iron Pauldrons"
     },
     {
       "gearId": "blackrock_depths.chest",
@@ -4343,7 +4528,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "黑石深渊·胸甲",
+      "nameCn": "盛饰护甲",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4359,7 +4544,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Gilded Necropolis Plate"
     },
     {
       "gearId": "blackrock_depths.waist",
@@ -4367,7 +4553,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "黑石深渊·腰带",
+      "nameCn": "熔火腰带",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4383,7 +4569,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Molten Girdle"
     },
     {
       "gearId": "blackrock_depths.legs",
@@ -4391,7 +4578,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "黑石深渊·护腿",
+      "nameCn": "龙鳞护腿",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4407,7 +4594,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Dragonclan Legguards"
     },
     {
       "gearId": "blackrock_depths.feet",
@@ -4415,7 +4603,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "黑石深渊·长靴",
+      "nameCn": "永恒守护者长靴",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4431,7 +4619,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Eternal Warden's Treads"
     },
     {
       "gearId": "blackrock_depths.wrist",
@@ -4439,7 +4628,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "黑石深渊·护腕",
+      "nameCn": "火成岩护腕",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4455,7 +4644,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Pyroclastic Vambraces"
     },
     {
       "gearId": "blackrock_depths.hands",
@@ -4463,7 +4653,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "黑石深渊·手套",
+      "nameCn": "傀儡领主手套",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4479,7 +4669,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Golem Lord's Gauntlets"
     },
     {
       "gearId": "blackrock_depths.finger",
@@ -4487,7 +4678,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "黑石深渊·戒指",
+      "nameCn": "索瑞森大帝之戒",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4503,7 +4694,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Ring of Thaurissan"
     },
     {
       "gearId": "blackrock_depths.trinket",
@@ -4511,7 +4703,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "黑石深渊·饰品",
+      "nameCn": "熔火之心",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4527,7 +4719,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Heart of Molten Fire"
     },
     {
       "gearId": "blackrock_depths.back",
@@ -4535,7 +4728,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "黑石深渊·披风",
+      "nameCn": "皇帝的新斗篷",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4551,7 +4744,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Emperor's New Cloak"
     },
     {
       "gearId": "blackrock_depths.mainHand",
@@ -4559,7 +4753,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "黑石深渊·武器",
+      "nameCn": "恐怖复仇者",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4575,7 +4769,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Dreadforge"
     },
     {
       "gearId": "blackrock_depths.offHand",
@@ -4583,7 +4778,7 @@
       "dungeonOrdinal": 14,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "黑石深渊·副手",
+      "nameCn": "正义之手",
       "levelMin": 40,
       "levelMax": 44,
       "qualities": [
@@ -4599,7 +4794,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Hand of Justice"
     },
     {
       "gearId": "dire_maul.head",
@@ -4607,7 +4803,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "厄运之槌·头盔",
+      "nameCn": "戈尔多克之王冠",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4623,7 +4819,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Gordok King's Crown"
     },
     {
       "gearId": "dire_maul.neck",
@@ -4631,7 +4828,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "厄运之槌·项链",
+      "nameCn": "扭木之心",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4647,7 +4844,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Heart of the Warpwood"
     },
     {
       "gearId": "dire_maul.shoulder",
@@ -4655,7 +4853,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "厄运之槌·护肩",
+      "nameCn": "荒野萨特肩甲",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4671,7 +4869,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Wild Satyr Pauldrons"
     },
     {
       "gearId": "dire_maul.chest",
@@ -4679,7 +4878,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "厄运之槌·胸甲",
+      "nameCn": "相位猎手胸甲",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4695,7 +4894,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Phase Hunter Cuirass"
     },
     {
       "gearId": "dire_maul.waist",
@@ -4703,7 +4903,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "厄运之槌·腰带",
+      "nameCn": "扭木纠缠者之带",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4719,7 +4919,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Warpwood Tangle Belt"
     },
     {
       "gearId": "dire_maul.legs",
@@ -4727,7 +4928,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "厄运之槌·护腿",
+      "nameCn": "食人魔征服者护腿",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4743,7 +4944,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Ogre Warlord Leggings"
     },
     {
       "gearId": "dire_maul.feet",
@@ -4751,7 +4953,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "厄运之槌·长靴",
+      "nameCn": "相位漫游者之靴",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4767,7 +4969,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Phase Walker Boots"
     },
     {
       "gearId": "dire_maul.wrist",
@@ -4775,7 +4978,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "厄运之槌·护腕",
+      "nameCn": "小鬼使者护腕",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4791,7 +4994,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Imp Whisperer Bracers"
     },
     {
       "gearId": "dire_maul.hands",
@@ -4799,7 +5003,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "厄运之槌·手套",
+      "nameCn": "海杜斯的水泡手套",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4815,7 +5019,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Hydrospawn Gel Gloves"
     },
     {
       "gearId": "dire_maul.finger",
@@ -4823,7 +5028,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "厄运之槌·戒指",
+      "nameCn": "扭曲知识之戒",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4839,7 +5044,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Ring of Twisted Knowledge"
     },
     {
       "gearId": "dire_maul.trinket",
@@ -4847,7 +5053,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "厄运之槌·饰品",
+      "nameCn": "扭木种子",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4863,7 +5069,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Warpwood Acorn"
     },
     {
       "gearId": "dire_maul.back",
@@ -4871,7 +5078,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "厄运之槌·披风",
+      "nameCn": "腐林披风",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4887,7 +5094,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Felwood Corruption Cloak"
     },
     {
       "gearId": "dire_maul.mainHand",
@@ -4895,7 +5103,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "厄运之槌·武器",
+      "nameCn": "戈尔多克战斧",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4911,7 +5119,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Gordok Battleaxe"
     },
     {
       "gearId": "dire_maul.offHand",
@@ -4919,7 +5128,7 @@
       "dungeonOrdinal": 15,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "厄运之槌·副手",
+      "nameCn": "扭曲变形者法杖",
       "levelMin": 43,
       "levelMax": 47,
       "qualities": [
@@ -4935,7 +5144,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Wildshaper's Tome"
     },
     {
       "gearId": "stratholme.head",
@@ -4943,7 +5153,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "斯坦索姆·头盔",
+      "nameCn": "刽子手头盔",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -4959,7 +5169,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Executioner's Helm"
     },
     {
       "gearId": "stratholme.neck",
@@ -4967,7 +5178,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "斯坦索姆·项链",
+      "nameCn": "瑞文戴尔封印之戒",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -4983,7 +5194,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Signet of Rivendare"
     },
     {
       "gearId": "stratholme.shoulder",
@@ -4991,7 +5203,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "斯坦索姆·护肩",
+      "nameCn": "图萨丁衬肩",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -5007,7 +5219,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Thuzadin Shoulderguards"
     },
     {
       "gearId": "stratholme.chest",
@@ -5015,7 +5228,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "斯坦索姆·胸甲",
+      "nameCn": "尊贵法袍",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -5031,7 +5244,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Robe of the Exalted"
     },
     {
       "gearId": "stratholme.waist",
@@ -5039,7 +5253,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "斯坦索姆·腰带",
+      "nameCn": "瘟疫携带者腰带",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -5055,7 +5269,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Plague Carrier Belt"
     },
     {
       "gearId": "stratholme.legs",
@@ -5063,7 +5278,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "斯坦索姆·护腿",
+      "nameCn": "勇气腿铠",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -5079,7 +5294,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Valor Legplates"
     },
     {
       "gearId": "stratholme.feet",
@@ -5087,7 +5303,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "斯坦索姆·长靴",
+      "nameCn": "黑爵士长靴",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -5103,7 +5319,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Black Baron Boots"
     },
     {
       "gearId": "stratholme.wrist",
@@ -5111,7 +5328,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "斯坦索姆·护腕",
+      "nameCn": "石雕像护腕",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -5127,7 +5344,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Stone Crypt Bracers"
     },
     {
       "gearId": "stratholme.hands",
@@ -5135,7 +5353,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "斯坦索姆·手套",
+      "nameCn": "灵巧护手",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -5151,7 +5369,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Gauntlets of Dexterity"
     },
     {
       "gearId": "stratholme.finger",
@@ -5159,7 +5378,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "斯坦索姆·戒指",
+      "nameCn": "巴瑟拉斯之戒",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -5175,7 +5394,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Baron's Signet"
     },
     {
       "gearId": "stratholme.trinket",
@@ -5183,7 +5403,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "斯坦索姆·饰品",
+      "nameCn": "天灾石",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -5199,7 +5419,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Scourgestone"
     },
     {
       "gearId": "stratholme.back",
@@ -5207,7 +5428,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "斯坦索姆·披风",
+      "nameCn": "黑爵士的斗篷",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -5223,7 +5444,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Cape of the Black Baron"
     },
     {
       "gearId": "stratholme.mainHand",
@@ -5231,7 +5453,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "斯坦索姆·武器",
+      "nameCn": "瑞文戴尔之剑",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -5247,7 +5469,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Blade of the Black Guard"
     },
     {
       "gearId": "stratholme.offHand",
@@ -5255,7 +5478,7 @@
       "dungeonOrdinal": 16,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "斯坦索姆·副手",
+      "nameCn": "黑暗诅咒之杖",
       "levelMin": 46,
       "levelMax": 50,
       "qualities": [
@@ -5271,7 +5494,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Skull of Chaos"
     },
     {
       "gearId": "scholomance.head",
@@ -5279,7 +5503,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "通灵学院·头盔",
+      "nameCn": "骷髅堆王冠",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5295,7 +5519,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Bone Heap Crown"
     },
     {
       "gearId": "scholomance.neck",
@@ -5303,7 +5528,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "通灵学院·项链",
+      "nameCn": "亡灵导师项链",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5319,7 +5544,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Necrolyte's Chain"
     },
     {
       "gearId": "scholomance.shoulder",
@@ -5327,7 +5553,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "通灵学院·护肩",
+      "nameCn": "葬礼披风",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5343,7 +5569,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Funeral Shroud Mantle"
     },
     {
       "gearId": "scholomance.chest",
@@ -5351,7 +5578,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "通灵学院·胸甲",
+      "nameCn": "亡灵法师长袍",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5367,7 +5594,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Necromancer's Robes"
     },
     {
       "gearId": "scholomance.waist",
@@ -5375,7 +5603,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "通灵学院·腰带",
+      "nameCn": "骨匠腰带",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5391,7 +5619,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Bonecrafter's Sash"
     },
     {
       "gearId": "scholomance.legs",
@@ -5399,7 +5628,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "通灵学院·护腿",
+      "nameCn": "食尸鬼皮护腿",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5415,7 +5644,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Ghoulskin Leggings"
     },
     {
       "gearId": "scholomance.feet",
@@ -5423,7 +5653,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "通灵学院·长靴",
+      "nameCn": "亡灵学生长靴",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5439,7 +5669,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Necromance Student Boots"
     },
     {
       "gearId": "scholomance.wrist",
@@ -5447,7 +5678,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "通灵学院·护腕",
+      "nameCn": "骨环护腕",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5463,7 +5694,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Bone Ring Wristguards"
     },
     {
       "gearId": "scholomance.hands",
@@ -5471,7 +5703,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "通灵学院·手套",
+      "nameCn": "巫妖之握手套",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5487,7 +5719,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Lich's Grasp"
     },
     {
       "gearId": "scholomance.finger",
@@ -5495,7 +5728,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "通灵学院·戒指",
+      "nameCn": "苍白月亮戒指",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5511,7 +5744,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Pale Moon Band"
     },
     {
       "gearId": "scholomance.trinket",
@@ -5519,7 +5753,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "通灵学院·饰品",
+      "nameCn": "骷髅之钥",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5535,7 +5769,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Skull of Forbidden Arts"
     },
     {
       "gearId": "scholomance.back",
@@ -5543,7 +5778,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "通灵学院·披风",
+      "nameCn": "鬼雾披风",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5559,7 +5794,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Ghost Shroud"
     },
     {
       "gearId": "scholomance.mainHand",
@@ -5567,7 +5803,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "通灵学院·武器",
+      "nameCn": "薄暮之锤",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5583,7 +5819,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Dawn of the Dead Hammer"
     },
     {
       "gearId": "scholomance.offHand",
@@ -5591,7 +5828,7 @@
       "dungeonOrdinal": 17,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "通灵学院·副手",
+      "nameCn": "院长的死亡之书",
       "levelMin": 49,
       "levelMax": 53,
       "qualities": [
@@ -5607,7 +5844,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Dean's Book of Death"
     },
     {
       "gearId": "lower_blackrock_spire.head",
@@ -5615,7 +5853,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "head",
       "slotNo": 1,
-      "nameCn": "黑石塔下层·头盔",
+      "nameCn": "飞龙领主头盔",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5631,7 +5869,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Wyrmthalak's Drake Helm"
     },
     {
       "gearId": "lower_blackrock_spire.neck",
@@ -5639,7 +5878,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "neck",
       "slotNo": 2,
-      "nameCn": "黑石塔下层·项链",
+      "nameCn": "龙族征服者项链",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5655,7 +5894,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Drake Slayer's Chain"
     },
     {
       "gearId": "lower_blackrock_spire.shoulder",
@@ -5663,7 +5903,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "shoulder",
       "slotNo": 3,
-      "nameCn": "黑石塔下层·护肩",
+      "nameCn": "黑石氏族护肩",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5679,7 +5919,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Blackrock Clan Pauldrons"
     },
     {
       "gearId": "lower_blackrock_spire.chest",
@@ -5687,7 +5928,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "chest",
       "slotNo": 4,
-      "nameCn": "黑石塔下层·胸甲",
+      "nameCn": "奥莫克将军胸甲",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5703,7 +5944,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Highlord's Battleplate"
     },
     {
       "gearId": "lower_blackrock_spire.waist",
@@ -5711,7 +5953,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "waist",
       "slotNo": 5,
-      "nameCn": "黑石塔下层·腰带",
+      "nameCn": "龙人战术腰带",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5727,7 +5969,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Drakonid Tactics Belt"
     },
     {
       "gearId": "lower_blackrock_spire.legs",
@@ -5735,7 +5978,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "legs",
       "slotNo": 6,
-      "nameCn": "黑石塔下层·护腿",
+      "nameCn": "黑石战士护腿",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5751,7 +5994,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Blackrock Grunt Greaves"
     },
     {
       "gearId": "lower_blackrock_spire.feet",
@@ -5759,7 +6003,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "feet",
       "slotNo": 7,
-      "nameCn": "黑石塔下层·长靴",
+      "nameCn": "阴燃蛛母之靴",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5775,7 +6019,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Smolderweb Mother's Boots"
     },
     {
       "gearId": "lower_blackrock_spire.wrist",
@@ -5783,7 +6028,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "wrist",
       "slotNo": 8,
-      "nameCn": "黑石塔下层·护腕",
+      "nameCn": "暗影猎手护腕",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5799,7 +6044,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Shadow Hunter Vambraces"
     },
     {
       "gearId": "lower_blackrock_spire.hands",
@@ -5807,7 +6053,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "hands",
       "slotNo": 9,
-      "nameCn": "黑石塔下层·手套",
+      "nameCn": "厄运嚎叫者手套",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5823,7 +6069,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Doomhowl Gauntlets"
     },
     {
       "gearId": "lower_blackrock_spire.finger",
@@ -5831,7 +6078,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "finger",
       "slotNo": 10,
-      "nameCn": "黑石塔下层·戒指",
+      "nameCn": "龙息指环",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5847,7 +6094,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Dragonbreath Ring"
     },
     {
       "gearId": "lower_blackrock_spire.trinket",
@@ -5855,7 +6103,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "trinket",
       "slotNo": 11,
-      "nameCn": "黑石塔下层·饰品",
+      "nameCn": "龙人之心",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5871,7 +6119,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Drake's Heart Core"
     },
     {
       "gearId": "lower_blackrock_spire.back",
@@ -5879,7 +6128,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "back",
       "slotNo": 12,
-      "nameCn": "黑石塔下层·披风",
+      "nameCn": "龙人主人披风",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5895,7 +6144,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Drake Keeper's Cape"
     },
     {
       "gearId": "lower_blackrock_spire.mainHand",
@@ -5903,7 +6153,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "mainHand",
       "slotNo": 13,
-      "nameCn": "黑石塔下层·武器",
+      "nameCn": "战王战斧",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5919,7 +6169,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "War Master's Cleaver"
     },
     {
       "gearId": "lower_blackrock_spire.offHand",
@@ -5927,7 +6178,7 @@
       "dungeonOrdinal": 18,
       "slotKind": "offHand",
       "slotNo": 14,
-      "nameCn": "黑石塔下层·副手",
+      "nameCn": "军需官盾牌",
       "levelMin": 52,
       "levelMax": 56,
       "qualities": [
@@ -5943,7 +6194,8 @@
         "rare": 35,
         "epic": 25,
         "legendary": 5
-      }
+      },
+      "nameEn": "Quartermaster's Shield"
     }
   ]
 }

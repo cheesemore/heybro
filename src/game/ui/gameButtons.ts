@@ -1,5 +1,6 @@
 import type { FederatedPointerEvent, TextStyle } from 'pixi.js';
 import { Container, Graphics, Polygon, Text } from 'pixi.js';
+import { playButtonClickSfx } from '../gameAudio';
 
 /** 统一斜切按钮的语义样式 id；可在运行时 `patchGameButtonStyle` 替换配色 */
 export type GameButtonStyleKey =
@@ -295,7 +296,11 @@ export function createGameButton(opts: CreateGameButtonArgs): GameButton {
   });
 
   if (opts.onTap) {
-    btn.on('pointertap', opts.onTap);
+    btn.on('pointertap', (e) => {
+      if (btn.eventMode !== 'static') return;
+      playButtonClickSfx();
+      opts.onTap!(e);
+    });
   }
 
   btn.redraw = (patch: Partial<GameButtonPaintOptions>): void => {

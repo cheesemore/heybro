@@ -30,6 +30,7 @@ import {
 } from '../enemyPortraitTextures';
 import { dungeonBackgroundImageUrl } from '../dungeonBackground';
 import { loadPublicTexture, loadPublicTextureFirst } from '../loadPublicTexture';
+import { bindGamePointerTap, startScreenMusic, stopScreenMusic } from '../gameAudio';
 import { spawnFloatingGameTip } from '../ui/floatingGameTip';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import {
@@ -132,9 +133,9 @@ export class ChapterSelectScreen extends Container {
       width: backW,
       height: backH,
       fontSize: Math.round(21 * LAYOUT_SCALE),
+      onTap: () => this.onBack(),
     });
     backBtn.position.set(GAME_WIDTH - backW - pad, Math.round(26 * LAYOUT_SCALE));
-    backBtn.on('pointertap', () => this.onBack());
     this.addChild(backBtn);
 
     this.addChild(this.boardLayer);
@@ -201,9 +202,9 @@ export class ChapterSelectScreen extends Container {
       width: sideW,
       height: sideH,
       fontSize: Math.round(20 * LAYOUT_SCALE),
+      onTap: () => this.onStrengthen?.(),
     });
     heroBtn.position.set(heroX, heroY);
-    heroBtn.on('pointertap', () => this.onStrengthen?.());
     this.addChild(heroBtn);
 
     const heroLotteryBadge = new Container();
@@ -217,9 +218,9 @@ export class ChapterSelectScreen extends Container {
       width: midW,
       height: midH,
       fontSize: Math.round(34 * LAYOUT_SCALE),
+      onTap: () => this.onPickChapter(this.viewChapterId),
     });
     chBtn.position.set(rowX + sideW + btnGap, rowY);
-    chBtn.on('pointertap', () => this.onPickChapter(this.viewChapterId));
     this.addChild(chBtn);
 
     if (this.onDebugChapterClear) {
@@ -232,6 +233,7 @@ export class ChapterSelectScreen extends Container {
     }
 
     attachScreenDebugLabel(this, 'ChapterSelectScreen');
+    startScreenMusic('chapterSelect');
   }
 
   private refreshDungeonBackground(): void {
@@ -338,12 +340,12 @@ export class ChapterSelectScreen extends Container {
       width: detW,
       height: detH,
       fontSize: Math.round(20 * LAYOUT_SCALE),
+      onTap: (e) => {
+        e.stopPropagation();
+        this.openChapterDetailOverlay();
+      },
     });
     detBtn.position.set(detX, detY);
-    detBtn.on('pointertap', (e) => {
-      e.stopPropagation();
-      this.openChapterDetailOverlay();
-    });
     card.addChild(detBtn);
 
     const chStars = getChapterStarFilledCount(targetId);
@@ -484,12 +486,12 @@ export class ChapterSelectScreen extends Container {
         width: arrowW,
         height: arrowH,
         fontSize: Math.round(20 * LAYOUT_SCALE),
+        onTap: (e) => {
+          e.stopPropagation();
+          opts.onTap();
+        },
       });
       btn.position.set(x, navY);
-      btn.on('pointertap', (e) => {
-        e.stopPropagation();
-        opts.onTap();
-      });
       this.boardLayer.addChild(btn);
     };
 
@@ -555,12 +557,12 @@ export class ChapterSelectScreen extends Container {
         width: bw,
         height: btnH,
         fontSize: Math.round(17 * LAYOUT_SCALE),
+        onTap: (e) => {
+          e.stopPropagation();
+          this.onDebugChapterClear?.(this.viewChapterId, star);
+        },
       });
       btn.position.set(inset, y);
-      btn.on('pointertap', (e) => {
-        e.stopPropagation();
-        this.onDebugChapterClear?.(this.viewChapterId, star);
-      });
       root.addChild(btn);
     };
 
@@ -632,7 +634,7 @@ export class ChapterSelectScreen extends Container {
     const dim = new Graphics();
     dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x020617, alpha: 0.86 });
     dim.eventMode = 'static';
-    dim.on('pointertap', () => this.closeChapterDetailOverlay());
+    bindGamePointerTap(dim, () => this.closeChapterDetailOverlay());
     layer.addChild(dim);
 
     const pad = Math.round(24 * LAYOUT_SCALE);
@@ -817,12 +819,12 @@ export class ChapterSelectScreen extends Container {
       width: closeW,
       height: closeH,
       fontSize: Math.round(22 * LAYOUT_SCALE),
+      onTap: (e) => {
+        e.stopPropagation();
+        this.closeChapterDetailOverlay();
+      },
     });
     closeBtn.position.set((GAME_WIDTH - closeW) / 2, closeY);
-    closeBtn.on('pointertap', (e) => {
-      e.stopPropagation();
-      this.closeChapterDetailOverlay();
-    });
     layer.addChild(closeBtn);
 
     attachScreenDebugLabel(layer, 'ChapterSelectScreen.detail');
@@ -830,6 +832,7 @@ export class ChapterSelectScreen extends Container {
   }
 
   override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
+    stopScreenMusic();
     this.bossPortraitFxDispose?.();
     this.bossPortraitFxDispose = null;
     if (this.keyHandler) {

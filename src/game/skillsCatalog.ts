@@ -27,6 +27,10 @@ export type SkillDef = {
   logicEffectCn: string;
   /** 可选调参；最多 5 项，顺序见 `logicEffectCn` 内约定 */
   params?: readonly SkillParamValue[];
+  /** 发射瞬间音效资源 id；空串表示暂无音效 */
+  launchSfx?: string;
+  /** 命中瞬间音效资源 id；空串表示暂无音效 */
+  hitSfx?: string;
 };
 
 function normalizeSkillDef(raw: SkillDef): SkillDef {
@@ -38,7 +42,12 @@ function normalizeSkillDef(raw: SkillDef): SkillDef {
       codeStatus = 'missing';
     }
   }
-  return { ...raw, codeStatus };
+  return {
+    ...raw,
+    codeStatus,
+    launchSfx: raw.launchSfx?.trim() ?? '',
+    hitSfx: raw.hitSfx?.trim() ?? '',
+  };
 }
 
 const doc = skillsDoc as { skills: SkillDef[] };

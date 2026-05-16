@@ -1,6 +1,7 @@
 import { Application, Container, Graphics, Rectangle, Sprite, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { loadPublicTexture, publicAssetUrl } from '../loadPublicTexture';
+import { startScreenMusic, stopScreenMusic } from '../gameAudio';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { createStyledGameButton } from '../ui/gameButtons';
 
@@ -101,6 +102,7 @@ export class TitleScreen extends Container {
     this.addChild(tap);
 
     attachScreenDebugLabel(this, 'TitleScreen');
+    startScreenMusic('title');
 
     this.eventMode = 'static';
     this.hitArea = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -134,6 +136,7 @@ export class TitleScreen extends Container {
   }
 
   override destroy(options?: boolean): void {
+    stopScreenMusic();
     if (this.tickFn) {
       this.app.ticker.remove(this.tickFn);
       this.tickFn = null;

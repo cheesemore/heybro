@@ -52,6 +52,8 @@ export type GearItemRow = {
   slotKind: GearSlotKind;
   slotNo: number;
   nameCn: string;
+  /** 展示用英文名（来自 classic-vanilla-dungeon-equipment 表） */
+  nameEn?: string;
   levelMin: number;
   levelMax: number;
   qualities: GearQuality[];

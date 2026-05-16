@@ -1,0 +1,2126 @@
+[
+  {
+    "dungeon_name_cn": "怒焰裂谷",
+    "dungeon_name_en": "Ragefire Chasm",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "灼热穴居人头盔",
+        "name_en": "Molten Trogg Helm",
+        "source": "crafted",
+        "image_prompt": "A crude helmet made from volcanic rock and hardened magma, with glowing orange cracks emitting heat, tribal spikes protruding from the sides, dark fantasy RPG game item illustration, detailed, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "燃刃邪徽",
+        "name_en": "Searing Blade Pendant",
+        "source": "Bazzalan",
+        "image_prompt": "A dark amulet with a glowing red gemstone shaped like a flame, hung on a chain of blackened iron links, ornate tribal engravings, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "熔岩护肩",
+        "name_en": "Lava-Forged Pauldrons",
+        "source": "crafted",
+        "image_prompt": "Massive stone pauldrons with veins of molten rock glowing through cracks, jagged edges like broken obsidian, smoke rising from the surface, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "邪能长袍",
+        "name_en": "Robe of Evocation",
+        "source": "Jergosh the Invoker",
+        "image_prompt": "A flowing dark purple robe with arcane runes stitched in silver thread, glowing green fel energy emanating from the fabric, tattered edges with small bells attached, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "燃刃腰带",
+        "name_en": "Searing Blade Cinch",
+        "source": "crafted",
+        "image_prompt": "A thick leather belt with a bronze buckle shaped like a flame, small pouches containing volcanic ash hanging from loops, scorch marks and burn stains, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "黑曜石护腿",
+        "name_en": "Obsidian Legguards",
+        "source": "crafted",
+        "image_prompt": "Heavy leggings made from dark obsidian plates held together by glowing orange magma seams, tribal markings burned into the surface, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "熔岩行者之靴",
+        "name_en": "Lava Walker Boots",
+        "source": "crafted",
+        "image_prompt": "Heavy boots with soles made from cooled lava rock, cracks revealing inner glow, iron bands and buckles, heat distortion effect around them, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "穴居人护腕",
+        "name_en": "Cavedweller Bracers",
+        "source": "Jergosh the Invoker",
+        "image_prompt": "Rough leather bracers reinforced with stone and bone, small glowing crystals embedded in the surface, iron studs for protection, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "燃烧执行者手套",
+        "name_en": "Searing Enforcer Gauntlets",
+        "source": "crafted",
+        "image_prompt": "Heavy gauntlets with metal plates covering the back of the hand, iron spikes on the knuckles, burn marks and scorch stains, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "邪火指环",
+        "name_en": "Felfire Ring",
+        "source": "crafted",
+        "image_prompt": "A bronze ring with a small green fel flame burning eternally in the center gem setting, runic inscriptions on the band, smoky aura, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "地下披风",
+        "name_en": "Subterranean Cape",
+        "source": "Taragaman the Hungerer",
+        "image_prompt": "A dark leather cloak with cracks and tears, ember particles drifting from the edges, a clasp shaped like a molten fist, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "暗影议程之书",
+        "name_en": "Tome of Shadow Council",
+        "source": "crafted",
+        "image_prompt": "An ancient tome bound in dark leather with iron corners, pages glowing with green fel energy, arcane symbols on the cover, floating ash particles, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "诅咒魔刃",
+        "name_en": "Cursed Felblade",
+        "source": "Taragaman the Hungerer",
+        "image_prompt": "A curved demonic sword with a black blade etched with glowing green runes, the edge permanently burning with fel flames, a pommel shaped like a screaming face, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "饥饿者之心",
+        "name_en": "Heart of the Hungerer",
+        "source": "Taragaman the Hungerer",
+        "image_prompt": "A crystallized heart of solidified lava energy, pulsing with inner fire, suspended in an iron cage pendant, heat waves emanating from it, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "死亡矿井",
+    "dungeon_name_en": "Deadmines",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "迪菲亚矿工帽",
+        "name_en": "Defias Miner's Cap",
+        "source": "Rhahk'zor",
+        "image_prompt": "A battered leather miner's cap with a small lantern attached to the brim, rusted metal rivets, worn brown leather with soot stains, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "迪菲亚徽章",
+        "name_en": "Defias Brotherhood Badge",
+        "source": "Edwin VanCleef",
+        "image_prompt": "A silver medallion bearing the Defias Brotherhood emblem, a hooded figure with crossed mining picks, chain necklace, tarnish and wear marks, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "黑铁肩甲",
+        "name_en": "Blackened Defias Pauldrons",
+        "source": "Captain Greenskin",
+        "image_prompt": "Heavy leather shoulder pads reinforced with blackened iron plates, chain links connecting the plates, burn marks from forge work, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "黑化迪菲亚胸甲",
+        "name_en": "Blackened Defias Armor",
+        "source": "Edwin VanCleef",
+        "image_prompt": "A sleek black leather chestpiece with silver stitching forming the Defias emblem, hidden pockets and throwing blade sheaths, high collar for a rogue's silhouette, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "黑化迪菲亚腰带",
+        "name_en": "Blackened Defias Belt",
+        "source": "Captain Greenskin",
+        "image_prompt": "A thick black leather belt with a large ornate silver buckle, multiple pouches for lockpicks and throwing weapons, reinforced stitching, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "黑化迪菲亚护腿",
+        "name_en": "Blackened Defias Leggings",
+        "source": "Gilnid",
+        "image_prompt": "Sturdy black leather pants with reinforced knee pads, silver chain accents, hidden pockets along the seams, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "黑化迪菲亚长靴",
+        "name_en": "Blackened Defias Boots",
+        "source": "crafted",
+        "image_prompt": "Soft black leather boots with rubber soles for silent movement, silver buckles, reinforced toes, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "金匠护腕",
+        "name_en": "Gold-flecked Gloves",
+        "source": "Sneed",
+        "image_prompt": "Fine leather gloves with gold flecks embedded in the surface,精密的缝线和银色装饰,用于处理珍贵金属的工匠手套,fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "黑化迪菲亚手套",
+        "name_en": "Blackened Defias Gloves",
+        "source": "crafted",
+        "image_prompt": "Black leather gloves with reinforced fingertips for picking locks, silver stitching, hidden blade sheaths, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "华丽的宝石戒指",
+        "name_en": "Lavishly Jeweled Ring",
+        "source": "Gilnid",
+        "image_prompt": "A heavy gold ring set with multiple colorful gemstones, ornate scrollwork on the band, signs of wealth and piracy, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "兄弟会披风",
+        "name_en": "Cape of the Brotherhood",
+        "source": "Edwin VanCleef",
+        "image_prompt": "A long dark purple cloak with the Defias Brotherhood emblem embroidered in silver on the back, high collar, elegant but practical, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "厨师的搅棒",
+        "name_en": "Cookie's Stirring Rod",
+        "source": "Cookie",
+        "image_prompt": "A heavy wooden cooking spoon with iron bands, stained with various food residues, magical steam rising from it, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "残忍倒钩",
+        "name_en": "Cruel Barb",
+        "source": "Edwin VanCleef",
+        "image_prompt": "A curved naval cutlass with a wickedly hooked blade, dark wood handle wrapped in sharkskin, the edge stained with old blood, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "船长之哨",
+        "name_en": "Captain's Whistle",
+        "source": "Captain Greenskin",
+        "image_prompt": "A brass whistle on a leather cord, engraved with nautical symbols, belonged to a pirate captain, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "哀嚎洞穴",
+    "dungeon_name_en": "Wailing Caverns",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "鳞片兜帽",
+        "name_en": "Serpent Scale Hood",
+        "source": "Lady Anacondra",
+        "image_prompt": "A hood made from overlapping serpent scales in green and purple, with small fang-like ornaments hanging from the edges, tribal druidic symbols embroidered, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "蛇牙项链",
+        "name_en": "Fang of the Cobrahn",
+        "source": "Lord Cobrahn",
+        "image_prompt": "A necklace made from large curved serpent fangs strung on leather cord, small bones and feathers as decorations, glowing green gems in the fangs, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "堕夜德鲁伊披风",
+        "name_en": "Druid of the Fang Mantle",
+        "source": "Lord Serpentis",
+        "image_prompt": "Flowing shoulderwraps made from dried serpent skin, bone ornaments hanging from the edges, faint green glow from old magic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "鳞片长袍",
+        "name_en": "Scale of the Naga",
+        "source": "Lord Pythas",
+        "image_prompt": "A chestpiece made from overlapping large scales in iridescent green, leather backing for flexibility, arcane runes stitched with silver thread, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "毒牙腰带",
+        "name_en": "Venomfang Belt",
+        "source": "crafted",
+        "image_prompt": "A thick leather belt with fangs from various serpents hanging from loops, a buckle shaped like a coiled snake, green poison residue stains, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "荆棘护腿",
+        "name_en": "Brambleweed Leggings",
+        "source": "Verdan the Everliving",
+        "image_prompt": "Leggings made from woven thorny vines and living moss, small glowing mushrooms attached, leaves and flowers sprouting along the edges, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "毒蛇之靴",
+        "name_en": "Cobrahn's Boots",
+        "source": "Lord Cobrahn",
+        "image_prompt": "Soft leather boots decorated with shed snake skins, claw-like toes for climbing, small pouches containing herbs, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "堕夜护腕",
+        "name_en": "Druid of the Fang Bracers",
+        "source": "Lord Serpentis",
+        "image_prompt": "Leather bracers adorned with carved serpent motifs, small bone rings and fang decorations, faint magical aura, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "自然守护者手套",
+        "name_en": "Nature's Guardian Gloves",
+        "source": "Verdan the Everliving",
+        "image_prompt": "Gauntlets made from living wood and thorny vines, leaves and small flowers sprouting from the knuckles, glowing green sap in the cracks, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "蛇眼指环",
+        "name_en": "Serpent's Eye Ring",
+        "source": "Lady Anacondra",
+        "image_prompt": "A silver ring set with a large green serpent's eye gemstone, the eye seems to blink and watch, runic inscriptions around the band, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "毒雾披风",
+        "name_en": "Miasmic Shroud",
+        "source": "Mutanus the Devourer",
+        "image_prompt": "A tattered cloak that constantly drips with greenish mist, moth-eaten edges, smells of decay and swamp, clasp shaped like a fish skull, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "德鲁伊法典",
+        "name_en": "Druidic Tome of Growth",
+        "source": "Lady Anacondra",
+        "image_prompt": "An ancient book bound in green leather with gold clasps, pages filled with botanical illustrations, glowing seeds embedded in the cover, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "波汉之牙",
+        "name_en": "Boahn's Fang",
+        "source": "Boahn",
+        "image_prompt": "A massive curved fang from a great serpent, wrapped in leather at the handle end, the tip stained green with venom, tribal carvings along the shaft, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "吞噬者之卵",
+        "name_en": "Egg of the Devourer",
+        "source": "Mutanus the Devourer",
+        "image_prompt": "A large mottled green egg covered in slime, faintly pulsing with inner life, suspended in a net of fishing line, smell of fish and decay, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "影牙城堡",
+    "dungeon_name_en": "Shadowfang Keep",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "暗影狼人头骨面具",
+        "name_en": "Shadowfang Worgen Skull",
+        "source": "Rethilgore",
+        "image_prompt": "A helmet fashioned from a worgen skull, iron bands reinforcing the jaw, glowing red eyes set in the sockets, fur collar attached, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "阿鲁高之眼",
+        "name_en": "Eye of Archmage Arugal",
+        "source": "Archmage Arugal",
+        "image_prompt": "A mystical amulet containing a floating spectral eye, surrounded by arcane runes, purple ethereal glow, hung on a chain of silver links, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "银色森林肩甲",
+        "name_en": "Silverpine Pauldrons",
+        "source": "Baron Silverlaine",
+        "image_prompt": "Tarnished silver plate pauldrons with wolf fang ornaments, old blood stains on the metal, chain links connecting to the chestpiece, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "暗影十字军胸甲",
+        "name_en": "Shadowfang Vestments",
+        "source": "Commander Springvale",
+        "image_prompt": "A dark gray chainmail tunic with crimson十字绣图案, torn red tabard hanging from the shoulders, old combat damage visible, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "亡魂束带",
+        "name_en": "Banshee's Sash",
+        "source": "crafted",
+        "image_prompt": "A ghostly white sash that floats slightly, held by a clasp shaped like a screaming face, ethereal wisps trailing from the edges, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "骷髅骑士护腿",
+        "name_en": "Skeletal Knight Greaves",
+        "source": "Commander Springvale",
+        "image_prompt": "Rusted plate greaves with exposed bone underneath, skull motifs on the knee guards, greenish luminescence from within the joints, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "墓穴行者长靴",
+        "name_en": "Cryptwalker Boots",
+        "source": "crafted",
+        "image_prompt": "Heavy boots made from aged leather and bone plates, ghostly footprints left behind when walking, reinforced toes with claw-like points, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "暗影萨满护腕",
+        "name_en": "Shadow Shaman Wristguards",
+        "source": "Odo the Blindwatcher",
+        "image_prompt": "Leather bracers with carved wolf and spirit motifs, small bones and feathers braided into the laces, faint purple glow from old magic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "狼人撕裂者手套",
+        "name_en": "Worgen Ripper Gloves",
+        "source": "Razorclaw the Butcher",
+        "image_prompt": "Ragged leather gloves with metal claws extending from the fingers, dried blood stains, wolf fur lining, intimidating appearance, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "灵魂虹吸戒指",
+        "name_en": "Soulrender's Band",
+        "source": "Rethilgore",
+        "image_prompt": "A ring made from a knuckle bone with a swirling purple gem, ethereal wisps emanating from the gem, inscription reading 'drain life', fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "暗影之影披风",
+        "name_en": "Shroud of the Shadow",
+        "source": "Fenrus the Devourer",
+        "image_prompt": "A cloak that seems to be made of condensed shadow, edges fading into darkness, clasp shaped like a wolf's head, wearer appears darker when worn, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "阿鲁高的魔典",
+        "name_en": "Arugal's Grimoire",
+        "source": "Archmage Arugal",
+        "image_prompt": "A purple leather tome with silver arcane symbols, pages filled with werewolf summoning rituals, spectral wisps floating around the book, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "吞噬者之爪",
+        "name_en": "Fenrus's Claw",
+        "source": "Fenrus the Devourer",
+        "image_prompt": "A massive curved black claw from a wolf-like creature, wrapped in shadow energy, dripping with ethereal essence, supernatural cold radiating from it, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "狼人之心",
+        "name_en": "Worgen Heart",
+        "source": "Rethilgore",
+        "image_prompt": "A preserved worgen heart in a jar of green preservation fluid, still beating faintly, labeled with arcane warnings, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "黑暗深渊",
+    "dungeon_name_en": "Blackfathom Deeps",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "娜迦海头盔",
+        "name_en": "Naga Seawater Helm",
+        "source": "Domina",
+        "image_prompt": "A helmet shaped like a stylized sea serpent, made from blue-green scale plates, coral and pearl decorations, gill-like slits on the sides, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "深渊珍珠项链",
+        "name_en": "Pearl of the Deep",
+        "source": "Guardian of the Deep",
+        "image_prompt": "A necklace of large luminous pearls strung on silver chain, each pearl containing a trapped tiny octopus spirit, soft blue glow emanating, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "娜迦护肩",
+        "name_en": "Naga Council Mantle",
+        "source": "Subjugator Kor'ul",
+        "image_prompt": "Flowing shoulderwraps made from woven kelp and shell fragments, small trapped fish between the layers, pearl ornaments hanging from edges, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "深海水鳞胸甲",
+        "name_en": "Deepwater Scale Cuirass",
+        "source": "Domina",
+        "image_prompt": "A chestpiece of overlapping deep blue and green scales, bioluminescent patterns glowing faintly, pearl button closures, elegant aquatic design, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "潮汐腰带",
+        "name_en": "Tidecaller's Belt",
+        "source": "Subjugator Kor'ul",
+        "image_prompt": "A belt of woven sea grass with shell and coral decorations, a buckle shaped like a trident, small water elementals trapped in glass orbs, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "深渊行者护腿",
+        "name_en": "Deepwalker Trousers",
+        "source": "Thruk",
+        "image_prompt": "Scaled pants in dark blue-green colors, fin-like protrusions along the sides, reinforced knee scales, leaves trailing from the hem, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "海底漫游者之靴",
+        "name_en": "Abyssal Moccasins",
+        "source": "Guardian of the Deep",
+        "image_prompt": "Soft leather boots with webbed toes for swimming, small shells embedded in the sole, glowing barnacles on the surface, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "娜迦侍女护腕",
+        "name_en": "Naga Keeper Bracers",
+        "source": "Domina",
+        "image_prompt": "Bracers made from polished shell plates with pearl inlay, coral branch decorations, underwater plants woven through the laces, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "潮汐使者手套",
+        "name_en": "Tidebringer Gauntlets",
+        "source": "Thruk",
+        "image_prompt": "Gauntlets with fin-like blades on the knuckles, scale mail covering the fingers, claw-tipped fingers for underwater combat, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "暮光领主的戒指",
+        "name_en": "Twilight Lord's Band",
+        "source": "Twilight Lord Bathiel",
+        "image_prompt": "A ring set with a deep purple amethyst that shifts colors in light, silver band with star patterns, cosmic energy swirling inside the gem, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "深渊披风",
+        "name_en": "Cloak of the Depths",
+        "source": "Guardian of the Deep",
+        "image_prompt": "A flowing cloak that appears to be made of dark ocean water, fish and jellyfish shadows swimming within the fabric, cold mist emanating, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "娜迦三叉戟之珠",
+        "name_en": "Trident Pearl of the Naga",
+        "source": "Subjugator Kor'ul",
+        "image_prompt": "A pearl-sized orb containing a miniature trident, swirling water magic within, mounted on a silver handle, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "深渊吞噬者之爪",
+        "name_en": "Aku'mai's Talon",
+        "source": "Aku'mai the Devourer",
+        "image_prompt": "A massive black claw from a deep sea creature, covered in bioluminescent algae, dripping with dark seawater, wrapped in kelp, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "暮光之赐",
+        "name_en": "Gift of the Twilight",
+        "source": "Twilight Lord Bathiel",
+        "image_prompt": "A crystalline orb containing captured starlight, slowly rotating within, blue and purple hues shifting, ancient elven craftsmanship, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "诺莫瑞根",
+    "dungeon_name_en": "Gnomeregan",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "辐射防护头盔",
+        "name_en": "Irradiated Goggles",
+        "source": "Mekgineer Thermaplugg",
+        "image_prompt": "A bulky brass helmet with large protective goggles, radiation warning symbols, antenna protruding from the top, green glow from inner mechanisms, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "齿轮动力核心项链",
+        "name_en": "Gnoggn's Gear Necklace",
+        "source": "Grubbis",
+        "image_prompt": "A necklace made of interlocking brass gears at various sizes, a small glowing green crystal as the centerpiece, ticking sounds when moved, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "机械护肩",
+        "name_en": "Mechanized Pauldrons",
+        "source": "Crowd Pummeler 9-60",
+        "image_prompt": "Heavy plate shoulders with exposed gears and pistons, hydraulic pipes running to the armor, steam vents on the sides, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "黄铜蒸汽胸甲",
+        "name_en": "Brass Steam Cuirass",
+        "source": "Electrocutioner 6000",
+        "image_prompt": "A cuirass made of polished brass plates with visible steam pipes, glowing green gauges on the chest, riveted seams, smell of oil and radiation, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "工程师工具腰带",
+        "name_en": "Engineer's Tool Belt",
+        "source": "Viscous Fallout",
+        "image_prompt": "A thick leather belt with multiple tool pouches and small mechanical tools, radiation glow in the pouches, warning labels, fantasy RPG game item illustration, detailed, dark fantasy style, World ofarcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "机械外骨骼护腿",
+        "name_en": "Exoskeletal Greaves",
+        "source": "Crowd Pummeler 9-60",
+        "image_prompt": "Leg armor with external mechanical frame, hydraulic pistons at the knees, brass plates over green-tinted radiation padding, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "沉重工靴",
+        "name_en": "Heavy Treads",
+        "source": "Viscous Fallout",
+        "image_prompt": "Massive metal boots with thick treads, radiation warning signs, steam vents at the toes, built for industrial environments, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "焊工护腕",
+        "name_en": "Welder's Wristguards",
+        "source": "Electrocutioner 6000",
+        "image_prompt": "Heavy leather bracers with metal reinforcement, burn marks and weld splatter, small tool attachments, thick padding for heat protection, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "精密操作手套",
+        "name_en": "Precision Grip Gloves",
+        "source": "Grubbis",
+        "image_prompt": "Mechanically enhanced gloves with brass joints, metal fingertips, glowing green energy lines, built for delicate tinkering work, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "能量环",
+        "name_en": "Voltaic Ring",
+        "source": "Electrocutioner 6000",
+        "image_prompt": "A brass ring with crackling electrical arcs between two terminals, small lightning bolts frozen in the gaps, rubber insulation wrapping, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "辐射防护披风",
+        "name_en": "Radiation Cloak",
+        "source": "Viscous Fallout",
+        "image_prompt": "A thick leather cloak with lead lining, radiation warning symbols embroidered, small portholes showing green glowing radiation gauges, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "爆炸装置控制器",
+        "name_en": "Detonation Controller",
+        "source": "Mekgineer Thermaplugg",
+        "image_prompt": "A mechanical device with many buttons and switches, small display screen, antenna for remote detonation, sparks occasionally flying, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "电击者之拳",
+        "name_en": "Electrocutioner's Fist",
+        "source": "Electrocutioner 6000",
+        "image_prompt": "A mechanical gauntlet with an extendable metal fist, electrical coils wrapped around the forearm, crackling energy between the knuckles, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "瑟玛普莱格的炸弹",
+        "name_en": "Thermaplugg's Bomb",
+        "source": "Mekgineer Thermaplugg",
+        "image_prompt": "A spherical bomb with a ticking timer, steam vents around the equator, gnome face painted on the casing, glowing red when armed, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "剃刀沼泽",
+    "dungeon_name_en": "Razorfen Kraul",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "野猪人头骨盔",
+        "name_en": "Quillboar Skull Helm",
+        "source": "Overlord Ramtusk",
+        "image_prompt": "A helmet made from a quillboar skull with large tusks curving up, iron reinforcement at the base, fur tufts attached, intimidating appearance, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "血牙项链",
+        "name_en": "Blood-Tusk Necklace",
+        "source": "Charlga Razorflank",
+        "image_prompt": "A necklace made from sharpened quills and small tusks strung on leather, stained with old blood, bone and feather ornaments, primitive shamanic feel, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "骨棘护肩",
+        "name_en": "Bone Spike Mantle",
+        "source": "Overlord Ramtusk",
+        "image_prompt": "Shoulderwraps made from stretched hide with bone spikes protruding outward, quill decorations, dried blood and ritual markings, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "哈卡祭司胸甲",
+        "name_en": "Hakkari Priest Tunic",
+        "source": "Death Speaker Jargba",
+        "image_prompt": "A dark robe covered in bone and shell decorations, Hakkari blood god symbols embroidered in red thread, tribal feather ornaments, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "荒野猎人腰带",
+        "name_en": "Beastmaster Belt",
+        "source": "Aggem Thorncurse",
+        "image_prompt": "A thick hide belt with bone claw ornaments, small pouches for herbs and animal parts, skull buckle shaped like a boar head, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "野猪人护腿",
+        "name_en": "Quillboar Stalklegs",
+        "source": "Roogug",
+        "image_prompt": "Leather leggings reinforced with bone plates, quill designs painted on, wrapped straps and bindings, made for running through undergrowth, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "泥沼行者长靴",
+        "name_en": "Bogwalker Boots",
+        "source": "Aggem Thorncurse",
+        "image_prompt": "Crude leather boots with thick mud-caked soles, bone reinforcements at toe and heel, wrapped in swamp vegetation, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "萨满护腕",
+        "name_en": "Shamanic Wristguards",
+        "source": "Roogug",
+        "image_prompt": "Leather bracers with carved bone rings, small feathers and teeth braided into laces, faded spirit symbols, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "爪击手套",
+        "name_en": "Talonthresher Gloves",
+        "source": "Overlord Ramtusk",
+        "image_prompt": "Gauntlets with bone claw extensions on the fingers, thick hide construction, quill刺 on the knuckles, designed for tearing, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "先祖之环",
+        "name_en": "Ancestral Ring",
+        "source": "Death Speaker Jargba",
+        "image_prompt": "A ring carved from bone with tribal symbols, contains a small swirling spirit wisps, wrapped in leather cord, sacred to the quillboar, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "暗影猎手披风",
+        "name_en": "Shadowhunter's Cape",
+        "source": "Agathelos the Raging",
+        "image_prompt": "A ragged cape made from mottled brown and black hide, quill decorations along the edges, smells of blood and old hunts, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "巫毒头颅",
+        "name_en": "Voodoo Head",
+        "source": "Death Speaker Jargba",
+        "image_prompt": "A preserved quillboar head on a wooden stand, ritual bones and feathers woven through the jaw, glowing spirit eyes, used for divination, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "灵魂收割者",
+        "name_en": "Soulreaper Spear",
+        "source": "Agathelos the Raging",
+        "image_prompt": "A spear with a bone-tipped head stained with old blood, shaft wrapped in leather and feathers, spirit energy swirling around the point, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "哈卡之魂碎片",
+        "name_en": "Shard of Hakkar's Soul",
+        "source": "Charlga Razorflank",
+        "image_prompt": "A pulsing red crystal containing trapped spirit energy, bone frame holding it, small chains for carrying, ominous glow, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "血色修道院",
+    "dungeon_name_en": "Scarlet Monastery",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "血色十字军头盔",
+        "name_en": "Crusader's Helm",
+        "source": "Brother Korloff",
+        "image_prompt": "A silver helm with a stylized crimson cross emblem on the front, chainmail backing, red plume on top, holy light subtle glow on the metal, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "圣光十字项链",
+        "name_en": "Holy Light Cross",
+        "source": "High Inquisitor Fairbanks",
+        "image_prompt": "A silver necklace with a stylized holy cross pendant, small rubies at the intersection, blessed by light magic, warm golden glow, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "审判者护肩",
+        "name_en": "Zealot's Mantle",
+        "source": "Thalnos the Soulrender",
+        "image_prompt": "Flowing red cloth shoulderwraps with golden trim, embroidered holy symbols, chain connecting to the chest, torn edges from battle, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "血色十字军战袍",
+        "name_en": "Scarlet Crusade Tabard",
+        "source": "Brother Korloff",
+        "image_prompt": "A heavy red tabard with the crimson十字军 emblem on chest, golden trim, chainmail underneath, signs of crusade campaigns, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "忏悔者束带",
+        "name_en": "Penitent's Cinch",
+        "source": "crafted",
+        "image_prompt": "A simple rope belt with a wooden prayer bead clasp, small scarlet cloth tied at the end, worn and frayed from use, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "血色狂热者护腿",
+        "name_en": "Fanatic's Leggings",
+        "source": "Thalnos the Soulrender",
+        "image_prompt": "Red cloth pants with black leather reinforcements at knees, chainmail gaiters, stained with ink and candle wax, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "圣战军靴",
+        "name_en": "Crusader's Greaves",
+        "source": "Brother Korloff",
+        "image_prompt": "Heavy leather boots with brass buckles, red cloth wrapped around the ankles, crusader symbols etched into the toe caps, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "血色护卫护腕",
+        "name_en": "Monastery Guard Vambraces",
+        "source": "crafted",
+        "image_prompt": "Leather bracers stamped with the monastery seal, brass studs, red cloth inserts, veteran soldier's wear pattern, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "驱邪者手套",
+        "name_en": "Exorcist's Gauntlets",
+        "source": "High Inquisitor Fairbanks",
+        "image_prompt": "White leather gauntlets with golden cross embroidery, brass knuckles, holy runes on the palms, blessed by holy magic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "信仰之戒",
+        "name_en": "Band of Devotion",
+        "source": "High Inquisitor Fairbanks",
+        "image_prompt": "A silver ring with a small ruby set in the center, engraved with holy scripture, warm inner glow, blessed by the church, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "圣火披风",
+        "name_en": "Sanctified Flame Cloak",
+        "source": "High Inquisitor Fairbanks",
+        "image_prompt": "A dark red cloak embroidered with golden flames, holy symbols at the corners, warm to the touch, faint divine glow, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "灵魂收割者法杖",
+        "name_en": "Soulrender's Focus",
+        "source": "Thalnos the Soulrender",
+        "image_prompt": "A twisted dark wood staff with a skull-shaped pommel, purple energy swirling in the eye sockets, unholy aura, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "制裁之锤",
+        "name_en": "Hammer of Righteousness",
+        "source": "Brother Korloff",
+        "image_prompt": "A large silver warhammer with golden cross motifs, blessed by holy light, cracks showing faint golden glow, divine energy surrounding the head, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "血色狂热者徽章",
+        "name_en": "Crimson Fanatic Badge",
+        "source": "Brother Korloff",
+        "image_prompt": "A silver medallion in the shape of a burning torch, crimson enamel inlay, chain for wearing, blessed by the high inquisitor, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "剃刀高地",
+    "dungeon_name_en": "Razorfen Downs",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "冰霜巫医面具",
+        "name_en": "Frost Witch Doctor Mask",
+        "source": "Amnennar the Coldbringer",
+        "image_prompt": "A bone mask with ice crystals growing from the eye sockets, frost emanates from the mouth, painted with tribal symbols in blue, supernatural cold, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "寒冰之心",
+        "name_en": "Heart of Frost",
+        "source": "Amnennar the Coldbringer",
+        "image_prompt": "A necklace holding a crystalline frozen heart that never thaws, blue ethereal flames inside, silver chain, extremely cold to touch, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "幽灵野猪人披风",
+        "name_en": "Ghostly Quillboar Mantle",
+        "source": "Aarux",
+        "image_prompt": "Semi-transparent spectral shoulderwraps, ghostly quillboar images flickering within, frost patterns on the surface, supernatural cold aura, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "火焰之眼胸甲",
+        "name_en": "Fire Eye Cuirass",
+        "source": "Mordresh Fire Eye",
+        "image_prompt": "A breastplate made from fused bone and obsidian, a skull embedded in the center with glowing fire eyes, charred edges, intense heat radiating, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "死者之语腰带",
+        "name_en": "Death Speaker's Sash",
+        "source": "Death Speaker Blackthorn",
+        "image_prompt": "A dark sash embroidered with spectral symbols, small bells that ring without wind, bone and feather ornaments, tied with ghostly cord, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "蘑菇怪护腿",
+        "name_en": "Mushlump Sporelegg Leggings",
+        "source": "Mushlump",
+        "image_prompt": "Pants covered in bioluminescent mushroom patches, glowing spores constantly falling off, damp moss growing in patches, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "冰霜蝙蝠之靴",
+        "name_en": "Frostbat Boots",
+        "source": "Mordresh Fire Eye",
+        "image_prompt": "Boots made from stretched frostbat wing membranes, bone claw toes, ice crystals forming along the seams, supernatural cold, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "幽灵护腕",
+        "name_en": "Phantom Wristguards",
+        "source": "Aarux",
+        "image_prompt": "Ethereal bracers that flicker between solid and ghostly, frost patterns constantly shifting, ghostly wisps trailing from edges, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "冰冷触手套",
+        "name_en": "Icy Touch Gloves",
+        "source": "Amnennar the Coldbringer",
+        "image_prompt": "Gloves covered in frost and ice crystals, fingertips permanently cold, blue glow emanating from palms, freeze anything touched, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "冰霜之环",
+        "name_en": "Ring of Absolute Zero",
+        "source": "Amnennar the Coldbringer",
+        "image_prompt": "A ring made from crystallized frost that never melts, contains swirling blizzard energy, painfully cold to wear, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "死者披风",
+        "name_en": "Shroud of the Departed",
+        "source": "Death Speaker Blackthorn",
+        "image_prompt": "A spectral cloak that appears tattered and moth-eaten, whispers of the dead constantly audible, ghostly bone clasp, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "冰霜宝珠",
+        "name_en": "Orb of Frost Storm",
+        "source": "Amnennar the Coldbringer",
+        "image_prompt": "A crystal orb containing a miniature blizzard, swirling snow and ice crystals visible within, supernatural cold radiating outward, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "冰霜之矛",
+        "name_en": "Spear of the Coldbringer",
+        "source": "Amnennar the Coldbringer",
+        "image_prompt": "A spear with an ice crystal head that glows with eternal blizzard energy, frost spreading from the point, bone shaft wrapped in ghostly cloth, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "寒冷使者的碎片",
+        "name_en": "Fragment of the Coldbringer",
+        "source": "Amnennar the Coldbringer",
+        "image_prompt": "A shard of pure crystallized cold, constantly emitting frost and mist, too cold to hold directly, wrapped in burial cloth, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "奥达曼",
+    "dungeon_name_en": "Uldaman",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "远古石灵头盔",
+        "name_en": "Archaedas' Stone Helm",
+        "source": "Archaedas",
+        "image_prompt": "A massive stone helmet carved with ancient dwarven runes, glowing blue eyes set in the forehead, moss and lichen growing in crevices, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "泰坦印记",
+        "name_en": "Titan's Mark",
+        "source": "Ancient Stone Keeper",
+        "image_prompt": "A medallion engraved with ancient titan symbols, a large blue gemstone at the center pulsing with power, massive chain links, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "黑曜石哨兵肩甲",
+        "name_en": "Obsidian Sentinel Pauldrons",
+        "source": "Obsidian Sentinel",
+        "image_prompt": "Shoulder plates of polished obsidian, sharp angular design, glowing orange magma veins in the cracks, ancient dwarven craftsmanship, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "土灵板甲胸",
+        "name_en": "Earthen Plate Cuirass",
+        "source": "Ironaya",
+        "image_prompt": "A massive stone and metal breastplate, reinforced with bronze bands, carved with titan symbols, ancient runes glowing faintly, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "岩石锻造腰带",
+        "name_en": "Stoneforged Belt",
+        "source": "Galgann Firehammer",
+        "image_prompt": "A heavy belt of interlocking stone and metal plates, magma channels glowing between segments, forged by titan craftsmen, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "熔岩行者护腿",
+        "name_en": "Lava Walker Greaves",
+        "source": "Galgann Firehammer",
+        "image_prompt": "Stone greaves with magma flowing through carved channels, heat distortion around the legs, ancient titan construction, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "泰坦巨像之靴",
+        "name_en": "Titan Colossus Treads",
+        "source": "Archaedas",
+        "image_prompt": "Massive stone boots with heavy iron treads, glowing runes on the soles, built for giant stone guardians, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "岩石巨人护腕",
+        "name_en": "Rock Giant Vambraces",
+        "source": "Grimlok",
+        "image_prompt": "Bracers made from solid granite blocks, titan rune inscriptions, rough hewn appearance, immense weight, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "石拳手套",
+        "name_en": "Stonefist Gauntlets",
+        "source": "Obsidian Sentinel",
+        "image_prompt": "Massive gauntlets shaped like stone fists, iron reinforcements on knuckles, ancient titan design, meant for crushing, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "守护者之戒",
+        "name_en": "Keeper's Band",
+        "source": "Ancient Stone Keeper",
+        "image_prompt": "A heavy stone ring set with a glowing blue gem, titan script around the band, slight tremor when worn, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "古代披风",
+        "name_en": "Ancient's Shroud",
+        "source": "Ironaya",
+        "image_prompt": "A tattered cloak of ancient fabric that has somehow survived millennia, titan symbols embroidered, stone clasp, magical preservation, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "泰坦之心",
+        "name_en": "Heart of the Titans",
+        "source": "Archaedas",
+        "image_prompt": "A crystallized core from a titan's construct, containing swirling blue energy, ancient dwarven frame holding it, humming with power, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "火焰锤",
+        "name_en": "Galgann's Firehammer",
+        "source": "Galgann Firehammer",
+        "image_prompt": "A massive warhammer made from magma-hardened rock, flames constantly burning on the head, iron shaft wrapped in cooled lava, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "远古碎片",
+        "name_en": "Shard of Ancient Power",
+        "source": "Archaedas",
+        "image_prompt": "A large fragment of crystallized titan magic, glowing with ancient power, carved with titan runes, constantly humming, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "祖尔法拉克",
+    "dungeon_name_en": "Zul'Farrak",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "安图苏尔之王冠",
+        "name_en": "Antu'sul's Crown",
+        "source": "Antu'sul",
+        "image_prompt": "An ornate troll crown of gold and bone, tribal feathers and fangs attached, small trapped spirits in the gems, ancient troll craftsmanship, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "沙怒之牙项链",
+        "name_en": "Sandfury Fang Necklace",
+        "source": "Chief Ukorz Sandscalp",
+        "image_prompt": "A necklace of sharpened sandfury troll fangs on leather cord, gold and feather decorations, small bone charms, powerful shamanic feel, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "水术师护肩",
+        "name_en": "Hydromancer's Mantle",
+        "source": "Hydromancer Velratha",
+        "image_prompt": "Flowing blue-green shoulderwraps made from enchanted kelp, shell and coral ornaments, water elementals trapped in glass spheres, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "祖尔祭司长袍",
+        "name_en": "Zul'Priest Robes",
+        "source": "Shadowpriest Sezz'ziz",
+        "image_prompt": "Dark robes embroidered with Hakkari blood god symbols, bone and feather ornaments, purple mystic runes, ancient troll priest garments, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "巫医祖姆拉之带",
+        "name_en": "Zum'rah's Sash",
+        "source": "Witch Doctor Zum'rah",
+        "image_prompt": "A thick leather belt with bone skull buckle, small pouches of ritual herbs and bones, feather and fang decorations, jungle rot smell, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "迅猛龙皮护腿",
+        "name_en": "Raptorhide Leggings",
+        "source": "Gahz'rilla",
+        "image_prompt": "Leggings made from thick raptor hide, scale patterns visible, reinforced knee scales, tribal paint marks, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "沙丘漫游者靴",
+        "name_en": "Dune Strider Boots",
+        "source": "Chief Ukorz Sandscalp",
+        "image_prompt": "Heavy leather boots designed for desert travel, fur lining at top, bead and bone decorations, worn by desert warriors, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "祖尔追随者护腕",
+        "name_en": "Zul'Moram Wristguards",
+        "source": "Nekrum Gutchewer",
+        "image_prompt": "Leather bracers covered in tribal tattoos and scarification marks, bone rings and feathers, dried blood stains, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "利爪手套",
+        "name_en": "Savage Claw Gloves",
+        "source": "Gahz'rilla",
+        "image_prompt": "Gloves with extendable metal claws on fingers, raptor scale construction, reinforced for combat, made for hunting apex predators, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "邪契之环",
+        "name_en": "Blood Pact Ring",
+        "source": "Shadowpriest Sezz'ziz",
+        "image_prompt": "A bone ring carved with troll runes, set with a small glowing green gem containing trapped souls, dark magic emanating, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "沙怒首领披风",
+        "name_en": "Sandfury Chieftain's Cape",
+        "source": "Chief Ukorz Sandscalp",
+        "image_prompt": "A magnificent cape of purple and gold silk, tribal patterns embroidered, feather and bone ornaments at the edges, chieftain's rank symbol, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "巫毒头颅",
+        "name_en": "Voodoo Skull",
+        "source": "Witch Doctor Zum'rah",
+        "image_prompt": "A preserved troll skull with glowing gem eyes, bone feathers and feathers braided through the jaw, ritual preparations visible, dark magic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "沙怒战斧",
+        "name_en": "Sandfury War Axe",
+        "source": "Chief Ukorz Sandscalp",
+        "image_prompt": "A massive ceremonial war axe with gold inlay, blade shaped like a stylized troll face, bone and feather decorations on the shaft, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "哈卡面具碎片",
+        "name_en": "Hakkari Mask Fragment",
+        "source": "Theka the Martyr",
+        "image_prompt": "A fragment of a golden Hakkari blood god mask, glowing with dark power, ancient troll artifact, still pulsing, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "玛拉顿",
+    "dungeon_name_en": "Maraudon",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "半人马王子头盔",
+        "name_en": "Centaur Prince Helm",
+        "source": "Princess Theradras",
+        "image_prompt": "A horned helmet of stone and gold, massive curved horns extending back, centaur prince styling, ancient purple gemstones in the forehead, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "腐化之心项链",
+        "name_en": "Corrupted Heart Amulet",
+        "source": "Celebras the Cursed",
+        "image_prompt": "A necklace holding a twisted green crystal heart, corruption tendrils spreading from it, black chain, cursed magical aura, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "藤蔓缠绕护肩",
+        "name_en": "Thornwrack Mantle",
+        "source": "Razorlash",
+        "image_prompt": "Shoulderwraps of living thorny vines with small flowers blooming, leaves constantly rustling, green energy glowing between thorns, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "瑟莱德丝公主胸甲",
+        "name_en": "Princess Theradras Cuirass",
+        "source": "Princess Theradras",
+        "image_prompt": "An elegant stone and gold breastplate with flowing curves, purple crystal accents, earth tones blending with metallic gold, ancient elven craftsmanship, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "兰斯利德之带",
+        "name_en": "Landslide Girdle",
+        "source": "Landslide",
+        "image_prompt": "A heavy belt of stone and earth, carved with mountain symbols, small rocks constantly falling from it, weight of the mountain, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "诺克希恩腐蚀护腿",
+        "name_en": "Noxxion's Corrosive Leggings",
+        "source": "Noxxion",
+        "image_prompt": "Leggings stained with acid and corrosive toxins, green chemical burns visible, reinforced for acid resistance, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "扎尔之子之靴",
+        "name_en": "Zaetar's Progeny Treads",
+        "source": "Rotgrip",
+        "image_prompt": "Heavy boots made from stone and fossilized bone, ancient centaur design, moss growing in crevices, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "水晶收割者护腕",
+        "name_en": "Crystal Harvester Bracers",
+        "source": "Tinkerer Gizlock",
+        "image_prompt": "Mechanical bracers with crystal growths attached, gnome-troll hybrid design, small gears and levers, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "锐刺鞭笞者手套",
+        "name_en": "Razorlash Gauntlets",
+        "source": "Razorlash",
+        "image_prompt": "Gauntlets with extending thorned whips built into the fingers, green energy flowing through vines, nature's wrath weapon, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "塞瑟斯的诅咒之戒",
+        "name_en": "Curse of Sethephim Ring",
+        "source": "Princess Theradras",
+        "image_prompt": "A twisted ring of black stone and gold, small purple gems pulsing with curse magic, haunted by spirits of the dead, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "林地幽魂披风",
+        "name_en": "Woodland Spirit Shroud",
+        "source": "Lord Vyletongue",
+        "image_prompt": "A tattered cloak that appears made of living leaves and vines, spirit wisps visible within, satyr craftsmanship, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "被诅咒的塔罗牌",
+        "name_en": "Cursed Tarot Deck",
+        "source": "Celebras the Cursed",
+        "image_prompt": "A deck of ancient cards bound in corrupted leather, cards occasionally flipping on their own, prophetic visions when drawn, dark magic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "岩石地震使者",
+        "name_en": "Earthshaker Boulder",
+        "source": "Landslide",
+        "image_prompt": "A massive enchanted boulder that hovers slightly, ancient runic carvings glowing, mountain's essence bound within, impossibly heavy, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "扎尔的眼泪",
+        "name_en": "Tear of the Earthmother",
+        "source": "Princess Theradras",
+        "image_prompt": "A large tear-shaped emerald containing swirling earth energy, ancient elven artifact, blessed by the earth mother, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "沉没的神庙",
+    "dungeon_name_en": "Sunken Temple",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "梦境守护者头盔",
+        "name_en": "Dream Watcher Helm",
+        "source": "Wardens of the Dream",
+        "image_prompt": "A mystical helm of green bronze and crystal, dream energy swirling in the visor, ancient dragon motifs, peaceful slumber aura, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "翡翠龙鳞项链",
+        "name_en": "Emerald Dragon Scale Pendant",
+        "source": "Shade of Eranikus",
+        "image_prompt": "A pendant made from a single iridescent green dragon scale, set in bronze, faint dream energy emanating, nightmare moth circling, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "预言者披风",
+        "name_en": "Prophet's Mantle",
+        "source": "Jammal'an the Prophet",
+        "image_prompt": "Flowing robes with astral patterns, star and moon embroidery, spectral wisps trailing, fortune teller aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "绿龙梦魇胸甲",
+        "name_en": "Green Dragon Nightmare Chest",
+        "source": "Shade of Eranikus",
+        "image_prompt": "A chestpiece of layered green dragon scales, nightmare energy swirling in the cracks, ethereal glow, ancient dragon crafted, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "神谕者束带",
+        "name_en": "Oracle's Sash",
+        "source": "Jammal'an the Prophet",
+        "image_prompt": "A sash of purple velvet with gold embroidery, small oracle bones attached, crystal ball pocket, fortune teller style, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "梦境行者护腿",
+        "name_en": "Dreamwalker Leggings",
+        "source": "Avatar of Hakkar",
+        "image_prompt": "Robes with dream fabric flowing like smoke, faint nightmare images visible in the weave, astral traveler appearance, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "星尘漫游者之靴",
+        "name_en": "Stardust Walker Boots",
+        "source": "Wardens of the Dream",
+        "image_prompt": "Boots leaving faint star trails when walking, cosmic dust constantly falling off, ethereal weightless feel, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "阿塔哈卡护腕",
+        "name_en": "Atal'ai Bracers",
+        "source": "Jammal'an the Prophet",
+        "image_prompt": "Bracers of aged leather with carved troll runes, small bags of ritual dust attached, ancient temple guardian style, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "梦境织造手套",
+        "name_en": "Dreamweaver Gloves",
+        "source": "Shade of Eranikus",
+        "image_prompt": "Gloves with threads of solidified dream energy, small dream catchers woven into the fabric, nightmares taking shape around them, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "永恒噩梦之戒",
+        "name_en": "Ring of Eternal Nightmare",
+        "source": "Avatar of Hakkar",
+        "image_prompt": "A ring of twisted black metal with a ruby containing trapped nightmare essence, whispers audible from within, cursed soul inside, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "绿龙之翼披风",
+        "name_en": "Green Dragon Wing Cloak",
+        "source": "Shade of Eranikus",
+        "image_prompt": "A cloak that appears to be made from dragon wing membranes, translucent green, dream particles floating within, ancient power, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "绿龙之心",
+        "name_en": "Heart of the Green Dragon",
+        "source": "Shade of Eranikus",
+        "image_prompt": "A crystallized green dragon heart in a frame of ancient gold, nightmare energy pulsing within, frozen in eternal dream, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "哈卡之魂之杖",
+        "name_en": "Staff of Hakkar's Soul",
+        "source": "Avatar of Hakkar",
+        "image_prompt": "A twisted staff topped with a snarling Hakkari serpent head, soul energy swirling around the point, blood god artifact, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "梦境精华碎片",
+        "name_en": "Dream Essence Shard",
+        "source": "Shade of Eranikus",
+        "image_prompt": "A crystal shard containing compressed dream energy, images of sleeping worlds visible within, emerald glow, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "黑石深渊",
+    "dungeon_name_en": "Blackrock Depths",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "熔火征服者头盔",
+        "name_en": "Molten Core Visage",
+        "source": "Emperor Dagran Thaurissan",
+        "image_prompt": "A massive plate helmet of black iron and magma cracks, crown of cooling lava spikes, runes of binding on forehead, heat shimmer effect, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "帝王宝石",
+        "name_en": "Imperial Amethyst",
+        "source": "Emperor Dagran Thaurissan",
+        "image_prompt": "A regal necklace with a large purple amethyst, black iron chain links, flame patterns engraved, symbol of dark iron royalty, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "乌钢肩甲",
+        "name_en": "Dark Iron Pauldrons",
+        "source": "General Angerforge",
+        "image_prompt": "Heavy plate shoulders of dark gray iron with flame motifs, riveted seams glowing orange, spiky edges, dark iron dwarf craftsmanship, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "盛饰护甲",
+        "name_en": "Gilded Necropolis Plate",
+        "source": "General Angerforge",
+        "image_prompt": "A breastplate of dark iron with gold inlay, flame and forge motifs, battle-worn but still impressive, dark iron war machine aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "熔火腰带",
+        "name_en": "Molten Girdle",
+        "source": "Lord Incendius",
+        "image_prompt": "A belt of black iron plates with magma channels between them, heat distortion, chain links connecting forged plates, volcanic origin, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "龙鳞护腿",
+        "name_en": "Dragonclan Legguards",
+        "source": "Bael'Gar",
+        "image_prompt": "Greaves of overlapping dark scales and iron plates, dragon motifs, magma stains and heat damage, forged in blackrock depths, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "永恒守护者长靴",
+        "name_en": "Eternal Warden's Treads",
+        "source": "The Seven",
+        "image_prompt": "Heavy boots of dark iron with gold trim, eternal guardian motifs, slight glow from enchantments, phantom knight aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "火成岩护腕",
+        "name_en": "Pyroclastic Vambraces",
+        "source": "Lord Incendius",
+        "image_prompt": "Bracers of cooled lava rock with iron reinforcement, cracks showing inner magma glow, extreme heat radiating, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "傀儡领主手套",
+        "name_en": "Golem Lord's Gauntlets",
+        "source": "Golem Lord Argelmach",
+        "image_prompt": "Massive mechanical gauntlets with hydraulic joints, iron fingers for crushing, furnace vents on the back, mechanical dwarf design, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "索瑞森大帝之戒",
+        "name_en": "Ring of Thaurissan",
+        "source": "Emperor Dagran Thaurissan",
+        "image_prompt": "A heavy iron ring set with a ruby containing trapped fire elemental, royal seal engraved, flame aura, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "皇帝的新斗篷",
+        "name_en": "Emperor's New Cloak",
+        "source": "Emperor Dagran Thaurissan",
+        "image_prompt": "A magnificent cloak of black silk with gold flame embroidery, imperial dark iron symbol, flowing despite no wind, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "正义之手",
+        "name_en": "Hand of Justice",
+        "source": "General Angerforge",
+        "image_prompt": "A mechanical gauntlet with a fist mechanism, blessing of the forge, steam vents and gears, dwarven engineering masterpiece, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "恐怖复仇者",
+        "name_en": "Dreadforge",
+        "source": "Emperor Dagran Thaurissan",
+        "image_prompt": "A massive black iron waraxe with blade edges glowing like cooling lava, dwarf king weapon, ancient dark iron craftsmanship, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "熔火之心",
+        "name_en": "Heart of Molten Fire",
+        "source": "Bael'Gar",
+        "image_prompt": "A crystallized core of primordial flame, impossible to hold directly, contained in a frame of black iron, heat distortion around it, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "厄运之槌",
+    "dungeon_name_en": "Dire Maul",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "戈尔多克之王冠",
+        "name_en": "Gordok King's Crown",
+        "source": "Mogros",
+        "image_prompt": "A crude iron crown with ogre tusk points, worn by the ogre king, battle damage and dents, heavy weight, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "扭木之心",
+        "name_en": "Heart of the Warpwood",
+        "source": "Ozzie the Wildshaper",
+        "image_prompt": "A necklace holding a twisted piece of sentient tree heartwood, leaves still growing, nature magic pulsing, corrupted forest feel, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "荒野萨特肩甲",
+        "name_en": "Wild Satyr Pauldrons",
+        "source": "Zevrim Thornhoof",
+        "image_prompt": "Flowing dark leather shoulderwraps with goat horn ornaments, demonic symbols embroidered, faint fel glow, satyr fashion, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "相位猎手胸甲",
+        "name_en": "Phase Hunter Cuirass",
+        "source": "Lethtendris",
+        "image_prompt": "A flowing robe that shifts between solid and translucent, arcane energy crackling, blood elf sorceress design, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "扭木纠缠者之带",
+        "name_en": "Warpwood Tangle Belt",
+        "source": "Pusillin",
+        "image_prompt": "A belt of twisted living vines, small leaves and flowers growing from it, creature writhing within the weave, nature magic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "食人魔征服者护腿",
+        "name_en": "Ogre Warlord Leggings",
+        "source": "Mogros",
+        "image_prompt": "Heavy leather pants reinforced with iron plates, ogre-sized, bone and trophy ornaments, warlord status, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "相位漫游者之靴",
+        "name_en": "Phase Walker Boots",
+        "source": "Lethtendris",
+        "image_prompt": "Boots that leave fading afterimages when walking, shifting colors between dimensions, arcane runes, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "小鬼使者护腕",
+        "name_en": "Imp Whisperer Bracers",
+        "source": "Pusillin",
+        "image_prompt": "Bracers covered in imp treat pouches and leashes, small claw marks, imp handler equipment, playful but dangerous, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "海杜斯的水泡手套",
+        "name_en": "Hydrospawn Gel Gloves",
+        "source": "Hydrospawn",
+        "image_prompt": "Gloves constantly dripping with magical water gel, cool to touch, elemental liquid form, water elemental essence, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "扭曲知识之戒",
+        "name_en": "Ring of Twisted Knowledge",
+        "source": "Alzzin the Wildshaper",
+        "image_prompt": "A ring with a shifting purple gem that shows different images, contains fragments of wild magic, druidic power, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "腐林披风",
+        "name_en": "Felwood Corruption Cloak",
+        "source": "Zevrim Thornhoof",
+        "image_prompt": "A cloak of mottled green and purple corruption, leaves turning black at edges, sickly sweet smell, fel nature blend, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "扭曲变形者法杖",
+        "name_en": "Wildshaper's Tome",
+        "source": "Alzzin the Wildshaper",
+        "image_prompt": "A tome filled with pages of shifting shapes, creatures morphing in the illustrations, druidic corruption magic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "戈尔多克战斧",
+        "name_en": "Gordok Battleaxe",
+        "source": "Mogros",
+        "image_prompt": "A massive two-handed cleaver axe, ogre-sized, nicked and dented blade, weighted for massive damage, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "扭木种子",
+        "name_en": "Warpwood Acorn",
+        "source": "Alzzin the Wildshaper",
+        "image_prompt": "A glowing acorn from the sentient warpwood tree, pulsing with life energy, corruption magic swirling within, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "斯坦索姆",
+    "dungeon_name_en": "Stratholme",
+    "equipment": [
+      {
+        "slot_cn": "头像",
+        "slot_en": "helm",
+        "name_cn": "刽子手头盔",
+        "name_en": "Executioner's Helm",
+        "source": "Baron Rivendare",
+        "image_prompt": "A brutal steel helm with skull motifs, blood stains never fully cleaned, spikes on the brow, unholy knight aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "瑞文戴尔封印之戒",
+        "name_en": "Signet of Rivendare",
+        "source": "Baron Rivendare",
+        "image_prompt": "A heavy iron signet ring worn as a necklace, family crest of Rivendare, dark aura emanating, cursed noble bloodline, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "图萨丁衬肩",
+        "name_en": "Thuzadin Shoulderguards",
+        "source": "Baron Rivendare",
+        "image_prompt": "Dark purple cloth shoulderwraps with gold embroidery, cult of the damned symbols, spectral skulls woven into design, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "尊贵法袍",
+        "name_en": "Robe of the Exalted",
+        "source": "Balnazzar",
+        "image_prompt": "A magnificent dark robe with gold trim, patron saint symbols, once holy now corrupted, Nathrezim influence visible, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "瘟疫携带者腰带",
+        "name_en": "Plague Carrier Belt",
+        "source": "The Unforgiven",
+        "image_prompt": "A thick leather belt with vials of glowing green plague, pouches of bone fragments, necropolis physician aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "勇气腿铠",
+        "name_en": "Valor Legplates",
+        "source": "Baron Rivendare",
+        "image_prompt": "Heavy plate greaves of dark metal, gold filigree, knight champion design, righteous fury weapon now corrupted, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "黑爵士长靴",
+        "name_en": "Black Baron Boots",
+        "source": "Baron Rivendare",
+        "image_prompt": "Elegant dark leather boots with gold spurs, noble riding boots, death knight aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "石雕像护腕",
+        "name_en": "Stone Crypt Bracers",
+        "source": "Magistrate Barthilas",
+        "image_prompt": "Stone reinforced bracers with skull motifs, grave dust embedded, necropolis guardian aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "灵巧护手",
+        "name_en": "Gauntlets of Dexterity",
+        "source": "Baron Rivendare",
+        "image_prompt": "Fine leather gauntlets with gold stitching, noble's hands, once blessed now cursed, phantom touch, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "巴瑟拉斯之戒",
+        "name_en": "Baron's Signet",
+        "source": "Magistrate Barthilas",
+        "image_prompt": "A noble signet ring with city seal, leadership authority, undead official aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "黑爵士的斗篷",
+        "name_en": "Cape of the Black Baron",
+        "source": "Baron Rivendare",
+        "image_prompt": "A flowing black silk cape with silver embroidery, spectral horse design, death knight mount imagery, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "黑暗诅咒之杖",
+        "name_en": "Skull of Chaos",
+        "source": "Balnazzar",
+        "image_prompt": "A demon skull mounted on a pole, chains attached, Nathrezim war trophy, burning with fel energy, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "瑞文戴尔之剑",
+        "name_en": "Blade of the Black Guard",
+        "source": "Baron Rivendare",
+        "image_prompt": "A massive runic sword with dark energy swirling around the blade, noble family weapon corrupted, spectral fire along the edge, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "天灾石",
+        "name_en": "Scourgestone",
+        "source": "The Unforgiven",
+        "image_prompt": "A glowing green runestone from the Scourge, pulsing with plague energy, necrotic power, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "通灵学院",
+    "dungeon_name_en": "Scholomance",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "骷髅堆王冠",
+        "name_en": "Bone Heap Crown",
+        "source": "Rattlegore",
+        "image_prompt": "A crown made from small skulls fused together, green necrotic glow from eye sockets, student necromancer graduation piece, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "亡灵导师项链",
+        "name_en": "Necrolyte's Chain",
+        "source": "Instructor Chillheart",
+        "image_prompt": "A chain of small bone links with a crystal vial containing green soul essence, death teacher's tool, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "葬礼披风",
+        "name_en": "Funeral Shroud Mantle",
+        "source": "Lilian Voss",
+        "image_prompt": "Tattered black cloth shoulderwraps with bone ornaments, funeral rites aesthetic, corrupted paladin design, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "亡灵法师长袍",
+        "name_en": "Necromancer's Robes",
+        "source": "Darkmaster Gandling",
+        "image_prompt": "Flowing black robes with purple arcane embroidery, skeletal hand motifs, school of necromancy graduation garb, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "骨匠腰带",
+        "name_en": "Bonecrafter's Sash",
+        "source": "Jandice Barov",
+        "image_prompt": "A sash adorned with small carved bones, bone fragments in pouches, student craftsman aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "食尸鬼皮护腿",
+        "name_en": "Ghoulskin Leggings",
+        "source": "Rattlegore",
+        "image_prompt": "Pants made from stretched ghoul hide, stitched with bone thread, necrotic smell, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "亡灵学生长靴",
+        "name_en": "Necromance Student Boots",
+        "source": "Darkmaster Gandling",
+        "image_prompt": "Simple dark leather boots with bone decorations, student uniform style, faculty approved design, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "骨环护腕",
+        "name_en": "Bone Ring Wristguards",
+        "source": "Instructor Chillheart",
+        "image_prompt": "Bracers made from rings of small bones, cold mist emanating, ice magic influence, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "巫妖之握手套",
+        "name_en": "Lich's Grasp",
+        "source": "Darkmaster Gandling",
+        "image_prompt": "Gloves with skeletal hand design on the back, green soul energy flowing in the joints, mastery of death magic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "苍白月亮戒指",
+        "name_en": "Pale Moon Band",
+        "source": "Maleki the Pallid",
+        "image_prompt": "A ring set with a translucent white gem, ghostly pale glow, undead noble aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "鬼雾披风",
+        "name_en": "Ghost Shroud",
+        "source": "Jandice Barov",
+        "image_prompt": "A cloak that shifts between solid and translucent, spectral mist effect, wizard illusion magic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "院长的死亡之书",
+        "name_en": "Dean's Book of Death",
+        "source": "Darkmaster Gandling",
+        "image_prompt": "An ancient tome bound in dragon skin, pages filled with necromancy spells, dark magic knowledge, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "薄暮之锤",
+        "name_en": "Dawn of the Dead Hammer",
+        "source": "Lilian Voss",
+        "image_prompt": "A warhammer with a skull-shaped head, holy light corruption, paladin weapon now undead bane, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "骷髅之钥",
+        "name_en": "Skull of Forbidden Arts",
+        "source": "Darkmaster Gandling",
+        "image_prompt": "A preserved human skull with glowing runes, forbidden magic contained, graduation trophy, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  },
+  {
+    "dungeon_name_cn": "黑石塔下层",
+    "dungeon_name_en": "Lower Blackrock Spire",
+    "equipment": [
+      {
+        "slot_cn": "头盔",
+        "slot_en": "helm",
+        "name_cn": "飞龙领主头盔",
+        "name_en": "Wyrmthalak's Drake Helm",
+        "source": "Overlord Wyrmthalak",
+        "image_prompt": "A brutal horned helmet with drake scale accents, black dragon motifs, war chief's fury, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "项链",
+        "slot_en": "necklace",
+        "name_cn": "龙族征服者项链",
+        "name_en": "Drake Slayer's Chain",
+        "source": "Overlord Wyrmthalak",
+        "image_prompt": "A necklace of drake teeth and claws strung on black iron, trophy of dragon hunt, brutal tribal aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护肩",
+        "slot_en": "shoulder",
+        "name_cn": "黑石氏族护肩",
+        "name_en": "Blackrock Clan Pauldrons",
+        "source": "War Master Voone",
+        "image_prompt": "Heavy plate shoulders with clan markings burned into metal, fur and trophy elements, orc warrior aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "胸甲",
+        "slot_en": "chest",
+        "name_cn": "奥莫克将军胸甲",
+        "name_en": "Highlord's Battleplate",
+        "source": "Highlord Omokk",
+        "image_prompt": "Massive plate armor with spike and skull decorations, warlord's fury, black iron forged, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "腰带",
+        "slot_en": "belt",
+        "name_cn": "龙人战术腰带",
+        "name_en": "Drakonid Tactics Belt",
+        "source": "Gizrul the Slavener",
+        "image_prompt": "A thick belt of dragon scale and iron plates, beast master tools, dragon riding gear aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腿",
+        "slot_en": "legs",
+        "name_cn": "黑石战士护腿",
+        "name_en": "Blackrock Grunt Greaves",
+        "source": "Halycon",
+        "image_prompt": "Heavy iron greaves with fur lining, clan markings, warrior's legs, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "长靴",
+        "slot_en": "boots",
+        "name_cn": "阴燃蛛母之靴",
+        "name_en": "Smolderweb Mother's Boots",
+        "source": "Mother Smolderweb",
+        "image_prompt": "Boots covered in webbing and spider silk, small spider cocoons attached, cave spider aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "护腕",
+        "slot_en": "bracers",
+        "name_cn": "暗影猎手护腕",
+        "name_en": "Shadow Hunter Vambraces",
+        "source": "Shadow Hunter Vosh'gajin",
+        "image_prompt": "Leather bracers with troll runes and bone charms, poison vial holders, jungle hunter aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "手套",
+        "slot_en": "gloves",
+        "name_cn": "厄运嚎叫者手套",
+        "name_en": "Doomhowl Gauntlets",
+        "source": "Urok Doomhowl",
+        "image_prompt": "Massive fur-lined gauntlets with spiked knuckles, ogre berserker design, primal fury, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "戒指",
+        "slot_en": "ring",
+        "name_cn": "龙息指环",
+        "name_en": "Dragonbreath Ring",
+        "source": "Overlord Wyrmthalak",
+        "image_prompt": "A ring of black dragon scale, flame resistance, drake trophy, tribal dragon slayer aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "披风",
+        "slot_en": "cloak",
+        "name_cn": "龙人主人披风",
+        "name_en": "Drake Keeper's Cape",
+        "source": "Gizrul the Slavener",
+        "image_prompt": "A cape of drake hide with scale armor backing, dragon trainer aesthetic, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "副手",
+        "slot_en": "offhand",
+        "name_cn": "军需官盾牌",
+        "name_en": "Quartermaster's Shield",
+        "source": "Quartermaster Zigris",
+        "image_prompt": "A heavy iron shield with clan insignia and supply manifest, quartermaster authority, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "武器",
+        "slot_en": "weapon",
+        "name_cn": "战王战斧",
+        "name_en": "War Master's Cleaver",
+        "source": "War Master Voone",
+        "image_prompt": "A massive orcish battleaxe with wolf fang blade edges, clan champion weapon, raw berserker power, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      },
+      {
+        "slot_cn": "饰品",
+        "slot_en": "trinket",
+        "name_cn": "龙人之心",
+        "name_en": "Drake's Heart Core",
+        "source": "Overlord Wyrmthalak",
+        "image_prompt": "A crystallized drake heart in an iron frame, dragon fire essence, trophy of conquest, fantasy RPG game item illustration, detailed, dark fantasy style, World of Warcraft aesthetic"
+      }
+    ]
+  }
+]

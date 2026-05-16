@@ -37,6 +37,7 @@ __pycache__/
 
 # WoW 立绘批量：方图 + 圆图写入临时目录（含 wow-mobs-circle / wow-bosses-circle），再拷到 public/assets
 temp/wow-portraits-staging/
+temp/gear-icons-staging/
 
 # 从 pixijs-game 拷来的参考 UI（整仓预览）；仅保留 README 进版本库
 temp/pixijs-game/**

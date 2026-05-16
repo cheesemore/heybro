@@ -12,6 +12,13 @@ import {
   LAYOUT_SCALE,
   NORMAL_BATTLE_SECONDS,
 } from '../constants';
+import {
+  bindGamePointerTap,
+  playSkillHitSfx,
+  playSkillLaunchSfx,
+  startScreenMusic,
+  stopScreenMusic,
+} from '../gameAudio';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import type { AllyClass, BattleOutcome, BossId, EnemyClass, RoundMeta } from '../types';
 import type { RunState } from '../runState';
@@ -254,6 +261,8 @@ type BattleProjectile = {
   life: number;
   onHit: () => void;
   style: ProjectileVisualStyle;
+  /** 关联 `skills.json` id，用于发射/命中音效（普攻不传） */
+  skillId?: string;
   /** 暗影箭：拖尾微粒累积 */
   shadowTrailAcc?: number;
 };
@@ -707,12 +716,14 @@ export class BattleScreen extends Container {
     }
 
     attachScreenDebugLabel(this, 'BattleScreen');
+    startScreenMusic('battle');
 
     this._tick = (ticker) => this.updateFrame(ticker.deltaMS / 1000);
     this.app.ticker.add(this._tick);
   }
 
   override destroy(): void {
+    stopScreenMusic();
     if (this.uiTestKeyHandler) {
       window.removeEventListener('keydown', this.uiTestKeyHandler);
       this.uiTestKeyHandler = null;
@@ -2201,7 +2212,7 @@ export class BattleScreen extends Container {
         this.ringFx.push(spawnRingPulse(this.fxLayer, tx, t.y, 72, 0xc4b5fd, 0.38));
         this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, tx, ty));
       },
-      { style: 'enemy_shadow_bolt', speedMul: 0.88 },
+      { style: 'enemy_shadow_bolt', speedMul: 0.88, skillId: 'skill_shadow_bot' },
     );
   }
 
@@ -2301,7 +2312,13 @@ export class BattleScreen extends Container {
           this.ringFx.push(spawnRingPulse(this.fxLayer, tx, ty, 72, 0xc4b5fd, 0.38));
           this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, tx, ty));
         },
-        { style: 'enemy_shadow_bolt', speedMul: 0.88, volleyIndex: i, volleyCount: n },
+        {
+          style: 'enemy_shadow_bolt',
+          speedMul: 0.88,
+          volleyIndex: i,
+          volleyCount: n,
+          skillId: RFC3_CH3_SKILL_GROUP_SHADOW,
+        },
       );
     }
   }
@@ -2733,8 +2750,16 @@ export class BattleScreen extends Container {
     attacker: SimUnit,
     targetId: number,
     onHit: () => void,
-    opts?: { style?: ProjectileVisualStyle; speedMul?: number; volleyIndex?: number; volleyCount?: number },
+    opts?: {
+      style?: ProjectileVisualStyle;
+      speedMul?: number;
+      volleyIndex?: number;
+      volleyCount?: number;
+      skillId?: string;
+    },
   ): void {
+    const skillId = opts?.skillId;
+    if (skillId) playSkillLaunchSfx(skillId);
     const style = opts?.style ?? this.projectileStyleFor(attacker);
     const speedMul = opts?.speedMul ?? 1;
     const tgt = this.byId(targetId);
@@ -2769,6 +2794,7 @@ export class BattleScreen extends Container {
       life: 0,
       onHit,
       style,
+      skillId,
       shadowTrailAcc:
         style === 'enemy_shadow_bolt' || style === 'ally_arcane_missile' ? 0 : undefined,
     });
@@ -2801,6 +2827,7 @@ export class BattleScreen extends Container {
         ? Math.max(Math.round(12 * LAYOUT_SCALE), rSrc * 0.42)
         : this.hitRadius(tgt) + rSrc;
       if (dist <= hitDist) {
+        if (p.skillId) playSkillHitSfx(p.skillId);
         p.onHit();
         p.gfx.destroy();
         this.projectiles.splice(i, 1);
@@ -4558,7 +4585,7 @@ export class BattleScreen extends Container {
     this.statsHeaderLabel.anchor.set(0.5, 0.5);
     this.statsHeaderLabel.position.set(panelW * 0.5, hdrH * 0.5);
     hdrHit.addChild(this.statsHeaderLabel);
-    hdrHit.on('pointertap', () => {
+    bindGamePointerTap(hdrHit, () => {
       this.statsPanelExpanded = !this.statsPanelExpanded;
       this.syncBattleStatsPanelLayout();
     });
@@ -4591,7 +4618,7 @@ export class BattleScreen extends Container {
       t.eventMode = 'static';
       t.cursor = 'pointer';
       t.position.set(x, 0);
-      t.on('pointertap', (e) => {
+      bindGamePointerTap(t, (e) => {
         e.stopPropagation();
         if (this.statsViewHeal === healTab) return;
         this.statsViewHeal = healTab;

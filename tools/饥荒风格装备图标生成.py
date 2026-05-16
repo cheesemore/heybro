@@ -1,0 +1,448 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+饥荒风格装备图标生成 — 批量文生图 GUI
+
+依赖：仓库根 secrets_openai.txt；tkinter；裁切需 Pillow（pip install pillow）。
+
+用法：
+  cd d:\\HeyBro
+  python tools/饥荒风格装备图标生成.py
+
+数据：classic-vanilla-dungeon-equipment.json + gearItems.json + wowBookRegistry.json
+输出：temp/gear-icons-staging/（raw/ 原图，icons/ 128×128 图标）
+画风：饥荒 / Klei Don't Starve（gptimage/dont_starve_style.py）
+
+发布：将 icons/<gearId>.png 复制到 public/assets/gear/<gearId>.png
+"""
+
+from __future__ import annotations
+
+import queue
+import sys
+import threading
+import time
+import tkinter as tk
+from pathlib import Path
+from tkinter import filedialog, messagebox, ttk
+
+TOOLS = Path(__file__).resolve().parent
+ROOT = TOOLS.parent
+if str(TOOLS) not in sys.path:
+    sys.path.insert(0, str(TOOLS))
+
+import image2_generate as img2  # noqa: E402
+from gear_icon_jobs import (  # noqa: E402
+    COOLDOWN_SEC,
+    CONSECUTIVE_FAILS_COOLDOWN,
+    DEFAULT_STAGING,
+    GearIconJob,
+    PER_JOB_MAX_TRIES,
+    RETRY_GAP_SEC,
+    build_gear_icon_prompt,
+    icon_ready,
+    load_gear_icon_jobs,
+    process_icon_png,
+    write_manifest,
+)
+
+
+def _sleep_cancellable(
+    total_sec: int,
+    cancel: threading.Event,
+    log_put,
+    *,
+    tick_sec: float = 5.0,
+) -> bool:
+    elapsed = 0.0
+    next_log = 60.0
+    while elapsed < total_sec:
+        if cancel.is_set():
+            log_put(f"[冷却] 用户取消（已等待 {int(elapsed)}s）。")
+            return True
+        step = min(tick_sec, total_sec - elapsed)
+        time.sleep(step)
+        elapsed += step
+        if elapsed >= next_log:
+            log_put(f"[冷却] 已等待 {int(elapsed)}/{total_sec}s…")
+            next_log += 60.0
+    log_put(f"[冷却] 已满 {total_sec}s，继续任务。")
+    return False
+
+
+class App(tk.Tk):
+    def __init__(self) -> None:
+        super().__init__()
+        self.title("饥荒风格装备图标生成")
+        self.geometry("1000x720")
+        self._jobs: list[GearIconJob] = []
+        self._cancel = threading.Event()
+        self._q: queue.Queue = queue.Queue()
+        self._worker: threading.Thread | None = None
+
+        f = ttk.Frame(self, padding=8)
+        f.pack(fill=tk.BOTH, expand=True)
+
+        r0 = ttk.Frame(f)
+        r0.pack(fill=tk.X, pady=2)
+        ttk.Label(
+            r0,
+            text="从 classic 装备表 + gearItems 读取 252 件；提示词为饥荒/Klei 手绘风，非 WoW 写实。",
+            wraplength=920,
+        ).pack(anchor=tk.W)
+
+        r1 = ttk.Frame(f)
+        r1.pack(fill=tk.X, pady=2)
+        ttk.Label(r1, text="输出目录：").pack(side=tk.LEFT)
+        self.var_out = tk.StringVar(value=str(DEFAULT_STAGING))
+        ttk.Entry(r1, textvariable=self.var_out, width=72).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=4)
+        ttk.Button(r1, text="浏览…", command=self._browse_out).pack(side=tk.LEFT)
+        ttk.Label(
+            f,
+            text="子目录 raw/（API 原图）→ icons/（裁切 128×128）；清单 manifest.tsv / manifest.json",
+            wraplength=920,
+        ).pack(anchor=tk.W, pady=(0, 4))
+
+        r2 = ttk.Frame(f)
+        r2.pack(fill=tk.X, pady=2)
+        ttk.Label(r2, text="API Key 文件：").pack(side=tk.LEFT)
+        self.var_key = tk.StringVar(value=str(ROOT / "secrets_openai.txt"))
+        ttk.Entry(r2, textvariable=self.var_key, width=56).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=4)
+        ttk.Label(r2, text="Base URL：").pack(side=tk.LEFT)
+        self.var_base = tk.StringVar(value=img2.DEFAULT_BASE_URL)
+        ttk.Entry(r2, textvariable=self.var_base, width=36).pack(side=tk.LEFT, padx=4)
+
+        r3 = ttk.Frame(f)
+        r3.pack(fill=tk.X, pady=2)
+        ttk.Label(r3, text="Model：").pack(side=tk.LEFT)
+        self.var_model = tk.StringVar(value=img2.DEFAULT_MODEL)
+        ttk.Entry(r3, textvariable=self.var_model, width=20).pack(side=tk.LEFT, padx=4)
+        ttk.Label(r3, text="文生图 Size：").pack(side=tk.LEFT)
+        self.var_size = tk.StringVar(value="1024x1024")
+        ttk.Entry(r3, textvariable=self.var_size, width=14).pack(side=tk.LEFT, padx=4)
+        ttk.Label(r3, text="图标边长：").pack(side=tk.LEFT, padx=(8, 0))
+        self.var_icon_size = tk.StringVar(value="128")
+        ttk.Entry(r3, textvariable=self.var_icon_size, width=6).pack(side=tk.LEFT, padx=2)
+
+        r3b = ttk.Frame(f)
+        r3b.pack(fill=tk.X, pady=2)
+        self.var_skip = tk.BooleanVar(value=True)
+        ttk.Checkbutton(r3b, text="跳过已有 icons/", variable=self.var_skip).pack(side=tk.LEFT, padx=4)
+        self.var_force = tk.BooleanVar(value=False)
+        ttk.Checkbutton(r3b, text="强制覆盖已有图标", variable=self.var_force).pack(side=tk.LEFT, padx=8)
+        self.var_reprocess = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            r3b,
+            text="仅裁切（从 raw/ 到 icons/，不调 API）",
+            variable=self.var_reprocess,
+        ).pack(side=tk.LEFT, padx=8)
+
+        r4 = ttk.Frame(f)
+        r4.pack(fill=tk.X, pady=4)
+        ttk.Label(r4, text="生成序号从").pack(side=tk.LEFT)
+        self.var_from = tk.StringVar(value="1")
+        ttk.Entry(r4, textvariable=self.var_from, width=8).pack(side=tk.LEFT, padx=2)
+        ttk.Label(r4, text="到").pack(side=tk.LEFT)
+        self.var_to = tk.StringVar(value="")
+        ttk.Entry(r4, textvariable=self.var_to, width=8).pack(side=tk.LEFT, padx=2)
+        ttk.Label(r4, text="（「到」留空 = 最后一条）").pack(side=tk.LEFT, padx=6)
+
+        r5 = ttk.Frame(f)
+        r5.pack(fill=tk.X, pady=6)
+        ttk.Button(r5, text="① 生成清单", command=self._on_manifest).pack(side=tk.LEFT, padx=2)
+        ttk.Button(r5, text="② 开始生成", command=self._on_generate).pack(side=tk.LEFT, padx=2)
+        ttk.Button(r5, text="取消当前任务", command=self._on_cancel).pack(side=tk.LEFT, padx=2)
+        ttk.Button(r5, text="仅测第 1 条", command=self._on_test_one).pack(side=tk.LEFT, padx=2)
+        ttk.Button(r5, text="查看第 1 条提示词", command=self._on_preview_prompt).pack(side=tk.LEFT, padx=2)
+
+        self.var_status = tk.StringVar(value="就绪。请先点「生成清单」。")
+        ttk.Label(f, textvariable=self.var_status, foreground="#0b57d0").pack(fill=tk.X, pady=4)
+
+        self.prog = ttk.Progressbar(f, mode="determinate")
+        self.prog.pack(fill=tk.X, pady=2)
+
+        lf = ttk.LabelFrame(f, text="日志")
+        lf.pack(fill=tk.BOTH, expand=True, pady=4)
+        self.log = tk.Text(lf, height=16, wrap=tk.WORD, font=("Consolas", 9))
+        sb = ttk.Scrollbar(lf, command=self.log.yview)
+        self.log.configure(yscrollcommand=sb.set)
+        self.log.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb.pack(side=tk.RIGHT, fill=tk.Y)
+
+        tvf = ttk.LabelFrame(f, text="任务预览（前 500 行）")
+        tvf.pack(fill=tk.BOTH, expand=False, pady=4)
+        cols = ("idx", "gearId", "dungeon", "nameCn", "slot")
+        self.tree = ttk.Treeview(tvf, columns=cols, show="headings", height=8)
+        self.tree.heading("idx", text="#")
+        self.tree.heading("gearId", text="gearId")
+        self.tree.heading("dungeon", text="副本")
+        self.tree.heading("nameCn", text="装备名")
+        self.tree.heading("slot", text="部位")
+        self.tree.column("idx", width=40)
+        self.tree.column("gearId", width=200)
+        self.tree.column("dungeon", width=120)
+        self.tree.column("nameCn", width=180)
+        self.tree.column("slot", width=72)
+        self.tree.pack(fill=tk.BOTH, expand=True)
+
+        self.after(200, self._pump_queue)
+
+    def _browse_out(self) -> None:
+        cur = Path(self.var_out.get().strip() or str(DEFAULT_STAGING))
+        initial = cur if cur.is_dir() else DEFAULT_STAGING
+        if not initial.is_dir():
+            initial = ROOT if ROOT.is_dir() else Path.home()
+        p = filedialog.askdirectory(title="选择输出目录", initialdir=str(initial))
+        if p:
+            self.var_out.set(p)
+
+    def _log(self, s: str) -> None:
+        self.log.insert(tk.END, s + "\n")
+        self.log.see(tk.END)
+
+    def _ensure_jobs(self) -> bool:
+        if self._jobs:
+            return True
+        try:
+            self._jobs = load_gear_icon_jobs()
+            return True
+        except Exception as e:
+            messagebox.showerror("加载失败", str(e))
+            return False
+
+    def _on_manifest(self) -> None:
+        try:
+            self._jobs = load_gear_icon_jobs()
+        except Exception as e:
+            messagebox.showerror("加载失败", str(e))
+            return
+        out = Path(self.var_out.get().strip())
+        try:
+            tsv, fullj = write_manifest(self._jobs, out)
+        except Exception as e:
+            messagebox.showerror("写入清单失败", str(e))
+            return
+        self.var_to.set(str(len(self._jobs)))
+        self._refresh_tree()
+        self._log(f"清单已写入：\n  {tsv}\n  {fullj}\n共 {len(self._jobs)} 件装备。")
+        self.var_status.set(f"已加载 {len(self._jobs)} 件；输出：{out.resolve()}")
+        messagebox.showinfo("完成", f"共 {len(self._jobs)} 件。\n对照表：manifest.tsv")
+
+    def _refresh_tree(self) -> None:
+        for x in self.tree.get_children():
+            self.tree.delete(x)
+        for j in self._jobs[:500]:
+            self.tree.insert(
+                "",
+                tk.END,
+                values=(j.index, j.gear_id, j.dungeon_name_cn, j.name_cn, j.slot_kind),
+            )
+        if len(self._jobs) > 500:
+            self.tree.insert("", tk.END, values=("…", f"其余 {len(self._jobs) - 500} 条见 manifest", "", "", ""))
+
+    def _slice_jobs(self) -> list[tuple[int, GearIconJob]]:
+        if not self._ensure_jobs():
+            return []
+        n = len(self._jobs)
+        try:
+            a = int(self.var_from.get().strip() or "1")
+        except ValueError:
+            a = 1
+        a = max(1, min(a, n))
+        to_raw = self.var_to.get().strip()
+        b = int(to_raw) if to_raw else n
+        b = max(a, min(b, n))
+        return [(i, self._jobs[i - 1]) for i in range(a, b + 1)]
+
+    def _icon_size(self) -> int:
+        try:
+            v = int(self.var_icon_size.get().strip())
+        except ValueError:
+            v = 128
+        return max(32, min(v, 512))
+
+    def _on_cancel(self) -> None:
+        self._cancel.set()
+        self._log("已请求取消…")
+
+    def _on_test_one(self) -> None:
+        self.var_from.set("1")
+        self.var_to.set("1")
+        self._on_generate()
+
+    def _on_preview_prompt(self) -> None:
+        if not self._ensure_jobs():
+            return
+        p = build_gear_icon_prompt(self._jobs[0])
+        win = tk.Toplevel(self)
+        win.title("第 1 条提示词预览")
+        win.geometry("720x400")
+        t = tk.Text(win, wrap=tk.WORD, font=("Consolas", 9))
+        t.pack(fill=tk.BOTH, expand=True, padx=8, pady=8)
+        t.insert("1.0", p)
+        t.configure(state=tk.DISABLED)
+
+    def _on_generate(self) -> None:
+        if self._worker and self._worker.is_alive():
+            messagebox.showwarning("忙", "已有任务在运行。")
+            return
+        pairs = self._slice_jobs()
+        if not pairs:
+            return
+
+        out_root = Path(self.var_out.get().strip()).resolve()
+        key_file = Path(self.var_key.get().strip())
+        reprocess = self.var_reprocess.get()
+        if not reprocess and key_file and not key_file.is_file():
+            messagebox.showerror("缺少 Key", f"未找到：{key_file}")
+            return
+
+        icon_size = self._icon_size()
+        skip = self.var_skip.get()
+        force = self.var_force.get()
+
+        self._cancel.clear()
+        self.prog["maximum"] = len(pairs)
+        self.prog["value"] = 0
+
+        def run() -> None:
+            done = 0
+            consecutive_fails = 0
+
+            def qlog(s: str) -> None:
+                self._q.put(("log", s))
+
+            i = 0
+            while i < len(pairs):
+                if self._cancel.is_set():
+                    qlog(f"用户取消。已完成 {done}/{len(pairs)}。")
+                    break
+
+                idx, job = pairs[i]
+                raw_path = (out_root / "raw" / f"{job.gear_id}.png").resolve()
+                icon_path = (out_root / "icons" / f"{job.gear_id}.png").resolve()
+
+                qlog(f"---- 第 {idx} 条 {job.gear_id} | {job.name_cn} ({job.dungeon_name_cn}) ----")
+
+                if skip and not force and icon_ready(icon_path):
+                    qlog(f"[跳过] 图标已存在 → {icon_path}")
+                    consecutive_fails = 0
+                    i += 1
+                    done += 1
+                    self._q.put(("prog", done))
+                    continue
+
+                if reprocess:
+                    if not raw_path.is_file():
+                        qlog(f"[跳过] 无 raw：{raw_path}")
+                        i += 1
+                        done += 1
+                        self._q.put(("prog", done))
+                        continue
+                    try:
+                        if force and icon_path.is_file():
+                            icon_path.unlink()
+                        process_icon_png(raw_path, icon_path, icon_size)
+                        qlog(f"[裁切成功] → {icon_path}")
+                        consecutive_fails = 0
+                    except Exception as e:
+                        qlog(f"[裁切失败] {e!s}")
+                        consecutive_fails += 1
+                    i += 1
+                    done += 1
+                    self._q.put(("prog", done))
+                    if consecutive_fails >= CONSECUTIVE_FAILS_COOLDOWN:
+                        self._q.put(("status", f"连续失败，冷却 {COOLDOWN_SEC}s…"))
+                        if _sleep_cancellable(COOLDOWN_SEC, self._cancel, qlog):
+                            break
+                        consecutive_fails = 0
+                    continue
+
+                self._q.put(("status", f"文生图 [{done + 1}/{len(pairs)}] {job.name_cn}"))
+                last_err: BaseException | None = None
+                ok = False
+                for attempt in range(1, PER_JOB_MAX_TRIES + 1):
+                    if self._cancel.is_set():
+                        break
+                    try:
+                        if force and icon_path.is_file():
+                            icon_path.unlink()
+                        if not icon_ready(raw_path):
+                            prompt = build_gear_icon_prompt(job)
+                            qlog(f"[提示词] {prompt[:200]}…")
+                            img2.generate_to_file(
+                                prompt,
+                                raw_path,
+                                key_file=key_file if key_file.is_file() else None,
+                                base_url=self.var_base.get().strip(),
+                                model=self.var_model.get().strip(),
+                                size=self.var_size.get().strip(),
+                            )
+                            qlog(f"[文生图成功] 第{attempt}次 → {raw_path}")
+                        process_icon_png(raw_path, icon_path, icon_size)
+                        qlog(f"[图标] → {icon_path}")
+                        ok = True
+                        consecutive_fails = 0
+                        break
+                    except Exception as e:
+                        last_err = e
+                        qlog(f"[尝试 {attempt}/{PER_JOB_MAX_TRIES}] {e!s}")
+                        if attempt < PER_JOB_MAX_TRIES:
+                            time.sleep(RETRY_GAP_SEC)
+
+                if ok:
+                    i += 1
+                    done += 1
+                    self._q.put(("prog", done))
+                    continue
+
+                if self._cancel.is_set():
+                    break
+
+                qlog(f"[放弃] 最后错误: {last_err!s}")
+                consecutive_fails += 1
+                if consecutive_fails >= CONSECUTIVE_FAILS_COOLDOWN:
+                    self._q.put(("status", f"连续 {CONSECUTIVE_FAILS_COOLDOWN} 条失败，冷却 {COOLDOWN_SEC}s…"))
+                    qlog(f"[策略] 休息 {COOLDOWN_SEC // 60} 分钟…")
+                    if _sleep_cancellable(COOLDOWN_SEC, self._cancel, qlog):
+                        break
+                    consecutive_fails = 0
+                    qlog(f"[重试] 冷却结束，再试第 {idx} 条")
+                    continue
+
+                i += 1
+                done += 1
+                self._q.put(("prog", done))
+
+            self._q.put(("done",))
+
+        self._worker = threading.Thread(target=run, daemon=True)
+        self._worker.start()
+        mode = "仅裁切" if reprocess else "文生图+裁切"
+        self._log(f"开始批量（{mode}）：{len(pairs)} 条，图标 {icon_size}px，输出 {out_root}")
+
+    def _pump_queue(self) -> None:
+        try:
+            while True:
+                msg = self._q.get_nowait()
+                if msg[0] == "log":
+                    self._log(msg[1])
+                elif msg[0] == "status":
+                    self.var_status.set(msg[1])
+                elif msg[0] == "prog":
+                    self.prog["value"] = msg[1]
+                elif msg[0] == "done":
+                    self.var_status.set("本轮结束。")
+                    self._log("—— 本轮结束 ——")
+                    self._log("发布：复制 icons/*.png → public/assets/gear/")
+        except queue.Empty:
+            pass
+        self.after(200, self._pump_queue)
+
+
+def main() -> None:
+    App().mainloop()
+
+
+if __name__ == "__main__":
+    main()

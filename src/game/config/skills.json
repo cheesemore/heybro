@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "editConvention": "全局技能主数据。`id` 唯一；`limit` minion/boss/any；`powerTag` strong|medium|weak|negative（强/中/弱/负面，缺省 medium）供图鉴编辑器「属性重算」叠乘；`codeStatus` written/missing/pending_changes（待修改为手工标记）；`descriptionCn`/`logicEffectCn` 见各条。`params` **仅关键战斗调参**（伤害系数、范围/半径设计值、冷却间隔、眩晕与嗜血持续、触发概率等）；落点偏移、受击火花、镜像攻速节奏、召唤散布角度等**技能实现特性**写在代码里。设计像素乘 LAYOUT_SCALE 用 `skillParamDesignPx`/`skillParamNumber`。单位 `skillIds` 挂载。书本关底首领配置型技能（如 skill_boss_*）的冷却与初动见该条 `params[0]`、`params[1]`，由 `BattleScreen` 调度。",
+  "editConvention": "全局技能主数据。`id` 唯一；`limit` minion/boss/any；`powerTag` strong|medium|weak|negative（强/中/弱/负面，缺省 medium）供图鉴编辑器「属性重算」叠乘；`codeStatus` written/missing/pending_changes（待修改为手工标记）；`descriptionCn`/`logicEffectCn` 见各条。`params` **仅关键战斗调参**（伤害系数、范围/半径设计值、冷却间隔、眩晕与嗜血持续、触发概率等）；落点偏移、受击火花、镜像攻速节奏、召唤散布角度等**技能实现特性**写在代码里。设计像素乘 LAYOUT_SCALE 用 `skillParamDesignPx`/`skillParamNumber`。单位 `skillIds` 挂载。书本关底首领配置型技能（如 skill_boss_*）的冷却与初动见该条 `params[0]`、`params[1]`，由 `BattleScreen` 调度。 launchSfx/hitSfx 为音效资源 id，空串表示暂无音效；",
   "skills": [
     {
       "id": "skill_farseer_chain_lightning",
@@ -13,7 +13,9 @@
         8,
         0.78,
         3
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_farseer_summon_grunts",
@@ -25,7 +27,9 @@
       "params": [
         6,
         34
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_tauren_shockwave",
@@ -38,7 +42,9 @@
         780,
         70,
         0.7125
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_tauren_stomp",
@@ -51,7 +57,9 @@
         0.105,
         2.6,
         680
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_blademaster_crit",
@@ -63,7 +71,9 @@
       "params": [
         0.35,
         2
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_blademaster_mirror",
@@ -71,7 +81,9 @@
       "limit": "boss",
       "codeStatus": "written",
       "descriptionCn": "召唤镜像协助作战（与剑刃风暴拆分后单独实现）。",
-      "logicEffectCn": "无独立周期 cast：镜像生成与行为由 skill_blademaster_bladestorm 同 tick 管线处理；本 id 仅占位/图鉴与挂载一致性，战斗侧勿单独调度。"
+      "logicEffectCn": "无独立周期 cast：镜像生成与行为由 skill_blademaster_bladestorm 同 tick 管线处理；本 id 仅占位/图鉴与挂载一致性，战斗侧勿单独调度。",
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_blademaster_bladestorm",
@@ -85,7 +97,9 @@
         14,
         0.09,
         0.175
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_dread_warrior_assault",
@@ -99,7 +113,9 @@
         1.2,
         5,
         300
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_raider_leap",
@@ -114,7 +130,9 @@
         2,
         0.5
       ],
-      "powerTag": "strong"
+      "powerTag": "strong",
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_beserker_leap",
@@ -126,7 +144,9 @@
       "params": [
         10
       ],
-      "powerTag": "medium"
+      "powerTag": "medium",
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_batrider_leap",
@@ -140,7 +160,9 @@
         50,
         50
       ],
-      "powerTag": "medium"
+      "powerTag": "medium",
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_ultralisk_mage_fragile",
@@ -151,7 +173,9 @@
       "logicEffectCn": "applyDamage：若受击者为敌方且攻击者为 ally mage，则伤害再乘 fragileMul。",
       "params": [
         2
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_abomination_cleave",
@@ -164,7 +188,9 @@
         62,
         2,
         0.55
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_darkspear_slow_knockback",
@@ -178,7 +204,9 @@
         100,
         1,
         5
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_shaman_bloodlust",
@@ -192,7 +220,9 @@
         228,
         12,
         1.5
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_catapult_burn_field",
@@ -205,7 +235,9 @@
         88,
         0.2,
         0.32
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_shadow_bot",
@@ -218,7 +250,9 @@
       "params": [
         10,
         300
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_normal_crit",
@@ -231,7 +265,9 @@
       "params": [
         20,
         2
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_evil_strenth",
@@ -246,7 +282,9 @@
         6,
         50,
         30
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_boom",
@@ -259,7 +297,9 @@
       "params": [
         50,
         100
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_warrior_weak",
@@ -271,7 +311,9 @@
       "logicEffectCn": "applyDamage：受击者为敌方、攻击者为 ally 且 allyKind=warrior（含英雄）时，伤害再乘 (1+params[0]/100)。与其它脆弱乘区在 enemyClassWeaknessMult 叠乘。",
       "params": [
         50
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_mage_weak",
@@ -283,7 +325,9 @@
       "logicEffectCn": "applyDamage：受击者为敌方、攻击者为 ally 且 allyKind=mage（含英雄）时，伤害再乘 (1+params[0]/100)。enemyClassWeaknessMult。",
       "params": [
         50
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_archer_weak",
@@ -295,7 +339,9 @@
       "logicEffectCn": "applyDamage：受击者为敌方、攻击者为 ally 且 allyKind=archer（含英雄）时，伤害再乘 (1+params[0]/100)。enemyClassWeaknessMult。",
       "params": [
         50
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_knight_weak",
@@ -307,7 +353,9 @@
       "logicEffectCn": "applyDamage：受击者为敌方、攻击者为 ally 且 allyKind=knight（含英雄）时，伤害再乘 (1+params[0]/100)。enemyClassWeaknessMult。",
       "params": [
         50
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_boss_punch",
@@ -323,7 +371,9 @@
         200,
         2,
         200
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_boss_rush",
@@ -339,7 +389,9 @@
         600,
         2,
         200
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_hot_strike",
@@ -351,7 +403,9 @@
       "logicEffectCn": "BattleScreen.beginDefaultAttack：敌方且挂载本技能时，无论近战出手或远程弹道命中均走 applyBossHotStrikeMelee。以首领当前位置为圆心、近战射程+effectiveSkillRangeTo+margin 选至多 cap=1+params[0] 名我方（必含弹道主目标）；总伤 baseDmg×cap 均分。playBossHotStrikePresentation：首领周身火环 + 各目标收缩红环与火星。applyDamage 且 hotStrikeHeavy：受击闪白延长、额外火星与双环。params[0]=额外目标人数上限（整数）。",
       "params": [
         2
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_boss_crit",
@@ -364,7 +418,9 @@
       "params": [
         20,
         3
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_berserker",
@@ -379,7 +435,9 @@
         50,
         20,
         100
-      ]
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_hero_mage_arcane_missiles",
@@ -394,7 +452,9 @@
         0.5,
         1.5
       ],
-      "powerTag": "strong"
+      "powerTag": "strong",
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_hero_priest_mass_shelter",
@@ -409,7 +469,9 @@
         2,
         0.5
       ],
-      "powerTag": "strong"
+      "powerTag": "strong",
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_hero_archer_strong_strike_aura",
@@ -423,7 +485,9 @@
         12,
         24
       ],
-      "powerTag": "strong"
+      "powerTag": "strong",
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_hero_knight_holy_sanction",
@@ -439,7 +503,9 @@
         10,
         1
       ],
-      "powerTag": "strong"
+      "powerTag": "strong",
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_rfc3_ch3_group_shadow_sword",
@@ -454,7 +520,9 @@
         6,
         100
       ],
-      "powerTag": "strong"
+      "powerTag": "strong",
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_rfc3_ch3_summon_rite",
@@ -469,7 +537,9 @@
         3,
         2
       ],
-      "powerTag": "strong"
+      "powerTag": "strong",
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_rfc3_ch3_corrosion",
@@ -484,7 +554,9 @@
         50,
         24
       ],
-      "powerTag": "strong"
+      "powerTag": "strong",
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_rfc4_ch4_mind_lash",
@@ -500,7 +572,9 @@
         75,
         30
       ],
-      "powerTag": "strong"
+      "powerTag": "strong",
+      "launchSfx": "",
+      "hitSfx": ""
     },
     {
       "id": "skill_rfc4_ch4_shadow_blink",
@@ -514,7 +588,9 @@
         5,
         3
       ],
-      "powerTag": "strong"
+      "powerTag": "strong",
+      "launchSfx": "",
+      "hitSfx": ""
     }
   ]
 }

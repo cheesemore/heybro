@@ -21,16 +21,19 @@ function gearIdFor(dungeonId, slotKind) {
 }
 
 function loadPrev() {
-  /** @type {Map<string, string>} */
-  const nameCnByGearId = new Map();
+  /** @type {Map<string, { nameCn: string, nameEn?: string }>} */
+  const namesByGearId = new Map();
   /** @type {Map<string, object>} */
   const dungeonById = new Map();
-  if (!fs.existsSync(OUT)) return { nameCnByGearId, dungeonById };
+  if (!fs.existsSync(OUT)) return { namesByGearId, dungeonById };
   try {
     const raw = JSON.parse(fs.readFileSync(OUT, 'utf8'));
     for (const row of raw.items || []) {
       if (typeof row.gearId === 'string' && typeof row.nameCn === 'string') {
-        nameCnByGearId.set(row.gearId, row.nameCn);
+        namesByGearId.set(row.gearId, {
+          nameCn: row.nameCn,
+          nameEn: typeof row.nameEn === 'string' ? row.nameEn : undefined,
+        });
       }
     }
     for (const d of raw.dungeons || []) {
@@ -39,7 +42,7 @@ function loadPrev() {
   } catch {
     /* ignore */
   }
-  return { nameCnByGearId, dungeonById };
+  return { namesByGearId, dungeonById };
 }
 
 function levelRangeForOrdinal(ordinal, levelRangeCfg) {
@@ -133,7 +136,7 @@ function main() {
   const qualityLabelsCn = rulesDoc.qualityLabelsCn ?? {};
 
   const dungeons = registry.dungeons || [];
-  const { nameCnByGearId, dungeonById: prevDungeonById } = loadPrev();
+  const { namesByGearId, dungeonById: prevDungeonById } = loadPrev();
 
   /** @type {object[]} */
   const dungeonRules = [];
@@ -154,13 +157,15 @@ function main() {
     for (const s of slots) {
       const id = gearIdFor(dungeonId, s.kind);
       const defaultName = `${nameCn}·${s.partNameCn}`;
+      const prevNames = namesByGearId.get(id);
       items.push({
         gearId: id,
         dungeonId,
         dungeonOrdinal,
         slotKind: s.kind,
         slotNo: s.slotNo,
-        nameCn: nameCnByGearId.get(id) ?? defaultName,
+        nameCn: prevNames?.nameCn ?? defaultName,
+        ...(prevNames?.nameEn ? { nameEn: prevNames.nameEn } : {}),
         levelMin: rule.levelMin,
         levelMax: rule.levelMax,
         qualities: rule.qualities,
