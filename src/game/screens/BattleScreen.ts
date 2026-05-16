@@ -28,6 +28,9 @@ import {
 import { BossPunchSectorWarnFx } from '../bossPunchSectorWarnFx';
 import { BossRushLineWarnFx } from '../bossRushLineWarnFx';
 import type { SkillDef } from '../skillsCatalog';
+import { gsCombatStatMult } from '../gearCombatBonus';
+import { getNodeProgressMaxForBookChapter } from '../gearItems';
+import { sumEquippedGearGs } from '../playerGearStorage';
 import { getSkillById, skillFiresInBattle, skillParamDesignPx, skillParamNumber } from '../skillsCatalog';
 import {
   getHeroDef,
@@ -1220,9 +1223,16 @@ export class BattleScreen extends Container {
       const bossAtkM = this.meta.kind === 'boss' ? this.run.bossHpDerivedFinalAtkMult : 1;
       const growHp = this.run.externalGrowth.permanentMaxHpMult;
       const growAtk = this.run.externalGrowth.permanentDamageMult;
+      const gearM = gsCombatStatMult(sumEquippedGearGs());
       const classProg = classLevelStatMult(getClassLevel(cell.kind));
-      const eachHp = Math.max(1, Math.round(def.maxHp * mult * ab.hpMult * bossHpM * growHp * classProg));
-      const eachAtk = Math.max(1, Math.round(def.atk * mult * ab.atkMult * bossAtkM * growAtk * classProg));
+      const eachHp = Math.max(
+        1,
+        Math.round(def.maxHp * mult * ab.hpMult * bossHpM * growHp * gearM * classProg),
+      );
+      const eachAtk = Math.max(
+        1,
+        Math.round(def.atk * mult * ab.atkMult * bossAtkM * growAtk * gearM * classProg),
+      );
 
       let range = def.range;
       if (cell.kind === 'archer' && this.bondArcher12) range += 150;
@@ -1300,6 +1310,7 @@ export class BattleScreen extends Container {
     const bossAtkM = this.meta.kind === 'boss' ? this.run.bossHpDerivedFinalAtkMult : 1;
     const growHp = this.run.externalGrowth.permanentMaxHpMult;
     const growAtk = this.run.externalGrowth.permanentDamageMult;
+    const gearM = gsCombatStatMult(sumEquippedGearGs());
     const classProgFor = (cls: AllyClass): number => classLevelStatMult(getClassLevel(cls));
     const jobs: { hid: HeroId; hd: NonNullable<ReturnType<typeof getHeroDef>> }[] = [];
     for (let s = 0; s < cap; s++) {
@@ -1322,14 +1333,14 @@ export class BattleScreen extends Container {
       const cProg = classProgFor(cls);
       let eachHp = Math.max(
         1,
-        Math.round(hd.maxHp * starM * mult * bossHpM * growHp * cProg),
+        Math.round(hd.maxHp * starM * mult * bossHpM * growHp * gearM * cProg),
       );
       if (hid === PRIEST_SHELTER_BLUE_ID) {
         eachHp = Math.max(1, Math.round(eachHp * 1.1));
       }
       let eachAtk = Math.max(
         1,
-        Math.round(hd.atk * starM * mult * bossAtkM * growAtk * cProg),
+        Math.round(hd.atk * starM * mult * bossAtkM * growAtk * gearM * cProg),
       );
       if (hid === KNIGHT_HOLY_SANCTION_BLUE_ID) {
         eachAtk = Math.max(1, Math.round(eachAtk * 1.1));
@@ -1461,12 +1472,13 @@ export class BattleScreen extends Container {
     const { chapter } = meta;
     const ri = legacyProgressRoundIndex(this.run.bookChapterId, this.run.currentRoundIndex);
     const bookM = this.run.bookChapterStrengthMult();
+    const progMax = getNodeProgressMaxForBookChapter(this.run.bookChapterId);
 
     for (const wave of meta.enemies) {
       if (wave.type === 'boss' && wave.bossId) {
         const bc = resolveWowBookBossCombat(this.run.bookChapterId);
-        const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable * 10, bookM);
-        const atk = scaledEnemyAtk(chapter, ri, bc.combatBaseAtk, bookM);
+        const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable * 10, bookM, progMax);
+        const atk = scaledEnemyAtk(chapter, ri, bc.combatBaseAtk, bookM, progMax);
         const bossLabel =
           wave.wowBossDisplayName && wave.wowBossDisplayName.trim().length > 0
             ? wave.wowBossDisplayName.trim()
@@ -1503,8 +1515,8 @@ export class BattleScreen extends Container {
           const def = ENEMY_DEFS[type];
           for (let k = 0; k < wave.count; k++) {
             const wo = waveOrder++;
-            const hp = scaledEnemyHp(chapter, ri, def.baseMaxHp, bookM);
-            const atk = scaledEnemyAtk(chapter, ri, def.baseAtk, bookM);
+            const hp = scaledEnemyHp(chapter, ri, def.baseMaxHp, bookM, progMax);
+            const atk = scaledEnemyAtk(chapter, ri, def.baseAtk, bookM, progMax);
             pending.push({
               range: def.range,
               waveOrder: wo,
@@ -1520,8 +1532,8 @@ export class BattleScreen extends Container {
         const baseAtk = enemyCombatBaseAtkFromTable(mob.baseAtk, mob.range);
         for (let k = 0; k < wave.count; k++) {
           const wo = waveOrder++;
-          const hp = scaledEnemyHp(chapter, ri, mob.baseMaxHp, bookM);
-          const atk = scaledEnemyAtk(chapter, ri, baseAtk, bookM);
+          const hp = scaledEnemyHp(chapter, ri, mob.baseMaxHp, bookM, progMax);
+          const atk = scaledEnemyAtk(chapter, ri, baseAtk, bookM, progMax);
           pending.push({
             range: mob.range,
             waveOrder: wo,
@@ -1542,8 +1554,8 @@ export class BattleScreen extends Container {
       const def = ENEMY_DEFS[type];
       for (let k = 0; k < wave.count; k++) {
         const wo = waveOrder++;
-        const hp = scaledEnemyHp(chapter, ri, def.baseMaxHp, bookM);
-        const atk = scaledEnemyAtk(chapter, ri, def.baseAtk, bookM);
+        const hp = scaledEnemyHp(chapter, ri, def.baseMaxHp, bookM, progMax);
+        const atk = scaledEnemyAtk(chapter, ri, def.baseAtk, bookM, progMax);
         pending.push({
           range: def.range,
           waveOrder: wo,
@@ -2288,6 +2300,7 @@ export class BattleScreen extends Container {
     const chapter = this.meta.chapter;
     const ri = legacyProgressRoundIndex(this.run.bookChapterId, this.run.currentRoundIndex);
     const bookM = this.run.bookChapterStrengthMult();
+    const progMax = getNodeProgressMaxForBookChapter(this.run.bookChapterId);
     let addMax = 0;
     let addCur = 0;
     for (let i = 0; i < count; i++) {
@@ -2296,8 +2309,8 @@ export class BattleScreen extends Container {
       if (!mob) continue;
       const paint = wowMobEnemyPaint(mob) as EnemyPaintKind;
       const baseAtk = enemyCombatBaseAtkFromTable(mob.baseAtk, mob.range);
-      const hp = scaledEnemyHp(chapter, ri, mob.baseMaxHp, bookM);
-      const atk = scaledEnemyAtk(chapter, ri, baseAtk, bookM);
+      const hp = scaledEnemyHp(chapter, ri, mob.baseMaxHp, bookM, progMax);
+      const atk = scaledEnemyAtk(chapter, ri, baseAtk, bookM, progMax);
       const sc = this.scatterOffset(ri * 131 + i * 17 + groupTag * 59 + id.length * 3);
       const rawX = cx + sc.jx * 0.4 + (i - (count - 1) / 2) * Math.round(48 * LAYOUT_SCALE);
       const rawY = cy + sc.jy * 0.34 + groupTag * Math.round(56 * LAYOUT_SCALE);

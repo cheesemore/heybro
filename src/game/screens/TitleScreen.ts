@@ -111,7 +111,7 @@ export class TitleScreen extends Container {
       const requestClear = titleOpts.onRequestClearSave;
       const clearW = Math.round(118 * LAYOUT_SCALE);
       const clearH = Math.round(46 * LAYOUT_SCALE);
-      const margin = Math.round(16 * LAYOUT_SCALE);
+      const clearMargin = Math.round(8 * LAYOUT_SCALE);
       const clearBtn = createStyledGameButton('navSlate', {
         text: '清档',
         width: clearW,
@@ -122,7 +122,7 @@ export class TitleScreen extends Container {
           requestClear();
         },
       });
-      clearBtn.position.set(GAME_WIDTH - margin - clearW, margin);
+      clearBtn.position.set(GAME_WIDTH - clearMargin - clearW, clearMargin);
       this.addChild(clearBtn);
     }
 

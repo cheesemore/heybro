@@ -1,0 +1,5949 @@
+{
+  "schemaVersion": 2,
+  "generator": "scripts/generate-gear-items.mjs",
+  "purpose": "副本装备表：每件装备有稳定 gearId；每座副本固定 14 条。dungeons[] 为副本级等级区间与品质概率；items[] 冗余相同字段便于查表。规则源见 gearGenerationRules.json。",
+  "editConvention": "【自动生成】dungeons / items 的等级与品质字段由 gearGenerationRules + registry 生成；dungeons[].topGearSetGs、combatPowerIndex 由脚本按 GS 公式写入；nodeProgressMax 默认 6.5（关内节点进度曲线上限）。【可手填】items[].nameCn；dungeons[] 整条设 manual:true 可锁定该副本规则不被覆盖。【可手填】dungeons[].drops 等扩展字段（重跑时保留 manual 副本）。",
+  "relatedTables": {
+    "wowBookRegistry": "副本列表与 dungeonId",
+    "gearGenerationRules": "等级步进与品质分档概率",
+    "gearSlotPartNames": "部位名 partNameCn",
+    "gearSlots": "部位 kind / slotNo"
+  },
+  "qualityLabelsCn": {
+    "common": "普通",
+    "uncommon": "精良",
+    "rare": "稀有",
+    "epic": "史诗",
+    "legendary": "传说"
+  },
+  "levelRangeRule": {
+    "firstDungeonMin": 1,
+    "firstDungeonMax": 5,
+    "levelStepPerDungeon": 3,
+    "note": "第 n 座副本（dungeonOrdinal）：levelMin = firstDungeonMin + (n-1)×step；levelMax = firstDungeonMax + (n-1)×step。例：怒焰裂谷 1-5，死亡矿井 4-8。"
+  },
+  "slotCount": 14,
+  "dungeonCount": 18,
+  "itemCount": 252,
+  "dungeons": [
+    {
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "nameCn": "怒焰裂谷",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualityTierId": "commonOnly",
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 6.5,
+      "manual": true,
+      "topGearSetGs": 2240,
+      "combatPowerIndex": 111.2
+    },
+    {
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "nameCn": "死亡矿井",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualityTierId": "maxBelow10",
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 6.5,
+      "topGearSetGs": 3296,
+      "combatPowerIndex": 116.48
+    },
+    {
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "nameCn": "哀嚎洞穴",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualityTierId": "maxBelow20",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 6.5,
+      "topGearSetGs": 5056,
+      "combatPowerIndex": 125.28
+    },
+    {
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "nameCn": "影牙城堡",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualityTierId": "maxBelow20",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 6.5,
+      "topGearSetGs": 6192,
+      "combatPowerIndex": 130.96
+    },
+    {
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "nameCn": "黑暗深渊",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualityTierId": "maxBelow20",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 6.5,
+      "topGearSetGs": 7584,
+      "combatPowerIndex": 137.92
+    },
+    {
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "nameCn": "诺莫瑞根",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualityTierId": "maxBelow40",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 8,
+      "topGearSetGs": 11760,
+      "combatPowerIndex": 158.8
+    },
+    {
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "nameCn": "剃刀沼泽",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualityTierId": "maxBelow40",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 8,
+      "topGearSetGs": 14416,
+      "combatPowerIndex": 172.08
+    },
+    {
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "nameCn": "血色修道院",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualityTierId": "maxBelow40",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 8,
+      "topGearSetGs": 17648,
+      "combatPowerIndex": 188.24
+    },
+    {
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "nameCn": "剃刀高地",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualityTierId": "maxBelow40",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 8,
+      "topGearSetGs": 21632,
+      "combatPowerIndex": 208.16
+    },
+    {
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "nameCn": "奥达曼",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualityTierId": "maxBelow40",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 8,
+      "topGearSetGs": 26496,
+      "combatPowerIndex": 232.48
+    },
+    {
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "nameCn": "祖尔法拉克",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualityTierId": "maxBelow40",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 8,
+      "topGearSetGs": 32464,
+      "combatPowerIndex": 262.32
+    },
+    {
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "nameCn": "玛拉顿",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualityTierId": "maxBelow40",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 8,
+      "topGearSetGs": 39760,
+      "combatPowerIndex": 298.8
+    },
+    {
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "nameCn": "沉没的神庙",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualityTierId": "max40AndAbove",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 9.6,
+      "topGearSetGs": 64096,
+      "combatPowerIndex": 420.48
+    },
+    {
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "nameCn": "黑石深渊",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualityTierId": "max40AndAbove",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 9.6,
+      "topGearSetGs": 78512,
+      "combatPowerIndex": 492.56
+    },
+    {
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "nameCn": "厄运之槌",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualityTierId": "max40AndAbove",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 9.6,
+      "topGearSetGs": 96176,
+      "combatPowerIndex": 580.88
+    },
+    {
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "nameCn": "斯坦索姆",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualityTierId": "max40AndAbove",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 9.6,
+      "topGearSetGs": 117824,
+      "combatPowerIndex": 689.12
+    },
+    {
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "nameCn": "通灵学院",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualityTierId": "max40AndAbove",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 9.6,
+      "topGearSetGs": 144352,
+      "combatPowerIndex": 821.76
+    },
+    {
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "nameCn": "黑石塔下层",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualityTierId": "max40AndAbove",
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      },
+      "strengthIncrement": 1.02,
+      "nodeProgressMax": 9.6,
+      "topGearSetGs": 176832,
+      "combatPowerIndex": 984.16
+    }
+  ],
+  "items": [
+    {
+      "gearId": "ragefire_chasm.head",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "怒焰裂谷·头盔",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.neck",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "怒焰裂谷·项链",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.shoulder",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "怒焰裂谷·护肩",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.chest",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "怒焰裂谷·胸甲",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.waist",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "怒焰裂谷·腰带",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.legs",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "怒焰裂谷·护腿",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.feet",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "怒焰裂谷·长靴",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.wrist",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "怒焰裂谷·护腕",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.hands",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "怒焰裂谷·手套",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.finger",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "怒焰裂谷·戒指",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.trinket",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "怒焰裂谷·饰品",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.back",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "怒焰裂谷·披风",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.mainHand",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "怒焰裂谷·武器",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "ragefire_chasm.offHand",
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "怒焰裂谷·副手",
+      "levelMin": 1,
+      "levelMax": 5,
+      "qualities": [
+        "common"
+      ],
+      "qualityWeightsPercent": {
+        "common": 100
+      }
+    },
+    {
+      "gearId": "deadmines.head",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "死亡矿井·头盔",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.neck",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "死亡矿井·项链",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.shoulder",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "死亡矿井·护肩",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.chest",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "死亡矿井·胸甲",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.waist",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "死亡矿井·腰带",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.legs",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "死亡矿井·护腿",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.feet",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "死亡矿井·长靴",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.wrist",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "死亡矿井·护腕",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.hands",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "死亡矿井·手套",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.finger",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "死亡矿井·戒指",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.trinket",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "死亡矿井·饰品",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.back",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "死亡矿井·披风",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.mainHand",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "死亡矿井·武器",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "deadmines.offHand",
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "死亡矿井·副手",
+      "levelMin": 4,
+      "levelMax": 8,
+      "qualities": [
+        "common",
+        "uncommon"
+      ],
+      "qualityWeightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "gearId": "wailing_caverns.head",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "哀嚎洞穴·头盔",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.neck",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "哀嚎洞穴·项链",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.shoulder",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "哀嚎洞穴·护肩",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.chest",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "哀嚎洞穴·胸甲",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.waist",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "哀嚎洞穴·腰带",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.legs",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "哀嚎洞穴·护腿",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.feet",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "哀嚎洞穴·长靴",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.wrist",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "哀嚎洞穴·护腕",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.hands",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "哀嚎洞穴·手套",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.finger",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "哀嚎洞穴·戒指",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.trinket",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "哀嚎洞穴·饰品",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.back",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "哀嚎洞穴·披风",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.mainHand",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "哀嚎洞穴·武器",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "wailing_caverns.offHand",
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "哀嚎洞穴·副手",
+      "levelMin": 7,
+      "levelMax": 11,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.head",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "影牙城堡·头盔",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.neck",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "影牙城堡·项链",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.shoulder",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "影牙城堡·护肩",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.chest",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "影牙城堡·胸甲",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.waist",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "影牙城堡·腰带",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.legs",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "影牙城堡·护腿",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.feet",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "影牙城堡·长靴",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.wrist",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "影牙城堡·护腕",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.hands",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "影牙城堡·手套",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.finger",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "影牙城堡·戒指",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.trinket",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "影牙城堡·饰品",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.back",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "影牙城堡·披风",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.mainHand",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "影牙城堡·武器",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "shadowfang_keep.offHand",
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "影牙城堡·副手",
+      "levelMin": 10,
+      "levelMax": 14,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.head",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "黑暗深渊·头盔",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.neck",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "黑暗深渊·项链",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.shoulder",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "黑暗深渊·护肩",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.chest",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "黑暗深渊·胸甲",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.waist",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "黑暗深渊·腰带",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.legs",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "黑暗深渊·护腿",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.feet",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "黑暗深渊·长靴",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.wrist",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "黑暗深渊·护腕",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.hands",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "黑暗深渊·手套",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.finger",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "黑暗深渊·戒指",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.trinket",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "黑暗深渊·饰品",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.back",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "黑暗深渊·披风",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.mainHand",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "黑暗深渊·武器",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "blackfathom_deeps.offHand",
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "黑暗深渊·副手",
+      "levelMin": 13,
+      "levelMax": 17,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare"
+      ],
+      "qualityWeightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "gearId": "gnomeregan.head",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "诺莫瑞根·头盔",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.neck",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "诺莫瑞根·项链",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.shoulder",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "诺莫瑞根·护肩",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.chest",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "诺莫瑞根·胸甲",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.waist",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "诺莫瑞根·腰带",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.legs",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "诺莫瑞根·护腿",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.feet",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "诺莫瑞根·长靴",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.wrist",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "诺莫瑞根·护腕",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.hands",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "诺莫瑞根·手套",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.finger",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "诺莫瑞根·戒指",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.trinket",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "诺莫瑞根·饰品",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.back",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "诺莫瑞根·披风",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.mainHand",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "诺莫瑞根·武器",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "gnomeregan.offHand",
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "诺莫瑞根·副手",
+      "levelMin": 16,
+      "levelMax": 20,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.head",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "剃刀沼泽·头盔",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.neck",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "剃刀沼泽·项链",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.shoulder",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "剃刀沼泽·护肩",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.chest",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "剃刀沼泽·胸甲",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.waist",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "剃刀沼泽·腰带",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.legs",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "剃刀沼泽·护腿",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.feet",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "剃刀沼泽·长靴",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.wrist",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "剃刀沼泽·护腕",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.hands",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "剃刀沼泽·手套",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.finger",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "剃刀沼泽·戒指",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.trinket",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "剃刀沼泽·饰品",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.back",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "剃刀沼泽·披风",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.mainHand",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "剃刀沼泽·武器",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_kraul.offHand",
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "剃刀沼泽·副手",
+      "levelMin": 19,
+      "levelMax": 23,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.head",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "血色修道院·头盔",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.neck",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "血色修道院·项链",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.shoulder",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "血色修道院·护肩",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.chest",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "血色修道院·胸甲",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.waist",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "血色修道院·腰带",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.legs",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "血色修道院·护腿",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.feet",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "血色修道院·长靴",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.wrist",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "血色修道院·护腕",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.hands",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "血色修道院·手套",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.finger",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "血色修道院·戒指",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.trinket",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "血色修道院·饰品",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.back",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "血色修道院·披风",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.mainHand",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "血色修道院·武器",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "scarlet_monastery.offHand",
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "血色修道院·副手",
+      "levelMin": 22,
+      "levelMax": 26,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.head",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "剃刀高地·头盔",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.neck",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "剃刀高地·项链",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.shoulder",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "剃刀高地·护肩",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.chest",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "剃刀高地·胸甲",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.waist",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "剃刀高地·腰带",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.legs",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "剃刀高地·护腿",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.feet",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "剃刀高地·长靴",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.wrist",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "剃刀高地·护腕",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.hands",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "剃刀高地·手套",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.finger",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "剃刀高地·戒指",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.trinket",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "剃刀高地·饰品",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.back",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "剃刀高地·披风",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.mainHand",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "剃刀高地·武器",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "razorfen_downs.offHand",
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "剃刀高地·副手",
+      "levelMin": 25,
+      "levelMax": 29,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.head",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "奥达曼·头盔",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.neck",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "奥达曼·项链",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.shoulder",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "奥达曼·护肩",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.chest",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "奥达曼·胸甲",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.waist",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "奥达曼·腰带",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.legs",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "奥达曼·护腿",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.feet",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "奥达曼·长靴",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.wrist",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "奥达曼·护腕",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.hands",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "奥达曼·手套",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.finger",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "奥达曼·戒指",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.trinket",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "奥达曼·饰品",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.back",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "奥达曼·披风",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.mainHand",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "奥达曼·武器",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "uldaman.offHand",
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "奥达曼·副手",
+      "levelMin": 28,
+      "levelMax": 32,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.head",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "祖尔法拉克·头盔",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.neck",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "祖尔法拉克·项链",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.shoulder",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "祖尔法拉克·护肩",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.chest",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "祖尔法拉克·胸甲",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.waist",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "祖尔法拉克·腰带",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.legs",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "祖尔法拉克·护腿",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.feet",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "祖尔法拉克·长靴",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.wrist",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "祖尔法拉克·护腕",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.hands",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "祖尔法拉克·手套",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.finger",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "祖尔法拉克·戒指",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.trinket",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "祖尔法拉克·饰品",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.back",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "祖尔法拉克·披风",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.mainHand",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "祖尔法拉克·武器",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "zul_farrak.offHand",
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "祖尔法拉克·副手",
+      "levelMin": 31,
+      "levelMax": 35,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.head",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "玛拉顿·头盔",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.neck",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "玛拉顿·项链",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.shoulder",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "玛拉顿·护肩",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.chest",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "玛拉顿·胸甲",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.waist",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "玛拉顿·腰带",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.legs",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "玛拉顿·护腿",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.feet",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "玛拉顿·长靴",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.wrist",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "玛拉顿·护腕",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.hands",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "玛拉顿·手套",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.finger",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "玛拉顿·戒指",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.trinket",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "玛拉顿·饰品",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.back",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "玛拉顿·披风",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.mainHand",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "玛拉顿·武器",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "maraudon.offHand",
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "玛拉顿·副手",
+      "levelMin": 34,
+      "levelMax": 38,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic"
+      ],
+      "qualityWeightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "gearId": "sunken_temple.head",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "沉没的神庙·头盔",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.neck",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "沉没的神庙·项链",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.shoulder",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "沉没的神庙·护肩",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.chest",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "沉没的神庙·胸甲",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.waist",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "沉没的神庙·腰带",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.legs",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "沉没的神庙·护腿",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.feet",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "沉没的神庙·长靴",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.wrist",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "沉没的神庙·护腕",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.hands",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "沉没的神庙·手套",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.finger",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "沉没的神庙·戒指",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.trinket",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "沉没的神庙·饰品",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.back",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "沉没的神庙·披风",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.mainHand",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "沉没的神庙·武器",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "sunken_temple.offHand",
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "沉没的神庙·副手",
+      "levelMin": 37,
+      "levelMax": 41,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.head",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "黑石深渊·头盔",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.neck",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "黑石深渊·项链",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.shoulder",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "黑石深渊·护肩",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.chest",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "黑石深渊·胸甲",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.waist",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "黑石深渊·腰带",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.legs",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "黑石深渊·护腿",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.feet",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "黑石深渊·长靴",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.wrist",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "黑石深渊·护腕",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.hands",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "黑石深渊·手套",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.finger",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "黑石深渊·戒指",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.trinket",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "黑石深渊·饰品",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.back",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "黑石深渊·披风",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.mainHand",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "黑石深渊·武器",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "blackrock_depths.offHand",
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "黑石深渊·副手",
+      "levelMin": 40,
+      "levelMax": 44,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.head",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "厄运之槌·头盔",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.neck",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "厄运之槌·项链",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.shoulder",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "厄运之槌·护肩",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.chest",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "厄运之槌·胸甲",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.waist",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "厄运之槌·腰带",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.legs",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "厄运之槌·护腿",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.feet",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "厄运之槌·长靴",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.wrist",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "厄运之槌·护腕",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.hands",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "厄运之槌·手套",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.finger",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "厄运之槌·戒指",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.trinket",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "厄运之槌·饰品",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.back",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "厄运之槌·披风",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.mainHand",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "厄运之槌·武器",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "dire_maul.offHand",
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "厄运之槌·副手",
+      "levelMin": 43,
+      "levelMax": 47,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.head",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "斯坦索姆·头盔",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.neck",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "斯坦索姆·项链",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.shoulder",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "斯坦索姆·护肩",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.chest",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "斯坦索姆·胸甲",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.waist",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "斯坦索姆·腰带",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.legs",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "斯坦索姆·护腿",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.feet",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "斯坦索姆·长靴",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.wrist",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "斯坦索姆·护腕",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.hands",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "斯坦索姆·手套",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.finger",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "斯坦索姆·戒指",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.trinket",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "斯坦索姆·饰品",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.back",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "斯坦索姆·披风",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.mainHand",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "斯坦索姆·武器",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "stratholme.offHand",
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "斯坦索姆·副手",
+      "levelMin": 46,
+      "levelMax": 50,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.head",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "通灵学院·头盔",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.neck",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "通灵学院·项链",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.shoulder",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "通灵学院·护肩",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.chest",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "通灵学院·胸甲",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.waist",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "通灵学院·腰带",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.legs",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "通灵学院·护腿",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.feet",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "通灵学院·长靴",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.wrist",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "通灵学院·护腕",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.hands",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "通灵学院·手套",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.finger",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "通灵学院·戒指",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.trinket",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "通灵学院·饰品",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.back",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "通灵学院·披风",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.mainHand",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "通灵学院·武器",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "scholomance.offHand",
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "通灵学院·副手",
+      "levelMin": 49,
+      "levelMax": 53,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.head",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "head",
+      "slotNo": 1,
+      "nameCn": "黑石塔下层·头盔",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.neck",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "neck",
+      "slotNo": 2,
+      "nameCn": "黑石塔下层·项链",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.shoulder",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "shoulder",
+      "slotNo": 3,
+      "nameCn": "黑石塔下层·护肩",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.chest",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "chest",
+      "slotNo": 4,
+      "nameCn": "黑石塔下层·胸甲",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.waist",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "waist",
+      "slotNo": 5,
+      "nameCn": "黑石塔下层·腰带",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.legs",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "legs",
+      "slotNo": 6,
+      "nameCn": "黑石塔下层·护腿",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.feet",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "feet",
+      "slotNo": 7,
+      "nameCn": "黑石塔下层·长靴",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.wrist",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "wrist",
+      "slotNo": 8,
+      "nameCn": "黑石塔下层·护腕",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.hands",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "hands",
+      "slotNo": 9,
+      "nameCn": "黑石塔下层·手套",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.finger",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "finger",
+      "slotNo": 10,
+      "nameCn": "黑石塔下层·戒指",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.trinket",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "trinket",
+      "slotNo": 11,
+      "nameCn": "黑石塔下层·饰品",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.back",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "back",
+      "slotNo": 12,
+      "nameCn": "黑石塔下层·披风",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.mainHand",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "mainHand",
+      "slotNo": 13,
+      "nameCn": "黑石塔下层·武器",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    },
+    {
+      "gearId": "lower_blackrock_spire.offHand",
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "slotKind": "offHand",
+      "slotNo": 14,
+      "nameCn": "黑石塔下层·副手",
+      "levelMin": 52,
+      "levelMax": 56,
+      "qualities": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "qualityWeightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    }
+  ]
+}

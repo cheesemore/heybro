@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "purpose": "装备展示名中的「部位名」段（完整名为 副本名·部位名）。改文案后执行 npm run gen:gear-items 重新生成 gearItems.json；已手改过的 nameCn 会按 gearId 合并保留。",
+  "slots": [
+    { "kind": "head", "slotNo": 1, "partNameCn": "头盔" },
+    { "kind": "neck", "slotNo": 2, "partNameCn": "项链" },
+    { "kind": "shoulder", "slotNo": 3, "partNameCn": "护肩" },
+    { "kind": "chest", "slotNo": 4, "partNameCn": "胸甲" },
+    { "kind": "waist", "slotNo": 5, "partNameCn": "腰带" },
+    { "kind": "legs", "slotNo": 6, "partNameCn": "护腿" },
+    { "kind": "feet", "slotNo": 7, "partNameCn": "长靴" },
+    { "kind": "wrist", "slotNo": 8, "partNameCn": "护腕" },
+    { "kind": "hands", "slotNo": 9, "partNameCn": "手套" },
+    { "kind": "finger", "slotNo": 10, "partNameCn": "戒指" },
+    { "kind": "trinket", "slotNo": 11, "partNameCn": "饰品" },
+    { "kind": "back", "slotNo": 12, "partNameCn": "披风" },
+    { "kind": "mainHand", "slotNo": 13, "partNameCn": "武器" },
+    { "kind": "offHand", "slotNo": 14, "partNameCn": "副手" }
+  ]
+}

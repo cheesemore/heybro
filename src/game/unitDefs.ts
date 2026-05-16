@@ -173,13 +173,21 @@ type ScalingConfig = {
 
 const scaling = scalingJson as ScalingConfig;
 
+import {
+  DEFAULT_NODE_PROGRESS_MAX,
+  INTRA_CHAPTER_LEGACY_INDEX_MAX,
+} from './gearItems';
+
 /**
- * 敌方生命/攻击共用进度倍率（相对表底 `baseMaxHp` / `baseAtk`）。
- * 16 关进度：索引 0 … 15 线性从 1× 至约 6.5×（与旧版终盘同量级），再乘章节强度等。
+ * 关内节点进度倍率：legacy 0 → 1×，legacy 15 → `nodeProgressMax`（来自副本表 `nodeProgressMax`）。
  */
-export function enemyStatProgressCurve(roundIndex: number): number {
-  const ri = Math.max(0, Math.min(15, roundIndex));
-  return 1 + ((6.5 - 1) * ri) / 15;
+export function enemyStatProgressCurve(
+  legacyRoundIndex: number,
+  nodeProgressMax = DEFAULT_NODE_PROGRESS_MAX,
+): number {
+  const ri = Math.max(0, Math.min(INTRA_CHAPTER_LEGACY_INDEX_MAX, legacyRoundIndex));
+  const max = Math.max(1, nodeProgressMax);
+  return 1 + ((max - 1) * ri) / INTRA_CHAPTER_LEGACY_INDEX_MAX;
 }
 
 function chapterMult(chapter: 1 | 2 | 3, kind: 'hp' | 'atk'): number {
@@ -196,20 +204,28 @@ function chapterMult(chapter: 1 | 2 | 3, kind: 'hp' | 'atk'): number {
  */
 export function scaledEnemyHp(
   chapter: 1 | 2 | 3,
-  roundIndex: number,
+  legacyRoundIndex: number,
   base: number,
   bookStrengthMult = 1,
+  nodeProgressMax = DEFAULT_NODE_PROGRESS_MAX,
 ): number {
-  const m = enemyStatProgressCurve(roundIndex) * chapterMult(chapter, 'hp') * bookStrengthMult;
+  const m =
+    enemyStatProgressCurve(legacyRoundIndex, nodeProgressMax) *
+    chapterMult(chapter, 'hp') *
+    bookStrengthMult;
   return Math.round(base * m);
 }
 
 export function scaledEnemyAtk(
   chapter: 1 | 2 | 3,
-  roundIndex: number,
+  legacyRoundIndex: number,
   base: number,
   bookStrengthMult = 1,
+  nodeProgressMax = DEFAULT_NODE_PROGRESS_MAX,
 ): number {
-  const m = enemyStatProgressCurve(roundIndex) * chapterMult(chapter, 'atk') * bookStrengthMult;
+  const m =
+    enemyStatProgressCurve(legacyRoundIndex, nodeProgressMax) *
+    chapterMult(chapter, 'atk') *
+    bookStrengthMult;
   return Math.round(base * m);
 }

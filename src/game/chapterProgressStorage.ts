@@ -1,5 +1,6 @@
 import { BOOK_CHAPTER_COUNT } from './bookChapterConfig';
 import { roundsForBookChapter } from './roundConfig';
+import { getWowBookDungeonById } from './wowBookRegistry';
 
 const STORAGE_KEY = 'heybro.chapterProgress.v1';
 
@@ -204,6 +205,26 @@ export function getCompletedChaptersStarSummary(): {
   const completedChapterCount = cleared.length;
   const starsCapForCompleted = completedChapterCount * MAX_STAR_PER_CHAPTER;
   return { completedChapterCount, starsEarned, starsCapForCompleted };
+}
+
+export function isChapterCleared(chapterIndex: number): boolean {
+  const id = Math.floor(chapterIndex);
+  return loadChapterProgress().clearedChapterIds.includes(id);
+}
+
+/** 副本末章（关底）已通关 */
+export function isDungeonLastChapterCleared(dungeonId: string): boolean {
+  const d = getWowBookDungeonById(dungeonId);
+  if (!d) return false;
+  return isChapterCleared(d.lastChapterIndex);
+}
+
+/** 副本倒数第二章已通关（饰品掉落关） */
+export function isDungeonPenultimateChapterCleared(dungeonId: string): boolean {
+  const d = getWowBookDungeonById(dungeonId);
+  const indices = d?.chapterIndices;
+  if (!indices || indices.length < 2) return false;
+  return isChapterCleared(indices[indices.length - 2]!);
 }
 
 /** 书本第 1～4 章均为「怒焰裂谷」地下城；四关均已通关则视为该地下城已通关（用于刷副本等解锁） */

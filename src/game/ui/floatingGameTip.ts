@@ -10,7 +10,11 @@ const TIP_FLOAT_MS = 520;
  * 单行提示：半透明黑底、白字；约在屏幕**上三分之一**（距顶约 1/3 屏高处）出现，
  * 先短暂停留，再上移并淡出，结束后自毁。
  */
-export function spawnFloatingGameTip(root: Container, message: string): void {
+export function spawnFloatingGameTip(
+  root: Container,
+  message: string,
+  opts?: { fill?: number },
+): void {
   root.sortableChildren = true;
 
   const wrap = new Container();
@@ -26,7 +30,7 @@ export function spawnFloatingGameTip(root: Container, message: string): void {
     style: {
       fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
       fontSize: fs,
-      fill: 0xffffff,
+      fill: opts?.fill ?? 0xffffff,
       fontWeight: '600',
     },
   });

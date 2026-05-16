@@ -2,6 +2,7 @@
  * 从 docs/reference-classic-vanilla-wow-roguelike-level-design.json 生成：
  * - src/game/config/wowBookMonsters.json
  * - src/game/config/wowBookChapters.json
+ * - src/game/config/wowBookRegistry.json（副本 / 章节管理；掉落字段可手填后由脚本合并保留）
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,6 +15,7 @@ const REF = path.join(root, 'docs/reference-classic-vanilla-wow-roguelike-level-
 const OUT_MON = path.join(root, 'src/game/config/wowBookMonsters.json');
 const OUT_CH = path.join(root, 'src/game/config/wowBookChapters.json');
 const OUT_BOSS = path.join(root, 'src/game/config/wowBookBosses.json');
+const OUT_REGISTRY = path.join(root, 'src/game/config/wowBookRegistry.json');
 
 /** 与 `wowBookData.WOW_BOOK_BOSS_TABLE_DEFAULT` / 原用书白板首领表底一致；首领不分近战远程，不加近战额外攻倍率（由运行时 GLOBAL 乘 atk） */
 const DEFAULT_BOOK_BOSS_COMBAT = {
@@ -400,6 +402,138 @@ mergeBossRowsFromPrevious(bossRows);
 
 assignBossUids(bossRows);
 
+/** 副本 + 章节索引（掉落等扩展字段占位）；与 reference 副本顺序一致 */
+function buildRegistryFromChapters(chapters, book) {
+  /** @type {Map<string, { dungeonOrdinal: number, dungeonId: string, nameCn: string, nameEn: string, chapterIndices: number[] }>} */
+  const byDungeon = new Map();
+  let dungeonOrdinal = 0;
+  for (const dungeon of book) {
+    dungeonOrdinal += 1;
+    const dungeonId = slug(dungeon.name_en || dungeon.name_cn);
+    byDungeon.set(dungeonId, {
+      dungeonOrdinal,
+      dungeonId,
+      nameCn: dungeon.name_cn,
+      nameEn: dungeon.name_en,
+      chapterIndices: [],
+    });
+  }
+  const registryChapters = [];
+  for (const ch of chapters) {
+    const bucket = byDungeon.get(ch.dungeonId);
+    if (!bucket) {
+      throw new Error(`章节 ${ch.chapterIndex} 的 dungeonId 不在 reference 副本列表: ${ch.dungeonId}`);
+    }
+    bucket.chapterIndices.push(ch.chapterIndex);
+    registryChapters.push({
+      chapterIndex: ch.chapterIndex,
+      dungeonId: ch.dungeonId,
+      dungeonOrdinal: bucket.dungeonOrdinal,
+      dungeonNameCn: ch.dungeonNameCn,
+      dungeonNameEn: ch.dungeonNameEn,
+      stageNumber: ch.stageNumber,
+      stageNameCn: ch.stageNameCn,
+      isFinalBoss: !!ch.finalBoss?.isFinalBoss,
+      drops: [],
+    });
+  }
+  const dungeons = [...byDungeon.values()].map((d) => {
+    const indices = d.chapterIndices.slice().sort((a, b) => a - b);
+    const first = indices[0] ?? 0;
+    const last = indices[indices.length - 1] ?? 0;
+    return {
+      dungeonOrdinal: d.dungeonOrdinal,
+      dungeonId: d.dungeonId,
+      nameCn: d.nameCn,
+      nameEn: d.nameEn,
+      chapterCount: indices.length,
+      firstChapterIndex: first,
+      lastChapterIndex: last,
+      chapterIndices: indices,
+      backgroundAssetId: d.dungeonId,
+      drops: {
+        onDungeonClear: [],
+        onFarm: [],
+      },
+      unlock: {
+        requiresPreviousDungeonCleared: d.dungeonOrdinal > 1,
+      },
+    };
+  });
+  return { dungeons, chapters: registryChapters };
+}
+
+function mergeRegistryDropsFromPrevious(registryDoc) {
+  if (!fs.existsSync(OUT_REGISTRY)) return;
+  try {
+    const raw = JSON.parse(fs.readFileSync(OUT_REGISTRY, 'utf8'));
+    const prevDungeon = new Map((raw.dungeons || []).map((d) => [d.dungeonId, d]));
+    const prevChapter = new Map((raw.chapters || []).map((c) => [c.chapterIndex, c]));
+    for (const d of registryDoc.dungeons) {
+      const old = prevDungeon.get(d.dungeonId);
+      if (old?.drops) d.drops = old.drops;
+      if (old?.unlock) d.unlock = { ...d.unlock, ...old.unlock };
+    }
+    for (const c of registryDoc.chapters) {
+      const old = prevChapter.get(c.chapterIndex);
+      if (old?.drops) c.drops = old.drops;
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+/** 写入 wowBookRegistry.json 表头（功能说明 + 字段注释；重跑 gen:wow-book 会覆盖本块） */
+const WOW_BOOK_REGISTRY_TABLE_HEADER = {
+  schemaVersion: 1,
+  generator: 'scripts/generate-wow-book-tables.mjs',
+  sourceReference: 'docs/reference-classic-vanilla-wow-roguelike-level-design.json',
+  purpose:
+    '副本与章节管理表（索引层）：汇总「第几个地下城」「每座副本几章」「全书 chapterIndex 与副本/关卡对应关系」。不存放战斗数值与怪组；战斗内容见 wowBookChapters.json。后续可在此配置副本掉落、章节掉落与解锁规则。',
+  editConvention:
+    '【自动生成】dungeons[] / chapters[] 的主体字段由 reference + 章节表生成，勿手改 dungeonOrdinal、chapterIndices、firstChapterIndex 等，改副本顺序或关数请改 reference 后执行 npm run gen:wow-book。【可手填】各条 drops、unlock；重跑生成脚本时会从旧 wowBookRegistry.json 按 dungeonId / chapterIndex 合并保留。【代码读取】src/game/wowBookRegistry.ts。',
+  relatedTables: {
+    wowBookChapters: '每章战斗：monsterGroup、finalBoss、关卡文案',
+    wowBookBosses: '每章首领战斗表与 bossUid',
+    wowBookMonsters: '小怪数值与 monsterUid',
+    chapterProgressStorage: '玩家存档章节进度，键为 chapterIndex（与本书一致）',
+  },
+  fieldGuide: {
+    dungeonCount: '地下城（五人副本）总数，与 dungeons.length 一致',
+    chapterCount: '全书线性章节总数，与 chapters.length、wowBookChapters 条数一致',
+    dungeons: '按 reference 顺序，一座副本一行',
+    'dungeons[].dungeonOrdinal': '第几个地下城（1 起），全书唯一序号，用于 UI「副本 3/18」',
+    'dungeons[].dungeonId': '副本稳定主键（slug），与 wowBookChapters.dungeonId、底图 public/assets/dungeon-bgs/<id>.png 一致',
+    'dungeons[].nameCn / nameEn': '副本展示名',
+    'dungeons[].chapterCount': '该副本包含的章节（关）数量',
+    'dungeons[].firstChapterIndex / lastChapterIndex': '该副本在全书中的 chapterIndex 起止（含端点）',
+    'dungeons[].chapterIndices': '该副本全部 chapterIndex 列表（已排序）',
+    'dungeons[].backgroundAssetId': '章节/策略屏底图资源 id，默认等于 dungeonId',
+    'dungeons[].drops.onDungeonClear': '副本通关奖励（占位数组，条目结构见 wowBookRegistry.ts WowBookDropEntry）',
+    'dungeons[].drops.onFarm': '刷副本重复奖励（占位）',
+    'dungeons[].unlock.requiresPreviousDungeonCleared': '是否需上一座副本（dungeonOrdinal-1）全部章节已通关；第 1 座为 false',
+    chapters: '全书每章一行，与 wowBookChapters 一一对应',
+    'chapters[].chapterIndex': '全书线性章节号（1 起），与 RunState.bookChapterId、存档、首领表 chapterIndex 一致',
+    'chapters[].dungeonId': '所属副本主键',
+    'chapters[].dungeonOrdinal': '所属第几个地下城（冗余便于查表）',
+    'chapters[].dungeonNameCn / dungeonNameEn': '所属副本名（冗余便于展示）',
+    'chapters[].stageNumber': '该副本内第几关（1 起，换副本重置为 1）',
+    'chapters[].stageNameCn': '关卡展示名',
+    'chapters[].isFinalBoss': '本章关底首领是否为副本最终首领（与 wowBookChapters.finalBoss.isFinalBoss 一致）',
+    'chapters[].drops': '本章通关/战斗掉落（占位，后续结算读取）',
+  },
+};
+
+const { dungeons: registryDungeons, chapters: registryChapters } = buildRegistryFromChapters(chapters, book);
+const registryDoc = {
+  ...WOW_BOOK_REGISTRY_TABLE_HEADER,
+  dungeonCount: registryDungeons.length,
+  chapterCount: registryChapters.length,
+  dungeons: registryDungeons,
+  chapters: registryChapters,
+};
+mergeRegistryDropsFromPrevious(registryDoc);
+
 const bossDoc = {
   schemaVersion: 3,
   generator: 'scripts/generate-wow-book-tables.mjs',
@@ -411,7 +545,16 @@ const bossDoc = {
 fs.writeFileSync(OUT_MON, JSON.stringify(monsterDoc, null, 2) + '\n', 'utf8');
 fs.writeFileSync(OUT_CH, JSON.stringify(chapterDoc, null, 2) + '\n', 'utf8');
 fs.writeFileSync(OUT_BOSS, JSON.stringify(bossDoc, null, 2) + '\n', 'utf8');
+fs.writeFileSync(OUT_REGISTRY, JSON.stringify(registryDoc, null, 2) + '\n', 'utf8');
 
 console.log('Wrote', monsters.length, 'monsters ->', path.relative(root, OUT_MON));
 console.log('Wrote', chapters.length, 'chapters ->', path.relative(root, OUT_CH));
 console.log('Wrote', bossRows.length, 'boss rows ->', path.relative(root, OUT_BOSS));
+console.log(
+  'Wrote',
+  registryDungeons.length,
+  'dungeons,',
+  registryChapters.length,
+  'chapter rows ->',
+  path.relative(root, OUT_REGISTRY),
+);

@@ -1,4 +1,12 @@
 import { Container, FederatedWheelEvent, Graphics, Rectangle, Sprite, Text } from 'pixi.js';
+import { getGearItemById } from '../gearItems';
+import type { GearFarmSlotPreview } from '../gearFarmProgress';
+import { mountChapterBossPortraitFx } from '../ui/chapterBossPortraitFx';
+import {
+  gearFarmPreviewGridMetrics,
+  mountHorizontalGearFarmPreviewStrip,
+} from '../ui/gearFarmPreviewSlot';
+import { getWowBookRegistryChapter, isWowBookGearDrop } from '../wowBookRegistry';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { getChapterIntelBossCardParts, getChapterIntelMobCardParts } from '../nextBattlePreview';
 import { BOOK_CHAPTER_COUNT, bookChapterStrengthPercent, mobIdsForBookChapter } from '../bookChapterConfig';
@@ -42,6 +50,23 @@ import {
   wowMobEnemyPaint,
 } from '../wowBookData';
 
+function chapterGearDropPreviews(chapterId: number): GearFarmSlotPreview[] {
+  const reg = getWowBookRegistryChapter(chapterId);
+  const out: GearFarmSlotPreview[] = [];
+  for (const drop of reg?.drops ?? []) {
+    if (!isWowBookGearDrop(drop)) continue;
+    const gear = getGearItemById(drop.gearId);
+    if (!gear) continue;
+    out.push({
+      slotKind: gear.slotKind,
+      slotNo: gear.slotNo,
+      slotLabelCn: '',
+      farmGear: gear,
+    });
+  }
+  return out;
+}
+
 /**
  * 章节入口：线性解锁，中央仅展示当前可挑战章节；底部「刷副本 | 进入本章 | 职业/英雄」。
  */
@@ -49,6 +74,7 @@ export class ChapterSelectScreen extends Container {
   private readonly onPickChapter: (chapterId: number) => void;
   private readonly onBack: () => void;
   private readonly onStrengthen?: () => void;
+  private readonly onGearFarm?: () => void;
   /** 隐藏测试：整章按指定星级记入通关（当前界面中央章节） */
   private readonly onDebugChapterClear?: (chapterId: number, star: 1 | 2 | 3) => void;
   /** 当前预览的书本章节（1…BOOK_CHAPTER_COUNT），可与中央「进入本章」一致或经左右箭头切换 */
@@ -60,17 +86,20 @@ export class ChapterSelectScreen extends Container {
   private detailLayer: Container | null = null;
   private cheatPanel: Container | null = null;
   private keyHandler: ((ev: KeyboardEvent) => void) | null = null;
+  private bossPortraitFxDispose: (() => void) | null = null;
 
   constructor(
     onPickChapter: (chapterId: number) => void,
     onBack: () => void,
     onStrengthen?: () => void,
+    onGearFarm?: () => void,
     onDebugChapterClear?: (chapterId: number, star: 1 | 2 | 3) => void,
   ) {
     super();
     this.onPickChapter = onPickChapter;
     this.onBack = onBack;
     this.onStrengthen = onStrengthen;
+    this.onGearFarm = onGearFarm;
     this.onDebugChapterClear = onDebugChapterClear;
     this.viewChapterId = getCurrentChallengeChapterId();
     this.sortableChildren = true;
@@ -145,7 +174,7 @@ export class ChapterSelectScreen extends Container {
       width: sideW,
       height: sideH,
       fontSize: Math.round(22 * LAYOUT_SCALE),
-      onTap: patrolUnlocked ? () => spawnFloatingGameTip(this, '刷副本功能开发中') : undefined,
+      onTap: patrolUnlocked ? () => this.onGearFarm?.() : undefined,
     });
     patrolBtn.position.set(rowX, patrolBtnY);
     if (!patrolUnlocked) {
@@ -229,6 +258,8 @@ export class ChapterSelectScreen extends Container {
   }
 
   private rebuildChapterBoard(): void {
+    this.bossPortraitFxDispose?.();
+    this.bossPortraitFxDispose = null;
     for (const c of [...this.boardLayer.children]) {
       this.boardLayer.removeChild(c);
       c.destroy({ children: true });
@@ -284,21 +315,41 @@ export class ChapterSelectScreen extends Container {
       },
     });
     str.position.set(Math.round(28 * LAYOUT_SCALE), Math.round(86 * LAYOUT_SCALE));
+    str.visible = false;
     card.addChild(str);
 
+    const detW = Math.round(200 * LAYOUT_SCALE);
+    const detH = Math.round(50 * LAYOUT_SCALE);
+    const detX = cardW - detW - Math.round(24 * LAYOUT_SCALE);
+    const detY = Math.round(72 * LAYOUT_SCALE);
+    const detBtn = createStyledGameButton('classic', {
+      text: '查看详情',
+      width: detW,
+      height: detH,
+      fontSize: Math.round(20 * LAYOUT_SCALE),
+    });
+    detBtn.position.set(detX, detY);
+    detBtn.on('pointertap', (e) => {
+      e.stopPropagation();
+      this.openChapterDetailOverlay();
+    });
+    card.addChild(detBtn);
+
     const chStars = getChapterStarFilledCount(targetId);
+    const starGap = Math.round(10 * LAYOUT_SCALE);
+    const starY = detY + detH + starGap;
     const starStrip = new Text({
       text: `${'★'.repeat(chStars)}${'☆'.repeat(3 - chStars)}`,
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(28 * LAYOUT_SCALE),
+        fontSize: Math.round(56 * LAYOUT_SCALE),
         fill: GOLDEN_PANEL_ACCENT,
         fontWeight: '800',
-        letterSpacing: Math.round(4 * LAYOUT_SCALE),
+        letterSpacing: Math.round(8 * LAYOUT_SCALE),
       },
     });
     starStrip.anchor.set(1, 0);
-    starStrip.position.set(cardW - Math.round(28 * LAYOUT_SCALE), Math.round(80 * LAYOUT_SCALE));
+    starStrip.position.set(detX + detW, starY);
     card.addChild(starStrip);
 
     if (allDone) {
@@ -321,6 +372,12 @@ export class ChapterSelectScreen extends Container {
 
     const portraitCx = cardW / 2;
     const portraitCy = Math.round(288 * LAYOUT_SCALE);
+    this.bossPortraitFxDispose = mountChapterBossPortraitFx(
+      portraitHost,
+      portraitCx,
+      portraitCy,
+      portraitD / 2,
+    );
 
     const bossUid = bossUidForBookChapter(targetId);
     if (bossUid) {
@@ -363,22 +420,38 @@ export class ChapterSelectScreen extends Container {
     bossLine.position.set(portraitCx, portraitCy + portraitD / 2 + bossGap);
     card.addChild(bossLine);
 
-    const detW = Math.round(200 * LAYOUT_SCALE);
-    const detH = Math.round(50 * LAYOUT_SCALE);
-    const detX = cardW - detW - Math.round(24 * LAYOUT_SCALE);
-    const detY = cardH - detH - Math.round(24 * LAYOUT_SCALE);
-    const detBtn = createStyledGameButton('classic', {
-      text: '查看详情',
-      width: detW,
-      height: detH,
-      fontSize: Math.round(20 * LAYOUT_SCALE),
+    const dropStripX = Math.round(28 * LAYOUT_SCALE);
+    const dropStripW = cardW - dropStripX * 2;
+    const dropPad = Math.round(12 * LAYOUT_SCALE);
+    const dropInnerW = dropStripW - dropPad * 2;
+    const dropIconsOffsetY = Math.round(10 * LAYOUT_SCALE);
+    const dropLabelH = Math.round(22 * LAYOUT_SCALE);
+    const { rowStride: dropRowStride } = gearFarmPreviewGridMetrics(dropInnerW);
+    const dropInnerH = dropLabelH + dropIconsOffsetY + dropRowStride;
+    const dropBoxH = dropPad * 2 + dropInnerH;
+
+    const dropBox = new Container();
+    dropBox.position.set(dropStripX, bossLine.y + bossLine.height + Math.round(12 * LAYOUT_SCALE));
+    card.addChild(dropBox);
+
+    const dropPlate = new Graphics();
+    const dropFrame = new Graphics();
+    drawGoldenSolidPanel(dropPlate, dropFrame, dropStripW, dropBoxH, LAYOUT_SCALE, {
+      plateAlpha: 0.78,
     });
-    detBtn.position.set(detX, detY);
-    detBtn.on('pointertap', (e) => {
-      e.stopPropagation();
-      this.openChapterDetailOverlay();
-    });
-    card.addChild(detBtn);
+    dropBox.addChild(dropPlate);
+    dropBox.addChild(dropFrame);
+
+    mountHorizontalGearFarmPreviewStrip(
+      dropBox,
+      dropPad,
+      dropPad,
+      dropInnerW,
+      chapterGearDropPreviews(targetId),
+      '掉落装备',
+      GOLDEN_PANEL_MUTED,
+      dropIconsOffsetY,
+    );
 
     const navGap = Math.round(18 * LAYOUT_SCALE);
     const arrowW = Math.round(148 * LAYOUT_SCALE);
@@ -746,6 +819,8 @@ export class ChapterSelectScreen extends Container {
   }
 
   override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
+    this.bossPortraitFxDispose?.();
+    this.bossPortraitFxDispose = null;
     if (this.keyHandler) {
       window.removeEventListener('keydown', this.keyHandler);
       this.keyHandler = null;

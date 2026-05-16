@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2026-05-16T09:45:49.325Z",
+  "chapterSizeHistogram": {
+    "1": 20,
+    "2": 62,
+    "3": 26,
+    "4": 5,
+    "5": 2
+  },
+  "gearIdChapterHitsCount": 252,
+  "chapterDropCountMin": 1,
+  "chapterDropCountMax": 5,
+  "note": "每件 gearId 仅出现在一个副本；每副本 14 件分摊到该副本全部章节"
+}

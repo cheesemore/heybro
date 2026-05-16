@@ -1,0 +1,3916 @@
+{
+  "schemaVersion": 1,
+  "generator": "scripts/generate-wow-book-tables.mjs",
+  "sourceReference": "docs/reference-classic-vanilla-wow-roguelike-level-design.json",
+  "purpose": "副本与章节管理表（索引层）：汇总「第几个地下城」「每座副本几章」「全书 chapterIndex 与副本/关卡对应关系」。不存放战斗数值与怪组；战斗内容见 wowBookChapters.json。后续可在此配置副本掉落、章节掉落与解锁规则。",
+  "editConvention": "【自动生成】dungeons[] / chapters[] 的主体字段由 reference + 章节表生成，勿手改 dungeonOrdinal、chapterIndices、firstChapterIndex 等，改副本顺序或关数请改 reference 后执行 npm run gen:wow-book。【可手填】各条 drops、unlock；重跑生成脚本时会从旧 wowBookRegistry.json 按 dungeonId / chapterIndex 合并保留。【代码读取】src/game/wowBookRegistry.ts。",
+  "relatedTables": {
+    "wowBookChapters": "每章战斗：monsterGroup、finalBoss、关卡文案",
+    "wowBookBosses": "每章首领战斗表与 bossUid",
+    "wowBookMonsters": "小怪数值与 monsterUid",
+    "gearItems": "每副本 14 件装备（gearId、nameCn）；掉落池可引用 gearId",
+    "gearSlotPartNames": "装备名部位段 partNameCn，供 gen:gear-items 生成默认 nameCn",
+    "chapterProgressStorage": "玩家存档章节进度，键为 chapterIndex（与本书一致）"
+  },
+  "fieldGuide": {
+    "dungeonCount": "地下城（五人副本）总数，与 dungeons.length 一致",
+    "chapterCount": "全书线性章节总数，与 chapters.length、wowBookChapters 条数一致",
+    "dungeons": "按 reference 顺序，一座副本一行",
+    "dungeons[].dungeonOrdinal": "第几个地下城（1 起），全书唯一序号，用于 UI「副本 3/18」",
+    "dungeons[].dungeonId": "副本稳定主键（slug），与 wowBookChapters.dungeonId、底图 public/assets/dungeon-bgs/<id>.png 一致",
+    "dungeons[].nameCn / nameEn": "副本展示名",
+    "dungeons[].chapterCount": "该副本包含的章节（关）数量",
+    "dungeons[].firstChapterIndex / lastChapterIndex": "该副本在全书中的 chapterIndex 起止（含端点）",
+    "dungeons[].chapterIndices": "该副本全部 chapterIndex 列表（已排序）",
+    "dungeons[].backgroundAssetId": "章节/策略屏底图资源 id，默认等于 dungeonId",
+    "dungeons[].drops.onDungeonClear": "副本通关奖励（占位数组，条目结构见 wowBookRegistry.ts WowBookDropEntry）",
+    "dungeons[].drops.onFarm": "刷副本重复奖励（占位）",
+    "dungeons[].unlock.requiresPreviousDungeonCleared": "是否需上一座副本（dungeonOrdinal-1）全部章节已通关；第 1 座为 false",
+    "chapters": "全书每章一行，与 wowBookChapters 一一对应",
+    "chapters[].chapterIndex": "全书线性章节号（1 起），与 RunState.bookChapterId、存档、首领表 chapterIndex 一致",
+    "chapters[].dungeonId": "所属副本主键",
+    "chapters[].dungeonOrdinal": "所属第几个地下城（冗余便于查表）",
+    "chapters[].dungeonNameCn / dungeonNameEn": "所属副本名（冗余便于展示）",
+    "chapters[].stageNumber": "该副本内第几关（1 起，换副本重置为 1）",
+    "chapters[].stageNameCn": "关卡展示名",
+    "chapters[].isFinalBoss": "本章关底首领是否为副本最终首领（与 wowBookChapters.finalBoss.isFinalBoss 一致）",
+    "chapters[].drops": "本章通关/战斗掉落（占位，后续结算读取）"
+  },
+  "dungeonCount": 18,
+  "chapterCount": 115,
+  "dungeons": [
+    {
+      "dungeonOrdinal": 1,
+      "dungeonId": "ragefire_chasm",
+      "nameCn": "怒焰裂谷",
+      "nameEn": "Ragefire Chasm",
+      "chapterCount": 4,
+      "firstChapterIndex": 1,
+      "lastChapterIndex": 4,
+      "chapterIndices": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "backgroundAssetId": "ragefire_chasm",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "ragefire_chasm.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": false
+      }
+    },
+    {
+      "dungeonOrdinal": 2,
+      "dungeonId": "deadmines",
+      "nameCn": "死亡矿井",
+      "nameEn": "Deadmines",
+      "chapterCount": 6,
+      "firstChapterIndex": 5,
+      "lastChapterIndex": 10,
+      "chapterIndices": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "backgroundAssetId": "deadmines",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "deadmines.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "deadmines.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 3,
+      "dungeonId": "wailing_caverns",
+      "nameCn": "哀嚎洞穴",
+      "nameEn": "Wailing Caverns",
+      "chapterCount": 6,
+      "firstChapterIndex": 11,
+      "lastChapterIndex": 16,
+      "chapterIndices": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "backgroundAssetId": "wailing_caverns",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "wailing_caverns.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 4,
+      "dungeonId": "shadowfang_keep",
+      "nameCn": "影牙城堡",
+      "nameEn": "Shadowfang Keep",
+      "chapterCount": 7,
+      "firstChapterIndex": 17,
+      "lastChapterIndex": 23,
+      "chapterIndices": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "backgroundAssetId": "shadowfang_keep",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "shadowfang_keep.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 5,
+      "dungeonId": "blackfathom_deeps",
+      "nameCn": "黑暗深渊",
+      "nameEn": "Blackfathom Deeps",
+      "chapterCount": 8,
+      "firstChapterIndex": 24,
+      "lastChapterIndex": 31,
+      "chapterIndices": [
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "backgroundAssetId": "blackfathom_deeps",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackfathom_deeps.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 6,
+      "dungeonId": "gnomeregan",
+      "nameCn": "诺莫瑞根",
+      "nameEn": "Gnomeregan",
+      "chapterCount": 5,
+      "firstChapterIndex": 32,
+      "lastChapterIndex": 36,
+      "chapterIndices": [
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "backgroundAssetId": "gnomeregan",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "gnomeregan.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 7,
+      "dungeonId": "razorfen_kraul",
+      "nameCn": "剃刀沼泽",
+      "nameEn": "Razorfen Kraul",
+      "chapterCount": 6,
+      "firstChapterIndex": 37,
+      "lastChapterIndex": 42,
+      "chapterIndices": [
+        37,
+        38,
+        39,
+        40,
+        41,
+        42
+      ],
+      "backgroundAssetId": "razorfen_kraul",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_kraul.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 8,
+      "dungeonId": "scarlet_monastery",
+      "nameCn": "血色修道院",
+      "nameEn": "Scarlet Monastery",
+      "chapterCount": 3,
+      "firstChapterIndex": 43,
+      "lastChapterIndex": 45,
+      "chapterIndices": [
+        43,
+        44,
+        45
+      ],
+      "backgroundAssetId": "scarlet_monastery",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scarlet_monastery.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 9,
+      "dungeonId": "razorfen_downs",
+      "nameCn": "剃刀高地",
+      "nameEn": "Razorfen Downs",
+      "chapterCount": 5,
+      "firstChapterIndex": 46,
+      "lastChapterIndex": 50,
+      "chapterIndices": [
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "backgroundAssetId": "razorfen_downs",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "razorfen_downs.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 10,
+      "dungeonId": "uldaman",
+      "nameCn": "奥达曼",
+      "nameEn": "Uldaman",
+      "chapterCount": 7,
+      "firstChapterIndex": 51,
+      "lastChapterIndex": 57,
+      "chapterIndices": [
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57
+      ],
+      "backgroundAssetId": "uldaman",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "uldaman.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "uldaman.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 11,
+      "dungeonId": "zul_farrak",
+      "nameCn": "祖尔法拉克",
+      "nameEn": "Zul'Farrak",
+      "chapterCount": 8,
+      "firstChapterIndex": 58,
+      "lastChapterIndex": 65,
+      "chapterIndices": [
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65
+      ],
+      "backgroundAssetId": "zul_farrak",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "zul_farrak.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 12,
+      "dungeonId": "maraudon",
+      "nameCn": "玛拉顿",
+      "nameEn": "Maraudon",
+      "chapterCount": 8,
+      "firstChapterIndex": 66,
+      "lastChapterIndex": 73,
+      "chapterIndices": [
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73
+      ],
+      "backgroundAssetId": "maraudon",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "maraudon.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "maraudon.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 13,
+      "dungeonId": "sunken_temple",
+      "nameCn": "沉没的神庙",
+      "nameEn": "Sunken Temple",
+      "chapterCount": 4,
+      "firstChapterIndex": 74,
+      "lastChapterIndex": 77,
+      "chapterIndices": [
+        74,
+        75,
+        76,
+        77
+      ],
+      "backgroundAssetId": "sunken_temple",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "sunken_temple.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 14,
+      "dungeonId": "blackrock_depths",
+      "nameCn": "黑石深渊",
+      "nameEn": "Blackrock Depths",
+      "chapterCount": 12,
+      "firstChapterIndex": 78,
+      "lastChapterIndex": 89,
+      "chapterIndices": [
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89
+      ],
+      "backgroundAssetId": "blackrock_depths",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "blackrock_depths.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 15,
+      "dungeonId": "dire_maul",
+      "nameCn": "厄运之槌",
+      "nameEn": "Dire Maul",
+      "chapterCount": 5,
+      "firstChapterIndex": 90,
+      "lastChapterIndex": 94,
+      "chapterIndices": [
+        90,
+        91,
+        92,
+        93,
+        94
+      ],
+      "backgroundAssetId": "dire_maul",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "dire_maul.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 16,
+      "dungeonId": "stratholme",
+      "nameCn": "斯坦索姆",
+      "nameEn": "Stratholme",
+      "chapterCount": 7,
+      "firstChapterIndex": 95,
+      "lastChapterIndex": 101,
+      "chapterIndices": [
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101
+      ],
+      "backgroundAssetId": "stratholme",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "stratholme.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "stratholme.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 17,
+      "dungeonId": "scholomance",
+      "nameCn": "通灵学院",
+      "nameEn": "Scholomance",
+      "chapterCount": 5,
+      "firstChapterIndex": 102,
+      "lastChapterIndex": 106,
+      "chapterIndices": [
+        102,
+        103,
+        104,
+        105,
+        106
+      ],
+      "backgroundAssetId": "scholomance",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "scholomance.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "scholomance.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    },
+    {
+      "dungeonOrdinal": 18,
+      "dungeonId": "lower_blackrock_spire",
+      "nameCn": "黑石塔下层",
+      "nameEn": "Lower Blackrock Spire",
+      "chapterCount": 9,
+      "firstChapterIndex": 107,
+      "lastChapterIndex": 115,
+      "chapterIndices": [
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115
+      ],
+      "backgroundAssetId": "lower_blackrock_spire",
+      "drops": {
+        "onDungeonClear": [],
+        "onFarm": [
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.head"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.neck"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.shoulder"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.chest"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.waist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.legs"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.feet"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.wrist"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.hands"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.finger"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.back"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.offHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.mainHand"
+          },
+          {
+            "kind": "gear",
+            "gearId": "lower_blackrock_spire.trinket"
+          }
+        ]
+      },
+      "unlock": {
+        "requiresPreviousDungeonCleared": true
+      }
+    }
+  ],
+  "chapters": [
+    {
+      "chapterIndex": 1,
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "dungeonNameCn": "怒焰裂谷",
+      "dungeonNameEn": "Ragefire Chasm",
+      "stageNumber": 1,
+      "stageNameCn": "怒焰裂谷-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 2,
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "dungeonNameCn": "怒焰裂谷",
+      "dungeonNameEn": "Ragefire Chasm",
+      "stageNumber": 2,
+      "stageNameCn": "怒焰裂谷-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.legs"
+        },
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 3,
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "dungeonNameCn": "怒焰裂谷",
+      "dungeonNameEn": "Ragefire Chasm",
+      "stageNumber": 3,
+      "stageNameCn": "怒焰裂谷-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.feet"
+        },
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 4,
+      "dungeonId": "ragefire_chasm",
+      "dungeonOrdinal": 1,
+      "dungeonNameCn": "怒焰裂谷",
+      "dungeonNameEn": "Ragefire Chasm",
+      "stageNumber": 4,
+      "stageNameCn": "怒焰裂谷-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.wrist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "ragefire_chasm.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 5,
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "dungeonNameCn": "死亡矿井",
+      "dungeonNameEn": "Deadmines",
+      "stageNumber": 1,
+      "stageNameCn": "死亡矿井-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "deadmines.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "deadmines.feet"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 6,
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "dungeonNameCn": "死亡矿井",
+      "dungeonNameEn": "Deadmines",
+      "stageNumber": 2,
+      "stageNameCn": "死亡矿井-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "deadmines.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "deadmines.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 7,
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "dungeonNameCn": "死亡矿井",
+      "dungeonNameEn": "Deadmines",
+      "stageNumber": 3,
+      "stageNameCn": "死亡矿井-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "deadmines.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "deadmines.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 8,
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "dungeonNameCn": "死亡矿井",
+      "dungeonNameEn": "Deadmines",
+      "stageNumber": 4,
+      "stageNameCn": "死亡矿井-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "deadmines.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "deadmines.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 9,
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "dungeonNameCn": "死亡矿井",
+      "dungeonNameEn": "Deadmines",
+      "stageNumber": 5,
+      "stageNameCn": "死亡矿井-第五关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "deadmines.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "deadmines.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "deadmines.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 10,
+      "dungeonId": "deadmines",
+      "dungeonOrdinal": 2,
+      "dungeonNameCn": "死亡矿井",
+      "dungeonNameEn": "Deadmines",
+      "stageNumber": 6,
+      "stageNameCn": "死亡矿井-第六关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "deadmines.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "deadmines.legs"
+        },
+        {
+          "kind": "gear",
+          "gearId": "deadmines.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 11,
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "dungeonNameCn": "哀嚎洞穴",
+      "dungeonNameEn": "Wailing Caverns",
+      "stageNumber": 1,
+      "stageNameCn": "哀嚎洞穴-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.feet"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 12,
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "dungeonNameCn": "哀嚎洞穴",
+      "dungeonNameEn": "Wailing Caverns",
+      "stageNumber": 2,
+      "stageNameCn": "哀嚎洞穴-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 13,
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "dungeonNameCn": "哀嚎洞穴",
+      "dungeonNameEn": "Wailing Caverns",
+      "stageNumber": 3,
+      "stageNameCn": "哀嚎洞穴-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 14,
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "dungeonNameCn": "哀嚎洞穴",
+      "dungeonNameEn": "Wailing Caverns",
+      "stageNumber": 4,
+      "stageNameCn": "哀嚎洞穴-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 15,
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "dungeonNameCn": "哀嚎洞穴",
+      "dungeonNameEn": "Wailing Caverns",
+      "stageNumber": 5,
+      "stageNameCn": "哀嚎洞穴-第五关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 16,
+      "dungeonId": "wailing_caverns",
+      "dungeonOrdinal": 3,
+      "dungeonNameCn": "哀嚎洞穴",
+      "dungeonNameEn": "Wailing Caverns",
+      "stageNumber": 6,
+      "stageNameCn": "哀嚎洞穴-第六关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.legs"
+        },
+        {
+          "kind": "gear",
+          "gearId": "wailing_caverns.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 17,
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 1,
+      "stageNameCn": "影牙城堡-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 18,
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 2,
+      "stageNameCn": "影牙城堡-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 19,
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 3,
+      "stageNameCn": "影牙城堡-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 20,
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 4,
+      "stageNameCn": "影牙城堡-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 21,
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 5,
+      "stageNameCn": "影牙城堡-第五关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 22,
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 6,
+      "stageNameCn": "影牙城堡-第六关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.legs"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 23,
+      "dungeonId": "shadowfang_keep",
+      "dungeonOrdinal": 4,
+      "dungeonNameCn": "影牙城堡",
+      "dungeonNameEn": "Shadowfang Keep",
+      "stageNumber": 7,
+      "stageNameCn": "影牙城堡-第七关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "shadowfang_keep.feet"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 24,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 1,
+      "stageNameCn": "黑暗深渊-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 25,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 2,
+      "stageNameCn": "黑暗深渊-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 26,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 3,
+      "stageNameCn": "黑暗深渊-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 27,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 4,
+      "stageNameCn": "黑暗深渊-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 28,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 5,
+      "stageNameCn": "黑暗深渊-第五关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.waist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 29,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 6,
+      "stageNameCn": "黑暗深渊-第六关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.legs"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 30,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 7,
+      "stageNameCn": "黑暗深渊-第七关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.feet"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 31,
+      "dungeonId": "blackfathom_deeps",
+      "dungeonOrdinal": 5,
+      "dungeonNameCn": "黑暗深渊",
+      "dungeonNameEn": "Blackfathom Deeps",
+      "stageNumber": 8,
+      "stageNameCn": "黑暗深渊-第八关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "blackfathom_deeps.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 32,
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "dungeonNameCn": "诺莫瑞根",
+      "dungeonNameEn": "Gnomeregan",
+      "stageNumber": 1,
+      "stageNameCn": "诺莫瑞根-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.legs"
+        },
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 33,
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "dungeonNameCn": "诺莫瑞根",
+      "dungeonNameEn": "Gnomeregan",
+      "stageNumber": 2,
+      "stageNameCn": "诺莫瑞根-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.feet"
+        },
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 34,
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "dungeonNameCn": "诺莫瑞根",
+      "dungeonNameEn": "Gnomeregan",
+      "stageNumber": 3,
+      "stageNameCn": "诺莫瑞根-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 35,
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "dungeonNameCn": "诺莫瑞根",
+      "dungeonNameEn": "Gnomeregan",
+      "stageNumber": 4,
+      "stageNameCn": "诺莫瑞根-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 36,
+      "dungeonId": "gnomeregan",
+      "dungeonOrdinal": 6,
+      "dungeonNameCn": "诺莫瑞根",
+      "dungeonNameEn": "Gnomeregan",
+      "stageNumber": 5,
+      "stageNameCn": "诺莫瑞根-第五关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "gnomeregan.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 37,
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "dungeonNameCn": "剃刀沼泽",
+      "dungeonNameEn": "Razorfen Kraul",
+      "stageNumber": 1,
+      "stageNameCn": "剃刀沼泽-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.feet"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 38,
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "dungeonNameCn": "剃刀沼泽",
+      "dungeonNameEn": "Razorfen Kraul",
+      "stageNumber": 2,
+      "stageNameCn": "剃刀沼泽-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 39,
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "dungeonNameCn": "剃刀沼泽",
+      "dungeonNameEn": "Razorfen Kraul",
+      "stageNumber": 3,
+      "stageNameCn": "剃刀沼泽-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 40,
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "dungeonNameCn": "剃刀沼泽",
+      "dungeonNameEn": "Razorfen Kraul",
+      "stageNumber": 4,
+      "stageNameCn": "剃刀沼泽-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 41,
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "dungeonNameCn": "剃刀沼泽",
+      "dungeonNameEn": "Razorfen Kraul",
+      "stageNumber": 5,
+      "stageNameCn": "剃刀沼泽-第五关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 42,
+      "dungeonId": "razorfen_kraul",
+      "dungeonOrdinal": 7,
+      "dungeonNameCn": "剃刀沼泽",
+      "dungeonNameEn": "Razorfen Kraul",
+      "stageNumber": 6,
+      "stageNameCn": "剃刀沼泽-第六关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.legs"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_kraul.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 43,
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "dungeonNameCn": "血色修道院",
+      "dungeonNameEn": "Scarlet Monastery",
+      "stageNumber": 1,
+      "stageNameCn": "血色修道院-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.feet"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 44,
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "dungeonNameCn": "血色修道院",
+      "dungeonNameEn": "Scarlet Monastery",
+      "stageNumber": 2,
+      "stageNameCn": "血色修道院-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.wrist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 45,
+      "dungeonId": "scarlet_monastery",
+      "dungeonOrdinal": 8,
+      "dungeonNameCn": "血色修道院",
+      "dungeonNameEn": "Scarlet Monastery",
+      "stageNumber": 3,
+      "stageNameCn": "血色修道院-第三关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.legs"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.hands"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scarlet_monastery.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 46,
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "dungeonNameCn": "剃刀高地",
+      "dungeonNameEn": "Razorfen Downs",
+      "stageNumber": 1,
+      "stageNameCn": "剃刀高地-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.legs"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 47,
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "dungeonNameCn": "剃刀高地",
+      "dungeonNameEn": "Razorfen Downs",
+      "stageNumber": 2,
+      "stageNameCn": "剃刀高地-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.feet"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 48,
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "dungeonNameCn": "剃刀高地",
+      "dungeonNameEn": "Razorfen Downs",
+      "stageNumber": 3,
+      "stageNameCn": "剃刀高地-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 49,
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "dungeonNameCn": "剃刀高地",
+      "dungeonNameEn": "Razorfen Downs",
+      "stageNumber": 4,
+      "stageNameCn": "剃刀高地-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 50,
+      "dungeonId": "razorfen_downs",
+      "dungeonOrdinal": 9,
+      "dungeonNameCn": "剃刀高地",
+      "dungeonNameEn": "Razorfen Downs",
+      "stageNumber": 5,
+      "stageNameCn": "剃刀高地-第五关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "razorfen_downs.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 51,
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 1,
+      "stageNameCn": "奥达曼-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "uldaman.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "uldaman.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 52,
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 2,
+      "stageNameCn": "奥达曼-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "uldaman.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "uldaman.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 53,
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 3,
+      "stageNameCn": "奥达曼-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "uldaman.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "uldaman.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 54,
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 4,
+      "stageNameCn": "奥达曼-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "uldaman.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "uldaman.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 55,
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 5,
+      "stageNameCn": "奥达曼-第五关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "uldaman.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "uldaman.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 56,
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 6,
+      "stageNameCn": "奥达曼-第六关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "uldaman.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "uldaman.legs"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 57,
+      "dungeonId": "uldaman",
+      "dungeonOrdinal": 10,
+      "dungeonNameCn": "奥达曼",
+      "dungeonNameEn": "Uldaman",
+      "stageNumber": 7,
+      "stageNameCn": "奥达曼-第七关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "uldaman.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "uldaman.feet"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 58,
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 1,
+      "stageNameCn": "祖尔法拉克-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 59,
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 2,
+      "stageNameCn": "祖尔法拉克-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 60,
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 3,
+      "stageNameCn": "祖尔法拉克-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 61,
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 4,
+      "stageNameCn": "祖尔法拉克-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 62,
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 5,
+      "stageNameCn": "祖尔法拉克-第五关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.waist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 63,
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 6,
+      "stageNameCn": "祖尔法拉克-第六关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.legs"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 64,
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 7,
+      "stageNameCn": "祖尔法拉克-第七关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.feet"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 65,
+      "dungeonId": "zul_farrak",
+      "dungeonOrdinal": 11,
+      "dungeonNameCn": "祖尔法拉克",
+      "dungeonNameEn": "Zul'Farrak",
+      "stageNumber": 8,
+      "stageNameCn": "祖尔法拉克-第八关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "zul_farrak.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 66,
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 1,
+      "stageNameCn": "玛拉顿-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "maraudon.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "maraudon.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 67,
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 2,
+      "stageNameCn": "玛拉顿-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "maraudon.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "maraudon.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 68,
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 3,
+      "stageNameCn": "玛拉顿-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "maraudon.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "maraudon.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 69,
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 4,
+      "stageNameCn": "玛拉顿-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "maraudon.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "maraudon.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 70,
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 5,
+      "stageNameCn": "玛拉顿-第五关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "maraudon.waist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 71,
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 6,
+      "stageNameCn": "玛拉顿-第六关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "maraudon.legs"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 72,
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 7,
+      "stageNameCn": "玛拉顿-第七关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "maraudon.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "maraudon.feet"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 73,
+      "dungeonId": "maraudon",
+      "dungeonOrdinal": 12,
+      "dungeonNameCn": "玛拉顿",
+      "dungeonNameEn": "Maraudon",
+      "stageNumber": 8,
+      "stageNameCn": "玛拉顿-第八关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "maraudon.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "maraudon.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 74,
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "dungeonNameCn": "沉没的神庙",
+      "dungeonNameEn": "Sunken Temple",
+      "stageNumber": 1,
+      "stageNameCn": "沉没的神庙-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 75,
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "dungeonNameCn": "沉没的神庙",
+      "dungeonNameEn": "Sunken Temple",
+      "stageNumber": 2,
+      "stageNameCn": "沉没的神庙-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.legs"
+        },
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 76,
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "dungeonNameCn": "沉没的神庙",
+      "dungeonNameEn": "Sunken Temple",
+      "stageNumber": 3,
+      "stageNameCn": "沉没的神庙-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.feet"
+        },
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 77,
+      "dungeonId": "sunken_temple",
+      "dungeonOrdinal": 13,
+      "dungeonNameCn": "沉没的神庙",
+      "dungeonNameEn": "Sunken Temple",
+      "stageNumber": 4,
+      "stageNameCn": "沉没的神庙-第四关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.wrist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "sunken_temple.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 78,
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 1,
+      "stageNameCn": "黑石深渊-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.head"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 79,
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 2,
+      "stageNameCn": "黑石深渊-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.neck"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 80,
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 3,
+      "stageNameCn": "黑石深渊-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.shoulder"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 81,
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 4,
+      "stageNameCn": "黑石深渊-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.chest"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 82,
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 5,
+      "stageNameCn": "黑石深渊-第五关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.waist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 83,
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 6,
+      "stageNameCn": "黑石深渊-第六关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.legs"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 84,
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 7,
+      "stageNameCn": "黑石深渊-第七关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.feet"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 85,
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 8,
+      "stageNameCn": "黑石深渊-第八关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 86,
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 9,
+      "stageNameCn": "黑石深渊-第九关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 87,
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 10,
+      "stageNameCn": "黑石深渊-第十关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 88,
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 11,
+      "stageNameCn": "黑石深渊-第十一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 89,
+      "dungeonId": "blackrock_depths",
+      "dungeonOrdinal": 14,
+      "dungeonNameCn": "黑石深渊",
+      "dungeonNameEn": "Blackrock Depths",
+      "stageNumber": 12,
+      "stageNameCn": "黑石深渊-第十二关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "blackrock_depths.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 90,
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "dungeonNameCn": "厄运之槌",
+      "dungeonNameEn": "Dire Maul",
+      "stageNumber": 1,
+      "stageNameCn": "厄运之槌-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.legs"
+        },
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 91,
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "dungeonNameCn": "厄运之槌",
+      "dungeonNameEn": "Dire Maul",
+      "stageNumber": 2,
+      "stageNameCn": "厄运之槌-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.feet"
+        },
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 92,
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "dungeonNameCn": "厄运之槌",
+      "dungeonNameEn": "Dire Maul",
+      "stageNumber": 3,
+      "stageNameCn": "厄运之槌-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 93,
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "dungeonNameCn": "厄运之槌",
+      "dungeonNameEn": "Dire Maul",
+      "stageNumber": 4,
+      "stageNameCn": "厄运之槌-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 94,
+      "dungeonId": "dire_maul",
+      "dungeonOrdinal": 15,
+      "dungeonNameCn": "厄运之槌",
+      "dungeonNameEn": "Dire Maul",
+      "stageNumber": 5,
+      "stageNameCn": "厄运之槌-第五关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "dire_maul.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 95,
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 1,
+      "stageNameCn": "斯坦索姆-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "stratholme.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "stratholme.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 96,
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 2,
+      "stageNameCn": "斯坦索姆-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "stratholme.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "stratholme.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 97,
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 3,
+      "stageNameCn": "斯坦索姆-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "stratholme.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "stratholme.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 98,
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 4,
+      "stageNameCn": "斯坦索姆-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "stratholme.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "stratholme.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 99,
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 5,
+      "stageNameCn": "斯坦索姆-第五关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "stratholme.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "stratholme.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 100,
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 6,
+      "stageNameCn": "斯坦索姆-第六关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "stratholme.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "stratholme.legs"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 101,
+      "dungeonId": "stratholme",
+      "dungeonOrdinal": 16,
+      "dungeonNameCn": "斯坦索姆",
+      "dungeonNameEn": "Stratholme",
+      "stageNumber": 7,
+      "stageNameCn": "斯坦索姆-第七关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "stratholme.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "stratholme.feet"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 102,
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "dungeonNameCn": "通灵学院",
+      "dungeonNameEn": "Scholomance",
+      "stageNumber": 1,
+      "stageNameCn": "通灵学院-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "scholomance.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scholomance.legs"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scholomance.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 103,
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "dungeonNameCn": "通灵学院",
+      "dungeonNameEn": "Scholomance",
+      "stageNumber": 2,
+      "stageNameCn": "通灵学院-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "scholomance.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scholomance.feet"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scholomance.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 104,
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "dungeonNameCn": "通灵学院",
+      "dungeonNameEn": "Scholomance",
+      "stageNumber": 3,
+      "stageNameCn": "通灵学院-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "scholomance.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scholomance.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 105,
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "dungeonNameCn": "通灵学院",
+      "dungeonNameEn": "Scholomance",
+      "stageNumber": 4,
+      "stageNameCn": "通灵学院-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "scholomance.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scholomance.chest"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scholomance.hands"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 106,
+      "dungeonId": "scholomance",
+      "dungeonOrdinal": 17,
+      "dungeonNameCn": "通灵学院",
+      "dungeonNameEn": "Scholomance",
+      "stageNumber": 5,
+      "stageNameCn": "通灵学院-第五关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "scholomance.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scholomance.waist"
+        },
+        {
+          "kind": "gear",
+          "gearId": "scholomance.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 107,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 1,
+      "stageNameCn": "黑石塔下层-第一关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.head"
+        },
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.finger"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 108,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 2,
+      "stageNameCn": "黑石塔下层-第二关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.neck"
+        },
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.back"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 109,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 3,
+      "stageNameCn": "黑石塔下层-第三关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.shoulder"
+        },
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.offHand"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 110,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 4,
+      "stageNameCn": "黑石塔下层-第四关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.chest"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 111,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 5,
+      "stageNameCn": "黑石塔下层-第五关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.waist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 112,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 6,
+      "stageNameCn": "黑石塔下层-第六关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.legs"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 113,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 7,
+      "stageNameCn": "黑石塔下层-第七关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.feet"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 114,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 8,
+      "stageNameCn": "黑石塔下层-第八关",
+      "isFinalBoss": false,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.trinket"
+        },
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.wrist"
+        }
+      ]
+    },
+    {
+      "chapterIndex": 115,
+      "dungeonId": "lower_blackrock_spire",
+      "dungeonOrdinal": 18,
+      "dungeonNameCn": "黑石塔下层",
+      "dungeonNameEn": "Lower Blackrock Spire",
+      "stageNumber": 9,
+      "stageNameCn": "黑石塔下层-第九关",
+      "isFinalBoss": true,
+      "drops": [
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.mainHand"
+        },
+        {
+          "kind": "gear",
+          "gearId": "lower_blackrock_spire.hands"
+        }
+      ]
+    }
+  ]
+}

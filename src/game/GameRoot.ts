@@ -12,6 +12,7 @@ import { ChapterSelectScreen } from './screens/ChapterSelectScreen';
 import { ChapterRunSettlementScreen } from './screens/ChapterRunSettlementScreen';
 import { LevelMapScreen } from './screens/LevelMapScreen';
 import { ModalLayer } from './screens/ModalLayer';
+import { GearFarmScreen } from './screens/GearFarmScreen';
 import { StrengthenScreen } from './screens/StrengthenScreen';
 import { StrategyPickScreen } from './screens/StrategyPickScreen';
 import { TitleScreen } from './screens/TitleScreen';
@@ -67,7 +68,7 @@ export class GameRoot extends Container {
   /** 封面「清档」：两次确认后删除全部本地存档键。 */
   private promptClearAllLocalSave(): void {
     this.modal.confirmDestructive(
-      '将删除本机全部游戏存档：\n\n· 章节进度与评价星\n· 已获得英雄与上阵\n· 招募记录\n· 职业碎片与等级\n\n此操作不可恢复。\n是否继续？',
+      '将删除本机全部游戏存档：\n\n· 章节进度与评价星\n· 已获得英雄与上阵\n· 招募记录\n· 职业碎片与等级\n· 刷副本体力\n· 已装备与背包装备\n\n此操作不可恢复。\n是否继续？',
       () => {
         this.modal.confirmDestructive(
           '请再次确认：\n\n真的要清除全部本地存档？',
@@ -170,6 +171,7 @@ export class GameRoot extends Container {
             else this.showTitle();
           },
           () => this.showStrengthenScreen(fromMap),
+          () => this.showGearFarmScreen(fromMap),
           (chapterId, star) => {
             cheatChapterFullClearWithStar(chapterId, star);
             syncLotteryTicketsFromChapterProgress();
@@ -195,6 +197,18 @@ export class GameRoot extends Container {
         }),
       );
     })();
+  }
+
+  private showGearFarmScreen(fromChapterFlow: boolean): void {
+    this.clearLayer();
+    this.layer.addChild(
+      new GearFarmScreen(
+        () => {
+          this.showChapterSelect(fromChapterFlow);
+        },
+        this.modal,
+      ),
+    );
   }
 
   private showLevelMap(): void {

@@ -1,5 +1,9 @@
 import type { EnemyPaintKind } from './battleVisuals';
 import type { BossId, EnemyClass, RoundMeta } from './types';
+import {
+  DEFAULT_NODE_PROGRESS_MAX,
+  getNodeProgressMaxForBookChapter,
+} from './gearItems';
 import { ENEMY_DEFS, enemyCombatBaseAtkFromTable, scaledEnemyAtk, scaledEnemyHp } from './unitDefs';
 import { bossDisplayName } from './roundConfig';
 import { RANGED_ATTACK_RANGE_THRESHOLD } from './battleBonds';
@@ -77,18 +81,38 @@ const ENEMY_TRAIT: Record<EnemyClass, string> = {
   catapult: '远程；攻击附带地面燃烧区域。',
 };
 
-function statLine(chapter: 1 | 2 | 3, ri: number, type: EnemyClass, bookM: number): string {
+function nodeProgressMaxForPreview(bookChapterId?: number): number {
+  return bookChapterId != null && bookChapterId > 0
+    ? getNodeProgressMaxForBookChapter(bookChapterId)
+    : DEFAULT_NODE_PROGRESS_MAX;
+}
+
+function statLine(
+  chapter: 1 | 2 | 3,
+  ri: number,
+  type: EnemyClass,
+  bookM: number,
+  bookChapterId?: number,
+): string {
   const d = ENEMY_DEFS[type];
-  const hp = scaledEnemyHp(chapter, ri, d.baseMaxHp, bookM);
-  const atk = scaledEnemyAtk(chapter, ri, d.baseAtk, bookM);
+  const progMax = nodeProgressMaxForPreview(bookChapterId);
+  const hp = scaledEnemyHp(chapter, ri, d.baseMaxHp, bookM, progMax);
+  const atk = scaledEnemyAtk(chapter, ri, d.baseAtk, bookM, progMax);
   const rng = d.range >= RANGED_ATTACK_RANGE_THRESHOLD ? '远程' : '近战';
   return `HP ${hp} · 攻 ${atk} · 攻速 ${d.attackSpeed.toFixed(2)} · 射程 ${d.range}（${rng}）· 移速 ${d.moveSpeed}`;
 }
 
-function wowMobStatLine(chapter: 1 | 2 | 3, ri: number, mob: WowMob, bookM: number): string {
+function wowMobStatLine(
+  chapter: 1 | 2 | 3,
+  ri: number,
+  mob: WowMob,
+  bookM: number,
+  bookChapterId?: number,
+): string {
   const baseAtk = enemyCombatBaseAtkFromTable(mob.baseAtk, mob.range);
-  const hp = scaledEnemyHp(chapter, ri, mob.baseMaxHp, bookM);
-  const atk = scaledEnemyAtk(chapter, ri, baseAtk, bookM);
+  const progMax = nodeProgressMaxForPreview(bookChapterId);
+  const hp = scaledEnemyHp(chapter, ri, mob.baseMaxHp, bookM, progMax);
+  const atk = scaledEnemyAtk(chapter, ri, baseAtk, bookM, progMax);
   const rng = mob.range >= RANGED_ATTACK_RANGE_THRESHOLD ? '远程' : '近战';
   return `HP ${hp} · 攻 ${atk} · 攻速 ${mob.attackSpeed.toFixed(2)} · 射程 ${mob.range}（${rng}）· 移速 ${mob.moveSpeed}`;
 }
@@ -178,6 +202,7 @@ export function getChapterIntelMobCardParts(
     return { name: '', statLine1: '', statLine2: '', skillLines: [] };
   }
   const ri = scaleRoundIndex;
+  const progMax = nodeProgressMaxForPreview(_bookChapterId);
 
   if (w.wowMobId) {
     const mob = getWowMob(w.wowMobId);
@@ -185,8 +210,8 @@ export function getChapterIntelMobCardParts(
       const type = w.type as EnemyClass;
       const d = ENEMY_DEFS[type];
       const st = intelTwoLineStats(
-        scaledEnemyHp(chapter, ri, d.baseMaxHp, bookStrengthMult),
-        scaledEnemyAtk(chapter, ri, d.baseAtk, bookStrengthMult),
+        scaledEnemyHp(chapter, ri, d.baseMaxHp, bookStrengthMult, progMax),
+        scaledEnemyAtk(chapter, ri, d.baseAtk, bookStrengthMult, progMax),
         d.attackSpeed,
         d.range,
       );
@@ -198,9 +223,9 @@ export function getChapterIntelMobCardParts(
       };
     }
     const baseAtk = enemyCombatBaseAtkFromTable(mob.baseAtk, mob.range);
-    const combatAtk = scaledEnemyAtk(chapter, ri, baseAtk, bookStrengthMult);
+    const combatAtk = scaledEnemyAtk(chapter, ri, baseAtk, bookStrengthMult, progMax);
     const st = intelTwoLineStats(
-      scaledEnemyHp(chapter, ri, mob.baseMaxHp, bookStrengthMult),
+      scaledEnemyHp(chapter, ri, mob.baseMaxHp, bookStrengthMult, progMax),
       combatAtk,
       mob.attackSpeed,
       mob.range,
@@ -216,8 +241,8 @@ export function getChapterIntelMobCardParts(
   const type = w.type as EnemyClass;
   const d = ENEMY_DEFS[type];
   const st = intelTwoLineStats(
-    scaledEnemyHp(chapter, ri, d.baseMaxHp, bookStrengthMult),
-    scaledEnemyAtk(chapter, ri, d.baseAtk, bookStrengthMult),
+    scaledEnemyHp(chapter, ri, d.baseMaxHp, bookStrengthMult, progMax),
+    scaledEnemyAtk(chapter, ri, d.baseAtk, bookStrengthMult, progMax),
     d.attackSpeed,
     d.range,
   );
@@ -243,9 +268,10 @@ export function getChapterIntelBossCardParts(
     return { name: '', statLine1: '', statLine2: '', skillLines: [] };
   }
   const ri = scaleRoundIndex;
+  const progMax = nodeProgressMaxForPreview(bookChapterId);
   const bc = resolveWowBookBossCombat(bookChapterId ?? 0);
-  const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable * 10, bookStrengthMult);
-  const combatAtk = scaledEnemyAtk(chapter, ri, bc.combatBaseAtk, bookStrengthMult);
+  const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable * 10, bookStrengthMult, progMax);
+  const combatAtk = scaledEnemyAtk(chapter, ri, bc.combatBaseAtk, bookStrengthMult, progMax);
   const st = intelTwoLineStats(hp, combatAtk, bc.attackSpeed, bc.range);
   const name =
     w.wowBossDisplayName && w.wowBossDisplayName.trim().length > 0
@@ -269,6 +295,7 @@ export function formatNextBattlePreview(
 ): string {
   const { chapter } = meta;
   const ri = scaleRoundIndex;
+  const progMax = nodeProgressMaxForPreview(bookChapterId);
   const lines: string[] = [];
   lines.push(`关卡 ${meta.label}（${meta.kind === 'boss' ? '首领战' : '普通战斗'}）`);
   lines.push('');
@@ -276,8 +303,8 @@ export function formatNextBattlePreview(
   for (const w of meta.enemies) {
     if (w.type === 'boss' && w.bossId) {
       const bc = resolveWowBookBossCombat(bookChapterId ?? 0);
-      const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable * 10, bookStrengthMult);
-      const atk = scaledEnemyAtk(chapter, ri, bc.combatBaseAtk, bookStrengthMult);
+      const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable * 10, bookStrengthMult, progMax);
+      const atk = scaledEnemyAtk(chapter, ri, bc.combatBaseAtk, bookStrengthMult, progMax);
       const atkSp = bc.attackSpeed;
       const rng = bc.range;
       const sk = bc.skillIds;
@@ -303,7 +330,7 @@ export function formatNextBattlePreview(
       if (!mob) {
         const d = ENEMY_DEFS[type];
         lines.push(`【${d.name}】×${w.count}`);
-        lines.push(`数值（单兵）：${statLine(chapter, ri, type, bookStrengthMult)}`);
+        lines.push(`数值（单兵）：${statLine(chapter, ri, type, bookStrengthMult, bookChapterId)}`);
         lines.push(`特性：${ENEMY_TRAIT[type]}`);
         if (d.skillIds.length > 0) {
           lines.push(`技能：${formatSkillNamesCn(d.skillIds)}`);
@@ -314,7 +341,7 @@ export function formatNextBattlePreview(
         continue;
       }
       lines.push(`【${mob.nameCn}】×${w.count}`);
-      lines.push(`数值（单兵）：${wowMobStatLine(chapter, ri, mob, bookStrengthMult)}`);
+      lines.push(`数值（单兵）：${wowMobStatLine(chapter, ri, mob, bookStrengthMult, bookChapterId)}`);
       if (mob.skillIds != null && mob.skillIds.length > 0) {
         lines.push(`技能：${formatSkillNamesCn(mob.skillIds)}`);
         lines.push('技能说明：');
@@ -327,7 +354,7 @@ export function formatNextBattlePreview(
     const type = w.type as EnemyClass;
     const d = ENEMY_DEFS[type];
     lines.push(`【${d.name}】×${w.count}`);
-    lines.push(`数值（单兵）：${statLine(chapter, ri, type, bookStrengthMult)}`);
+    lines.push(`数值（单兵）：${statLine(chapter, ri, type, bookStrengthMult, bookChapterId)}`);
     lines.push(`特性：${ENEMY_TRAIT[type]}`);
     if (d.skillIds.length > 0) {
       lines.push(`技能：${formatSkillNamesCn(d.skillIds)}`);

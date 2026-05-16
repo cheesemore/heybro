@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "generator": "scripts/generate-wow-book-tables.mjs",
-  "editConvention": "每条对应一章关卡首领（chapterIndex 同 wowBookChapters）。战斗基准：hitRadius、baseMaxHp、baseAtk（表底，战场再乘 GLOBAL_UNIT_ATK_MULT）、attackSpeed（秒/次）、range、moveSpeed；缺项用代码内 WOW_BOOK_BOSS_TABLE_DEFAULT（与生成器 DEFAULT_BOOK_BOSS_COMBAT 一致）。首领进场 HP 为 baseMaxHp×10 再参与 scaledEnemyHp。skillIds 同小怪表；白板为 []。bossUid 对应 public/assets/wow-bosses/<bossUid>.png。combatBossId 仅作文案/工具兼容，运行时不读。",
+  "editConvention": "每条对应一章关卡首领（chapterIndex 同 wowBookChapters）。战斗基准：hitRadius、baseMaxHp、baseAtk、attackSpeed、range、moveSpeed、skillIds（缺省与 wowBookData.WOW_BOOK_BOSS_TABLE_DEFAULT / 本脚本 DEFAULT_BOOK_BOSS_COMBAT 一致）；重跑脚本时按 id 从旧文件合并上述字段与 bossUid。进场 HP 仍 baseMaxHp×10 后 scaledEnemyHp。bossUid 立绘 public/assets/wow-bosses/<bossUid>.png。",
   "bosses": [
     {
       "id": "boss_ch1_oggleflint",
@@ -18,7 +18,6 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000001",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
@@ -28,7 +27,8 @@
       "skillIds": [
         "skill_boss_punch",
         "skill_boss_rush"
-      ]
+      ],
+      "bossUid": "B000001"
     },
     {
       "id": "boss_ch2_taragaman_the_hungerer",
@@ -45,7 +45,6 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000002",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
@@ -56,7 +55,8 @@
         "skill_hot_strike",
         "skill_boss_crit",
         "skill_berserker"
-      ]
+      ],
+      "bossUid": "B000002"
     },
     {
       "id": "boss_ch3_jergosh_the_invoker",
@@ -73,7 +73,6 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000003",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
@@ -84,7 +83,8 @@
         "skill_rfc3_ch3_group_shadow_sword",
         "skill_rfc3_ch3_summon_rite",
         "skill_rfc3_ch3_corrosion"
-      ]
+      ],
+      "bossUid": "B000003"
     },
     {
       "id": "boss_ch4_bazzalan",
@@ -96,12 +96,11 @@
       "dungeonNameEn": "Ragefire Chasm",
       "nameCn": "巴扎兰",
       "nameEn": "Bazzalan",
-      "attackType": "远程",
+      "attackType": "近战",
       "role": "输出",
       "creatureType": "输出",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000004",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
@@ -112,7 +111,8 @@
         "skill_rfc3_ch3_group_shadow_sword",
         "skill_rfc4_ch4_mind_lash",
         "skill_rfc4_ch4_shadow_blink"
-      ]
+      ],
+      "bossUid": "B000004"
     },
     {
       "id": "boss_ch5_rhahk_zor",
@@ -129,14 +129,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000005",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000005"
     },
     {
       "id": "boss_ch6_sneed",
@@ -153,14 +153,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000006",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000006"
     },
     {
       "id": "boss_ch7_gilnid",
@@ -177,14 +177,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000007",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000007"
     },
     {
       "id": "boss_ch8_mr_smite",
@@ -201,14 +201,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000008",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000008"
     },
     {
       "id": "boss_ch9_captain_greenskin",
@@ -225,14 +225,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000009",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000009"
     },
     {
       "id": "boss_ch10_edwin_vancleef",
@@ -249,14 +249,14 @@
       "creatureType": "生物",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000010",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000010"
     },
     {
       "id": "boss_ch11_lady_anacondra",
@@ -273,14 +273,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000011",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000011"
     },
     {
       "id": "boss_ch12_lord_cobrahn",
@@ -297,14 +297,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000012",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000012"
     },
     {
       "id": "boss_ch13_lord_pythas",
@@ -321,14 +321,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000013",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000013"
     },
     {
       "id": "boss_ch14_lord_serpentis",
@@ -345,14 +345,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000014",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000014"
     },
     {
       "id": "boss_ch15_verdan_the_everliving",
@@ -369,14 +369,14 @@
       "creatureType": "植物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000015",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000015"
     },
     {
       "id": "boss_ch16_mutanus_the_devourer",
@@ -393,14 +393,14 @@
       "creatureType": "生物",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000016",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000016"
     },
     {
       "id": "boss_ch17_rethilgore",
@@ -417,14 +417,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000017",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000017"
     },
     {
       "id": "boss_ch18_razorclaw_the_butcher",
@@ -441,14 +441,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000018",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000018"
     },
     {
       "id": "boss_ch19_baron_silverlaine",
@@ -465,14 +465,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000019",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000019"
     },
     {
       "id": "boss_ch20_commander_springvale",
@@ -489,14 +489,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000020",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000020"
     },
     {
       "id": "boss_ch21_odo_the_blindwatcher",
@@ -513,14 +513,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000021",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000021"
     },
     {
       "id": "boss_ch22_fenrus_the_devourer",
@@ -537,14 +537,14 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000022",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000022"
     },
     {
       "id": "boss_ch23_archmage_arugal",
@@ -561,14 +561,14 @@
       "creatureType": "生物",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000023",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000023"
     },
     {
       "id": "boss_ch24_ghamoo_ra",
@@ -585,14 +585,14 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000024",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000024"
     },
     {
       "id": "boss_ch25_domina",
@@ -609,14 +609,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000025",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000025"
     },
     {
       "id": "boss_ch26_subjugator_kor_ul",
@@ -633,14 +633,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000026",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000026"
     },
     {
       "id": "boss_ch27_thruk",
@@ -657,14 +657,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000027",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000027"
     },
     {
       "id": "boss_ch28_executioner_gore",
@@ -681,14 +681,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000028",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000028"
     },
     {
       "id": "boss_ch29_guardian_of_the_deep",
@@ -705,14 +705,14 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000029",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000029"
     },
     {
       "id": "boss_ch30_twilight_lord_bathiel",
@@ -729,14 +729,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000030",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000030"
     },
     {
       "id": "boss_ch31_aku_mai_the_devourer",
@@ -753,14 +753,14 @@
       "creatureType": "其他",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000031",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000031"
     },
     {
       "id": "boss_ch32_grubbis",
@@ -777,14 +777,14 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000032",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000032"
     },
     {
       "id": "boss_ch33_viscous_fallout",
@@ -801,14 +801,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000033",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000033"
     },
     {
       "id": "boss_ch34_electrocutioner_6000",
@@ -825,14 +825,14 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000034",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000034"
     },
     {
       "id": "boss_ch35_crowd_pummeler_9_60",
@@ -849,14 +849,14 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000035",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000035"
     },
     {
       "id": "boss_ch36_mekgineer_thermaplugg",
@@ -873,14 +873,14 @@
       "creatureType": "其他",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000036",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000036"
     },
     {
       "id": "boss_ch37_roogug",
@@ -897,14 +897,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000037",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000037"
     },
     {
       "id": "boss_ch38_aggem_thorncurse",
@@ -921,14 +921,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000038",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000038"
     },
     {
       "id": "boss_ch39_death_speaker_jargba",
@@ -945,14 +945,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000039",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000039"
     },
     {
       "id": "boss_ch40_overlord_ramtusk",
@@ -969,14 +969,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000040",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000040"
     },
     {
       "id": "boss_ch41_agathelos_the_raging",
@@ -993,14 +993,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000041",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000041"
     },
     {
       "id": "boss_ch42_charlga_razorflank",
@@ -1017,14 +1017,14 @@
       "creatureType": "生物",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000042",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000042"
     },
     {
       "id": "boss_ch43_thalnos_the_soulrender",
@@ -1041,14 +1041,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000043",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000043"
     },
     {
       "id": "boss_ch44_brother_korloff",
@@ -1065,14 +1065,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000044",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000044"
     },
     {
       "id": "boss_ch45_high_inquisitor_fairbanks",
@@ -1089,14 +1089,14 @@
       "creatureType": "生物",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000045",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000045"
     },
     {
       "id": "boss_ch46_aarux",
@@ -1113,14 +1113,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000046",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000046"
     },
     {
       "id": "boss_ch47_mordresh_fire_eye",
@@ -1137,14 +1137,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000047",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000047"
     },
     {
       "id": "boss_ch48_mushlump",
@@ -1161,14 +1161,14 @@
       "creatureType": "植物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000048",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000048"
     },
     {
       "id": "boss_ch49_death_speaker_blackthorn",
@@ -1185,14 +1185,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000049",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000049"
     },
     {
       "id": "boss_ch50_amnennar_the_coldbringer",
@@ -1209,14 +1209,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000050",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000050"
     },
     {
       "id": "boss_ch51_revelosh",
@@ -1233,14 +1233,14 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000051",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000051"
     },
     {
       "id": "boss_ch52_ironaya",
@@ -1257,14 +1257,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000052",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000052"
     },
     {
       "id": "boss_ch53_obsidian_sentinel",
@@ -1281,14 +1281,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000053",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000053"
     },
     {
       "id": "boss_ch54_ancient_stone_keeper",
@@ -1305,14 +1305,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000054",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000054"
     },
     {
       "id": "boss_ch55_galgann_firehammer",
@@ -1329,14 +1329,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000055",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000055"
     },
     {
       "id": "boss_ch56_grimlok",
@@ -1353,14 +1353,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000056",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000056"
     },
     {
       "id": "boss_ch57_archaedas",
@@ -1377,14 +1377,14 @@
       "creatureType": "元素",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000057",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000057"
     },
     {
       "id": "boss_ch58_hydromancer_velratha",
@@ -1401,14 +1401,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000058",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000058"
     },
     {
       "id": "boss_ch59_gahz_rilla",
@@ -1425,14 +1425,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000059",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000059"
     },
     {
       "id": "boss_ch60_antu_sul",
@@ -1449,14 +1449,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000060",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000060"
     },
     {
       "id": "boss_ch61_theka_the_martyr",
@@ -1473,14 +1473,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000061",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000061"
     },
     {
       "id": "boss_ch62_witch_doctor_zum_rah",
@@ -1497,14 +1497,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000062",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000062"
     },
     {
       "id": "boss_ch63_nekrum_gutchewer",
@@ -1521,14 +1521,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000063",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000063"
     },
     {
       "id": "boss_ch64_shadowpriest_sezz_ziz",
@@ -1545,14 +1545,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000064",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000064"
     },
     {
       "id": "boss_ch65_chief_ukorz_sandscalp",
@@ -1569,14 +1569,14 @@
       "creatureType": "生物",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000065",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000065"
     },
     {
       "id": "boss_ch66_noxxion",
@@ -1593,14 +1593,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000066",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000066"
     },
     {
       "id": "boss_ch67_razorlash",
@@ -1617,14 +1617,14 @@
       "creatureType": "植物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000067",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000067"
     },
     {
       "id": "boss_ch68_tinkerer_gizlock",
@@ -1641,14 +1641,14 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000068",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000068"
     },
     {
       "id": "boss_ch69_lord_vyletongue",
@@ -1665,14 +1665,14 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000069",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000069"
     },
     {
       "id": "boss_ch70_celebras_the_cursed",
@@ -1689,14 +1689,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000070",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000070"
     },
     {
       "id": "boss_ch71_landslide",
@@ -1713,14 +1713,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000071",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000071"
     },
     {
       "id": "boss_ch72_rotgrip",
@@ -1737,14 +1737,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000072",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000072"
     },
     {
       "id": "boss_ch73_princess_theradras",
@@ -1761,14 +1761,14 @@
       "creatureType": "元素",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000073",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000073"
     },
     {
       "id": "boss_ch74_avatar_of_hakkar",
@@ -1785,14 +1785,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000074",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000074"
     },
     {
       "id": "boss_ch75_jammal_an_the_prophet",
@@ -1809,14 +1809,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000075",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000075"
     },
     {
       "id": "boss_ch76_wardens_of_the_dream",
@@ -1833,14 +1833,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000076",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000076"
     },
     {
       "id": "boss_ch77_shade_of_eranikus",
@@ -1857,14 +1857,14 @@
       "creatureType": "其他",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000077",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000077"
     },
     {
       "id": "boss_ch78_bael_gar",
@@ -1881,14 +1881,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000078",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000078"
     },
     {
       "id": "boss_ch79_high_interrogator_gerstahn",
@@ -1905,14 +1905,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000079",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000079"
     },
     {
       "id": "boss_ch80_roccor",
@@ -1929,14 +1929,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000080",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000080"
     },
     {
       "id": "boss_ch81_houndmaster_grebmar",
@@ -1953,14 +1953,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000081",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000081"
     },
     {
       "id": "boss_ch82_lord_incendius",
@@ -1977,14 +1977,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000082",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000082"
     },
     {
       "id": "boss_ch83_general_angerforge",
@@ -2001,14 +2001,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000083",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000083"
     },
     {
       "id": "boss_ch84_golem_lord_argelmach",
@@ -2025,14 +2025,14 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000084",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000084"
     },
     {
       "id": "boss_ch85_hurley_blackbreath",
@@ -2049,14 +2049,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000085",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000085"
     },
     {
       "id": "boss_ch86_phalanx",
@@ -2073,14 +2073,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000086",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000086"
     },
     {
       "id": "boss_ch87_the_seven",
@@ -2097,14 +2097,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000087",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000087"
     },
     {
       "id": "boss_ch88_magmus",
@@ -2121,14 +2121,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000088",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000088"
     },
     {
       "id": "boss_ch89_emperor_dagran_thaurissan",
@@ -2145,14 +2145,14 @@
       "creatureType": "生物",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000089",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000089"
     },
     {
       "id": "boss_ch90_pusillin",
@@ -2169,14 +2169,14 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000090",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000090"
     },
     {
       "id": "boss_ch91_zevrim_thornhoof",
@@ -2193,14 +2193,14 @@
       "creatureType": "其他",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000091",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000091"
     },
     {
       "id": "boss_ch92_hydrospawn",
@@ -2217,14 +2217,14 @@
       "creatureType": "元素",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000092",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000092"
     },
     {
       "id": "boss_ch93_lethtendris",
@@ -2241,14 +2241,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000093",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000093"
     },
     {
       "id": "boss_ch94_alzzin_the_wildshaper",
@@ -2265,14 +2265,14 @@
       "creatureType": "其他",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000094",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000094"
     },
     {
       "id": "boss_ch95_the_unforgiven",
@@ -2289,14 +2289,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000095",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000095"
     },
     {
       "id": "boss_ch96_hearthsinger_forresten",
@@ -2313,14 +2313,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000096",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000096"
     },
     {
       "id": "boss_ch97_timmy_the_cruel",
@@ -2337,14 +2337,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000097",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000097"
     },
     {
       "id": "boss_ch98_commander_malor",
@@ -2361,14 +2361,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000098",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000098"
     },
     {
       "id": "boss_ch99_willey_hopebreaker",
@@ -2385,14 +2385,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000099",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000099"
     },
     {
       "id": "boss_ch100_instructor_galford",
@@ -2409,14 +2409,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000100",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000100"
     },
     {
       "id": "boss_ch101_balnazzar",
@@ -2433,14 +2433,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000101",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000101"
     },
     {
       "id": "boss_ch102_instructor_chillheart",
@@ -2457,14 +2457,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000102",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000102"
     },
     {
       "id": "boss_ch103_jandice_barov",
@@ -2481,14 +2481,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000103",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000103"
     },
     {
       "id": "boss_ch104_rattlegore",
@@ -2505,14 +2505,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000104",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000104"
     },
     {
       "id": "boss_ch105_lilian_voss",
@@ -2529,14 +2529,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000105",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000105"
     },
     {
       "id": "boss_ch106_darkmaster_gandling",
@@ -2553,14 +2553,14 @@
       "creatureType": "亡灵",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000106",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000106"
     },
     {
       "id": "boss_ch107_highlord_omokk",
@@ -2577,14 +2577,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000107",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000107"
     },
     {
       "id": "boss_ch108_shadow_hunter_vosh_gajin",
@@ -2601,14 +2601,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000108",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000108"
     },
     {
       "id": "boss_ch109_war_master_voone",
@@ -2625,14 +2625,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000109",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000109"
     },
     {
       "id": "boss_ch110_mother_smolderweb",
@@ -2649,14 +2649,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000110",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000110"
     },
     {
       "id": "boss_ch111_urok_doomhowl",
@@ -2673,14 +2673,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000111",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000111"
     },
     {
       "id": "boss_ch112_quartermaster_zigris",
@@ -2697,14 +2697,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000112",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000112"
     },
     {
       "id": "boss_ch113_halycon",
@@ -2721,14 +2721,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000113",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000113"
     },
     {
       "id": "boss_ch114_gizrul_the_slavener",
@@ -2745,14 +2745,14 @@
       "creatureType": "生物",
       "isFinalBoss": false,
       "combatBossId": "white",
-      "bossUid": "B000114",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000114"
     },
     {
       "id": "boss_ch115_overlord_wyrmthalak",
@@ -2769,14 +2769,14 @@
       "creatureType": "生物",
       "isFinalBoss": true,
       "combatBossId": "white",
-      "bossUid": "B000115",
       "hitRadius": 80,
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": []
+      "skillIds": [],
+      "bossUid": "B000115"
     }
   ]
 }

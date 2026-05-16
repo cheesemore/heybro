@@ -8,6 +8,8 @@ import { createStyledGameButton } from '../ui/gameButtons';
 import { createDraftAllyToken, createDraftHeroToken } from '../unitCircleTokens';
 import { ALLY_DEFS } from '../unitDefs';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
+import type { PlayerGearInstance } from '../playerGearInstance';
+import { mountGearCard } from '../ui/gearCard';
 
 /** 与 `createDraftHeroToken` 一致：根在 `(x, cellTop + dia/2)` 时，圆盘几何中心的屏幕 Y */
 function lotteryDraftHeroDiskCenterY(cellTopY: number, diameterPx: number): number {
@@ -764,5 +766,190 @@ export class ModalLayer extends Container {
     this.addChild(okBtn);
 
     attachScreenDebugLabel(this, 'ModalLayer.alertSinglePullLotteryResult');
+  }
+
+  /**
+   * 新装备对比：左=身上，右=新获得；保留=丢弃新装，替换=穿上新装（均会存档）。
+   */
+  showGearCompare(
+    equipped: PlayerGearInstance,
+    incoming: PlayerGearInstance,
+    handlers: { onKeep: () => void; onReplace: () => void },
+  ): void {
+    this.removeChildren();
+    this.visible = true;
+    this.eventMode = 'static';
+
+    const dim = new Graphics();
+    dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x0b1020, alpha: 0.78 });
+    dim.eventMode = 'static';
+    this.addChild(dim);
+
+    const pw = Math.round(480 * LAYOUT_SCALE);
+    const ph = Math.round(318 * LAYOUT_SCALE);
+    const panelX = (GAME_WIDTH - pw) / 2;
+    const panelY = (GAME_HEIGHT - ph) / 2;
+
+    const panelPlate = new Graphics();
+    const panelFrame = new Graphics();
+    drawGoldenSolidPanel(panelPlate, panelFrame, pw, ph, LAYOUT_SCALE);
+    panelPlate.position.set(panelX, panelY);
+    panelFrame.position.set(panelX, panelY);
+    this.addChild(panelPlate);
+    this.addChild(panelFrame);
+
+    const topPad = Math.round(12 * LAYOUT_SCALE);
+    const colW = Math.round(188 * LAYOUT_SCALE);
+    const colGap = Math.round(14 * LAYOUT_SCALE);
+    const cardLayout = {
+      width: colW,
+      iconSize: Math.round(52 * LAYOUT_SCALE),
+      compact: true,
+    };
+    const btnW = Math.round(168 * LAYOUT_SCALE);
+    const btnH = Math.round(48 * LAYOUT_SCALE);
+    const bottomPad = Math.round(14 * LAYOUT_SCALE);
+
+    const leftCx = GAME_WIDTH / 2 - colGap / 2 - colW / 2;
+    const rightCx = GAME_WIDTH / 2 + colGap / 2 + colW / 2;
+    const colTitleY = panelY + topPad + Math.round(24 * LAYOUT_SCALE);
+    const cardTop = panelY + topPad + Math.round(42 * LAYOUT_SCALE);
+    const btnY = panelY + ph - bottomPad - btnH;
+
+    const title = new Text({
+      text: '装备对比',
+      style: {
+        fontFamily: 'system-ui, "Microsoft YaHei", Segoe UI, sans-serif',
+        fontSize: Math.round(22 * LAYOUT_SCALE),
+        fill: GOLDEN_PANEL_TITLE,
+        fontWeight: '800',
+      },
+    });
+    title.anchor.set(0.5, 0);
+    title.position.set(GAME_WIDTH / 2, panelY + topPad);
+    this.addChild(title);
+
+    const colTitleStyle = {
+      fontFamily: 'system-ui, "Microsoft YaHei", Segoe UI, sans-serif',
+      fontSize: Math.round(15 * LAYOUT_SCALE),
+      fill: GOLDEN_PANEL_BODY,
+      fontWeight: '700' as const,
+    };
+
+    const leftTitle = new Text({ text: '身上装备', style: colTitleStyle });
+    leftTitle.anchor.set(0.5, 0);
+    leftTitle.position.set(leftCx, colTitleY);
+    this.addChild(leftTitle);
+
+    const rightTitle = new Text({ text: '新装备', style: colTitleStyle });
+    rightTitle.anchor.set(0.5, 0);
+    rightTitle.position.set(rightCx, colTitleY);
+    this.addChild(rightTitle);
+
+    mountGearCard(this, leftCx, cardTop, equipped, cardLayout, null);
+
+    const arrow: 'up' | 'down' = incoming.gs > equipped.gs ? 'up' : 'down';
+    mountGearCard(this, rightCx, cardTop, incoming, cardLayout, arrow);
+
+    const close = (): void => {
+      this.visible = false;
+      this.eventMode = 'none';
+      this.removeChildren();
+    };
+
+    const keepBtn = createStyledGameButton('classic', {
+      text: '保留',
+      width: btnW,
+      height: btnH,
+      fontSize: Math.round(20 * LAYOUT_SCALE),
+      onTap: () => {
+        close();
+        handlers.onKeep();
+      },
+    });
+    keepBtn.position.set(leftCx - btnW / 2, btnY);
+    this.addChild(keepBtn);
+
+    const replaceBtn = createStyledGameButton('accent', {
+      text: '替换',
+      width: btnW,
+      height: btnH,
+      fontSize: Math.round(20 * LAYOUT_SCALE),
+      onTap: () => {
+        close();
+        handlers.onReplace();
+      },
+    });
+    replaceBtn.position.set(rightCx - btnW / 2, btnY);
+    this.addChild(replaceBtn);
+
+    attachScreenDebugLabel(this, 'ModalLayer.gearCompare');
+  }
+
+  /** 点击已穿戴装备：查看 GS 与属性 */
+  showGearDetail(gear: PlayerGearInstance, onClose?: () => void): void {
+    this.removeChildren();
+    this.visible = true;
+    this.eventMode = 'static';
+
+    const dim = new Graphics();
+    dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x0b1020, alpha: 0.78 });
+    dim.eventMode = 'static';
+    this.addChild(dim);
+
+    const pw = Math.round(440 * LAYOUT_SCALE);
+    const ph = Math.round(480 * LAYOUT_SCALE);
+    const panelX = (GAME_WIDTH - pw) / 2;
+    const panelY = (GAME_HEIGHT - ph) / 2;
+
+    const panelPlate = new Graphics();
+    const panelFrame = new Graphics();
+    drawGoldenSolidPanel(panelPlate, panelFrame, pw, ph, LAYOUT_SCALE);
+    panelPlate.position.set(panelX, panelY);
+    panelFrame.position.set(panelX, panelY);
+    this.addChild(panelPlate);
+    this.addChild(panelFrame);
+
+    const title = new Text({
+      text: '装备详情',
+      style: {
+        fontFamily: 'system-ui, "Microsoft YaHei", Segoe UI, sans-serif',
+        fontSize: Math.round(28 * LAYOUT_SCALE),
+        fill: GOLDEN_PANEL_TITLE,
+        fontWeight: '800',
+      },
+    });
+    title.anchor.set(0.5, 0);
+    title.position.set(GAME_WIDTH / 2, panelY + Math.round(18 * LAYOUT_SCALE));
+    this.addChild(title);
+
+    const colW = Math.round(260 * LAYOUT_SCALE);
+    const cardTop = panelY + Math.round(56 * LAYOUT_SCALE);
+    mountGearCard(this, GAME_WIDTH / 2, cardTop, gear, {
+      width: colW,
+      iconSize: Math.round(72 * LAYOUT_SCALE),
+      compact: true,
+    });
+
+    const close = (): void => {
+      this.visible = false;
+      this.eventMode = 'none';
+      this.removeChildren();
+      onClose?.();
+    };
+
+    const btnW = Math.round(220 * LAYOUT_SCALE);
+    const btnH = Math.round(64 * LAYOUT_SCALE);
+    const okBtn = createStyledGameButton('modalOk', {
+      text: '关闭',
+      width: btnW,
+      height: btnH,
+      fontSize: Math.round(24 * LAYOUT_SCALE),
+      onTap: close,
+    });
+    okBtn.position.set((GAME_WIDTH - btnW) / 2, panelY + ph - btnH - Math.round(28 * LAYOUT_SCALE));
+    this.addChild(okBtn);
+
+    attachScreenDebugLabel(this, 'ModalLayer.gearDetail');
   }
 }

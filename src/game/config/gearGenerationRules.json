@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "purpose": "副本装备等级区间与品质概率规则。改后执行 npm run gen:gear-items。按副本「装备等级上限 levelMax」选档，非玩家角色等级。",
+  "levelRange": {
+    "firstDungeonMin": 1,
+    "firstDungeonMax": 5,
+    "levelStepPerDungeon": 3,
+    "note": "第 n 座副本（dungeonOrdinal）：levelMin = firstDungeonMin + (n-1)×step；levelMax = firstDungeonMax + (n-1)×step。例：怒焰裂谷 1-5，死亡矿井 4-8。"
+  },
+  "qualityTiers": [
+    {
+      "tierId": "maxBelow10",
+      "whenMaxLevelBelow": 10,
+      "note": "副本装备等级上限 < 10：仅白绿",
+      "weightsPercent": {
+        "common": 70,
+        "uncommon": 30
+      }
+    },
+    {
+      "tierId": "maxBelow20",
+      "whenMaxLevelBelow": 20,
+      "note": "10 ≤ 上限 < 20：白绿蓝",
+      "weightsPercent": {
+        "common": 40,
+        "uncommon": 35,
+        "rare": 25
+      }
+    },
+    {
+      "tierId": "maxBelow40",
+      "whenMaxLevelBelow": 40,
+      "note": "20 ≤ 上限 < 40：白绿蓝紫",
+      "weightsPercent": {
+        "common": 30,
+        "uncommon": 30,
+        "rare": 25,
+        "epic": 15
+      }
+    },
+    {
+      "tierId": "max40AndAbove",
+      "whenMaxLevelBelow": null,
+      "note": "上限 ≥ 40：白绿蓝紫橙",
+      "weightsPercent": {
+        "common": 15,
+        "uncommon": 20,
+        "rare": 35,
+        "epic": 25,
+        "legendary": 5
+      }
+    }
+  ],
+  "qualityLabelsCn": {
+    "common": "普通",
+    "uncommon": "精良",
+    "rare": "稀有",
+    "epic": "史诗",
+    "legendary": "传说"
+  }
+}

@@ -3,7 +3,7 @@
   "generator": "scripts/generate-wow-book-tables.mjs",
   "designBaseline": "docs/unit-stat-design-baseline.md",
   "sourceReference": "docs/reference-classic-vanilla-wow-roguelike-level-design.json",
-  "editConvention": "小怪唯一数值源。`id` 在表内唯一（slug）。`monsterUid` 为出图/资源用稳定唯一号（U+六位数字），重新跑生成脚本时同 `id` 会尽量保留原 `monsterUid`。`refKey` = `dungeonId::mob_pool 怪名 slug`，与参考 JSON 中副本 `slug(name_en|name_cn)` + 该条 mob_pool 怪名 slug 一一对应；legacy 十二兵种为 `legacy::<id>`。立绘可用 `public/assets/wow-mobs/<monsterUid>.png` 或 `<id>.png`；战场圆形代币优先 `public/assets/wow-mobs-circle/<monsterUid>.png`（部分就位时缺图仍回退 `enemies/<paint>.png`）。未提供则仍用 enemyPaint 的 `public/assets/enemies/<paint>.png`。",
+  "editConvention": "小怪唯一数值源。`id` 在表内唯一（slug）。`monsterUid` 为出图/资源用稳定唯一号（U+六位数字），重新跑生成脚本时同 `id` 会尽量保留原 `monsterUid`。`refKey` = `dungeonId::mob_pool 怪名 slug`，与参考 JSON 中副本 `slug(name_en|name_cn)` + 该条 mob_pool 怪名 slug 一一对应；legacy 十二兵种为 `legacy::<id>`。立绘可用 `public/assets/wow-mobs/<monsterUid>.png` 或 `<id>.png`；未提供则仍用 enemyPaint 的 `public/assets/enemies/<paint>.png`。",
   "monsters": [
     {
       "id": "abomination",
@@ -15,9 +15,6 @@
       "role": "输出",
       "creatureType": "",
       "traits": [],
-      "skillIds": [
-        "skill_abomination_cleave"
-      ],
       "hitRadius": 36,
       "baseMaxHp": 317,
       "baseAtk": 10,
@@ -37,9 +34,6 @@
       "role": "输出",
       "creatureType": "",
       "traits": [],
-      "skillIds": [
-        "skill_batrider_leap"
-      ],
       "hitRadius": 36,
       "baseMaxHp": 222,
       "baseAtk": 13,
@@ -59,9 +53,6 @@
       "role": "输出",
       "creatureType": "",
       "traits": [],
-      "skillIds": [
-        "skill_beserker_leap"
-      ],
       "hitRadius": 36,
       "baseMaxHp": 250,
       "baseAtk": 9,
@@ -81,9 +72,6 @@
       "role": "输出",
       "creatureType": "",
       "traits": [],
-      "skillIds": [
-        "skill_catapult_burn_field"
-      ],
       "hitRadius": 36,
       "baseMaxHp": 233,
       "baseAtk": 24,
@@ -103,7 +91,6 @@
       "role": "输出",
       "creatureType": "",
       "traits": [],
-      "skillIds": [],
       "hitRadius": 36,
       "baseMaxHp": 262,
       "baseAtk": 12,
@@ -123,9 +110,6 @@
       "role": "输出",
       "creatureType": "",
       "traits": [],
-      "skillIds": [
-        "skill_dread_warrior_assault"
-      ],
       "hitRadius": 36,
       "baseMaxHp": 223,
       "baseAtk": 11,
@@ -145,7 +129,6 @@
       "role": "输出",
       "creatureType": "",
       "traits": [],
-      "skillIds": [],
       "hitRadius": 36,
       "baseMaxHp": 270,
       "baseAtk": 11,
@@ -165,7 +148,6 @@
       "role": "输出",
       "creatureType": "",
       "traits": [],
-      "skillIds": [],
       "hitRadius": 36,
       "baseMaxHp": 268,
       "baseAtk": 14,
@@ -185,7 +167,6 @@
       "role": "输出",
       "creatureType": "",
       "traits": [],
-      "skillIds": [],
       "hitRadius": 36,
       "baseMaxHp": 321,
       "baseAtk": 15,
@@ -967,15 +948,12 @@
       "creatureType": "其他",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 205,
-      "baseAtk": 21,
-      "attackSpeed": 1,
+      "baseMaxHp": 266,
+      "baseAtk": 11.21,
+      "attackSpeed": 0.6,
       "range": 10,
       "moveSpeed": 510,
-      "monsterUid": "U000050",
-      "skillIds": [
-        "skill_batrider_leap"
-      ]
+      "monsterUid": "U000050"
     },
     {
       "id": "mob_earthen",
@@ -1692,16 +1670,12 @@
       "creatureType": "元素",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 285,
-      "baseAtk": 15,
-      "attackSpeed": 0.78,
+      "baseMaxHp": 290,
+      "baseAtk": 14.41,
+      "attackSpeed": 0.81,
       "range": 235,
       "moveSpeed": 504,
-      "monsterUid": "U000088",
-      "skillIds": [
-        "skill_boom",
-        "skill_mage_weak"
-      ]
+      "monsterUid": "U000088"
     },
     {
       "id": "mob_murloc_aberration",
@@ -1981,15 +1955,12 @@
       "creatureType": "其他",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 283,
-      "baseAtk": 15,
+      "baseMaxHp": 246,
+      "baseAtk": 13.62,
       "attackSpeed": 0.98,
       "range": 223,
       "moveSpeed": 480,
-      "monsterUid": "U000103",
-      "skillIds": [
-        "skill_shaman_bloodlust"
-      ]
+      "monsterUid": "U000103"
     },
     {
       "id": "mob_ragefire_trogg",
@@ -2493,19 +2464,16 @@
       "dungeonId": "ragefire_chasm",
       "dungeonNameCn": "怒焰裂谷",
       "attackType": "远程",
-      "role": "增益",
+      "role": "输出",
       "creatureType": "其他",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 261,
-      "baseAtk": 14,
+      "baseMaxHp": 267,
+      "baseAtk": 14.27,
       "attackSpeed": 0.76,
       "range": 216,
       "moveSpeed": 473,
-      "monsterUid": "U000130",
-      "skillIds": [
-        "skill_evil_strenth"
-      ]
+      "monsterUid": "U000130"
     },
     {
       "id": "mob_searing_blade_enforcer",
@@ -2519,15 +2487,12 @@
       "creatureType": "生物",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 236,
-      "baseAtk": 11,
+      "baseMaxHp": 253,
+      "baseAtk": 12.11,
       "attackSpeed": 0.61,
       "range": 10,
       "moveSpeed": 514,
-      "monsterUid": "U000131",
-      "skillIds": [
-        "skill_normal_crit"
-      ]
+      "monsterUid": "U000131"
     },
     {
       "id": "mob_searing_blade_warlock",
@@ -2540,16 +2505,13 @@
       "role": "输出",
       "creatureType": "其他",
       "traits": [],
-      "hitRadius": 42,
-      "baseMaxHp": 253,
-      "baseAtk": 13,
+      "hitRadius": 36,
+      "baseMaxHp": 280,
+      "baseAtk": 14.54,
       "attackSpeed": 0.76,
       "range": 230,
       "moveSpeed": 502,
-      "monsterUid": "U000132",
-      "skillIds": [
-        "skill_shadow_bot"
-      ]
+      "monsterUid": "U000132"
     },
     {
       "id": "mob_shade_of_eranikus",
@@ -3264,9 +3226,6 @@
       "role": "输出",
       "creatureType": "",
       "traits": [],
-      "skillIds": [
-        "skill_raider_leap"
-      ],
       "hitRadius": 36,
       "baseMaxHp": 202,
       "baseAtk": 11,
@@ -3286,9 +3245,6 @@
       "role": "输出",
       "creatureType": "",
       "traits": [],
-      "skillIds": [
-        "skill_shaman_bloodlust"
-      ],
       "hitRadius": 36,
       "baseMaxHp": 212,
       "baseAtk": 17,
@@ -3308,9 +3264,6 @@
       "role": "输出",
       "creatureType": "",
       "traits": [],
-      "skillIds": [
-        "skill_ultralisk_mage_fragile"
-      ],
       "hitRadius": 36,
       "baseMaxHp": 408,
       "baseAtk": 13,
