@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:pixijs-ui-ref": "npm --prefix temp/pixijs-game run dev",
     "build": "npm run build:character-prompts && tsc && vite build",
     "build:character-prompts": "node scripts/build-character-manifest.mjs",
     "gen:wow-book": "node scripts/generate-wow-book-tables.mjs",

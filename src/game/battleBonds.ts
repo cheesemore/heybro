@@ -47,3 +47,6 @@ export function hasBondUltimate(count: number): boolean {
 export function hasBondMega(count: number): boolean {
   return count >= 21;
 }
+
+/** 极巨化：仅放大代币与碰撞半径至此倍数（相对原体型）；不修改攻击力与生命 */
+export const BOND_MEGA_RADIUS_MULT = 1.5 as const;

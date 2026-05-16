@@ -54,6 +54,15 @@ RED_BG = (
     "避免亮橙火焰铺满。 Heavily blurred bokeh background dominated by unified dark crimson and "
     "burgundy (#450a0a, #7f1d1d), ominous low saturation, slightly blackened edges, no bright orange flames."
 )
+# 首领专用：与 RED_BG 叠用，避免模型按「饥荒低饱和」误画成冷灰底。
+BOSS_BG_MUST_CN = (
+    "【首领立绘硬性要求】背景必须是暗红/酒红虚化 bokeh，禁止冷灰、石板灰、蓝灰 bokeh；"
+    "勿与小怪共用灰色背景。"
+)
+BOSS_BG_MUST_EN = (
+    "MANDATORY for dungeon boss portrait: background MUST be dark crimson/burgundy bokeh only; "
+    "NOT cool gray, slate, or blue-gray bokeh; NOT the same neutral gray as trash mobs."
+)
 
 
 def slug(s: str) -> str:
@@ -201,6 +210,10 @@ def prompt_boss_row(
     mid = (
         RED_BG
         + " "
+        + BOSS_BG_MUST_CN
+        + " "
+        + BOSS_BG_MUST_EN
+        + " "
         + STYLE_CN
         + " "
         + STYLE_EN
@@ -213,7 +226,8 @@ def prompt_boss_row(
     body_parts = [x for x in (appearance, skills_txt) if x]
     body = ("设定要点：" + " ".join(body_parts)) if body_parts else ""
     tail = (
-        "World of Warcraft dungeon boss, dramatic but desaturated, puppet-like stylization. "
+        "World of Warcraft dungeon boss portrait, dramatic puppet-like stylization, "
+        "dark red burgundy bokeh background required. "
         + AVOID
         + " "
         + tags

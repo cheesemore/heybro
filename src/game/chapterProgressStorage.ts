@@ -1,5 +1,5 @@
 import { BOOK_CHAPTER_COUNT } from './bookChapterConfig';
-import { ROUNDS } from './roundConfig';
+import { roundsForBookChapter } from './roundConfig';
 
 const STORAGE_KEY = 'heybro.chapterProgress.v1';
 
@@ -97,9 +97,23 @@ export function loadChapterProgress(): ChapterProgressFileV2 {
   return parseStored(ls.getItem(STORAGE_KEY));
 }
 
-/** 世界线内「记星」的战斗回合下标（与 ROUNDS 一致） */
-export function combatRoundIndices(): readonly number[] {
-  return ROUNDS.map((m, i) => (m.kind === 'normal' || m.kind === 'boss' ? i : -1)).filter((i): i is number => i >= 0);
+/** 删除本地章节进度存档；下次读取为空进度。 */
+export function clearPersistedChapterProgress(): void {
+  const ls = safeLocalStorage();
+  if (!ls) return;
+  try {
+    ls.removeItem(STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** 该书本章节内参与记星的战斗回合下标（仅 normal / boss） */
+export function combatRoundIndicesForChapter(chapterId: number): readonly number[] {
+  const ch = Math.max(1, Math.min(BOOK_CHAPTER_COUNT, Math.floor(chapterId)));
+  return roundsForBookChapter(ch)
+    .map((m, i) => (m.kind === 'normal' || m.kind === 'boss' ? i : -1))
+    .filter((i): i is number => i >= 0);
 }
 
 const MAX_STAR_PER_CHAPTER = 3;
@@ -117,10 +131,11 @@ export function starsFromHpAfterBattle(hp: number): 1 | 2 | 3 {
   return 1;
 }
 
-/** 单关：与历史最高取 max；若星级提升，返回提升量（用于发放抽奖次数） */
+/** 单关：与历史最高取 max；若星级提升，返回提升量（用于同步招募券额度，见 heroMetaStorage.syncLotteryTicketsFromChapterProgress） */
 export function recordCombatRoundBestStar(chapterId: number, roundIndex: number, hpAfterBattle: number): number {
   const ch = Math.max(1, Math.min(BOOK_CHAPTER_COUNT, Math.floor(chapterId)));
-  const ri = Math.max(0, Math.min(ROUNDS.length - 1, Math.floor(roundIndex)));
+  const maxRi = Math.max(0, roundsForBookChapter(ch).length - 1);
+  const ri = Math.max(0, Math.min(maxRi, Math.floor(roundIndex)));
   const star = starsFromHpAfterBattle(hpAfterBattle);
   const cur = loadChapterProgress();
   const ck = String(ch);
@@ -149,7 +164,7 @@ export function getChapterStarFilledCount(chapterId: number): 0 | 1 | 2 | 3 {
   if (!cur.clearedChapterIds.includes(id)) return 0;
   const ck = String(id);
   const map = cur.bestStarByChapterRound[ck] ?? {};
-  const combat = combatRoundIndices();
+  const combat = combatRoundIndicesForChapter(id);
   let minS = 3;
   for (const ri of combat) {
     const raw = map[String(ri)];
@@ -191,6 +206,15 @@ export function getCompletedChaptersStarSummary(): {
   return { completedChapterCount, starsEarned, starsCapForCompleted };
 }
 
+/** 书本第 1～4 章均为「怒焰裂谷」地下城；四关均已通关则视为该地下城已通关（用于刷副本等解锁） */
+export function isRagefireChasmBookCleared(): boolean {
+  const cleared = new Set(loadChapterProgress().clearedChapterIds);
+  for (let c = 1; c <= 4; c++) {
+    if (!cleared.has(c)) return false;
+  }
+  return true;
+}
+
 /** 第 1…BOOK_CHAPTER_COUNT 章是否均已通关 */
 export function isAllChaptersFullyCleared(): boolean {
   const cleared = new Set(loadChapterProgress().clearedChapterIds);
@@ -216,7 +240,7 @@ export function getCurrentChallengeChapterId(): number {
   return BOOK_CHAPTER_COUNT;
 }
 
-/** 测试：将指定章节记为已通关，且所有「战斗关」历史最高星一律设为 star（章节展示星 = 各战斗关最低星，故此时即为 star）。返回因星级提升而应发放的抽奖次数。 */
+/** 测试：将指定章节记为已通关，且所有「战斗关」历史最高星一律设为 star（章节展示星 = 各战斗关最低星，故此时即为 star）。返回因星级提升而应折算的招募券额度差（见 heroMetaStorage）。 */
 export function cheatChapterFullClearWithStar(chapterId: number, star: 1 | 2 | 3): number {
   const id = Math.max(1, Math.min(BOOK_CHAPTER_COUNT, Math.floor(chapterId)));
   const s = Math.max(1, Math.min(3, Math.floor(star))) as 1 | 2 | 3;
@@ -224,7 +248,7 @@ export function cheatChapterFullClearWithStar(chapterId: number, star: 1 | 2 | 3
   const ck = String(id);
   const byRound = { ...(cur.bestStarByChapterRound[ck] ?? {}) };
   let earned = 0;
-  for (const ri of combatRoundIndices()) {
+  for (const ri of combatRoundIndicesForChapter(id)) {
     const rk = String(ri);
     const prev = byRound[rk] ?? 0;
     if (s > prev) earned += s - prev;
@@ -241,10 +265,11 @@ export function cheatChapterFullClearWithStar(chapterId: number, star: 1 | 2 | 3
   return earned;
 }
 
-/** 测试/作弊：直接写入某战斗关的历史最高星（覆盖原记录，用于地图调试）。返回因星级提升而应发放的抽奖次数。 */
+/** 测试/作弊：直接写入某战斗关的历史最高星（覆盖原记录，用于地图调试）。返回因星级提升而应折算的招募券额度差。 */
 export function cheatSetCombatRoundStar(chapterId: number, roundIndex: number, star: 1 | 2 | 3): number {
   const ch = Math.max(1, Math.min(BOOK_CHAPTER_COUNT, Math.floor(chapterId)));
-  const ri = Math.max(0, Math.min(ROUNDS.length - 1, Math.floor(roundIndex)));
+  const maxRi = Math.max(0, roundsForBookChapter(ch).length - 1);
+  const ri = Math.max(0, Math.min(maxRi, Math.floor(roundIndex)));
   const s = Math.max(1, Math.min(3, Math.floor(star))) as 1 | 2 | 3;
   const cur = loadChapterProgress();
   const ck = String(ch);

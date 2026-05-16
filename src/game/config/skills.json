@@ -347,8 +347,8 @@
       "limit": "boss",
       "powerTag": "medium",
       "codeStatus": "written",
-      "descriptionCn": "普通攻击会额外找寻2个目标，如果目标不足，剩余单位受到的伤害会提升。",
-      "logicEffectCn": "被动，普通攻击会额外寻找params[0]名在近战范围内（+5半径以防索敌有问题）一起打击，如果寻找不到，那么对目标造成多倍伤害。（举个例子，系数为2，指额外找2个目标，如果范围内只有2个目标（只能额外找到1个），那么2个人分摊总计3倍的普通攻击伤害，如果超过3个目标，那么随机选3个）。这个效果是可以暴击的。这个效果发动时受到攻击的目标会有很大很红的受攻击效果。",
+      "descriptionCn": "普攻（含远程弹道）命中时，在近战范围内额外溅射至多 params[0] 名我方；总伤害按 (1+params[0]) 倍普攻在命中单位间分摊，不足人数则由命中者分摊倍率。可暴击。",
+      "logicEffectCn": "BattleScreen.beginDefaultAttack：敌方且挂载本技能时，无论近战出手或远程弹道命中均走 applyBossHotStrikeMelee。以首领当前位置为圆心、近战射程+effectiveSkillRangeTo+margin 选至多 cap=1+params[0] 名我方（必含弹道主目标）；总伤 baseDmg×cap 均分。playBossHotStrikePresentation：首领周身火环 + 各目标收缩红环与火星。applyDamage 且 hotStrikeHeavy：受击闪白延长、额外火星与双环。params[0]=额外目标人数上限（整数）。",
       "params": [
         2
       ]
@@ -367,12 +367,27 @@
       ]
     },
     {
+      "id": "skill_berserker",
+      "nameCn": "狂暴",
+      "limit": "boss",
+      "powerTag": "strong",
+      "codeStatus": "written",
+      "descriptionCn": "随当前生命比例即时进入阶段：当前生命 ≤ 最大生命 50% 时进入一阶段「狂暴」，≤ 20% 时进入二阶段「极度狂暴」；攻击力按阶段提升，头像与圆盘立绘泛红，周身火星；进阶段时飘字提示。",
+      "logicEffectCn": "BattleScreen：每帧 syncBossBerserkFromHp（且受击扣血后立即再同步）。以开战写入的 bossBerserkBaseAtk 为基数乘阶段倍率写回 atk。params[0]=一阶段线（当前生命占最大生命百分比 ≤ 则至少一阶段；高于 params[2] 且 ≤ params[0] 为一阶段）；params[1]=一阶段攻加成（%，atk×(1+params[1]/100)）；params[2]=二阶段线（≤ 则二阶段）；params[3]=二阶段攻加成（%）。阶段 1/2 飘字「狂暴」「极度狂暴」并播环与火星；body 与 tokenDisk 染色；二阶段火星更密。",
+      "params": [
+        50,
+        50,
+        20,
+        100
+      ]
+    },
+    {
       "id": "skill_hero_mage_arcane_missiles",
       "nameCn": "奥术飞弹",
       "limit": "any",
       "codeStatus": "written",
       "descriptionCn": "引导约 3 秒内向目标连续发射魔法飞弹；每发攻击力×150% 伤害。引导结束后冷却 12 秒。法师羁绊可强化伤害、射速与对首领暴击。",
-      "logicEffectCn": "英雄 mage_01（艾拉瑞）与 mage_02（西里昂，同技能）。BattleScreen.tickHeroMageArcaneMissiles：冷却在引导结束后置 12s；引导内不普攻；眩晕或目标死亡/失距则打断并进入冷却。法师羁绊≥6 系数 225%；≥10 发射间隔 0.3s；≥15 对首领该技能暴击率+50%、暴击伤害×1.5（与全局暴击叠乘）。弹道样式 ally_arcane_missile。",
+      "logicEffectCn": "英雄 mage_01（艾拉瑞，蓝品质）与 mage_02（西里昂，紫品质，同技能）。BattleScreen.tickHeroMageArcaneMissiles：冷却在引导结束后置 12s；引导内不普攻；眩晕或目标死亡/失距则打断并进入冷却。法师羁绊≥6 系数 225%；≥10 发射间隔 0.3s；≥15 对首领该技能暴击率+50%、暴击伤害×1.5（与全局暴击叠乘）。弹道样式 ally_arcane_missile。",
       "params": [
         12,
         3,
@@ -386,12 +401,12 @@
       "nameCn": "群体庇护",
       "limit": "any",
       "codeStatus": "written",
-      "descriptionCn": "周期性为友方施加护盾（=攻击力×100%，上限同生命）；优先低生命且无护盾者。牧师羁绊可缩短冷却、低血追加治疗、或庇护全体。",
-      "logicEffectCn": "英雄 priest_01（塞拉菲）与 priest_02（莉奥拉，同技能）。护盾为数值字段 shield≤maxHp；非 trueDamage 伤害先扣护盾再扣生命。BattleScreen.tryCastPriestMassShelter：冷却 24s，牧师羁绊≥6 为 18s；目标数 min(存活牧师数, 友方数)，≥15 为全体；羁绊≥10 且目标当前生命&lt;50% 最大生命时额外 applyHeal（同牧师普攻治疗量）。环形紫盾条 redrawHpRingWithShield。",
+      "descriptionCn": "周期性为友方施加护盾（=攻击力×200%，上限同生命）；优先低生命且无护盾者。牧师羁绊可缩短冷却、低血追加治疗（终档羁绊下该治疗再翻倍）、或庇护全体。",
+      "logicEffectCn": "英雄 priest_01（塞拉菲，蓝品质）与 priest_02（莉奥拉，紫品质，同技能）。护盾为数值字段 shield≤maxHp；非 trueDamage 伤害先扣护盾再扣生命。BattleScreen.tryCastPriestMassShelter：冷却 params[0] 秒，牧师羁绊≥6 为 params[1] 秒；护盾量 = 攻击力×params[2]（默认 2 即 200%）；params[3]=低血线（当前生命/最大生命&lt;该值且羁绊≥10 时额外 applyHeal，治疗量=攻击力×2；牧师羁绊达终档≥15 时为×4）。目标数 min(存活牧师数, 友方数)，≥15 为全体。环形紫盾条 redrawHpRingWithShield。",
       "params": [
-        24,
-        18,
-        1,
+        48,
+        36,
+        2,
         0.5
       ],
       "powerTag": "strong"
@@ -402,7 +417,7 @@
       "limit": "any",
       "codeStatus": "written",
       "descriptionCn": "被动：当场上有本英雄存活时，全场法师与射手友方获得额外暴击率；射手羁绊可强化暴击率、追加暴击伤害，或使射手专注换目标不清层。",
-      "logicEffectCn": "英雄 archer_01（席拉拉）与 archer_02（奇兰，同技能）。BattleScreen：allyStrongStrikeAuraHeroAlive 时 allyKind 为 mage/archer 的友方暴击率 +6%（羁绊≥6 为 +12%）；暴击时在原有倍率上再×(1+24%)（羁绊≥10）；陨石暴击判定叠加同暴击率且暴伤受加成；奥术飞弹同。羁绊≥15 时射手换目标不重置 archerFocusStacks。脚底 createStrongStrikeHeroAura。",
+      "logicEffectCn": "英雄 archer_01（席拉拉，蓝品质）与 archer_02（奇兰，紫品质，同技能）。BattleScreen：allyStrongStrikeAuraHeroAlive 时 allyKind 为 mage/archer 的友方暴击率 +6%（羁绊≥6 为 +12%）；暴击时在原有倍率上再×(1+24%)（羁绊≥10）；陨石暴击判定叠加同暴击率且暴伤受加成；奥术飞弹同。羁绊≥15 时射手换出手目标不重置 archerFocusStacks。专注：换目标清零在 beginDefaultAttack（出手锁定 archerLockedAttackTargetId）；dealAllyHit 仅当命中目标 id 与锁定一致时叠层并应用每层+3%伤害，避免弹道晚到误清层。脚底 createStrongStrikeHeroAura。",
       "params": [
         6,
         12,
@@ -416,13 +431,88 @@
       "limit": "any",
       "codeStatus": "written",
       "descriptionCn": "18 秒冷却：对单体造成攻击力×200% 伤害并眩晕 10 秒（首领 1 秒），可打断首领蓄力与引导；冲锋中不施放。骑士羁绊可强化伤害、施放时自疗，或在首领蓄力/引导时削减冷却。",
-      "logicEffectCn": "英雄 knight_01（格温妮）与 knight_02（帕西瓦尔，同技能）。BattleScreen.tickKnightHeroHolySanction：fight 态且非冲锋；系数 2 或羁绊≥6 为 4；眩晕非首领 10s、首领 1s；羁绊≥10 自疗 maxHp×10%；羁绊≥15 时在 startBossPunchWindup、startBossRushWindup、beginBossRushCharge 后若制裁 CD>0 则 -5s。特效 spawnHolySanctionStrike。首领已有 rush_charge 眩晕打断逻辑。",
+      "logicEffectCn": "英雄 knight_01（格温妮，蓝品质）与 knight_02（帕西瓦尔，紫品质，同技能）。BattleScreen.tickKnightHeroHolySanction：fight 态且非冲锋；系数 2 或羁绊≥6 为 4；眩晕非首领 10s、首领 1s；羁绊≥10 自疗 maxHp×10%；羁绊≥15 时在 startBossPunchWindup、startBossRushWindup、beginBossRushCharge 后若制裁 CD>0 则 -5s。特效 spawnHolySanctionStrike。首领已有 rush_charge 眩晕打断逻辑。",
       "params": [
         18,
         2,
         4,
         10,
         1
+      ],
+      "powerTag": "strong"
+    },
+    {
+      "id": "skill_rfc3_ch3_group_shadow_sword",
+      "nameCn": "群体暗影箭",
+      "limit": "boss",
+      "codeStatus": "written",
+      "descriptionCn": "装配于怒焰裂谷第三/四关首领：对至多 6 名随机我方各发射一枚暗影箭（第三关限射程内；第四关全场）。表现同暗影箭弹道，造成攻击力×100% 暗影魔法伤害。",
+      "logicEffectCn": "BattleScreen.tickRfc3Ch3BossExclusiveSkills：与 skill_shadow_bot 逻辑分离；params[0]=冷却秒（4），[1]=开场初始冷却（3），[2]=最大目标数（6），[3]=伤害 atk×该值/100（100）。第四关巴扎兰装配精神鞭笞/暗影闪现时，本技能选目标无视射程。命中复用 enemy_shadow_bolt。第四关引导精神鞭笞时不施放。",
+      "params": [
+        4,
+        3,
+        6,
+        100
+      ],
+      "powerTag": "strong"
+    },
+    {
+      "id": "skill_rfc3_ch3_summon_rite",
+      "nameCn": "召唤术",
+      "limit": "boss",
+      "codeStatus": "written",
+      "descriptionCn": "仅装配于怒焰裂谷第三关首领：在战场中央附近召唤两组召唤物，每组 3 只，均为本章怪物池随机种类，强度与本场其它小怪一致。",
+      "logicEffectCn": "BattleScreen.tickRfc3Ch3BossExclusiveSkills：params[0]=冷却秒（默认 24），params[1]=开场初始冷却秒（默认 10），params[2]=每组数量（默认 3），params[3]=组数（默认 2）。mobIdsForBookChapter(bookChapterId) 抽 id，scaledEnemyHp/Atk 与 spawnEnemies 小怪一致。眩晕中不施放。",
+      "params": [
+        24,
+        10,
+        3,
+        2
+      ],
+      "powerTag": "strong"
+    },
+    {
+      "id": "skill_rfc3_ch3_corrosion",
+      "nameCn": "腐蚀术",
+      "limit": "boss",
+      "codeStatus": "written",
+      "descriptionCn": "仅装配于怒焰裂谷第三关首领：对一名尚未被腐蚀的我方施加腐蚀，每秒受到相当于首领攻击力 50% 的魔法伤害，持续 24 秒；目标身上呈绿色中毒色调。",
+      "logicEffectCn": "BattleScreen.tickRfc3Ch3BossExclusiveSkills：params[0]=冷却秒（默认 3），params[1]=开场初始冷却秒（默认 0 即开场可放），params[2]=每秒伤害为施放时首领 atk×该值/100（默认 50），params[3]=持续秒数（默认 24）。tickAllyRfc3CorrosionDot 结算 DoT；随机挑选无 rfc3CorrosionRemainSec 的存活我方。眩晕中不施放腐蚀术但 DoT 仍跳。",
+      "params": [
+        3,
+        0,
+        50,
+        24
+      ],
+      "powerTag": "strong"
+    },
+    {
+      "id": "skill_rfc4_ch4_mind_lash",
+      "nameCn": "群体精神鞭笞",
+      "limit": "boss",
+      "codeStatus": "written",
+      "descriptionCn": "仅装配于怒焰裂谷第四关首领：首领生命低于 75% 时可引导 10 秒，对全场至多 18 名我方连线鞭笞（无视射程）；引导期间每秒每目标造成攻击力×30% 伤害，治疗量为造成伤害的 200%。引导结束后再进入 10 秒冷却；引导中眩晕则打断并立刻转冷却。",
+      "logicEffectCn": "BattleScreen.tickRfc4Ch4BossExclusiveSkills：params[0]=引导结束后冷却秒（10），[1]=引导秒（10），[2]=最大目标数（18），[3]=可施放生命比例%（75），[4]=每跳每目标伤害为 atk×该值/100（30）。吸血为造成伤害×2、跳间隔 1 秒、连线圆心对圆心、圆盘引导条为代码写死；眩晕打断。",
+      "params": [
+        10,
+        10,
+        18,
+        75,
+        30
+      ],
+      "powerTag": "strong"
+    },
+    {
+      "id": "skill_rfc4_ch4_shadow_blink",
+      "nameCn": "暗影闪现",
+      "limit": "boss",
+      "codeStatus": "written",
+      "descriptionCn": "仅装配于怒焰裂谷第四关首领：先对当前位置 300 码内全体我方眩晕 3 秒，再闪现至我方人数最少的战场象限角落。",
+      "logicEffectCn": "BattleScreen.tickRfc4Ch4BossExclusiveSkills：params[0]=冷却秒（15），[1]=开场初始冷却秒（5），[2]=眩晕控制秒（3）。先以施放时位置判定眩晕范围，再位移；300 码、田字格最少人象限角落为代码写死。",
+      "params": [
+        15,
+        5,
+        3
       ],
       "powerTag": "strong"
     }

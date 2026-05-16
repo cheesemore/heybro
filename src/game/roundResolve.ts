@@ -1,6 +1,7 @@
 import { mobIdsForBookChapter } from './bookChapterConfig';
 import type { RunState } from './runState';
 import type { BossId, RoundMeta } from './types';
+import { legacyProgressRoundIndex } from './roundConfig';
 import { mulberry32 } from './seedRandom';
 import { getWowMob, wowFinalBossNameCn, wowMobEnemyPaint } from './wowBookData';
 
@@ -102,7 +103,8 @@ export function resolveCombatRoundEnemies(run: RunState, roundIndex: number, met
   if (meta.kind !== 'normal') return [];
   const pool = effectiveMobPool(run.bookChapterId);
   const rnd = mulberry32(waveSeed(run.bookChapterId, roundIndex));
-  return normalWaveFromWowMobPool(roundIndex, pool, rnd);
+  const scaleRi = legacyProgressRoundIndex(run.bookChapterId, roundIndex);
+  return normalWaveFromWowMobPool(scaleRi, pool, rnd);
 }
 
 /** 深拷贝关卡元数据并填入本局敌阵（勿修改 ROUNDS 静态表） */

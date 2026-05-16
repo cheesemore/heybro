@@ -7,7 +7,7 @@ import { ALLY_CLASSES } from '../constants';
 import { applyPick, boardHasAnyUnit, randomThreeFromFive } from '../draftLogic';
 import { roguePickGoldCost, rogueRefreshGoldCost } from '../strategyApply';
 import type { ArtifactKind } from '../strategyTypes';
-import { ROUNDS } from '../roundConfig';
+import { roundsForBookChapter } from '../roundConfig';
 import { getResolvedRoundMeta } from '../roundResolve';
 import { ALLY_DEFS } from '../unitDefs';
 import type { AllyClass, RoundMeta } from '../types';
@@ -173,7 +173,9 @@ export class DraftScreen extends Container {
     this.run = run;
     this.onFinished = onFinished;
     const ri = run.currentRoundIndex;
-    this.roundMeta = getResolvedRoundMeta(run, ri, ROUNDS[ri]!);
+    const base = roundsForBookChapter(run.bookChapterId)[ri];
+    if (!base) throw new Error('[DraftScreen] round index out of range');
+    this.roundMeta = getResolvedRoundMeta(run, ri, base);
 
     /** 旧版允许同格叠神器+兵；新版互斥，迁入最近的双空格 */
     for (let i = 0; i < 9; i++) {

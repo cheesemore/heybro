@@ -7,6 +7,7 @@ import {
   getCompletedChaptersStarSummary,
   getCurrentChallengeChapterId,
   isAllChaptersFullyCleared,
+  isRagefireChasmBookCleared,
   loadChapterProgress,
 } from '../chapterProgressStorage';
 import { bossDisplayName } from '../roundConfig';
@@ -42,7 +43,7 @@ import {
 } from '../wowBookData';
 
 /**
- * 章节入口：线性解锁，中央仅展示当前可挑战章节；底部「家园 | 进入本章 | 英雄」。
+ * 章节入口：线性解锁，中央仅展示当前可挑战章节；底部「刷副本 | 进入本章 | 职业/英雄」。
  */
 export class ChapterSelectScreen extends Container {
   private readonly onPickChapter: (chapterId: number) => void;
@@ -113,38 +114,53 @@ export class ChapterSelectScreen extends Container {
     const midH = Math.round(88 * LAYOUT_SCALE);
     const { sideW, midW, btnGap, rowX } = fitChapterBottomButtonRow(
       padForRow,
-      Math.round(200 * LAYOUT_SCALE),
+      Math.round(210 * LAYOUT_SCALE),
       Math.round(420 * LAYOUT_SCALE),
       Math.round(16 * LAYOUT_SCALE),
     );
     const rowY = GAME_HEIGHT - Math.round(200 * LAYOUT_SCALE);
 
-    const mkSide = (x: number, label: string, onTap?: () => void): void => {
-      const btn = createStyledGameButton(onTap ? 'classic' : 'classicMuted', {
-        text: label,
-        width: sideW,
-        height: sideH,
-        fontSize: Math.round(22 * LAYOUT_SCALE),
+    const patrolBtnY = rowY + (midH - sideH) / 2;
+    const patrolUnlocked = isRagefireChasmBookCleared();
+    if (!patrolUnlocked) {
+      const patrolHint = new Text({
+        text: '通关怒焰峡谷解锁',
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
+          fontSize: Math.round(14 * LAYOUT_SCALE),
+          fill: 0x64748b,
+          fontWeight: '600',
+          align: 'center',
+          wordWrap: true,
+          wordWrapWidth: sideW - Math.round(8 * LAYOUT_SCALE),
+        },
       });
-      btn.position.set(x, rowY + (midH - sideH) / 2);
-      if (onTap) {
-        btn.on('pointertap', () => onTap());
-      } else {
-        btn.eventMode = 'passive';
-        btn.cursor = 'default';
-      }
-      this.addChild(btn);
-    };
+      patrolHint.anchor.set(0.5, 1);
+      patrolHint.position.set(rowX + sideW / 2, patrolBtnY - Math.round(6 * LAYOUT_SCALE));
+      this.addChild(patrolHint);
+    }
 
-    mkSide(rowX, '家园');
+    const patrolBtn = createStyledGameButton(patrolUnlocked ? 'classic' : 'classicMuted', {
+      text: '刷副本',
+      width: sideW,
+      height: sideH,
+      fontSize: Math.round(22 * LAYOUT_SCALE),
+      onTap: patrolUnlocked ? () => spawnFloatingGameTip(this, '刷副本功能开发中') : undefined,
+    });
+    patrolBtn.position.set(rowX, patrolBtnY);
+    if (!patrolUnlocked) {
+      patrolBtn.eventMode = 'passive';
+      patrolBtn.cursor = 'default';
+    }
+    this.addChild(patrolBtn);
 
     const heroX = rowX + sideW + btnGap + midW + btnGap;
     const heroY = rowY + (midH - sideH) / 2;
     const heroBtn = createStyledGameButton('classic', {
-      text: '英雄',
+      text: '职业/英雄',
       width: sideW,
       height: sideH,
-      fontSize: Math.round(22 * LAYOUT_SCALE),
+      fontSize: Math.round(20 * LAYOUT_SCALE),
     });
     heroBtn.position.set(heroX, heroY);
     heroBtn.on('pointertap', () => this.onStrengthen?.());
@@ -165,18 +181,6 @@ export class ChapterSelectScreen extends Container {
     chBtn.position.set(rowX + sideW + btnGap, rowY);
     chBtn.on('pointertap', () => this.onPickChapter(this.viewChapterId));
     this.addChild(chBtn);
-
-    const foot = new Text({
-      text: '「家园」功能开发中',
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        fontSize: Math.round(16 * LAYOUT_SCALE),
-        fill: 0x475569,
-      },
-    });
-    foot.anchor.set(0.5, 1);
-    foot.position.set(GAME_WIDTH / 2, GAME_HEIGHT - Math.round(28 * LAYOUT_SCALE));
-    this.addChild(foot);
 
     if (this.onDebugChapterClear) {
       this.keyHandler = (ev: KeyboardEvent): void => {

@@ -26,7 +26,31 @@ function characterPromptsDevRewrite() {
  * 生产用相对路径，避免「子目录部署 / 根目录部署 / 访问时少写尾斜杠」导致脚本 404 白屏。
  * 本地 `vite dev` 仍用 `/`。
  */
+function bookBossSkillTestDevRewrite() {
+  return {
+    name: 'book-boss-skill-test-dev-rewrite',
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        const p = req.url?.split('?')[0] ?? '';
+        if (p === '/book-boss-skill-test' || p === '/book-boss-skill-test/') {
+          req.url = '/book-boss-skill-test.html';
+        }
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig(({ command }) => ({
   base: command === 'build' ? './' : '/',
-  plugins: command === 'serve' ? [characterPromptsDevRewrite()] : [],
+  plugins:
+    command === 'serve' ? [characterPromptsDevRewrite(), bookBossSkillTestDevRewrite()] : [],
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        bookBossSkillTest: path.resolve(__dirname, 'book-boss-skill-test.html'),
+      },
+    },
+  },
 }));

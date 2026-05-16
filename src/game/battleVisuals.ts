@@ -268,7 +268,7 @@ export function spawnFloatNumber(
   x: number,
   y: number,
   text: string,
-  kind: 'damage' | 'crit' | 'magic' | 'heal' | 'block' | 'buff',
+  kind: 'damage' | 'crit' | 'magic' | 'heal' | 'block' | 'buff' | 'shield',
 ): FloatEntry {
   const root = new Container();
   const j = Math.round(12 * LAYOUT_SCALE);
@@ -294,6 +294,10 @@ export function spawnFloatNumber(
     fill = 0xf87171;
     outline = 0x450a0a;
     size = Math.round(30 * LAYOUT_SCALE);
+  } else if (kind === 'shield') {
+    fill = 0xe879f9;
+    outline = 0x581c87;
+    size = Math.round(21 * LAYOUT_SCALE);
   }
   const t = new Text({
     text,
@@ -333,24 +337,66 @@ export function tickFloatEntries(entries: FloatEntry[], dt: number): void {
   }
 }
 
-export type RingPulse = { g: Graphics; t: number; max: number; x: number; y: number; r: number; color: number };
+export type RingPulseFlow = 'expand' | 'shrink';
 
-export function spawnRingPulse(layer: Container, x: number, y: number, r: number, color: number, max = 0.4): RingPulse {
+export type RingPulseOpts = { flow?: RingPulseFlow; delay?: number };
+
+export type RingPulse = {
+  g: Graphics;
+  t: number;
+  max: number;
+  x: number;
+  y: number;
+  r: number;
+  color: number;
+  flow?: RingPulseFlow;
+};
+
+export function spawnRingPulse(
+  layer: Container,
+  x: number,
+  y: number,
+  r: number,
+  color: number,
+  max = 0.4,
+  opts?: RingPulseOpts,
+): RingPulse {
   const g = new Graphics();
   g.position.set(x, y);
   layer.addChild(g);
-  return { g, t: 0, max, x, y, r, color };
+  const delay = opts?.delay ?? 0;
+  return {
+    g,
+    t: delay > 0 ? -delay : 0,
+    max,
+    x,
+    y,
+    r,
+    color,
+    flow: opts?.flow,
+  };
 }
 
 export function tickRingPulses(rings: RingPulse[], dt: number): void {
   for (let i = rings.length - 1; i >= 0; i--) {
     const r = rings[i]!;
     r.t += dt;
+    if (r.t < 0) {
+      continue;
+    }
     const k = r.t / r.max;
-    const rad = r.r * (0.35 + k * 1.1);
+    const flow = r.flow ?? 'expand';
+    let rad: number;
+    if (flow === 'shrink') {
+      rad = Math.max(r.r * 0.2, r.r * (1.52 - k * 1.38));
+    } else {
+      rad = r.r * (0.35 + k * 1.1);
+    }
     const a = Math.max(0, 1 - k);
     r.g.clear();
-    r.g.circle(0, 0, rad).stroke({ width: 3 + k * 4, color: r.color, alpha: 0.15 + a * 0.75 });
+    const strokeW = flow === 'shrink' ? 2.2 + k * 3.2 : 3 + k * 4;
+    const alpha = flow === 'shrink' ? 0.22 + a * 0.72 : 0.15 + a * 0.75;
+    r.g.circle(0, 0, rad).stroke({ width: strokeW, color: r.color, alpha });
     if (r.t >= r.max) {
       r.g.destroy();
       rings.splice(i, 1);
@@ -790,11 +836,11 @@ export function buildProjectileGraphic(style: ProjectileVisualStyle): Graphics {
       g.poly([0, -9, 6, 0, 0, 9, -6, 0]).fill(0x38bdf8).stroke(o);
       break;
     case 'ally_arcane_missile': {
-      const o2 = { width: 1.4, color: 0x0c4a6e, alpha: 0.55 };
-      g.ellipse(-18, 0, 16, 6).fill({ color: 0x0369a1, alpha: 0.45 }).stroke(o2);
-      g.ellipse(-10, 0, 10, 4).fill({ color: 0x0ea5e9, alpha: 0.55 }).stroke(o2);
-      g.circle(0, 0, 8).fill({ color: 0x38bdf8, alpha: 0.98 }).stroke({ width: 1.6, color: 0xe0f2fe, alpha: 0.9 });
-      g.circle(3, -2, 3).fill({ color: 0xf0f9ff, alpha: 0.95 });
+      const o2 = { width: 1.4, color: 0x3b0764, alpha: 0.55 };
+      g.ellipse(-22, 0, 18, 7).fill({ color: 0x5b21b6, alpha: 0.48 }).stroke(o2);
+      g.ellipse(-12, 0, 11, 4.5).fill({ color: 0x7c3aed, alpha: 0.58 }).stroke(o2);
+      g.circle(0, 0, 8).fill({ color: 0xa78bfa, alpha: 0.98 }).stroke({ width: 1.6, color: 0xfae8ff, alpha: 0.92 });
+      g.circle(3, -2, 3).fill({ color: 0xede9fe, alpha: 0.95 });
       break;
     }
     case 'ally_archer':
@@ -867,16 +913,17 @@ export function spawnShadowTrailSpark(layer: Container, x: number, y: number): T
   return { g, t: 0, max: 0.09 + Math.random() * 0.05 };
 }
 
-/** 奥术飞弹拖尾（青蓝） */
+/** 奥术飞弹拖尾：偏紫、粒子更大、存活更久；由 BattleScreen 高频多点发射形成夸张长尾 */
 export function spawnArcaneTrailSpark(layer: Container, x: number, y: number): TinySparkFx {
   const g = new Graphics();
-  const pal = [0xe0f2fe, 0x7dd3fc, 0x38bdf8, 0x0284c7] as const;
+  const pal = [0xfae8ff, 0xe9d5ff, 0xd8b4fe, 0xc4b5fd, 0xa78bfa, 0x8b5cf6, 0x7c3aed] as const;
   const c = pal[Math.floor(Math.random() * pal.length)]!;
-  const rr = (1.2 + Math.random() * 2.6) * LAYOUT_SCALE;
-  g.circle(0, 0, rr).fill({ color: c, alpha: 0.9 });
-  g.position.set(x + (Math.random() - 0.5) * 9 * LAYOUT_SCALE, y + (Math.random() - 0.5) * 9 * LAYOUT_SCALE);
+  const rr = (2.2 + Math.random() * 4.2) * LAYOUT_SCALE;
+  g.circle(0, 0, rr).fill({ color: c, alpha: 0.88 });
+  const spread = 20 * LAYOUT_SCALE;
+  g.position.set(x + (Math.random() - 0.5) * spread, y + (Math.random() - 0.5) * spread);
   layer.addChild(g);
-  return { g, t: 0, max: 0.08 + Math.random() * 0.045 };
+  return { g, t: 0, max: 0.16 + Math.random() * 0.12 };
 }
 
 export function tickTinySparks(list: TinySparkFx[], dt: number): void {

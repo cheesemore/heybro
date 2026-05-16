@@ -10,7 +10,7 @@
       id="hud"
       style="
         position: fixed;
-        z-index: 20;
+        z-index: 30;
         top: 10px;
         left: 10px;
         max-width: min(420px, 92vw);
@@ -24,9 +24,10 @@
     >
       <div style="font-weight: 700; margin-bottom: 6px">书本首领技能 · 网页测试</div>
       <p style="margin: 0 0 8px">
-        本页独立入口（<code>http://localhost:5173/book-boss-skill-test.html</code>），无需进主游戏。点击「开始测试」进入第 2
-        章关底首领「饥饿者塔拉加曼」；备战为战/法/射/牧各 <strong>1</strong> 个小兵，上阵英雄为<strong>蓝法师 / 蓝牧师 / 蓝弓手</strong>。开战生成后我方血量 ×10，首领血量 <strong>×10</strong>。右下为开发战斗日志（含
-        <code>[battle-skill]</code>）。
+        须先在本项目执行 <code>npm run dev</code>，用终端显示的地址打开
+        <code>/book-boss-skill-test.html</code>（端口以终端为准，勿用 file://）。点击「开始测试」进入第 4
+        章关底首领「巴扎兰」（群体暗影箭 / 群体精神鞭笞 / 暗影闪现）；备战为战/牧各 <strong>1</strong>、弓手格 <strong>6</strong> 层、法师格 <strong>6</strong> 层（法/牧格位对调），上阵英雄为<strong>紫法师 / 紫牧师 / 蓝骑士（格温妮）</strong>。开战生成后我方血量 ×10，首领血量 <strong>×3</strong>。右下为开发战斗日志（含
+        <code>[battle-skill]</code>、首领技能、法/牧英雄技能等）。
       </p>
       <button
         id="start"
@@ -79,7 +80,7 @@
         "
       ></pre>
     </div>
-    <div id="app"></div>
+    <div id="app" style="position: fixed; inset: 0; z-index: 5; pointer-events: none"></div>
     <script type="module" src="/src/test/bookBossSkillTestPage.ts"></script>
   </body>
 </html>

@@ -23,7 +23,7 @@ export type MountHeroInfoPanelContentOpts = {
   /** 备战该职业总层数；无棋盘上下文用 0 */
   classStacksOnBoard: number;
   /**
-   * 穆兰羁绊 6/10/15 行着色：`respectStacks` 未达层数灰色；`allActive` 一律激活色（招募/强化等无棋盘时）。
+   * 英雄详情内羁绊档位（6/10/15）行着色：`respectStacks` 未达层数灰色；`allActive` 一律激活色（招募/强化等无棋盘时）。
    */
   heroIntroBondLineTint?: HeroIntroBondLineTintMode;
   tokenDia: number;

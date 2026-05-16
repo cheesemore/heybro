@@ -1,7 +1,7 @@
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
-import { ROUNDS } from '../roundConfig';
+import { roundsForBookChapter } from '../roundConfig';
 import type { RunState } from '../runState';
 import { applyChosenStrategy, pickThreeStrategies } from '../strategyApply';
 import { mountStretchedDungeonBackground } from '../dungeonBackground';
@@ -23,7 +23,8 @@ export class StrategyPickScreen extends Container {
     mountStretchedDungeonBackground(this, dungeonIdForBookChapter(this.run.bookChapterId), { dimAlpha: 0.38 });
 
     const idx = run.currentRoundIndex;
-    const label = ROUNDS[idx]?.label ?? `${chapter}-2`;
+    const label =
+      roundsForBookChapter(run.bookChapterId)[idx]?.label ?? `${chapter}-2`;
 
     const header = new Text({
       text: `${label} · 策略抉择（三选一）`,

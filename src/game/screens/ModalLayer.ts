@@ -1,11 +1,38 @@
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
-import { getHeroDef, heroQualityAccent, type HeroId } from '../heroRegistry';
+import type { LotterySingleOutcome, LotteryTenResultItem } from '../heroMetaStorage';
+import { getHeroDef, heroQualityAccent, type HeroId, type HeroQuality } from '../heroRegistry';
 import { drawGoldenSolidPanel, GOLDEN_PANEL_BODY, GOLDEN_PANEL_TITLE } from '../ui/goldenSolidPanel';
 import { mountHeroInfoPanelContent } from '../ui/heroInfoPanel';
 import { createStyledGameButton } from '../ui/gameButtons';
-import { createDraftHeroToken } from '../unitCircleTokens';
+import { createDraftAllyToken, createDraftHeroToken } from '../unitCircleTokens';
+import { ALLY_DEFS } from '../unitDefs';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
+
+/** 与 `createDraftHeroToken` 一致：根在 `(x, cellTop + dia/2)` 时，圆盘几何中心的屏幕 Y */
+function lotteryDraftHeroDiskCenterY(cellTopY: number, diameterPx: number): number {
+  const innerR = Math.max(10, diameterPx / 2);
+  return cellTopY + diameterPx / 2 - innerR;
+}
+
+/** 招募结果：英雄头像外圈品质光晕（蓝 < 紫 < 橙，橙含品质 3～5 同档）；`glowCy` 须为圆心 Y */
+function makeLotteryHeroQualityGlow(cx: number, glowCy: number, dia: number, quality: HeroQuality): Graphics {
+  const color = heroQualityAccent(quality);
+  const tier: 1 | 2 | 3 = quality <= 1 ? 1 : quality === 2 ? 2 : 3;
+  const ringCount = tier === 1 ? 2 : tier === 2 ? 4 : 6;
+  const alpha0 = tier === 1 ? 0.26 : tier === 2 ? 0.36 : 0.5;
+  const rStep = tier === 1 ? 0.048 : tier === 2 ? 0.058 : 0.07;
+  const wBase = tier === 1 ? 1.8 : tier === 2 ? 2.4 : 3.2;
+  const g = new Graphics();
+  for (let i = ringCount - 1; i >= 0; i--) {
+    const r = dia * (0.36 + (i + 1) * rStep);
+    const alpha = alpha0 * (0.35 + 0.65 * ((ringCount - i) / ringCount));
+    const sw = Math.max(1, Math.round((wBase + i * 0.55) * LAYOUT_SCALE));
+    g.circle(cx, glowCy, r).stroke({ color, alpha, width: sw });
+  }
+  return g;
+}
+
 export class ModalLayer extends Container {
   constructor() {
     super();
@@ -90,6 +117,114 @@ export class ModalLayer extends Container {
     this.addChild(okBtn);
 
     attachScreenDebugLabel(this, 'ModalLayer.alert');
+  }
+
+  /**
+   * 危险操作：双按钮「取消 / 确定」；点击遮罩不关闭（须点按钮）。
+   */
+  confirmDestructive(
+    message: string,
+    onConfirm: () => void,
+    onCancel?: () => void,
+    opts?: { confirmText?: string },
+  ): void {
+    this.removeChildren();
+    this.visible = true;
+    this.eventMode = 'static';
+
+    const dim = new Graphics();
+    dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x0b1020, alpha: 0.72 });
+    dim.eventMode = 'static';
+    this.addChild(dim);
+
+    const pw = Math.round(640 * LAYOUT_SCALE);
+    const padTop = Math.round(36 * LAYOUT_SCALE);
+    const padBottom = Math.round(32 * LAYOUT_SCALE);
+    const gapBeforeBtn = Math.round(28 * LAYOUT_SCALE);
+    const wrapW = Math.round(580 * LAYOUT_SCALE);
+    const fontSize = Math.round(24 * LAYOUT_SCALE);
+    const lineHeight = Math.round(32 * LAYOUT_SCALE);
+
+    const btnW = Math.round(200 * LAYOUT_SCALE);
+    const btnH = Math.round(58 * LAYOUT_SCALE);
+    const btnGap = Math.round(18 * LAYOUT_SCALE);
+    const minPh = Math.round(400 * LAYOUT_SCALE);
+    const maxPh = Math.round(GAME_HEIGHT * 0.88);
+
+    const body = new Text({
+      text: message,
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, "PingFang SC", "Microsoft YaHei", sans-serif',
+        fontSize,
+        fill: GOLDEN_PANEL_BODY,
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: wrapW,
+        lineHeight,
+      },
+    });
+    body.anchor.set(0.5, 0);
+
+    const reserve = padTop + gapBeforeBtn + btnH + padBottom;
+    const minFs = Math.round(17 * LAYOUT_SCALE);
+    while (body.height > maxPh - reserve && body.style.fontSize > minFs) {
+      const fs = Math.max(minFs, body.style.fontSize - Math.max(1, Math.round(1 * LAYOUT_SCALE)));
+      body.style.fontSize = fs;
+      body.style.lineHeight = Math.round(fs * 1.35);
+    }
+
+    const contentH = Math.ceil(body.height);
+    const ph = Math.min(maxPh, Math.max(minPh, padTop + contentH + gapBeforeBtn + btnH + padBottom));
+    const panelY = (GAME_HEIGHT - ph) / 2;
+
+    const panelPlate = new Graphics();
+    const panelFrame = new Graphics();
+    drawGoldenSolidPanel(panelPlate, panelFrame, pw, ph, LAYOUT_SCALE);
+    panelPlate.position.set((GAME_WIDTH - pw) / 2, panelY);
+    panelFrame.position.set((GAME_WIDTH - pw) / 2, panelY);
+    this.addChild(panelPlate);
+    this.addChild(panelFrame);
+
+    body.position.set(GAME_WIDTH / 2, panelY + padTop);
+    this.addChild(body);
+
+    const rowW = btnW * 2 + btnGap;
+    const rowLeft = (GAME_WIDTH - rowW) / 2;
+    const btnY = panelY + ph - padBottom - btnH;
+
+    const close = (): void => {
+      this.visible = false;
+      this.eventMode = 'none';
+      this.removeChildren();
+    };
+
+    const cancelBtn = createStyledGameButton('classicMuted', {
+      text: '取消',
+      width: btnW,
+      height: btnH,
+      fontSize: Math.round(24 * LAYOUT_SCALE),
+      onTap: () => {
+        close();
+        onCancel?.();
+      },
+    });
+    cancelBtn.position.set(rowLeft, btnY);
+    this.addChild(cancelBtn);
+
+    const okBtn = createStyledGameButton('danger', {
+      text: opts?.confirmText ?? '确定',
+      width: btnW,
+      height: btnH,
+      fontSize: Math.round(24 * LAYOUT_SCALE),
+      onTap: () => {
+        close();
+        onConfirm();
+      },
+    });
+    okBtn.position.set(rowLeft + btnW + btnGap, btnY);
+    this.addChild(okBtn);
+
+    attachScreenDebugLabel(this, 'ModalLayer.confirmDestructive');
   }
 
   /**
@@ -380,5 +515,254 @@ export class ModalLayer extends Container {
     this.addChild(okBtn);
 
     attachScreenDebugLabel(this, 'ModalLayer.alertTenPullHeroResults');
+  }
+
+  /** 十连：英雄或职业碎片混排展示 */
+  alertTenPullLotteryResults(items: readonly LotteryTenResultItem[], onClose: () => void): void {
+    this.removeChildren();
+    this.visible = true;
+    this.eventMode = 'static';
+
+    const dim = new Graphics();
+    dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x0b1020, alpha: 0.72 });
+    dim.eventMode = 'static';
+    this.addChild(dim);
+
+    const pw = Math.min(GAME_WIDTH - Math.round(32 * LAYOUT_SCALE), Math.round(900 * LAYOUT_SCALE));
+    const ph = Math.round(Math.min(GAME_HEIGHT * 0.82, 420 * LAYOUT_SCALE));
+    const px = (GAME_WIDTH - pw) / 2;
+    const py = (GAME_HEIGHT - ph) / 2;
+
+    const panelPlate = new Graphics();
+    const panelFrame = new Graphics();
+    drawGoldenSolidPanel(panelPlate, panelFrame, pw, ph, LAYOUT_SCALE);
+    panelPlate.position.set(px, py);
+    panelFrame.position.set(px, py);
+    panelPlate.eventMode = 'static';
+    panelPlate.on('pointertap', (e) => e.stopPropagation());
+    this.addChild(panelPlate);
+    this.addChild(panelFrame);
+
+    const title = new Text({
+      text: '十连招募结果',
+      style: {
+        fontFamily: 'system-ui, "Microsoft YaHei", Segoe UI, sans-serif',
+        fontSize: Math.round(26 * LAYOUT_SCALE),
+        fill: GOLDEN_PANEL_TITLE,
+        fontWeight: '800',
+      },
+    });
+    title.anchor.set(0.5, 0);
+    title.position.set(px + pw / 2, py + Math.round(18 * LAYOUT_SCALE));
+    this.addChild(title);
+
+    const cols = 5;
+    const rows = 2;
+    const padX = Math.round(28 * LAYOUT_SCALE);
+    const gridTop = py + Math.round(56 * LAYOUT_SCALE);
+    const gridW = pw - padX * 2;
+    const gap = Math.round(10 * LAYOUT_SCALE);
+    const cellW = (gridW - gap * (cols - 1)) / cols;
+    const dia = Math.min(Math.round(56 * LAYOUT_SCALE), cellW * 0.92);
+    const nameFs = Math.round(13 * LAYOUT_SCALE);
+    const cellH = dia + Math.round(6 * LAYOUT_SCALE) + nameFs + Math.round(4 * LAYOUT_SCALE);
+
+    for (let i = 0; i < items.length && i < cols * rows; i++) {
+      const it = items[i]!;
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const rowExtraY = row === 0 ? Math.round(40 * LAYOUT_SCALE) : Math.round(80 * LAYOUT_SCALE);
+      const cx = px + padX + col * (cellW + gap) + cellW / 2;
+      const cy = gridTop + row * (cellH + gap) + rowExtraY;
+
+      if (it.kind === 'hero') {
+        const def = getHeroDef(it.id);
+        if (!def) continue;
+        const tokenAnchorY = cy + dia / 2;
+        const glowCy = lotteryDraftHeroDiskCenterY(cy, dia);
+        this.addChild(makeLotteryHeroQualityGlow(cx, glowCy, dia, def.quality));
+        const tok = createDraftHeroToken(it.id, def.allyClass, dia);
+        tok.position.set(cx, tokenAnchorY);
+        this.addChild(tok);
+        const nm = new Text({
+          text: def.name,
+          style: {
+            fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+            fontSize: nameFs,
+            fill: heroQualityAccent(def.quality),
+            fontWeight: '700',
+            align: 'center',
+          },
+        });
+        nm.anchor.set(0.5, 0);
+        nm.position.set(cx, cy + dia + Math.round(6 * LAYOUT_SCALE));
+        this.addChild(nm);
+      } else {
+        const tok = createDraftAllyToken(it.allyClass, dia);
+        tok.position.set(cx, cy + dia / 2);
+        this.addChild(tok);
+        const nm = new Text({
+          text: `${ALLY_DEFS[it.allyClass].name}碎片`,
+          style: {
+            fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+            fontSize: nameFs,
+            fill: 0xffffff,
+            fontWeight: '700',
+            align: 'center',
+          },
+        });
+        nm.anchor.set(0.5, 0);
+        nm.position.set(cx, cy + dia + Math.round(6 * LAYOUT_SCALE));
+        this.addChild(nm);
+      }
+    }
+
+    const okW = Math.round(240 * LAYOUT_SCALE);
+    const okH = Math.round(52 * LAYOUT_SCALE);
+    const okBtn = createStyledGameButton('classic', {
+      text: '确定',
+      width: okW,
+      height: okH,
+      fontSize: Math.round(22 * LAYOUT_SCALE),
+      onTap: () => {
+        this.visible = false;
+        this.eventMode = 'none';
+        this.removeChildren();
+        onClose();
+      },
+    });
+    okBtn.position.set(px + (pw - okW) / 2, py + ph - okH - Math.round(20 * LAYOUT_SCALE));
+    this.addChild(okBtn);
+
+    attachScreenDebugLabel(this, 'ModalLayer.alertTenPullLotteryResults');
+  }
+
+  /** 单抽：与十连同一套金面板 + 头像/名称；头像与名字相对十连放大约 1.5 倍 */
+  alertSinglePullLotteryResult(outcome: LotterySingleOutcome, onClose: () => void): void {
+    this.removeChildren();
+    this.visible = true;
+    this.eventMode = 'static';
+
+    const dim = new Graphics();
+    dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x0b1020, alpha: 0.72 });
+    dim.eventMode = 'static';
+    this.addChild(dim);
+
+    const pw = Math.min(GAME_WIDTH - Math.round(32 * LAYOUT_SCALE), Math.round(900 * LAYOUT_SCALE));
+    const ph = Math.round(Math.min(GAME_HEIGHT * 0.82, 420 * LAYOUT_SCALE));
+    const px = (GAME_WIDTH - pw) / 2;
+    const py = (GAME_HEIGHT - ph) / 2;
+
+    const panelPlate = new Graphics();
+    const panelFrame = new Graphics();
+    drawGoldenSolidPanel(panelPlate, panelFrame, pw, ph, LAYOUT_SCALE);
+    panelPlate.position.set(px, py);
+    panelFrame.position.set(px, py);
+    panelPlate.eventMode = 'static';
+    panelPlate.on('pointertap', (e) => e.stopPropagation());
+    this.addChild(panelPlate);
+    this.addChild(panelFrame);
+
+    const title = new Text({
+      text: '单次招募结果',
+      style: {
+        fontFamily: 'system-ui, "Microsoft YaHei", Segoe UI, sans-serif',
+        fontSize: Math.round(26 * LAYOUT_SCALE),
+        fill: GOLDEN_PANEL_TITLE,
+        fontWeight: '800',
+      },
+    });
+    title.anchor.set(0.5, 0);
+    title.position.set(px + pw / 2, py + Math.round(18 * LAYOUT_SCALE));
+    this.addChild(title);
+
+    const padX = Math.round(28 * LAYOUT_SCALE);
+    const gridTop = py + Math.round(56 * LAYOUT_SCALE);
+    const gridW = pw - padX * 2;
+    const gap = Math.round(10 * LAYOUT_SCALE);
+    const cols = 5;
+    const cellW = (gridW - gap * (cols - 1)) / cols;
+    const diaTen = Math.min(Math.round(56 * LAYOUT_SCALE), cellW * 0.92);
+    const nameFsTen = Math.round(13 * LAYOUT_SCALE);
+    const dia = Math.min(diaTen * 1.5, gridW * 0.55);
+    const nameFs = Math.round(nameFsTen * 1.5);
+
+    const cx = px + pw / 2;
+    const cy = gridTop + Math.round(40 * LAYOUT_SCALE);
+
+    if (outcome.kind === 'hero') {
+      const def = getHeroDef(outcome.id);
+      if (def) {
+        const tokenAnchorY = cy + dia / 2;
+        const glowCy = lotteryDraftHeroDiskCenterY(cy, dia);
+        this.addChild(makeLotteryHeroQualityGlow(cx, glowCy, dia, def.quality));
+        const tok = createDraftHeroToken(outcome.id, def.allyClass, dia);
+        tok.position.set(cx, tokenAnchorY);
+        this.addChild(tok);
+        const nm = new Text({
+          text: def.name,
+          style: {
+            fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+            fontSize: nameFs,
+            fill: heroQualityAccent(def.quality),
+            fontWeight: '700',
+            align: 'center',
+          },
+        });
+        nm.anchor.set(0.5, 0);
+        nm.position.set(cx, cy + dia + Math.round(6 * LAYOUT_SCALE));
+        this.addChild(nm);
+      } else {
+        const nm = new Text({
+          text: `英雄配置缺失：${outcome.id}`,
+          style: {
+            fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+            fontSize: nameFs,
+            fill: GOLDEN_PANEL_BODY,
+            fontWeight: '700',
+            align: 'center',
+          },
+        });
+        nm.anchor.set(0.5, 0);
+        nm.position.set(cx, cy + Math.round(8 * LAYOUT_SCALE));
+        this.addChild(nm);
+      }
+    } else {
+      const tok = createDraftAllyToken(outcome.allyClass, dia);
+      tok.position.set(cx, cy + dia / 2);
+      this.addChild(tok);
+      const nm = new Text({
+        text: `${ALLY_DEFS[outcome.allyClass].name}碎片`,
+        style: {
+          fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+          fontSize: nameFs,
+          fill: 0xffffff,
+          fontWeight: '700',
+          align: 'center',
+        },
+      });
+      nm.anchor.set(0.5, 0);
+      nm.position.set(cx, cy + dia + Math.round(6 * LAYOUT_SCALE));
+      this.addChild(nm);
+    }
+
+    const okW = Math.round(240 * LAYOUT_SCALE);
+    const okH = Math.round(52 * LAYOUT_SCALE);
+    const okBtn = createStyledGameButton('classic', {
+      text: '确定',
+      width: okW,
+      height: okH,
+      fontSize: Math.round(22 * LAYOUT_SCALE),
+      onTap: () => {
+        this.visible = false;
+        this.eventMode = 'none';
+        this.removeChildren();
+        onClose();
+      },
+    });
+    okBtn.position.set(px + (pw - okW) / 2, py + ph - okH - Math.round(20 * LAYOUT_SCALE));
+    this.addChild(okBtn);
+
+    attachScreenDebugLabel(this, 'ModalLayer.alertSinglePullLotteryResult');
   }
 }

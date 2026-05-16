@@ -4,7 +4,7 @@ import {
   getChapterIntelBossCardParts,
   getChapterIntelMobCardParts,
 } from '../nextBattlePreview';
-import { ROUNDS } from '../roundConfig';
+import { legacyProgressRoundIndex, roundsForBookChapter } from '../roundConfig';
 import { getResolvedRoundMeta } from '../roundResolve';
 import { rewardChapterPreviewSummary, strategyChapterPreviewSummary } from '../strategyApply';
 import type { RunState } from '../runState';
@@ -28,31 +28,52 @@ type Handlers = {
   onCheatChapterClear?: (star: 1 | 2 | 3) => void;
 };
 
-/** 16 关节点坐标（三行：5+5+6），间距压缩以腾出下方情报板 */
-function roundNodePosition(i: number): { cx: number; cy: number } {
+/** 关卡地图节点坐标：16 关沿用 5+5+6；7 关为 4+3；13 关为 6+6+1 */
+function roundNodePosition(i: number, total: number): { cx: number; cy: number } {
   const colStep = Math.round(52 * LAYOUT_SCALE);
-  /** 整体下移，避免与顶部生命/金币 HUD 重叠（相对原 58 设计行共 +50） */
   const rowBaseY = Math.round(58 * LAYOUT_SCALE) + 50;
   const rowGap = Math.round(86 * LAYOUT_SCALE);
-  let row = 0;
-  let col = 0;
-  if (i < 5) {
-    row = 0;
-    col = i;
-  } else if (i < 10) {
-    row = 1;
-    col = i - 5;
-  } else {
-    row = 2;
-    col = i - 10;
+
+  if (total === 16) {
+    let row = 0;
+    let col = 0;
+    if (i < 5) {
+      row = 0;
+      col = i;
+    } else if (i < 10) {
+      row = 1;
+      col = i - 5;
+    } else {
+      row = 2;
+      col = i - 10;
+    }
+    const nInRow = row === 2 ? 6 : 5;
+    const rowWidth = (nInRow - 1) * colStep;
+    const gridOriginX = (GAME_WIDTH - rowWidth) / 2;
+    return {
+      cx: gridOriginX + col * colStep,
+      cy: rowBaseY + row * rowGap,
+    };
   }
-  const nInRow = row === 2 ? 6 : 5;
-  const rowWidth = (nInRow - 1) * colStep;
-  const gridOriginX = (GAME_WIDTH - rowWidth) / 2;
-  return {
-    cx: gridOriginX + col * colStep,
-    cy: rowBaseY + row * rowGap,
-  };
+
+  const rowCounts =
+    total === 7 ? [4, 3] : total === 13 ? [6, 6, 1] : [Math.min(6, Math.max(1, total))];
+  let acc = 0;
+  for (let r = 0; r < rowCounts.length; r++) {
+    const nInRow = rowCounts[r]!;
+    if (i < acc + nInRow) {
+      const col = i - acc;
+      const rowWidth = (nInRow - 1) * colStep;
+      const gridOriginX = (GAME_WIDTH - rowWidth) / 2;
+      return {
+        cx: gridOriginX + col * colStep,
+        cy: rowBaseY + r * rowGap,
+      };
+    }
+    acc += nInRow;
+  }
+  const fallbackRow = rowCounts.length - 1;
+  return { cx: GAME_WIDTH * 0.5, cy: rowBaseY + fallbackRow * rowGap };
 }
 
 export class LevelMapScreen extends Container {
@@ -95,9 +116,11 @@ export class LevelMapScreen extends Container {
 
     const nodeRadius = Math.round(22 * LAYOUT_SCALE);
     const curIdx = this.run.currentRoundIndex;
-    for (let i = 0; i < ROUNDS.length; i++) {
-      const meta = ROUNDS[i]!;
-      const { cx, cy } = roundNodePosition(i);
+    const rounds = roundsForBookChapter(this.run.bookChapterId);
+    const totalRounds = rounds.length;
+    for (let i = 0; i < totalRounds; i++) {
+      const meta = rounds[i]!;
+      const { cx, cy } = roundNodePosition(i, totalRounds);
       const isCurrent = i === curIdx;
 
       const g = new Graphics();
@@ -152,7 +175,7 @@ export class LevelMapScreen extends Container {
       }
     }
 
-    const lastRowCy = roundNodePosition(ROUNDS.length - 1).cy;
+    const lastRowCy = roundNodePosition(totalRounds - 1, totalRounds).cy;
     const nodesBottom = lastRowCy + nodeRadius + Math.round(38 * LAYOUT_SCALE);
     const panelTop = nodesBottom + Math.round(10 * LAYOUT_SCALE);
 
@@ -183,9 +206,9 @@ export class LevelMapScreen extends Container {
     exitBtn.on('pointertap', () => this.h.onRequestExitChapter());
     this.addChild(exitBtn);
 
-    const canEnter = this.run.currentRoundIndex < ROUNDS.length && !this.run.isGameLost();
+    const canEnter = this.run.currentRoundIndex < totalRounds && !this.run.isGameLost();
     const curMeta =
-      this.run.currentRoundIndex < ROUNDS.length ? ROUNDS[this.run.currentRoundIndex]! : null;
+      this.run.currentRoundIndex < totalRounds ? rounds[this.run.currentRoundIndex]! : null;
     const actionWord =
       curMeta?.kind === 'strategy'
         ? '抉择'
@@ -195,13 +218,13 @@ export class LevelMapScreen extends Container {
             ? '选牌与首领战'
             : '选牌';
     const enterLabel =
-      this.run.currentRoundIndex >= ROUNDS.length
+      this.run.currentRoundIndex >= totalRounds
         ? this.run.playerHp > 0 && !this.run.bookChapterRunFailed
           ? '已通关本章'
           : '流程结束'
         : this.run.isGameLost()
           ? '已失败'
-          : `进入 ${ROUNDS[this.run.currentRoundIndex]!.label}（${actionWord}）`;
+          : `进入 ${rounds[this.run.currentRoundIndex]!.label}（${actionWord}）`;
     const enterBtn = createStyledGameButton(canEnter ? 'danger' : 'ctaDisabled', {
       text: enterLabel,
       width: enterW,
@@ -303,6 +326,8 @@ export class LevelMapScreen extends Container {
 
     let y = 0;
     const idx = this.run.currentRoundIndex;
+    const rounds = roundsForBookChapter(this.run.bookChapterId);
+    const totalRounds = rounds.length;
 
     const pushText = (text: string, style: object): void => {
       const t = new Text({ text, style });
@@ -311,10 +336,10 @@ export class LevelMapScreen extends Container {
       y += t.height + Math.round(8 * LAYOUT_SCALE);
     };
 
-    if (idx >= ROUNDS.length || this.run.isGameLost()) {
+    if (idx >= totalRounds || this.run.isGameLost()) {
       pushText('本关状态', headStyle);
       pushText(
-        idx >= ROUNDS.length
+        idx >= totalRounds
           ? '本章流程已结束。'
           : '本章已失败（生命耗尽）。可使用下方「退出」返回章节选择。',
         bodyStyle,
@@ -323,7 +348,7 @@ export class LevelMapScreen extends Container {
       return block;
     }
 
-    const base = ROUNDS[idx]!;
+    const base = rounds[idx]!;
     const meta = getResolvedRoundMeta(this.run, idx, base);
     const bookM = this.run.bookChapterStrengthMult();
 
@@ -345,11 +370,12 @@ export class LevelMapScreen extends Container {
 
     const head = meta.kind === 'boss' ? '本关：首领战 · 敌方情报' : '本关：普通战斗 · 敌方情报';
     pushText(head, headStyle);
+    const leg = legacyProgressRoundIndex(this.run.bookChapterId, idx);
     for (const w of meta.enemies) {
       const parts =
         w.type === 'boss' && w.bossId
-          ? getChapterIntelBossCardParts(w, meta.chapter, idx, bookM, this.run.bookChapterId)
-          : getChapterIntelMobCardParts(w, meta.chapter, idx, bookM, this.run.bookChapterId);
+          ? getChapterIntelBossCardParts(w, meta.chapter, leg, bookM, this.run.bookChapterId)
+          : getChapterIntelMobCardParts(w, meta.chapter, leg, bookM, this.run.bookChapterId);
       y = appendChapterIntelUnitCardRow(inner, {
         parts,
         singleEnemyMeta: { ...meta, enemies: [w] },

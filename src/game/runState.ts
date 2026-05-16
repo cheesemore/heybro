@@ -11,7 +11,7 @@ import {
   ROUND_END_FIXED_GOLD,
   WIN_STREAK_BONUS_CAP,
 } from './constants';
-import { ROUNDS } from './roundConfig';
+import { roundsForBookChapter } from './roundConfig';
 
 /** 预留外部永久养成入口：默认 1，不参与首领「生命转最终加成」逻辑 */
 export type ExternalGrowthSnapshot = {
@@ -34,6 +34,11 @@ export type RunDevBattleHooks = {
   postSpawnHpMultSkipBoss?: boolean;
   /** 仅对带 `bossId` 的单位再乘一次生命（在 `postSpawnHpMult` 之后应用，如 3 = 首领血量×3） */
   postSpawnBossHpMult?: number;
+  /**
+   * 本场羁绊层数覆盖（与棋盘 `stacks` 无关，不增加按层出兵数）。
+   * 仅合并写入的兵种；未写的兵种仍用 `allBondStacks(board)`。
+   */
+  bondStacksBattleOverride?: Partial<Record<AllyClass, number>>;
 };
 
 export class RunState {
@@ -46,6 +51,11 @@ export class RunState {
 
   /** 外部章节 1..30：在章节选择界面确定，重置单章进度时保留 */
   bookChapterId = 1;
+  /**
+   * 本次进入本章前，章节选择页的「返回」语义：true=返回关卡地图；false=回封面。
+   * 在 `GameRoot.showChapterSelect` 选章进入地图时写入；结算回到选择页时沿用。
+   */
+  chapterSelectBackToMap = false;
   /** 预留：扩展规则导致的本章失败（与生命耗尽并列）；当前流程以生命耗尽为主 */
   bookChapterRunFailed = false;
 
@@ -236,7 +246,8 @@ export class RunState {
   }
 
   isGameWon(): boolean {
-    return this.currentRoundIndex >= ROUNDS.length && this.playerHp > 0 && !this.bookChapterRunFailed;
+    const n = roundsForBookChapter(this.bookChapterId).length;
+    return this.currentRoundIndex >= n && this.playerHp > 0 && !this.bookChapterRunFailed;
   }
 
   isGameLost(): boolean {

@@ -6,6 +6,7 @@
 
 - 每副本一节：`## 中文（English）`；`####` 小怪；**该副本下全部关卡首领**各一条 `### 最终首领 — 提示词`
   （按 `chapterIndex` 升序；含 `isFinalBoss` 与非最终；`bossUid` / `表 id` 供解析器输出 `wow-bosses/B*.png`）。
+- **首领立绘背景**：全部首领（含非关底）统一暗红/酒红 bokeh，与小怪冷灰底区分（见 `wow_book_art_jobs.prompt_boss_row`）。
 - 若表中有怪未出现在任何 reference `mob_pool`（极少见），追加 `## 增补怪物` 一节并瞎编提示词。
 - 同文件含「通用（Dungeon backgrounds）」**18 条副本背景图** fenced 提示词（不另建独立 MD）；`wow_md_parse_jobs` 不会将其解析为小怪任务。
 - 不含「副本主题插画」小节（暂缓）；批量 scene 可继续用 `wow_book_art_jobs` JSON。

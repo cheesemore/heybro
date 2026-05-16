@@ -44,8 +44,14 @@ const ARCANE_BOND_LINES: ReadonlyArray<{ tier: 6 | 10 | 15; text: string }> = [
   },
 ];
 
-function buildMageArcaneSegments(classStacksOnBoard: number, bondLineTint: HeroIntroBondLineTintMode): HeroIntroBodySegment[] {
+function buildMageArcaneSegments(
+  def: NonNullable<ReturnType<typeof getHeroDef>>,
+  classStacksOnBoard: number,
+  bondLineTint: HeroIntroBondLineTintMode,
+): HeroIntroBodySegment[] {
   const gap = 6;
+  const tail =
+    purpleSignaturePassiveFooter(def) ?? '被动与特性：见上（法师层数影响技能强度）。';
   return [
     { text: ARCANE_SKILL_BASE, fill: GOLDEN_PANEL_BODY, marginBottom: gap },
     ...ARCANE_BOND_LINES.map((row) => ({
@@ -53,26 +59,32 @@ function buildMageArcaneSegments(classStacksOnBoard: number, bondLineTint: HeroI
       fill: bondLineFill(classStacksOnBoard, row.tier, bondLineTint),
       marginBottom: gap,
     })),
-    { text: '被动与特性：见上（法师层数影响技能强度）。', fill: GOLDEN_PANEL_BODY, marginBottom: 0 },
+    { text: tail, fill: GOLDEN_PANEL_BODY, marginBottom: 0 },
   ];
 }
 
 const SHELTER_SKILL_BASE = [
   '主动：群体庇护',
   '',
-  '冷却 24 秒：为若干名友方施加护盾，护盾值 = 本英雄攻击力×100%（护盾上限同最大生命）。',
+  '冷却 48 秒：为若干名友方施加护盾，护盾值 = 本英雄攻击力×200%（护盾上限同最大生命）。',
   '优先当前生命最少且无护盾的单位；若均有护盾，则仍优先当前生命最少者。',
   '目标数不超过场上存活牧师人数（含自己）；牧师羁绊达 15 层时为全体友方。',
 ].join('\n');
 
 const SHELTER_BOND_LINES: ReadonlyArray<{ tier: 6 | 10 | 15; text: string }> = [
-  { tier: 6, text: '羁绊6：冷却缩短为 18 秒。' },
-  { tier: 10, text: '羁绊10：生命低于 50% 的单位在获得护盾时，额外受到一次等同于牧师普攻的治疗。' },
+  { tier: 6, text: '羁绊6：冷却缩短为 36 秒。' },
+  { tier: 10, text: '羁绊10：生命低于 50% 的单位在获得护盾时，额外治疗量 = 本英雄攻击力×200%；牧师羁绊达终档（≥15）时再翻倍（合计×400% 攻击力）。' },
   { tier: 15, text: '羁绊15：不再受牧师人数限制，始终为全体存活友方施加护盾。' },
 ];
 
-function buildPriestShelterSegments(classStacksOnBoard: number, bondLineTint: HeroIntroBondLineTintMode): HeroIntroBodySegment[] {
+function buildPriestShelterSegments(
+  def: NonNullable<ReturnType<typeof getHeroDef>>,
+  classStacksOnBoard: number,
+  bondLineTint: HeroIntroBondLineTintMode,
+): HeroIntroBodySegment[] {
   const gap = 6;
+  const tail =
+    purpleSignaturePassiveFooter(def) ?? '被动与特性：见上（牧师层数影响技能与护盾）。';
   return [
     { text: SHELTER_SKILL_BASE, fill: GOLDEN_PANEL_BODY, marginBottom: gap },
     ...SHELTER_BOND_LINES.map((row) => ({
@@ -80,7 +92,7 @@ function buildPriestShelterSegments(classStacksOnBoard: number, bondLineTint: He
       fill: bondLineFill(classStacksOnBoard, row.tier, bondLineTint),
       marginBottom: gap,
     })),
-    { text: '被动与特性：见上（牧师层数影响技能与护盾）。', fill: GOLDEN_PANEL_BODY, marginBottom: 0 },
+    { text: tail, fill: GOLDEN_PANEL_BODY, marginBottom: 0 },
   ];
 }
 
@@ -97,8 +109,14 @@ const STRONG_STRIKE_BOND_LINES: ReadonlyArray<{ tier: 6 | 10 | 15; text: string 
   { tier: 15, text: '羁绊15：射手的「专注」叠层在切换攻击目标时不再清零。' },
 ];
 
-function buildArcherStrongStrikeSegments(classStacksOnBoard: number, bondLineTint: HeroIntroBondLineTintMode): HeroIntroBodySegment[] {
+function buildArcherStrongStrikeSegments(
+  def: NonNullable<ReturnType<typeof getHeroDef>>,
+  classStacksOnBoard: number,
+  bondLineTint: HeroIntroBondLineTintMode,
+): HeroIntroBodySegment[] {
   const gap = 6;
+  const tail =
+    purpleSignaturePassiveFooter(def) ?? '被动与特性：见上（射手层数影响强击光环与专注规则）。';
   return [
     { text: STRONG_STRIKE_PASSIVE_BASE, fill: GOLDEN_PANEL_BODY, marginBottom: gap },
     ...STRONG_STRIKE_BOND_LINES.map((row) => ({
@@ -106,7 +124,7 @@ function buildArcherStrongStrikeSegments(classStacksOnBoard: number, bondLineTin
       fill: bondLineFill(classStacksOnBoard, row.tier, bondLineTint),
       marginBottom: gap,
     })),
-    { text: '被动与特性：见上（射手层数影响强击光环与专注规则）。', fill: GOLDEN_PANEL_BODY, marginBottom: 0 },
+    { text: tail, fill: GOLDEN_PANEL_BODY, marginBottom: 0 },
   ];
 }
 
@@ -127,8 +145,14 @@ const HOLY_SANCTION_BOND_LINES: ReadonlyArray<{ tier: 6 | 10 | 15; text: string 
   },
 ];
 
-function buildKnightHolySanctionSegments(classStacksOnBoard: number, bondLineTint: HeroIntroBondLineTintMode): HeroIntroBodySegment[] {
+function buildKnightHolySanctionSegments(
+  def: NonNullable<ReturnType<typeof getHeroDef>>,
+  classStacksOnBoard: number,
+  bondLineTint: HeroIntroBondLineTintMode,
+): HeroIntroBodySegment[] {
   const gap = 6;
+  const tail =
+    purpleSignaturePassiveFooter(def) ?? '被动与特性：见上（骑士层数影响神圣制裁与冷却规则）。';
   return [
     { text: HOLY_SANCTION_SKILL_BASE, fill: GOLDEN_PANEL_BODY, marginBottom: gap },
     ...HOLY_SANCTION_BOND_LINES.map((row) => ({
@@ -136,7 +160,7 @@ function buildKnightHolySanctionSegments(classStacksOnBoard: number, bondLineTin
       fill: bondLineFill(classStacksOnBoard, row.tier, bondLineTint),
       marginBottom: gap,
     })),
-    { text: '被动与特性：见上（骑士层数影响神圣制裁与冷却规则）。', fill: GOLDEN_PANEL_BODY, marginBottom: 0 },
+    { text: tail, fill: GOLDEN_PANEL_BODY, marginBottom: 0 },
   ];
 }
 
@@ -172,8 +196,28 @@ function bondLineFill(
   return MULAN_BOND15_ACTIVE;
 }
 
-function buildMulanSegments(classStacksOnBoard: number, bondLineTint: HeroIntroBondLineTintMode): HeroIntroBodySegment[] {
+/**
+ * 品质 2（紫）签名英雄：`heroRegistry` 的 `passiveDesc` 含额外被动，模板尾行「无 / 见上」会盖住，此处拼进详情正文。
+ */
+function purpleSignaturePassiveFooter(def: { quality: number; allyClass: string; passiveDesc: string }): string | null {
+  if (def.quality !== 2) return null;
+  const d = def.passiveDesc.trim();
+  if (!d) return null;
+  if (def.allyClass === 'warrior') {
+    return d.startsWith('被动：') ? `被动与特性：${d.slice('被动：'.length)}` : `被动与特性：${d}`;
+  }
+  const idx = d.indexOf('被动：');
+  if (idx < 0) return `被动与特性：${d}`;
+  return `被动与特性：${d.slice(idx + '被动：'.length).trim()}`;
+}
+
+function buildMulanSegments(
+  def: NonNullable<ReturnType<typeof getHeroDef>>,
+  classStacksOnBoard: number,
+  bondLineTint: HeroIntroBondLineTintMode,
+): HeroIntroBodySegment[] {
   const gap = 6;
+  const tail = purpleSignaturePassiveFooter(def) ?? '被动与特性：无';
   return [
     { text: MULAN_SKILL_BASE, fill: GOLDEN_PANEL_BODY, marginBottom: gap },
     ...MULAN_BOND_LINES.map((row) => ({
@@ -181,7 +225,7 @@ function buildMulanSegments(classStacksOnBoard: number, bondLineTint: HeroIntroB
       fill: bondLineFill(classStacksOnBoard, row.tier, bondLineTint),
       marginBottom: gap,
     })),
-    { text: '被动与特性：无', fill: GOLDEN_PANEL_BODY, marginBottom: 0 },
+    { text: tail, fill: GOLDEN_PANEL_BODY, marginBottom: 0 },
   ];
 }
 
@@ -193,7 +237,7 @@ function buildGenericTail(def: NonNullable<ReturnType<typeof getHeroDef>>): Hero
 }
 
 /**
- * 英雄详情正文：多段着色（穆兰羁绊 6/10/15 行）。
+ * 英雄详情正文：多段着色（签名英雄羁绊档位 6/10/15 行，如穆兰）。
  * @param classStacksOnBoard 备战棋盘该职业总层数，用于名称后缀「+1」及 respectStacks 下的羁绊行着色。
  * @param bondLineTint `allActive`：预览等无羁绊上下文时各档一律用激活色；`respectStacks`：未达层数用灰色。
  */
@@ -220,19 +264,19 @@ export function buildHeroIntroBodySegments(
   const head: HeroIntroBodySegment = { text: statsBlock, fill: GOLDEN_PANEL_BODY, marginBottom: 10 };
 
   if (isWarriorWhirlwindHero(id)) {
-    return [head, ...buildMulanSegments(classStacksOnBoard, opts.bondLineTint)];
+    return [head, ...buildMulanSegments(def, classStacksOnBoard, opts.bondLineTint)];
   }
   if (isMageArcaneMissilesHero(id)) {
-    return [head, ...buildMageArcaneSegments(classStacksOnBoard, opts.bondLineTint)];
+    return [head, ...buildMageArcaneSegments(def, classStacksOnBoard, opts.bondLineTint)];
   }
   if (isPriestMassShelterHero(id)) {
-    return [head, ...buildPriestShelterSegments(classStacksOnBoard, opts.bondLineTint)];
+    return [head, ...buildPriestShelterSegments(def, classStacksOnBoard, opts.bondLineTint)];
   }
   if (isArcherStrongStrikeAuraHero(id)) {
-    return [head, ...buildArcherStrongStrikeSegments(classStacksOnBoard, opts.bondLineTint)];
+    return [head, ...buildArcherStrongStrikeSegments(def, classStacksOnBoard, opts.bondLineTint)];
   }
   if (isKnightHolySanctionHero(id)) {
-    return [head, ...buildKnightHolySanctionSegments(classStacksOnBoard, opts.bondLineTint)];
+    return [head, ...buildKnightHolySanctionSegments(def, classStacksOnBoard, opts.bondLineTint)];
   }
   return [head, ...buildGenericTail(def)];
 }

@@ -2,13 +2,14 @@ import { Application, Container } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, PLAYER_START_HP } from './constants';
 import type { BattleOutcome } from './types';
 import { RunState } from './runState';
-import { ROUNDS } from './roundConfig';
+import { legacyProgressRoundIndex, roundsForBookChapter } from './roundConfig';
 import { getResolvedRoundMeta } from './roundResolve';
 import { resolveAftermath } from './aftermath';
 import { applyRewardChapter } from './strategyApply';
 import { BattleScreen } from './screens/BattleScreen';
 import { DraftScreen } from './screens/DraftScreen';
 import { ChapterSelectScreen } from './screens/ChapterSelectScreen';
+import { ChapterRunSettlementScreen } from './screens/ChapterRunSettlementScreen';
 import { LevelMapScreen } from './screens/LevelMapScreen';
 import { ModalLayer } from './screens/ModalLayer';
 import { StrengthenScreen } from './screens/StrengthenScreen';
@@ -16,14 +17,21 @@ import { StrategyPickScreen } from './screens/StrategyPickScreen';
 import { TitleScreen } from './screens/TitleScreen';
 import {
   cheatChapterFullClearWithStar,
+  getChapterStarFilledCount,
   markChapterFullyCleared,
   recordCombatRoundBestStar,
 } from './chapterProgressStorage';
 import { syncLotteryTicketsFromChapterProgress } from './heroMetaStorage';
+import { clearAllLocalGameSaveData } from './gameSaveClear';
 import { preloadEnemyTextures } from './enemyBodyFactory';
 import { preloadAllyPortraitTextures } from './allyPortraitAssets';
 import { preloadHeroPortraitTextures } from './heroPortraitAssets';
-import { seedUiTestRunBoard, UI_TEST_BLUE_FPM_HERO_DEPLOY, UI_TEST_ROUND_META } from './uiTestBattle';
+import {
+  seedUiTestRunBoard,
+  UI_TEST_BLUE_FPM_HERO_DEPLOY,
+  UI_TEST_BOOK_CHAPTER_ID,
+  UI_TEST_ROUND_META,
+} from './uiTestBattle';
 
 export class GameRoot extends Container {
   readonly run = new RunState();
@@ -51,7 +59,28 @@ export class GameRoot extends Container {
           this.showChapterSelect(false);
         },
         import.meta.env.DEV ? () => this.openUiTestBattle() : undefined,
+        { onRequestClearSave: () => this.promptClearAllLocalSave() },
       ),
+    );
+  }
+
+  /** 封面「清档」：两次确认后删除全部本地存档键。 */
+  private promptClearAllLocalSave(): void {
+    this.modal.confirmDestructive(
+      '将删除本机全部游戏存档：\n\n· 章节进度与评价星\n· 已获得英雄与上阵\n· 招募记录\n· 职业碎片与等级\n\n此操作不可恢复。\n是否继续？',
+      () => {
+        this.modal.confirmDestructive(
+          '请再次确认：\n\n真的要清除全部本地存档？',
+          () => {
+            clearAllLocalGameSaveData();
+            this.modal.alert('本地存档已清除。之后进入游戏将按新手状态加载。', () => {});
+          },
+          () => {},
+          { confirmText: '确认清除' },
+        );
+      },
+      undefined,
+      { confirmText: '继续' },
     );
   }
 
@@ -59,7 +88,7 @@ export class GameRoot extends Container {
   private openUiTestBattle(): void {
     void (async () => {
       await preloadAllyPortraitTextures();
-      await preloadEnemyTextures(1);
+      await preloadEnemyTextures(UI_TEST_BOOK_CHAPTER_ID);
       await preloadHeroPortraitTextures().catch(() => {});
       const testRun = new RunState();
       seedUiTestRunBoard(testRun);
@@ -67,7 +96,15 @@ export class GameRoot extends Container {
         heroDeploy: [...UI_TEST_BLUE_FPM_HERO_DEPLOY],
         heroSlotCap: 3,
         postSpawnHpMult: 1,
+        /** 法/牧/骑满层（含 ≥21 极巨化档），不增加棋盘出兵数 */
+        bondStacksBattleOverride: { mage: 21, priest: 21, knight: 21 },
       };
+      testRun.devBattleTestLog = (line: string): void => {
+        console.log(`[HeyBro/ui-test] ${line}`);
+      };
+      testRun.devBattleTestLog(
+        '[ui-test] 书本第4章首领巴扎兰（群体暗影箭/精神鞭笞/暗影闪现）；棋盘牧/法/弓；英雄 mage_02 priest_02 knight_01；羁绊法/牧/骑=21。技能见控制台 [HeyBro/ui-test]。',
+      );
       this.clearLayer();
       const battle = new BattleScreen(this.app, testRun, UI_TEST_ROUND_META, () => {
         this.modal.alert('UI 技能测试结束', () => this.showTitle());
@@ -83,6 +120,36 @@ export class GameRoot extends Container {
   }
 
   /**
+   * 本章流程已结束：全屏结算 → 关闭后重置单章 RunState 并回到章节选择。
+   * @param fromMapFlow 与 `showChapterSelect(fromMap)` 一致，用于返回后「返回」键行为
+   */
+  private finishChapterRunWithSettlement(
+    fromMapFlow: boolean,
+    chapterId: number,
+    opts: {
+      kind: 'success' | 'fail';
+      stars?: number;
+      failMessage?: string;
+      successExtra?: string;
+    },
+  ): void {
+    this.clearLayer();
+    this.layer.addChild(
+      new ChapterRunSettlementScreen({
+        kind: opts.kind,
+        chapterId,
+        stars: opts.stars,
+        failMessage: opts.failMessage,
+        successExtra: opts.successExtra,
+        onContinue: () => {
+          this.run.resetRun();
+          this.showChapterSelect(fromMapFlow);
+        },
+      }),
+    );
+  }
+
+  /**
    * @param fromMap 从关卡地图返回时为 true（返回键回到地图）；从标题进入为 false（返回键回封面）
    */
   private showChapterSelect(fromMap: boolean): void {
@@ -95,6 +162,7 @@ export class GameRoot extends Container {
           (chapterId) => {
             this.run.bookChapterId = chapterId;
             this.run.resetRun();
+            this.run.chapterSelectBackToMap = fromMap;
             this.showLevelMap();
           },
           () => {
@@ -105,10 +173,11 @@ export class GameRoot extends Container {
           (chapterId, star) => {
             cheatChapterFullClearWithStar(chapterId, star);
             syncLotteryTicketsFromChapterProgress();
-            this.modal.alert(
-              `测试：第 ${chapterId} 章已记为通关（全部战斗关 ${star}★，已写入本地存档；抽奖次数已按累计星同步）`,
-              () => this.showChapterSelect(fromMap),
-            );
+            this.finishChapterRunWithSettlement(fromMap, chapterId, {
+              kind: 'success',
+              stars: star,
+              successExtra: '测试通关已写入本地存档；招募券已按评价星同步。',
+            });
           },
         ),
       );
@@ -117,6 +186,7 @@ export class GameRoot extends Container {
 
   private showStrengthenScreen(fromChapterFlow: boolean): void {
     void (async () => {
+      await preloadAllyPortraitTextures();
       await preloadHeroPortraitTextures().catch(() => {});
       this.clearLayer();
       this.layer.addChild(
@@ -149,11 +219,12 @@ export class GameRoot extends Container {
           this.run.bookChapterRunFailed = false;
           if (this.run.playerHp <= 0) this.run.playerHp = PLAYER_START_HP;
           this.run.clampPlayerHpToMax();
-          this.run.currentRoundIndex = ROUNDS.length;
-          this.modal.alert(
-            `作弊通关：第 ${this.run.bookChapterId} 章已写入存档（全部战斗关 ${star}★）；抽奖次数已按累计星同步`,
-            () => this.showLevelMap(),
-          );
+          this.run.currentRoundIndex = roundsForBookChapter(this.run.bookChapterId).length;
+          this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
+            kind: 'success',
+            stars: star,
+            successExtra: '作弊通关已写入存档；招募券已按评价星同步。',
+          });
         },
       });
       this.layer.addChild(map);
@@ -164,18 +235,24 @@ export class GameRoot extends Container {
   private enterCurrentRound(): void {
     if (this.run.isGameLost()) {
       const msg =
-        this.run.playerHp <= 0 ? '游戏结束：生命值已耗尽' : '本章通关失败（规则失败等）。';
-      this.modal.alert(msg, () => {
-        this.run.resetRun();
-        this.showChapterSelect(false);
+        this.run.playerHp <= 0 ? '生命耗尽，本章失败。' : '本章因规则判定失败（如特殊失败条件）。';
+      this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
+        kind: 'fail',
+        failMessage: msg,
       });
       return;
     }
     if (this.run.isGameWon()) {
-      this.modal.alert('恭喜通关本章（3-6 首领已击破）！', () => this.showLevelMap());
+      const st = getChapterStarFilledCount(this.run.bookChapterId);
+      this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
+        kind: 'success',
+        stars: st,
+        successExtra: '首领已击破，进度已保存。',
+      });
       return;
     }
-    const meta = ROUNDS[this.run.currentRoundIndex];
+    const rounds = roundsForBookChapter(this.run.bookChapterId);
+    const meta = rounds[this.run.currentRoundIndex];
     if (!meta) {
       this.showLevelMap();
       return;
@@ -230,7 +307,7 @@ export class GameRoot extends Container {
       await preloadAllyPortraitTextures();
       await preloadEnemyTextures(this.run.bookChapterId);
       const idx = this.run.currentRoundIndex;
-      const base = ROUNDS[idx];
+      const base = roundsForBookChapter(this.run.bookChapterId)[idx];
       if (!base) {
         this.showLevelMap();
         return;
@@ -244,40 +321,56 @@ export class GameRoot extends Container {
 
   private afterBattle(outcome: BattleOutcome): void {
     const idx = this.run.currentRoundIndex;
-    const metaDone = ROUNDS[idx]!;
+    const rounds = roundsForBookChapter(this.run.bookChapterId);
+    const metaDone = rounds[idx];
+    if (!metaDone) {
+      this.showLevelMap();
+      return;
+    }
+    const leg = legacyProgressRoundIndex(this.run.bookChapterId, idx);
     const cleared = outcome.enemyHpRatioRemaining <= 0.0001;
     const isCombat = metaDone.kind === 'normal' || metaDone.kind === 'boss';
 
     this.run.bossHpDerivedFinalAtkMult = 1;
     this.run.bossHpDerivedFinalHpMult = 1;
 
-    const goChapterSelectAfterDeath = (): void => {
-      this.run.resetRun();
-      this.showChapterSelect(false);
-    };
-
     if (metaDone.kind === 'boss' && !cleared) {
-      const res = resolveAftermath(idx, outcome.perfect, outcome.enemyHpRatioRemaining);
+      const res = resolveAftermath(leg, outcome.perfect, outcome.enemyHpRatioRemaining);
       this.run.playerHp += res.playerHpDelta;
       this.run.clampPlayerHpToMax();
       const econ = this.run.grantRoundEndEconomy(metaDone, outcome, 'compact').join('\n');
       const detail = ['首领未击退', ...res.lines, `生命 ${this.run.playerHp}`, econ].join('\n');
       if (this.run.playerHp <= 0) {
-        this.modal.alertBattleSettlement(`${detail}\n生命耗尽 · 本章失败`, () => goChapterSelectAfterDeath());
+        this.modal.alertBattleSettlement(`${detail}\n生命耗尽 · 本章失败`, () =>
+          this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
+            kind: 'fail',
+            failMessage: '生命耗尽，本章失败。',
+          }),
+        );
         return;
       }
-      this.modal.alertBattleSettlement(`${detail}\n返回地图再战首领`, () => this.showLevelMap());
+      this.modal.alertBattleSettlement(`${detail}\n返回地图再战首领`, () =>
+        this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
+          kind: 'fail',
+          failMessage: '首领未被击败。\n可返回章节选择后再次进入本章继续挑战。',
+        }),
+      );
       return;
     }
 
-    const res = resolveAftermath(idx, outcome.perfect, outcome.enemyHpRatioRemaining);
+    const res = resolveAftermath(leg, outcome.perfect, outcome.enemyHpRatioRemaining);
     this.run.playerHp += res.playerHpDelta;
     this.run.clampPlayerHpToMax();
 
     const tailBase = [...res.lines, `生命 ${this.run.playerHp}`].join('\n');
     if (this.run.playerHp <= 0) {
       const econ = this.run.grantRoundEndEconomy(metaDone, outcome, 'compact').join('\n');
-      this.modal.alertBattleSettlement(`${tailBase}\n${econ}\n生命耗尽 · 本章失败`, () => goChapterSelectAfterDeath());
+      this.modal.alertBattleSettlement(`${tailBase}\n${econ}\n生命耗尽 · 本章失败`, () =>
+        this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
+          kind: 'fail',
+          failMessage: '生命耗尽，本章失败。',
+        }),
+      );
       return;
     }
 
@@ -291,7 +384,16 @@ export class GameRoot extends Container {
     const detail = `${tail}\n${econ}`;
     if (this.run.isGameWon()) {
       markChapterFullyCleared(this.run.bookChapterId);
-      this.modal.alertBattleSettlement(`${detail}\n本章通关 · 进度已保存`, () => this.showLevelMap());
+      /** 须在本章写入 cleared 之后再同步：`getChapterStarFilledCount` 对未通关章恒为 0 */
+      syncLotteryTicketsFromChapterProgress();
+      const st = getChapterStarFilledCount(this.run.bookChapterId);
+      this.modal.alertBattleSettlement(`${detail}\n本章通关 · 进度已保存`, () =>
+        this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
+          kind: 'success',
+          stars: st,
+          successExtra: '评价星已折算为招募券（每星 5 张）。',
+        }),
+      );
       return;
     }
     this.modal.alertBattleSettlement(detail, () => this.showLevelMap());

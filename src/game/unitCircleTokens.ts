@@ -19,9 +19,18 @@ export function ringThicknessPx(): number {
   return Math.max(2, Math.round(3 * LAYOUT_SCALE));
 }
 
+/**
+ * 环形血条与护盾共用线宽：不小于全局底宽，大代币（英雄/大体型）按比例略增，避免「环细盘大」。
+ */
+export function battleHpRingStrokeThickPx(innerRadiusPx: number): number {
+  const base = ringThicknessPx();
+  return Math.max(base, Math.round(innerRadiusPx * 0.08));
+}
+
 /** 头顶飘字：按实际代币内圆半径，避免数字钻进圆里 */
 export function unitFloatLabelOffsetYForInnerR(innerRadiusPx: number): number {
-  return innerRadiusPx * 2 + ringThicknessPx() + Math.round(14 * LAYOUT_SCALE);
+  const thick = battleHpRingStrokeThickPx(innerRadiusPx);
+  return innerRadiusPx * 2 + thick + Math.round(14 * LAYOUT_SCALE);
 }
 
 /** @deprecated 优先用 `unitFloatLabelOffsetYForInnerR`，此处仍按小兵/首领参考配置估算 */
@@ -72,7 +81,7 @@ export type BattleTokenParts = {
   root: Container;
   ringCur: Graphics;
   ringLost: Graphics;
-  /** 护盾环形条（紫），位于 ringLost 之上、ringCur 之下 */
+  /** 护盾弧（紫）：与血环同 `ringR`、同 `thick`，叠在 `ringCur` 之上绘制 */
   ringShield: Graphics;
   /** 圆内脸：纯色盘+字，或已加载时的立绘 Sprite + 描边 */
   disk: Container;
@@ -360,8 +369,8 @@ export function redrawHpRingPair(
 }
 
 /**
- * 环形血条 + 护盾：先绘 HP（同 `redrawHpRingPair`），再绘紫色护盾。
- * 护盾量以 `shieldRatio = shield/maxHp`（0～1）计：优先填满当前血条缺口（已损失弧段），溢出部分在外环沿反向延伸。
+ * 环形血条 + 护盾：先绘 HP（同 `redrawHpRingPair`），再在同半径 `ringR`、同线宽 `thick` 上绘紫盾（与绿/灰血环几何重合；`ringShield` 节点须在 `ringCur` 之上）。
+ * 护盾量 `shieldRatio = shield/maxHp`（0～1）：先填满缺血弧（从当前血末端 `endHp` 起）；溢出部分沿**同一环**从 12 点方向反向延伸，叠在满血绿弧上（紫盖绿）。
  */
 export function redrawHpRingWithShield(
   ringCur: Graphics,
@@ -386,31 +395,23 @@ export function redrawHpRingWithShield(
   const lostSweep = Math.PI * 2 - hpSweep;
   const shieldRad = Math.PI * 2 * sh;
   const onLost = Math.min(shieldRad, lostSweep);
-  const strokeGap = {
-    width: Math.max(2, thick * 0.9),
+  /** 与 `redrawHpRingPair` 中绿/灰弧一致：`ringR` + `thick`，紫叠上层 */
+  const shieldStroke = {
+    width: thick,
     color: BATTLE_SHIELD_RING_PURPLE,
-    alpha: 0.92,
+    alpha: 0.96,
     cap: 'butt' as const,
     join: 'round' as const,
   };
   if (onLost > 1e-5) {
     const e2 = endHp + onLost;
-    ringShield.arc(cx, cy, ringR, endHp, e2, false).stroke(strokeGap);
+    ringShield.arc(cx, cy, ringR, endHp, e2, false).stroke(shieldStroke);
   }
   const over = shieldRad - onLost;
   if (over > 1e-5) {
-    const outerR = ringR + thick * 0.62;
     const a0 = start;
     const a1 = start - over;
-    ringShield
-      .arc(cx, cy, outerR, a0, a1, true)
-      .stroke({
-        width: Math.max(2, thick * 0.78),
-        color: BATTLE_SHIELD_RING_PURPLE,
-        alpha: 0.88,
-        cap: 'butt',
-        join: 'round',
-      });
+    ringShield.arc(cx, cy, ringR, a0, a1, true).stroke(shieldStroke);
   }
 }
 
@@ -418,7 +419,7 @@ export function createBattleAllyToken(kind: AllyClass, innerRadiusPx: number): B
   const innerR = innerRadiusPx;
   const cx = 0;
   const cy = -innerR;
-  const thick = ringThicknessPx();
+  const thick = battleHpRingStrokeThickPx(innerR);
   const ringR = innerR + thick * 0.65;
 
   const root = new Container();
@@ -428,8 +429,8 @@ export function createBattleAllyToken(kind: AllyClass, innerRadiusPx: number): B
   const { disk, letter } = buildAllyDiskAndLetter(innerR, kind);
 
   root.addChild(ringLost);
-  root.addChild(ringShield);
   root.addChild(ringCur);
+  root.addChild(ringShield);
   root.addChild(disk);
   root.addChild(letter);
 
@@ -446,7 +447,7 @@ export function createBattleHeroToken(
   const innerR = innerRadiusPx;
   const cx = 0;
   const cy = -innerR;
-  const thick = ringThicknessPx();
+  const thick = battleHpRingStrokeThickPx(innerR);
   const ringR = innerR + thick * 0.65;
 
   const root = new Container();
@@ -459,8 +460,8 @@ export function createBattleHeroToken(
   const qualityRing = buildHeroQualityRingOutsideHp(cx, cy, ringR, thick, ringColor);
 
   root.addChild(ringLost);
-  root.addChild(ringShield);
   root.addChild(ringCur);
+  root.addChild(ringShield);
   root.addChild(disk);
   root.addChild(qualityRing);
   root.addChild(letter);
@@ -480,7 +481,8 @@ export function createBattleHeroToken(
     root.addChild(tag);
   }
 
-  redrawHpRingWithShield(ringCur, ringLost, ringShield, cx, cy, ringR, thick, 1, 0, ringColor);
+  /** 血环与杂兵一致为绿；品质色仅外圈 `qualityRing`；紫盾叠在绿条缺口/外溢弧 */
+  redrawHpRingWithShield(ringCur, ringLost, ringShield, cx, cy, ringR, thick, 1, 0, BATTLE_ALLY_HP_RING_COLOR);
   return { root, ringCur, ringLost, ringShield, disk, letter, ringR, thick, cx, cy };
 }
 
@@ -496,7 +498,7 @@ export function createBattleEnemyToken(
   const innerR = innerRadiusPx;
   const cx = 0;
   const cy = -innerR;
-  const thick = ringThicknessPx();
+  const thick = battleHpRingStrokeThickPx(innerR);
   const ringR = innerR + thick * 0.65;
   const ringColor = BATTLE_ENEMY_HP_RING_COLOR;
 
@@ -507,8 +509,8 @@ export function createBattleEnemyToken(
   const { disk, letter } = buildEnemyDiskAndLetter(innerR, paint, opts?.wowCirclePortraitUid);
 
   root.addChild(ringLost);
-  root.addChild(ringShield);
   root.addChild(ringCur);
+  root.addChild(ringShield);
   root.addChild(disk);
   root.addChild(letter);
 

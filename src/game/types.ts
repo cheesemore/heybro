@@ -31,6 +31,8 @@ export type RoundMeta = {
   enemies: CombatEnemyWave[];
   /** 开发：复合特效测试战（封面 DEV 入口），不影响正式关卡表 */
   uiTestBattle?: boolean;
+  /** 开发：跳过开场 3-2-1 倒计时（首领技能测试页等；不触发 uiTestBattle 的中央演示特效） */
+  skipBattleOpeningCountdown?: boolean;
 };
 
 export type BattleOutcome = {
