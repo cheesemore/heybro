@@ -1,5 +1,6 @@
 import { Application, Container } from 'pixi.js';
-import { GAME_HEIGHT, GAME_WIDTH, PLAYER_START_HP } from './constants';
+import { PLAYER_START_HP } from './constants';
+import { layoutGameStage } from './layoutStage';
 import type { BattleOutcome } from './types';
 import { RunState } from './runState';
 import { legacyProgressRoundIndex, roundsForBookChapter } from './roundConfig';
@@ -418,10 +419,6 @@ export class GameRoot extends Container {
    * 居中且不超框。screenW/H 必须与 Pixi renderer.screen 一致。
    */
   layoutStage(screenW: number, screenH: number): void {
-    const sx = screenW / GAME_WIDTH;
-    const sy = screenH / GAME_HEIGHT;
-    const s = Math.min(sx, sy);
-    this.scale.set(s);
-    this.position.set((screenW - GAME_WIDTH * s) / 2, (screenH - GAME_HEIGHT * s) / 2);
+    layoutGameStage(this, screenW, screenH);
   }
 }

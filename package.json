@@ -4,9 +4,10 @@
   "version": "0.1.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "npm run build:asset-manifest && vite",
+    "build:asset-manifest": "node scripts/build-asset-manifest.mjs",
     "dev:pixijs-ui-ref": "npm --prefix temp/pixijs-game run dev",
-    "build": "npm run build:character-prompts && tsc && vite build",
+    "build": "npm run build:character-prompts && npm run build:asset-manifest && tsc && vite build",
     "build:character-prompts": "node scripts/build-character-manifest.mjs",
     "gen:wow-book": "node scripts/generate-wow-book-tables.mjs",
     "gen:gear-items": "node scripts/generate-gear-items.mjs",
