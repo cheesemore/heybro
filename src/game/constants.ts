@@ -32,6 +32,14 @@ export const BOSS_BATTLE_SECONDS = 60;
 
 /** 战场单位移动速度倍率（相对配置表数值） */
 export const BATTLE_MOVE_SPEED_MULT = 0.7;
+
+/**
+ * 软碰撞分离半径系数：有效碰撞半径 = hitRadiusPx × coeff（可相互叠入）。
+ * 仅用于 `applyUnitCollisionSeparation`；射程 / 普攻够不着仍用完整 hitRadiusPx。
+ */
+export const BATTLE_COLLISION_RADIUS_COEFF = 0.85;
+/** 关底首领（`SimUnit.bossId`）碰撞系数，暂固定 100% */
+export const BATTLE_COLLISION_RADIUS_COEFF_BOSS = 1;
 /**
  * 全局单位攻击力倍率：在 unitDefs 加载后对盟友 atk、敌方与首领 baseAtk 各乘一次，
  * 战场内不再二次缩放（避免镜像等由已有单位 atk 推导时再乘一遍）。

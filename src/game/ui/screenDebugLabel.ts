@@ -4,9 +4,9 @@ import { GAME_HEIGHT, LAYOUT_SCALE } from '../constants';
 /** 与 `attachScreenDebugLabel` 传入的 `screenId` 一致 → 左下角中文标注（方便沟通/输入法） */
 const SCREEN_DEBUG_LABEL_ZH: Record<string, string> = {
   TitleScreen: '封面',
-  ChapterSelectScreen: '章节选择',
-  'ChapterSelectScreen.detail': '章节情报',
-  LevelMapScreen: '关卡地图',
+  ChapterSelectScreen: '选关',
+  'ChapterSelectScreen.detail': '关卡情报',
+  LevelMapScreen: '节点地图',
   BattleScreen: '战斗',
   DraftScreen: '招募',
   StrategyPickScreen: '策略抉择',

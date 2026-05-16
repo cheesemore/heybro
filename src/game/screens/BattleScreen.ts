@@ -2,6 +2,8 @@ import { Application, Container, Graphics, Text } from 'pixi.js';
 import type { Ticker } from 'pixi.js';
 import {
   ALLY_CLASSES,
+  BATTLE_COLLISION_RADIUS_COEFF,
+  BATTLE_COLLISION_RADIUS_COEFF_BOSS,
   BATTLE_MOVE_SPEED_MULT,
   BOARD_CELL_MAX_STACKS,
   BOSS_BATTLE_SECONDS,
@@ -742,8 +744,18 @@ export class BattleScreen extends Container {
     return { jx: (t * 2 - 1) * SPAWN_SCATTER, jy: (u * 2 - 1) * SPAWN_SCATTER };
   }
 
+  /** 射程 / 够得着判距：完整碰撞半径（不受碰撞系数影响） */
   private hitRadius(u: SimUnit): number {
     return u.hitRadiusPx;
+  }
+
+  private collisionRadiusCoeff(u: SimUnit): number {
+    return u.bossId ? BATTLE_COLLISION_RADIUS_COEFF_BOSS : BATTLE_COLLISION_RADIUS_COEFF;
+  }
+
+  /** 软碰撞分离用半径；可小于 `hitRadiusPx` 以允许代币视觉重叠 */
+  private collisionRadiusPx(u: SimUnit): number {
+    return u.hitRadiusPx * this.collisionRadiusCoeff(u);
   }
 
   /**
@@ -1090,7 +1102,7 @@ export class BattleScreen extends Container {
     return this.weaponReachPx(caster) + this.hitRadius(caster) + this.hitRadius(target);
   }
 
-  /** 全单位软碰撞：推开重叠，并夹在场内 */
+  /** 全单位软碰撞：按 `BATTLE_COLLISION_RADIUS_COEFF` 推开过近单位，并夹在场内（不影响射程） */
   private applyUnitCollisionSeparation(iterations: number): void {
     const padX = Math.round(38 * LAYOUT_SCALE);
     const yMin = Math.round(192 * LAYOUT_SCALE);
@@ -1112,7 +1124,7 @@ export class BattleScreen extends Container {
           const dx = b.x - a.x;
           const dy = b.y - a.y;
           const dist = Math.hypot(dx, dy) || 1e-4;
-          const minD = this.hitRadius(a) + this.hitRadius(b);
+          const minD = this.collisionRadiusPx(a) + this.collisionRadiusPx(b);
           if (dist >= minD) continue;
           const bothAlly = a.side === 'ally' && b.side === 'ally';
           const push = (minD - dist) * (bothAlly ? 0.34 : 0.52);

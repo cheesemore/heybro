@@ -3,12 +3,14 @@ import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { allBondStacks } from '../battleBonds';
+import { recruitCardBondedStats } from '../recruitCardBondStats';
 import { ALLY_CLASSES } from '../constants';
 import { applyPick, boardHasAnyUnit, randomThreeFromFive } from '../draftLogic';
 import { roguePickGoldCost, rogueRefreshGoldCost } from '../strategyApply';
 import type { ArtifactKind } from '../strategyTypes';
 import { roundsForBookChapter } from '../roundConfig';
 import { getResolvedRoundMeta } from '../roundResolve';
+import { GAME_TERM_ZH } from '../gameTerminology';
 import { ALLY_DEFS } from '../unitDefs';
 import type { AllyClass, RoundMeta } from '../types';
 import type { RunState } from '../runState';
@@ -43,7 +45,7 @@ function allyRecruitTraitText(kind: AllyClass): string {
     case 'mage':
       return '范围溅射';
     case 'archer':
-      return '越射越快';
+      return '越射越猛';
     case 'priest':
       return '治疗';
     default:
@@ -413,7 +415,7 @@ export class DraftScreen extends Container {
     const hudY = Math.round(82 * LAYOUT_SCALE);
     this.hpText.position.set(PAD_X, hudY);
     this.goldText.position.set(PAD_X + this.hpText.width + Math.round(28 * LAYOUT_SCALE), hudY);
-    this.pickHint.text = '每一关开始前首次卡牌免费';
+    this.pickHint.text = GAME_TERM_ZH.draftFirstCardFreeHint;
   }
 
   private rollChoices(): void {
@@ -429,7 +431,6 @@ export class DraftScreen extends Container {
     for (let i = 0; i < 3; i++) {
       const kind = this.choices[i]!;
       const x = originX + i * (cardW + CARD_GAP);
-      const def = ALLY_DEFS[kind];
       const card = new Container();
       card.position.set(x, y);
       (card as Container & { userData?: string }).userData = 'trio-cell';
@@ -480,8 +481,9 @@ export class DraftScreen extends Container {
       const statFs = Math.round(17 * LAYOUT_SCALE);
       const traitFs = Math.round(15 * LAYOUT_SCALE);
       const wrapCard = Math.max(40, cardW - padX * 2);
+      const bonded = recruitCardBondedStats(this.run.board, kind);
       const statLine = new Text({
-        text: `生命${def.maxHp} 攻击${def.atk}`,
+        text: `生命${bonded.hp} 攻击${bonded.atk}`,
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           fontSize: statFs,

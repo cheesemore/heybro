@@ -68,7 +68,7 @@ export class GameRoot extends Container {
   /** 封面「清档」：两次确认后删除全部本地存档键。 */
   private promptClearAllLocalSave(): void {
     this.modal.confirmDestructive(
-      '将删除本机全部游戏存档：\n\n· 章节进度与评价星\n· 已获得英雄与上阵\n· 招募记录\n· 职业碎片与等级\n· 刷副本体力\n· 已装备与背包装备\n\n此操作不可恢复。\n是否继续？',
+      '将删除本机全部游戏存档：\n\n· 关卡进度与评价星\n· 已获得英雄与上阵\n· 招募记录\n· 职业碎片与等级\n· 副本刷装体力\n· 已装备与背包装备\n\n此操作不可恢复。\n是否继续？',
       () => {
         this.modal.confirmDestructive(
           '请再次确认：\n\n真的要清除全部本地存档？',
@@ -220,8 +220,8 @@ export class GameRoot extends Container {
       const map = new LevelMapScreen(this.run, {
         onEnterRound: () => this.enterCurrentRound(),
         onRequestExitChapter: () => {
-          this.modal.alert('确定要退出本章吗？\n\n未通关进度将不会保存（视为放弃挑战）。', () => {
-            this.modal.alert('请再次确认：是否退出到章节选择？', () => {
+          this.modal.alert('确定要退出本关吗？\n\n未通关进度将不会保存（视为放弃挑战）。', () => {
+            this.modal.alert('请再次确认：是否退出到选关？', () => {
               this.run.resetRun();
               this.showChapterSelect(true);
             });
@@ -249,7 +249,7 @@ export class GameRoot extends Container {
   private enterCurrentRound(): void {
     if (this.run.isGameLost()) {
       const msg =
-        this.run.playerHp <= 0 ? '生命耗尽，本章失败。' : '本章因规则判定失败（如特殊失败条件）。';
+        this.run.playerHp <= 0 ? '生命耗尽，本关失败。' : '本关因规则判定失败（如特殊失败条件）。';
       this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
         kind: 'fail',
         failMessage: msg,
@@ -355,10 +355,10 @@ export class GameRoot extends Container {
       const econ = this.run.grantRoundEndEconomy(metaDone, outcome, 'compact').join('\n');
       const detail = ['首领未击退', ...res.lines, `生命 ${this.run.playerHp}`, econ].join('\n');
       if (this.run.playerHp <= 0) {
-        this.modal.alertBattleSettlement(`${detail}\n生命耗尽 · 本章失败`, () =>
+        this.modal.alertBattleSettlement(`${detail}\n生命耗尽 · 本关失败`, () =>
           this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
             kind: 'fail',
-            failMessage: '生命耗尽，本章失败。',
+            failMessage: '生命耗尽，本关失败。',
           }),
         );
         return;
@@ -366,7 +366,7 @@ export class GameRoot extends Container {
       this.modal.alertBattleSettlement(`${detail}\n返回地图再战首领`, () =>
         this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
           kind: 'fail',
-          failMessage: '首领未被击败。\n可返回章节选择后再次进入本章继续挑战。',
+          failMessage: '首领未被击败。\n可返回选关后再次进入本关继续挑战。',
         }),
       );
       return;
@@ -379,10 +379,10 @@ export class GameRoot extends Container {
     const tailBase = [...res.lines, `生命 ${this.run.playerHp}`].join('\n');
     if (this.run.playerHp <= 0) {
       const econ = this.run.grantRoundEndEconomy(metaDone, outcome, 'compact').join('\n');
-      this.modal.alertBattleSettlement(`${tailBase}\n${econ}\n生命耗尽 · 本章失败`, () =>
+      this.modal.alertBattleSettlement(`${tailBase}\n${econ}\n生命耗尽 · 本关失败`, () =>
         this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
           kind: 'fail',
-          failMessage: '生命耗尽，本章失败。',
+          failMessage: '生命耗尽，本关失败。',
         }),
       );
       return;
@@ -401,7 +401,7 @@ export class GameRoot extends Container {
       /** 须在本章写入 cleared 之后再同步：`getChapterStarFilledCount` 对未通关章恒为 0 */
       syncLotteryTicketsFromChapterProgress();
       const st = getChapterStarFilledCount(this.run.bookChapterId);
-      this.modal.alertBattleSettlement(`${detail}\n本章通关 · 进度已保存`, () =>
+      this.modal.alertBattleSettlement(`${detail}\n本关通关 · 进度已保存`, () =>
         this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
           kind: 'success',
           stars: st,

@@ -5,6 +5,7 @@ import {
   getNodeProgressMaxForBookChapter,
 } from './gearItems';
 import { ENEMY_DEFS, enemyCombatBaseAtkFromTable, scaledEnemyAtk, scaledEnemyHp } from './unitDefs';
+import { GAME_TERM_ZH } from './gameTerminology';
 import { bossDisplayName } from './roundConfig';
 import { RANGED_ATTACK_RANGE_THRESHOLD } from './battleBonds';
 import { getWowMob, bossUidForBookChapter, resolveWowBookBossCombat } from './wowBookData';
@@ -297,7 +298,7 @@ export function formatNextBattlePreview(
   const ri = scaleRoundIndex;
   const progMax = nodeProgressMaxForPreview(bookChapterId);
   const lines: string[] = [];
-  lines.push(`关卡 ${meta.label}（${meta.kind === 'boss' ? '首领战' : '普通战斗'}）`);
+  lines.push(GAME_TERM_ZH.nodePreviewTitle(meta.label, meta.kind === 'boss' ? 'boss' : 'normal'));
   lines.push('');
 
   for (const w of meta.enemies) {

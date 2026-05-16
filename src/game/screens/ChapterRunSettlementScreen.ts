@@ -46,7 +46,7 @@ export class ChapterRunSettlementScreen extends Container {
     this.addChild(plate);
     this.addChild(frame);
 
-    const titleText = o.kind === 'success' ? '章节通关' : '通关失败';
+    const titleText = o.kind === 'success' ? '关卡通关' : '通关失败';
     const titleT = new Text({
       text: titleText,
       style: {
@@ -80,7 +80,7 @@ export class ChapterRunSettlementScreen extends Container {
       const st = Math.max(0, Math.min(3, Math.floor(o.stars ?? 0)));
       const starStr = `${'★'.repeat(st)}${'☆'.repeat(3 - st)}`;
       const starT = new Text({
-        text: `本章评价：${starStr}`,
+        text: `本关评价：${starStr}`,
         style: {
           fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
           fontSize: Math.round(34 * LAYOUT_SCALE),
@@ -111,7 +111,7 @@ export class ChapterRunSettlementScreen extends Container {
         this.addChild(ex);
       }
     } else {
-      const msg = (o.failMessage ?? '本章挑战未能达成。').trim();
+      const msg = (o.failMessage ?? '本关挑战未能达成。').trim();
       const failT = new Text({
         text: msg,
         style: {
@@ -132,7 +132,7 @@ export class ChapterRunSettlementScreen extends Container {
     const btnW = Math.round(300 * LAYOUT_SCALE);
     const btnH = Math.round(58 * LAYOUT_SCALE);
     const btn = createStyledGameButton('cta', {
-      text: '返回章节选择',
+      text: '返回选关',
       width: btnW,
       height: btnH,
       fontSize: Math.round(22 * LAYOUT_SCALE),

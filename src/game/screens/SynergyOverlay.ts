@@ -608,7 +608,7 @@ export class SynergyOverlay extends Container {
       const picks = this.run.strategyPicks;
       if (!picks.length) {
         const t = new Text({
-          text: '本局尚未在章节抉择中选择策略。\n（在 1-3、2-3、3-3 的「策略抉择」三选一完成后，可在此查看已选说明。）',
+          text: '本局尚未在节点策略抉择中选择策略。\n（在 1-3、2-3、3-3 节点的「策略抉择」三选一完成后，可在此查看已选说明。）',
           style: {
             fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
             fontSize: fsSmall,
@@ -700,7 +700,7 @@ export class SynergyOverlay extends Container {
       this.listLayer.addChild(h2);
       y += h2.height + Math.round(8 * LAYOUT_SCALE);
       const tip = new Text({
-        text: '「羁绊」页：职业名与基础技能会自动换行。下一行左侧「羁绊N」为本行职业备战总层数：未满 3 层时整段灰色；至少 3 层且不足 6 层时为绿色；至少 6 层时为蓝色；其后 3/6/10/15/21 为档位阈值，已达成高亮、未达成灰色。该行最右侧灰色小字（点击查看全部信息）为提示；点本行任意处进入详情（可滚轮翻阅）。「策略」页展示本局已选章节策略。',
+        text: '「羁绊」页：职业名与基础技能会自动换行。下一行左侧「羁绊N」为本行职业备战总层数：未满 3 层时整段灰色；至少 3 层且不足 6 层时为绿色；至少 6 层时为蓝色；其后 3/6/10/15/21 为档位阈值，已达成高亮、未达成灰色。该行最右侧灰色小字（点击查看全部信息）为提示；点本行任意处进入详情（可滚轮翻阅）。「策略」页展示本局已选节点策略。',
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           fontSize: fsSmall,

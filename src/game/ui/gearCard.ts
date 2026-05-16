@@ -2,8 +2,8 @@ import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import { LAYOUT_SCALE } from '../constants';
 import { GEAR_QUALITY_COLORS } from '../gearFarmDrops';
 import { loadGearIconTexture } from '../gearIconAssets';
-import { GEAR_QUALITY_LABELS_CN } from '../gearItems';
 import type { PlayerGearInstance } from '../playerGearInstance';
+import { gearSlotLabelCn } from '../gearSlots';
 import { mountGearSlotLevelBadge } from './gearSlotLevelBadge';
 
 const FF = 'system-ui, "Microsoft YaHei", Segoe UI, sans-serif';
@@ -85,7 +85,6 @@ export function mountGearCard(
 
   card.addChild(iconWrap);
 
-  const qLabel = GEAR_QUALITY_LABELS_CN[gear.quality];
   const arrow = gsArrow === 'up' ? ' ▲' : gsArrow === 'down' ? ' ▼' : '';
   const arrowColor = gsArrow === 'up' ? 0x4ade80 : gsArrow === 'down' ? 0xf87171 : 0xe2e8f0;
 
@@ -121,7 +120,7 @@ export function mountGearCard(
 
   const metaY = gsRowY + gsMain.height + Math.round((compact ? 6 : 10) * LAYOUT_SCALE);
   const meta = new Text({
-    text: `${qLabel} · ${gear.level}级`,
+    text: `${gearSlotLabelCn(gear.slotKind)}${gear.level}级`,
     style: {
       fontFamily: FF,
       fontSize: Math.round((compact ? 13 : 15) * LAYOUT_SCALE),

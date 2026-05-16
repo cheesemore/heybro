@@ -4,6 +4,7 @@ import {
   getChapterIntelBossCardParts,
   getChapterIntelMobCardParts,
 } from '../nextBattlePreview';
+import { GAME_TERM_ZH } from '../gameTerminology';
 import { legacyProgressRoundIndex, roundsForBookChapter } from '../roundConfig';
 import { getResolvedRoundMeta } from '../roundResolve';
 import { rewardChapterPreviewSummary, strategyChapterPreviewSummary } from '../strategyApply';
@@ -220,7 +221,7 @@ export class LevelMapScreen extends Container {
     const enterLabel =
       this.run.currentRoundIndex >= totalRounds
         ? this.run.playerHp > 0 && !this.run.bookChapterRunFailed
-          ? '已通关本章'
+          ? '已通关本关'
           : '流程结束'
         : this.run.isGameLost()
           ? '已失败'
@@ -340,8 +341,8 @@ export class LevelMapScreen extends Container {
       pushText('本关状态', headStyle);
       pushText(
         idx >= totalRounds
-          ? '本章流程已结束。'
-          : '本章已失败（生命耗尽）。可使用下方「退出」返回章节选择。',
+          ? '本关流程已结束。'
+          : '本关已失败（生命耗尽）。可使用下方「退出」返回选关。',
         bodyStyle,
       );
       this.attachMapInfoPanelScroll(block, inner, innerPad, maskH, y);
@@ -353,23 +354,22 @@ export class LevelMapScreen extends Container {
     const bookM = this.run.bookChapterStrengthMult();
 
     if (meta.kind === 'strategy') {
-      pushText('本关：策略抉择', headStyle);
-      pushText('本关将从随机策略中进行三选一，选择后仅在本局内生效。', leadStyle);
+      pushText(GAME_TERM_ZH.mapNodeStrategyHead(meta.label), headStyle);
+      pushText('该节点将从随机策略中进行三选一，选择后仅在本局内生效。', leadStyle);
       pushText(strategyChapterPreviewSummary(meta.chapter), bodyStyle);
       this.attachMapInfoPanelScroll(block, inner, innerPad, maskH, y);
       return block;
     }
 
     if (meta.kind === 'reward') {
-      pushText('本关：关末奖励', headStyle);
-      pushText('本关预计可获得的奖励如下（实际以进关时为准）：', leadStyle);
+      pushText(GAME_TERM_ZH.mapNodeRewardHead(meta.label), headStyle);
+      pushText('该节点预计可获得的奖励如下（实际以进关时为准）：', leadStyle);
       pushText(rewardChapterPreviewSummary(meta.chapter), bodyStyle);
       this.attachMapInfoPanelScroll(block, inner, innerPad, maskH, y);
       return block;
     }
 
-    const head = meta.kind === 'boss' ? '本关：首领战 · 敌方情报' : '本关：普通战斗 · 敌方情报';
-    pushText(head, headStyle);
+    pushText(GAME_TERM_ZH.mapNodeEnemyIntelHead(meta.label, meta.kind === 'boss'), headStyle);
     const leg = legacyProgressRoundIndex(this.run.bookChapterId, idx);
     for (const w of meta.enemies) {
       const parts =

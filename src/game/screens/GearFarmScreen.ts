@@ -28,6 +28,7 @@ import {
 import { mountGearSlotLevelBadge } from '../ui/gearSlotLevelBadge';
 import { GEAR_EQUIPMENT_SLOTS, type GearSlotDef, type GearSlotKind } from '../gearSlots';
 import type { ModalLayer } from './ModalLayer';
+import { GAME_TERM_ZH } from '../gameTerminology';
 import { drawGoldenSolidPanel, GOLDEN_PANEL_TITLE } from '../ui/goldenSolidPanel';
 import { createStyledGameButton, redrawGameButtonFromStyle, type GameButton } from '../ui/gameButtons';
 import { gearSlotLocalCenter } from '../gearSlotLayout';
@@ -190,7 +191,7 @@ function drawGearSlot(
 }
 
 /**
- * 刷副本：上方 14 空槽，中部可掉落说明，底部刷副本按钮（消耗体力）。
+ * 副本刷装：上方 14 空槽，中部可掉落说明，底部刷装按钮（消耗体力）。
  */
 export class GearFarmScreen extends Container {
   private readonly onBack: () => void;
@@ -228,7 +229,7 @@ export class GearFarmScreen extends Container {
     this.addChild(bg);
 
     const titleT = new Text({
-      text: '刷副本',
+      text: GAME_TERM_ZH.farmDungeonButton,
       style: {
         fontFamily: FF,
         fontSize: Math.round(34 * LAYOUT_SCALE),
@@ -344,7 +345,7 @@ export class GearFarmScreen extends Container {
     this.addChild(backBtn);
 
     this.farmBtn = createStyledGameButton('accent', {
-      text: '刷副本',
+      text: GAME_TERM_ZH.farmDungeonButton,
       width: this.farmBtnW,
       height: this.farmBtnH,
       fontSize: Math.round(26 * LAYOUT_SCALE),
@@ -455,7 +456,7 @@ export class GearFarmScreen extends Container {
     const n = getGearFarmStamina();
     this.lastShownStamina = n;
     redrawGameButtonFromStyle(this.farmBtn, 'accent', {
-      text: `刷副本（${n}/${GEAR_FARM_STAMINA_MAX}）`,
+      text: `${GAME_TERM_ZH.farmDungeonButton}（${n}/${GEAR_FARM_STAMINA_MAX}）`,
       width: this.farmBtnW,
       height: this.farmBtnH,
       fontSize: Math.round(26 * LAYOUT_SCALE),

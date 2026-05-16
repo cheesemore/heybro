@@ -18,6 +18,8 @@ import {
   isRagefireChasmBookCleared,
   loadChapterProgress,
 } from '../chapterProgressStorage';
+import { getGearFarmStamina } from '../gearFarmStaminaStorage';
+import { GAME_TERM_ZH } from '../gameTerminology';
 import { bossDisplayName } from '../roundConfig';
 import type { RoundMeta } from '../types';
 import { fitChapterBottomButtonRow } from '../layoutFit';
@@ -68,7 +70,7 @@ function chapterGearDropPreviews(chapterId: number): GearFarmSlotPreview[] {
 }
 
 /**
- * 章节入口：线性解锁，中央仅展示当前可挑战章节；底部「刷副本 | 进入本章 | 职业/英雄」。
+ * 选关入口：线性解锁，中央展示当前可挑战关；底部「副本刷装 | 进入本关 | 职业/英雄」。
  */
 export class ChapterSelectScreen extends Container {
   private readonly onPickChapter: (chapterId: number) => void;
@@ -111,7 +113,7 @@ export class ChapterSelectScreen extends Container {
 
     const sum = getCompletedChaptersStarSummary();
     const progressLine = new Text({
-      text: `已完成${sum.completedChapterCount}章，总星级${sum.starsEarned}/${sum.starsCapForCompleted}星`,
+      text: `已完成${sum.completedChapterCount}关，总星级${sum.starsEarned}/${sum.starsCapForCompleted}星`,
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(22 * LAYOUT_SCALE),
@@ -153,7 +155,7 @@ export class ChapterSelectScreen extends Container {
     const patrolUnlocked = isRagefireChasmBookCleared();
     if (!patrolUnlocked) {
       const patrolHint = new Text({
-        text: '通关怒焰峡谷解锁',
+        text: '通关怒焰裂谷副本后解锁',
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
           fontSize: Math.round(14 * LAYOUT_SCALE),
@@ -170,7 +172,7 @@ export class ChapterSelectScreen extends Container {
     }
 
     const patrolBtn = createStyledGameButton(patrolUnlocked ? 'classic' : 'classicMuted', {
-      text: '刷副本',
+      text: GAME_TERM_ZH.farmDungeonButton,
       width: sideW,
       height: sideH,
       fontSize: Math.round(22 * LAYOUT_SCALE),
@@ -182,6 +184,15 @@ export class ChapterSelectScreen extends Container {
       patrolBtn.cursor = 'default';
     }
     this.addChild(patrolBtn);
+
+    const patrolBadge = new Container();
+    patrolBadge.zIndex = 120;
+    patrolBadge.position.set(
+      rowX + sideW - Math.round(6 * LAYOUT_SCALE),
+      patrolBtnY + Math.round(8 * LAYOUT_SCALE),
+    );
+    paintRedCountBadge(patrolBadge, patrolUnlocked ? getGearFarmStamina() : 0);
+    this.addChild(patrolBadge);
 
     const heroX = rowX + sideW + btnGap + midW + btnGap;
     const heroY = rowY + (midH - sideH) / 2;
@@ -202,7 +213,7 @@ export class ChapterSelectScreen extends Container {
     this.addChild(heroLotteryBadge);
 
     const chBtn = createStyledGameButton('danger', {
-      text: '进入本章',
+      text: GAME_TERM_ZH.enterStage,
       width: midW,
       height: midH,
       fontSize: Math.round(34 * LAYOUT_SCALE),
@@ -354,7 +365,7 @@ export class ChapterSelectScreen extends Container {
 
     if (allDone) {
       const badge = new Text({
-        text: '全章已通关 · 可重复挑战',
+        text: GAME_TERM_ZH.allStagesCleared,
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           fontSize: Math.round(17 * LAYOUT_SCALE),
@@ -501,7 +512,7 @@ export class ChapterSelectScreen extends Container {
           return;
         }
         if (!clearedHere) {
-          spawnFloatingGameTip(this, '须先通关本章，方可查看后续关卡');
+          spawnFloatingGameTip(this, '须先通关本关，方可查看后续关卡');
           return;
         }
         this.viewChapterId += 1;
@@ -554,11 +565,11 @@ export class ChapterSelectScreen extends Container {
     };
 
     let y = inset;
-    mkBtn('1星通关本章', 1, y);
+    mkBtn('1星通关本关', 1, y);
     y += btnH + gap;
-    mkBtn('2星通关本章', 2, y);
+    mkBtn('2星通关本关', 2, y);
     y += btnH + gap;
-    mkBtn('3星通关本章', 3, y);
+    mkBtn('3星通关本关', 3, y);
 
     this.cheatPanel = root;
     this.addChild(root);
@@ -587,7 +598,7 @@ export class ChapterSelectScreen extends Container {
 
     const poolTypes = mobIdsForBookChapter(cid);
     const poolMeta: RoundMeta = {
-      label: '本章敌种池',
+      label: GAME_TERM_ZH.currentStageMobPool,
       chapter: 1,
       sub: 1,
       kind: 'normal',
@@ -599,7 +610,7 @@ export class ChapterSelectScreen extends Container {
     };
 
     const bossMeta: RoundMeta = {
-      label: '3-6',
+      label: GAME_TERM_ZH.nodeBossLabel('3-6'),
       chapter: 3,
       sub: 6,
       kind: 'boss',
@@ -652,7 +663,7 @@ export class ChapterSelectScreen extends Container {
     layer.addChild(panelFrame);
 
     const h1 = new Text({
-      text: '章节情报详情',
+      text: `${GAME_TERM_ZH.stageIntel}详情`,
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(30 * LAYOUT_SCALE),
@@ -719,7 +730,7 @@ export class ChapterSelectScreen extends Container {
     };
 
     pushSectionTitle('普通小怪：');
-    pushMutedLine('各兵种以「首关 1-1」进度估算数值；实战中随关卡推进会变强。');
+    pushMutedLine('各兵种以「首节点 1-1」进度估算数值；实战中随节点推进会变强。');
 
     for (const w of poolMeta.enemies) {
       const parts = getChapterIntelMobCardParts(w, 1, 0, bookM, cid);

@@ -33,7 +33,7 @@ export const GEAR_EQUIPMENT_SLOTS: readonly GearSlotDef[] = [
   { kind: 'waist', labelCn: '腰部', slotNo: 5 },
   { kind: 'legs', labelCn: '腿部', slotNo: 6 },
   { kind: 'feet', labelCn: '脚部', slotNo: 7 },
-  { kind: 'wrist', labelCn: '手腕', slotNo: 8 },
+  { kind: 'wrist', labelCn: '护腕', slotNo: 8 },
   { kind: 'hands', labelCn: '手部', slotNo: 9 },
   { kind: 'finger', labelCn: '手指', slotNo: 10 },
   { kind: 'trinket', labelCn: '饰品', slotNo: 11, large: true },
@@ -48,5 +48,9 @@ export const GEAR_SLOT_NO_BY_KIND: Record<GearSlotKind, number> = Object.fromEnt
 
 export function gearSlotNoForKind(kind: GearSlotKind): number {
   return GEAR_SLOT_NO_BY_KIND[kind];
+}
+
+export function gearSlotLabelCn(kind: GearSlotKind): string {
+  return GEAR_EQUIPMENT_SLOTS.find((s) => s.kind === kind)?.labelCn ?? kind;
 }
 

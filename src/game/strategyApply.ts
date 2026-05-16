@@ -171,7 +171,7 @@ export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string
   },
   c3_boss_hunter: {
     title: '首领特攻',
-    desc: '对本章首领战首领造成伤害 +30%。',
+    desc: '对本关首领战首领造成伤害 +30%。',
   },
   c3_super_double: {
     title: '超级加倍',
@@ -331,7 +331,7 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
       break;
     case 'c3_boss_hunter':
       run.bossDamageBonusVsFinalBoss = 0.3;
-      lines.push('首领特攻：对本章首领 +30% 伤害');
+      lines.push('首领特攻：对本关首领 +30% 伤害');
       break;
     case 'c3_super_double': {
       const occ = run.board
