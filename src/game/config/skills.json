@@ -728,9 +728,10 @@
       "nameCn": "诱捕陷阱",
       "limit": "any",
       "codeStatus": "written",
-      "descriptionCn": "使你和射手都能够诱捕一个靠近的敌人。",
-      "logicEffectCn": "开场技（英雄 archer_01 / archer_02 存活时）：我方所有射手获得一次性 Buff——首次受到物理伤害降为 1 点，随后 2 秒内所受伤害均为 1；若该 2 秒内攻击者非首领，则眩晕其 3 秒。Buff 结束后移除。实现：applyBattleOpenArcherSnareTrap、applyArcherSnareTrapOnHit。",
+      "descriptionCn": "战斗开始：你若在场，所有射手获得【诱捕陷阱】10 秒。期间首次受到物理攻击时触发，接下来 2 秒内受到的伤害变为 1 点。",
+      "logicEffectCn": "开场技（archer_01/02 存活）：射手获得 snareTrapBuff（armed 10s）。首次物理受击→active 2s（伤害=1）。羁绊6：active 3s。羁绊10：active 期间非首领攻击者眩晕 3s（每单位一次）。羁绊15：远程友军均获得 Buff。",
       "params": [
+        10,
         2,
         3
       ],

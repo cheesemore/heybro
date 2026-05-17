@@ -77,19 +77,19 @@ def _load_style_core() -> str:
 
 STYLE_CORE = _load_style_core()
 
-# 装备图标统一底色（浅灰 slate-200，小图对比度优于深灰底）
-GEAR_ICON_BG_HEX = "#e2e8f0"
+# 装备图标统一底色（暖灰绿卡其 / 旧纸色，RGB 约 211,209,176）
+GEAR_ICON_BG_HEX = "#d3d1b0"
 
 GEAR_ICON_PROMPT_CN = (
     "饥荒（Don't Starve）/ Klei 手绘装备图标：单件道具居中、无角色手部、无文字；"
     "墨线勾边、线宽略抖、平涂或轻排线；道具本体设色可鲜艳醒目；"
-    f"背景必须为统一纯色浅灰底 {GEAR_ICON_BG_HEX}，无渐变、无纹理、无场景、无阴影投射到背景上，小图可读剪影。"
+    f"背景必须为统一纯色暖灰绿卡其底 {GEAR_ICON_BG_HEX}，无渐变、无纹理、无场景、无阴影投射到背景上，小图可读剪影。"
 )
 GEAR_ICON_PROMPT_EN = (
     "Single inventory equipment icon, one centered object, no hands, no readable text, "
-    f"flat uniform light gray background exactly {GEAR_ICON_BG_HEX} (cool neutral slate-200), "
+    f"flat uniform warm khaki parchment background exactly {GEAR_ICON_BG_HEX} (muted yellow-green beige), "
     "no gradient, no paper texture, no environment, no cast shadow on backdrop, "
-    "square composition, readable at 64px. "
+    "square composition, readable at 64px, exactly one icon only. "
 )
 
 
@@ -187,6 +187,16 @@ def write_manifest(jobs: list[GearIconJob], staging: Path) -> tuple[Path, Path]:
 
 def icon_ready(path: Path) -> bool:
     return path.is_file() and path.stat().st_size > 256
+
+
+def resolve_raw_image_path(expected: Path) -> Path:
+    """文生图目标路径；兼容旧版多张响应时误存为 stem_1 的文件。"""
+    if expected.is_file():
+        return expected
+    legacy = expected.with_name(f"{expected.stem}_1{expected.suffix}")
+    if legacy.is_file():
+        return legacy
+    return expected
 
 
 @dataclass

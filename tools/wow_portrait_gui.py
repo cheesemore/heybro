@@ -432,7 +432,7 @@ class App(tk.Tk):
                         self._q.put(("log", f"已取消（第 {attempt} 次尝试前），本条不再重试。"))
                         return False, None
                     try:
-                        p = img2.generate_to_file(
+                        p, multi_hint = img2.generate_to_file(
                             job.prompt,
                             target_sq,
                             key_file=key_file if key_file.is_file() else None,
@@ -441,6 +441,8 @@ class App(tk.Tk):
                             size=self.var_size.get().strip(),
                         )
                         self._q.put(("log", f"[文生图成功] 第{attempt}/{PER_IMAGE_MAX_TRIES}次尝试 → {p}"))
+                        if multi_hint:
+                            self._q.put(("log", f"[API] {multi_hint}"))
                         return True, None
                     except Exception as e:
                         last_err = e

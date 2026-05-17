@@ -27,7 +27,7 @@ import {
   tryDeployHero,
   undeployHeroById,
 } from '../heroMetaStorage';
-import { drawGoldenSolidPanel } from '../ui/goldenSolidPanel';
+import { drawGoldenSolidPanel, GOLDEN_PANEL_ACCENT } from '../ui/goldenSolidPanel';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { paintRedCountBadge } from '../ui/countBadge';
 import { createStyledGameButton, redrawGameButtonFromStyle, type GameButton, type GameButtonStyleKey } from '../ui/gameButtons';
@@ -424,6 +424,9 @@ export class StrengthenScreen extends Container {
   private drawClassStrengthenPanels(): void {
     this.classScrollContent.removeChildren();
     const rowW = GAME_WIDTH - PAD * 2;
+    const panelRowHExtraBase = Math.round(10 * LAYOUT_SCALE);
+    const panelRowHTrimOther = Math.round(5 * LAYOUT_SCALE);
+    const panelRowHExtraArcher = Math.round(5 * LAYOUT_SCALE);
     const rowH = Math.round(196 * LAYOUT_SCALE);
     const rowGap = Math.round(12 * LAYOUT_SCALE);
     const leftW = Math.round(108 * LAYOUT_SCALE);
@@ -472,11 +475,20 @@ export class StrengthenScreen extends Container {
       const mFs = Math.round(17 * LAYOUT_SCALE);
       const mLh = Math.round(26 * LAYOUT_SCALE);
       const mFf = 'system-ui, "Microsoft YaHei", sans-serif';
+      const btnW = Math.round(168 * LAYOUT_SCALE);
+      const btnH = Math.round(44 * LAYOUT_SCALE);
+      const talentBtnH = Math.round(40 * LAYOUT_SCALE);
+      const barH = Math.round(20 * LAYOUT_SCALE);
+      const colGap = Math.round(10 * LAYOUT_SCALE);
+      const rightTopY = Math.round(22 * LAYOUT_SCALE);
+      const rightColH = barH + colGap + btnH + colGap + talentBtnH;
+      const rx = rowW - rightW + Math.round(8 * LAYOUT_SCALE);
+      const dividerX = rx - Math.round(12 * LAYOUT_SCALE);
       const skillPadX = midX;
-      const skillW = rowW - skillPadX - Math.round(14 * LAYOUT_SCALE);
+      const skillW = Math.max(Math.round(72 * LAYOUT_SCALE), dividerX - skillPadX - Math.round(8 * LAYOUT_SCALE));
       const skillGap = Math.round(4 * LAYOUT_SCALE);
-      const skillLiftPx = Math.round(40 * LAYOUT_SCALE);
       const skillBottomPad = Math.round(12 * LAYOUT_SCALE);
+      const skillMidGap = Math.round(14 * LAYOUT_SCALE);
 
       const skillLabel = new Text({
         text: '职业技能：',
@@ -502,11 +514,17 @@ export class StrengthenScreen extends Container {
       const midStatLines = 3;
       const midTopY = Math.round(22 * LAYOUT_SCALE);
       const midContentH = midTopY + midStatLines * mLh;
-      const panelRowH = Math.max(
-        rowH,
-        midContentH + Math.round(8 * LAYOUT_SCALE) + skillBlockH + skillBottomPad + skillLiftPx,
-      );
-      const skillY = panelRowH - skillBottomPad - skillBlockH - skillLiftPx;
+      const panelRowHExtra =
+        cls === 'archer'
+          ? panelRowHExtraBase + panelRowHExtraArcher
+          : panelRowHExtraBase - panelRowHTrimOther;
+      const panelRowH =
+        Math.max(
+          rowH,
+          rightTopY + rightColH + Math.round(14 * LAYOUT_SCALE),
+          midContentH + skillMidGap + skillBlockH + skillBottomPad,
+        ) + panelRowHExtra;
+      const skillY = panelRowH - skillBottomPad - skillBlockH;
 
       const bg = new Graphics();
       bg.roundRect(0, 0, rowW, panelRowH, Math.round(16 * LAYOUT_SCALE)).fill(0x111827).stroke({
@@ -539,62 +557,41 @@ export class StrengthenScreen extends Container {
       pushParts([{ t: `等级 ${st.level}`, c: 0xcbd5e1, w: '600' }]);
       if (st.atCap) {
         pushParts([
-          { t: '生命 ', c: 0xcbd5e1 },
+          { t: '生命', c: 0xcbd5e1 },
           { t: String(st.maxHp), c: 0xf1f5f9, w: '700' },
           { t: '（已满）', c: 0x64748b },
-        ]);
-        pushParts([
-          { t: '攻击 ', c: 0xcbd5e1 },
+          { t: '  攻击 ', c: 0xcbd5e1 },
           { t: String(st.atk), c: 0xf1f5f9, w: '700' },
           { t: '（已满）', c: 0x64748b },
         ]);
       } else {
         pushParts([
-          { t: '生命 ', c: 0xcbd5e1 },
+          { t: '生命', c: 0xcbd5e1 },
           { t: String(st.maxHp), c: 0xf1f5f9, w: '700' },
           { t: `（+${st.deltaHp}）`, c: 0x22c55e, w: '700' },
-        ]);
-        pushParts([
-          { t: '攻击 ', c: 0xcbd5e1 },
+          { t: '  攻击 ', c: 0xcbd5e1 },
           { t: String(st.atk), c: 0xf1f5f9, w: '700' },
           { t: `（+${st.deltaAtk}）`, c: 0x22c55e, w: '700' },
         ]);
       }
+      const secPerHit = ALLY_DEFS[cls].attackSpeed;
+      const dps = st.atk / secPerHit;
+      const secStr = Number(secPerHit.toFixed(2)).toString();
+      const dpsStr = (Math.round(dps * 10) / 10).toFixed(1);
+      pushParts([{ t: `攻速${secStr}秒/每下（${dpsStr}秒伤）`, c: 0x93c5fd }]);
       row.addChild(midBlock);
 
-      const btnW = Math.round(168 * LAYOUT_SCALE);
-      const btnH = Math.round(44 * LAYOUT_SCALE);
-      const barW = btnW;
-      const barH = Math.round(20 * LAYOUT_SCALE);
-      const rx = rowW - rightW + Math.round(8 * LAYOUT_SCALE);
-      const canUp = need != null && frag >= need;
-      const upBtn = createStyledGameButton(canUp ? 'accent' : 'classicMuted', {
-        text: st.level >= 999 ? '已满级' : '升级',
-        width: btnW,
-        height: btnH,
-        fontSize: Math.round(18 * LAYOUT_SCALE),
-      });
-      upBtn.position.set(rx, Math.round(22 * LAYOUT_SCALE));
-      if (st.level < 999 && need != null) {
-        upBtn.eventMode = 'static';
-        upBtn.cursor = canUp ? 'pointer' : 'default';
-        upBtn.on('pointertap', () => {
-          if (!tryUpgradeClassLevel(cls)) {
-            if (!canUp) {
-              spawnFloatingGameTip(this, `碎片不足（需要 ${need}）`);
-            }
-            return;
-          }
-          spawnFloatingGameTip(this, `${ALLY_DEFS[cls].name} 已升至 Lv.${getClassLevel(cls)}`);
-          this.drawClassStrengthenPanels();
-          this.refreshTabsVisual();
-        });
-      } else {
-        upBtn.eventMode = 'passive';
-      }
-      row.addChild(upBtn);
+      const dividerLine = new Graphics();
+      const lineTop = Math.round(14 * LAYOUT_SCALE);
+      const lineBot = panelRowH - Math.round(14 * LAYOUT_SCALE);
+      dividerLine
+        .moveTo(dividerX, lineTop)
+        .lineTo(dividerX, lineBot)
+        .stroke({ width: Math.max(1, Math.round(2 * LAYOUT_SCALE)), color: 0x475569, alpha: 0.85 });
+      row.addChild(dividerLine);
 
-      const barY = Math.round(22 * LAYOUT_SCALE) + btnH + Math.round(10 * LAYOUT_SCALE);
+      const barW = btnW;
+      const barY = rightTopY;
       const barBg = new Graphics();
       barBg.roundRect(rx, barY, barW, barH, Math.round(8 * LAYOUT_SCALE)).fill(0x0f172a);
       row.addChild(barBg);
@@ -617,6 +614,47 @@ export class StrengthenScreen extends Container {
       progLab.position.set(rx + barW / 2, barY + barH / 2);
       row.addChild(progLab);
 
+      const upBtnY = barY + barH + colGap;
+      const canUp = need != null && frag >= need;
+      const upBtn = createStyledGameButton(canUp ? 'accent' : 'classicMuted', {
+        text: st.level >= 999 ? '已满级' : '升级',
+        width: btnW,
+        height: btnH,
+        fontSize: Math.round(18 * LAYOUT_SCALE),
+      });
+      upBtn.position.set(rx, upBtnY);
+      if (st.level < 999 && need != null) {
+        upBtn.eventMode = 'static';
+        upBtn.cursor = canUp ? 'pointer' : 'default';
+        upBtn.on('pointertap', () => {
+          if (!tryUpgradeClassLevel(cls)) {
+            if (!canUp) {
+              spawnFloatingGameTip(this, `碎片不足（需要 ${need}）`);
+            }
+            return;
+          }
+          spawnFloatingGameTip(this, `${ALLY_DEFS[cls].name} 已升至 Lv.${getClassLevel(cls)}`);
+          this.drawClassStrengthenPanels();
+          this.refreshTabsVisual();
+        });
+      } else {
+        upBtn.eventMode = 'passive';
+      }
+      row.addChild(upBtn);
+
+      const talentBtnY = upBtnY + btnH + colGap;
+      const talentBtn = createStyledGameButton('accent', {
+        text: '天赋树',
+        width: btnW,
+        height: talentBtnH,
+        fontSize: Math.round(16 * LAYOUT_SCALE),
+      });
+      talentBtn.position.set(rx, talentBtnY);
+      talentBtn.eventMode = 'static';
+      talentBtn.cursor = 'pointer';
+      talentBtn.on('pointertap', () => spawnFloatingGameTip(this, '暂未开放'));
+      row.addChild(talentBtn);
+
       skillLabel.position.set(skillPadX, skillY);
       row.addChild(skillLabel);
       skillBody.position.set(skillPadX, skillY + skillLabel.height + skillGap);
@@ -625,6 +663,25 @@ export class StrengthenScreen extends Container {
       this.classScrollContent.addChild(row);
       y += panelRowH + rowGap;
     }
+
+    const footFs = Math.round(15 * LAYOUT_SCALE);
+    const footLh = Math.round(22 * LAYOUT_SCALE);
+    const heroBondFootnote = new Text({
+      text: '英雄单位同样享有职业技能和职业羁绊，但是不提供职业羁绊人口',
+      style: {
+        fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+        fontSize: footFs,
+        fill: GOLDEN_PANEL_ACCENT,
+        wordWrap: true,
+        wordWrapWidth: rowW,
+        lineHeight: footLh,
+        align: 'center',
+      },
+    });
+    heroBondFootnote.anchor.set(0.5, 0);
+    heroBondFootnote.position.set(rowW / 2, y + Math.round(4 * LAYOUT_SCALE));
+    this.classScrollContent.addChild(heroBondFootnote);
+    y += heroBondFootnote.height + Math.round(10 * LAYOUT_SCALE);
 
     const contentH = y - rowGap;
     this.classScrollMinY = Math.min(0, this.classScrollViewH - contentH);

@@ -143,7 +143,7 @@ function passiveDescForHeroId(id: HeroId): string {
   if (id === ARCHER_STRONG_STRIKE_BLUE_ID) {
     return '主动：诱捕陷阱（详见英雄说明）。被动：射程+50（720 设计坐标系像素）。';
   }
-  if (isArcherSnareTrapHero(id)) return '主动：诱捕陷阱（详见英雄说明）';
+  if (isArcherSnareTrapHero(id)) return '主动：诱捕陷阱——开场为友方施加 10 秒陷阱（详见英雄说明）';
   if (id === KNIGHT_HOLY_SANCTION_BLUE_ID) {
     return '主动：神圣制裁（详见英雄说明）。被动：攻击力+10%。';
   }

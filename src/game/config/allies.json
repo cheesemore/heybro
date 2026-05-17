@@ -40,7 +40,7 @@
     "name": "骑士",
     "maxHp": 640,
     "atk": 18,
-    "attackSpeed": 0.5,
+    "attackSpeed": 0.7,
     "range": 10,
     "moveSpeed": 510
   }

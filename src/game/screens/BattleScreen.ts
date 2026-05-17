@@ -263,7 +263,9 @@ const KNIGHT_CHARGE_HIT_DIST = Math.round(48 * LAYOUT_SCALE);
 const KNIGHT_CHARGE_MITIGATE_DMG = 1;
 const KNIGHT_DEATH_DENY_HEAL_RATIO = 0.3;
 const SKILL_HERO_ARCHER_SNARE_TRAP = 'skill_hero_archer_snare_trap';
-const SNARE_TRAP_WINDOW_SEC = 2;
+const SNARE_TRAP_BUFF_SEC = 10;
+const SNARE_TRAP_EFFECT_SEC = 2;
+const SNARE_TRAP_EFFECT_SEC_BOND6 = 3;
 const SNARE_TRAP_STUN_SEC = 3;
 
 /** 与 `skillIds` / `wowBookMonsters` 中小怪跃后排技能一致 */
@@ -506,8 +508,8 @@ type SimUnit = {
   /** 环形血条几何与配色（战斗代币） */
   tokenRing?: { cx: number; cy: number; ringR: number; thick: number; solidColor: number };
   aura?: Graphics;
-  /** 诱捕陷阱：一次性射手 Buff */
-  archerSnareBuff?: { phase: 'armed' | 'active'; remainSec: number; stunUsed?: boolean };
+  /** 诱捕陷阱：待触发窗口 + 触发后减伤窗口 */
+  snareTrapBuff?: { armedRemainSec: number; activeRemainSec: number; stunUsed?: boolean };
   bossId?: BossId;
   allyKind?: AllyClass;
   enemyPaint?: EnemyPaintKind;
@@ -1742,7 +1744,7 @@ export class BattleScreen extends Container {
     return out;
   }
 
-  /** 二十一极巨化羁绊：每种职业层数≥21 时，该职业随机 3 个入场小兵极巨化（代币与碰撞半径×1.5；atk/hp 不变） */
+  /** 二十一极巨化羁绊：每种职业层数≥21 时，该职业随机 3 个入场小兵极巨化（体型×3，生命与攻击×3） */
   private applyBond25Mega(allies: SimUnit[]): void {
     const m = BOND_MEGA_RADIUS_MULT;
     for (const kind of ALLY_CLASSES) {
@@ -1763,8 +1765,12 @@ export class BattleScreen extends Container {
         if (u.tokenInnerR != null) {
           u.tokenInnerR = Math.max(1, Math.round(u.tokenInnerR * m));
         }
+        u.atk = Math.max(1, Math.round(u.atk * m));
+        u.maxHp = Math.max(1, Math.round(u.maxHp * m));
+        u.hp = Math.min(u.maxHp, Math.round(u.hp * m));
         u.root.scale.set(m);
         this.syncUnitRootFromStance(u);
+        this.syncUnitHpRing(u);
       }
     }
   }
@@ -4169,9 +4175,7 @@ export class BattleScreen extends Container {
       const prev = u.archerLockedAttackTargetId;
       const next = target.unitId;
       if (prev != null && prev !== next) {
-        if (!this.archerFocusPersistOnTargetSwitch()) {
-          u.archerFocusStacks = 0;
-        }
+        u.archerFocusStacks = 0;
       }
       u.archerLockedAttackTargetId = next;
     }
@@ -4864,17 +4868,63 @@ export class BattleScreen extends Container {
     return 1;
   }
 
-  /** 存活强击光环英雄（archer_01 / archer_02，蓝/紫品质弓手签名）在场时强击光环生效 */
-  /** 羁绊15：射手专注换目标不清层 */
-  private archerFocusPersistOnTargetSwitch(): boolean {
-    return this.bondStacks.archer >= 15;
-  }
-
   private knightIsCharging(u: SimUnit): boolean {
     return (
       u.allyKind === 'knight' &&
       (u.knightState === 'charge' || u.knightState === 'death_charge')
     );
+  }
+
+  /** 骑士冲锋命中：仅打断非首领的蓄力/引导 */
+  private interruptNonBossCastFromKnightCharge(target: SimUnit): boolean {
+    if (target.side !== 'enemy' || target.dead || target.bossId) return false;
+
+    if (target.defiasBandageChannel) {
+      this.endDefiasBandageChannel(target, 'knight_charge_interrupt');
+      this.floatWords.push(
+        spawnFloatNumber(this.floatLayer, target.x, this.floatAnchorY(target) - 32, '打断', 'magic'),
+      );
+      return true;
+    }
+
+    const st = target.bossSkillCast;
+    if (!st) return false;
+
+    if (st.kind === 'blade_storm_warn' || st.kind === 'blade_storm_channel') {
+      this.interruptBossBladeStorm(target, '骑士冲锋·打断');
+      this.floatWords.push(
+        spawnFloatNumber(this.floatLayer, target.x, this.floatAnchorY(target) - 32, '打断', 'magic'),
+      );
+      return true;
+    }
+    if (st.kind === 'overload_explosion_channel') {
+      this.interruptBossOverloadExplosion(target, '骑士冲锋·打断', false);
+      this.floatWords.push(
+        spawnFloatNumber(this.floatLayer, target.x, this.floatAnchorY(target) - 32, '打断', 'magic'),
+      );
+      return true;
+    }
+    if (st.kind === 'punch_windup' || st.kind === 'rush_windup' || st.kind === 'rhahk_smash_windup') {
+      st.warnFx.destroy({ children: true });
+      target.bossSkillCast = undefined;
+      this.bossPutSkillOnCooldown(target, st.skillId);
+      this.logBattleSkill(st.skillId, target, '蓄力·骑士冲锋打断');
+      this.floatWords.push(
+        spawnFloatNumber(this.floatLayer, target.x, this.floatAnchorY(target) - 32, '打断', 'magic'),
+      );
+      return true;
+    }
+    if (st.kind === 'rush_charge') {
+      if (st.warnFx) this.disposeBossRushWarnFx(st);
+      target.bossSkillCast = undefined;
+      this.bossPutSkillOnCooldown(target, 'skill_boss_rush');
+      this.logBattleSkill('skill_boss_rush', target, '冲锋·骑士冲锋打断');
+      this.floatWords.push(
+        spawnFloatNumber(this.floatLayer, target.x, this.floatAnchorY(target) - 32, '打断', 'magic'),
+      );
+      return true;
+    }
+    return false;
   }
 
   private beginKnightCharge(u: SimUnit, mode: 'charge' | 'death_charge'): void {
@@ -4892,12 +4942,25 @@ export class BattleScreen extends Container {
     }
   }
 
+  private snareTrapEffectSec(): number {
+    return this.bondStacks.archer >= 6 ? SNARE_TRAP_EFFECT_SEC_BOND6 : SNARE_TRAP_EFFECT_SEC;
+  }
+
+  private snareTrapAppliesTo(u: SimUnit): boolean {
+    if (this.bondStacks.archer >= 15) return this.isRangedAttacker(u);
+    return u.allyKind === 'archer';
+  }
+
+  private grantSnareTrapBuff(u: SimUnit): void {
+    u.snareTrapBuff = { armedRemainSec: SNARE_TRAP_BUFF_SEC, activeRemainSec: 0 };
+  }
+
   private applyBattleOpenArcherSnareTrap(): void {
     const caster = this.alive('ally').find((u) => isArcherSnareTrapHero(u.heroId));
     if (!caster) return;
     for (const a of this.alive('ally')) {
-      if (a.allyKind !== 'archer') continue;
-      a.archerSnareBuff = { phase: 'armed', remainSec: 0 };
+      if (!this.snareTrapAppliesTo(a)) continue;
+      this.grantSnareTrapBuff(a);
     }
     this.floatBattleSkillName(SKILL_HERO_ARCHER_SNARE_TRAP, caster);
     this.logBattleSkill(SKILL_HERO_ARCHER_SNARE_TRAP, caster, 'opening_trap');
@@ -4905,10 +4968,17 @@ export class BattleScreen extends Container {
 
   private tickArcherSnareTrapBuffs(dt: number): void {
     for (const u of this.alive('ally')) {
-      const b = u.archerSnareBuff;
-      if (!b || b.phase !== 'active') continue;
-      b.remainSec = Math.max(0, b.remainSec - dt);
-      if (b.remainSec <= 0) u.archerSnareBuff = undefined;
+      const b = u.snareTrapBuff;
+      if (!b) continue;
+      if (b.activeRemainSec > 0) {
+        b.activeRemainSec = Math.max(0, b.activeRemainSec - dt);
+        if (b.activeRemainSec <= 0) u.snareTrapBuff = undefined;
+        continue;
+      }
+      if (b.armedRemainSec > 0) {
+        b.armedRemainSec = Math.max(0, b.armedRemainSec - dt);
+        if (b.armedRemainSec <= 0) u.snareTrapBuff = undefined;
+      }
     }
   }
 
@@ -4916,21 +4986,27 @@ export class BattleScreen extends Container {
     return ctx?.damageTag !== 'magic';
   }
 
+  private trySnareTrapStun(buff: NonNullable<SimUnit['snareTrapBuff']>, attacker: SimUnit): void {
+    if (this.bondStacks.archer < 10) return;
+    if (buff.stunUsed || attacker.bossId) return;
+    attacker.stunT = Math.max(attacker.stunT ?? 0, SNARE_TRAP_STUN_SEC);
+    buff.stunUsed = true;
+    this.ringFx.push(spawnRingPulse(this.fxLayer, attacker.x, attacker.y, 40, 0x86efac, 0.45));
+  }
+
   private applyArcherSnareTrapMitigate(target: SimUnit, amt: number, ctx?: DamageCtx): number {
-    const b = target.archerSnareBuff;
-    if (!b || target.allyKind !== 'archer') return amt;
+    const b = target.snareTrapBuff;
+    if (!b) return amt;
     if (!ctx?.attacker || ctx.attacker.side !== 'enemy') return amt;
     if (!this.isPhysicalDamage(ctx)) return amt;
-    if (b.phase === 'armed') {
-      b.phase = 'active';
-      b.remainSec = SNARE_TRAP_WINDOW_SEC;
+
+    if (b.activeRemainSec > 0) {
+      this.trySnareTrapStun(b, ctx.attacker);
+      return 1;
     }
-    if (b.phase === 'active' && b.remainSec > 0) {
-      if (!b.stunUsed && !ctx.attacker.bossId) {
-        ctx.attacker.stunT = Math.max(ctx.attacker.stunT ?? 0, SNARE_TRAP_STUN_SEC);
-        b.stunUsed = true;
-        this.ringFx.push(spawnRingPulse(this.fxLayer, ctx.attacker.x, ctx.attacker.y, 40, 0x86efac, 0.45));
-      }
+    if (b.armedRemainSec > 0) {
+      b.activeRemainSec = this.snareTrapEffectSec();
+      this.trySnareTrapStun(b, ctx.attacker);
       return 1;
     }
     return amt;
@@ -5356,6 +5432,7 @@ export class BattleScreen extends Container {
       let dmgHit = u.atk * mul;
       if (tgt.bossId) dmgHit *= this.run.knightVsBossDamageMult;
       this.applyDamage(tgt, dmgHit, { attacker: u });
+      this.interruptNonBossCastFromKnightCharge(tgt);
       u.knightState = 'fight';
       u.invulnerable = false;
       u.collisionDisabled = false;
