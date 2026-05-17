@@ -68,9 +68,12 @@ export function isPriestMassShelterHero(id: HeroId | undefined): boolean {
   return id === PRIEST_HERO_SHELTER_ID || id === PRIEST_SHELTER_BLUE_ID;
 }
 
-export function isArcherStrongStrikeAuraHero(id: HeroId | undefined): boolean {
+export function isArcherSnareTrapHero(id: HeroId | undefined): boolean {
   return id === ARCHER_HERO_STRONG_STRIKE_ID || id === ARCHER_STRONG_STRIKE_BLUE_ID;
 }
+
+/** @deprecated 诱捕陷阱已替代强击光环 */
+export const isArcherStrongStrikeAuraHero = isArcherSnareTrapHero;
 
 export function isKnightHolySanctionHero(id: HeroId | undefined): boolean {
   return id === KNIGHT_HERO_HOLY_SANCTION_ID || id === KNIGHT_HOLY_SANCTION_BLUE_ID;
@@ -138,9 +141,9 @@ function passiveDescForHeroId(id: HeroId): string {
       : '主动：群体庇护（详见英雄说明）';
   }
   if (id === ARCHER_STRONG_STRIKE_BLUE_ID) {
-    return '被动：强击光环（详见英雄说明）。被动：射程+50（720 设计坐标系像素）。';
+    return '主动：诱捕陷阱（详见英雄说明）。被动：射程+50（720 设计坐标系像素）。';
   }
-  if (isArcherStrongStrikeAuraHero(id)) return '被动：强击光环（详见英雄说明）';
+  if (isArcherSnareTrapHero(id)) return '主动：诱捕陷阱（详见英雄说明）';
   if (id === KNIGHT_HOLY_SANCTION_BLUE_ID) {
     return '主动：神圣制裁（详见英雄说明）。被动：攻击力+10%。';
   }

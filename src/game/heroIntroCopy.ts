@@ -1,6 +1,6 @@
 import type { HeroId } from './heroRegistry';
 import {
-  isArcherStrongStrikeAuraHero,
+  isArcherSnareTrapHero,
   isKnightHolySanctionHero,
   isMageArcaneMissilesHero,
   isPriestMassShelterHero,
@@ -96,30 +96,28 @@ function buildPriestShelterSegments(
   ];
 }
 
-const STRONG_STRIKE_PASSIVE_BASE = [
-  '被动：强击光环',
+const SNARE_TRAP_SKILL_BASE = [
+  '主动：诱捕陷阱',
   '',
-  '当场上有本英雄（存活）时：全场所有法师与射手友方（含对应英雄；不含骑士等）+6% 暴击率。',
-  '英雄脚底显示光环特效。',
+  '诱捕陷阱，使你和射手都能够诱捕一个靠近的敌人。',
+  '战斗开场（本英雄存活时）：我方所有射手获得一次性诱捕 Buff——首次受到物理伤害降为 1 点，随后 2 秒内所受伤害均为 1；若该 2 秒内攻击者非首领，则眩晕其 3 秒。Buff 结束后移除。',
 ].join('\n');
 
-const STRONG_STRIKE_BOND_LINES: ReadonlyArray<{ tier: 6 | 10 | 15; text: string }> = [
-  { tier: 6, text: '羁绊6：上述暴击率加成提升至 12%。' },
-  { tier: 10, text: '羁绊10：全场法师与射手友方额外 +24% 暴击伤害（暴击时在原有倍率上再乘 (1+24%)）。' },
+const SNARE_TRAP_BOND_LINES: ReadonlyArray<{ tier: 6 | 10 | 15; text: string }> = [
   { tier: 15, text: '羁绊15：射手的「专注」叠层在切换攻击目标时不再清零。' },
 ];
 
-function buildArcherStrongStrikeSegments(
+function buildArcherSnareTrapSegments(
   def: NonNullable<ReturnType<typeof getHeroDef>>,
   classStacksOnBoard: number,
   bondLineTint: HeroIntroBondLineTintMode,
 ): HeroIntroBodySegment[] {
   const gap = 6;
   const tail =
-    purpleSignaturePassiveFooter(def) ?? '被动与特性：见上（射手层数影响强击光环与专注规则）。';
+    purpleSignaturePassiveFooter(def) ?? '被动与特性：见上（射手层数影响羁绊档位与专注规则）。';
   return [
-    { text: STRONG_STRIKE_PASSIVE_BASE, fill: GOLDEN_PANEL_BODY, marginBottom: gap },
-    ...STRONG_STRIKE_BOND_LINES.map((row) => ({
+    { text: SNARE_TRAP_SKILL_BASE, fill: GOLDEN_PANEL_BODY, marginBottom: gap },
+    ...SNARE_TRAP_BOND_LINES.map((row) => ({
       text: row.text,
       fill: bondLineFill(classStacksOnBoard, row.tier, bondLineTint),
       marginBottom: gap,
@@ -272,8 +270,8 @@ export function buildHeroIntroBodySegments(
   if (isPriestMassShelterHero(id)) {
     return [head, ...buildPriestShelterSegments(def, classStacksOnBoard, opts.bondLineTint)];
   }
-  if (isArcherStrongStrikeAuraHero(id)) {
-    return [head, ...buildArcherStrongStrikeSegments(def, classStacksOnBoard, opts.bondLineTint)];
+  if (isArcherSnareTrapHero(id)) {
+    return [head, ...buildArcherSnareTrapSegments(def, classStacksOnBoard, opts.bondLineTint)];
   }
   if (isKnightHolySanctionHero(id)) {
     return [head, ...buildKnightHolySanctionSegments(def, classStacksOnBoard, opts.bondLineTint)];

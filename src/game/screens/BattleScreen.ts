@@ -121,7 +121,7 @@ import {
   heroQualityAccent,
   heroStarStatMult,
   ARCHER_STRONG_STRIKE_BLUE_ID,
-  isArcherStrongStrikeAuraHero,
+  isArcherSnareTrapHero,
   isKnightHolySanctionHero,
   isMageArcaneMissilesHero,
   isPriestMassShelterHero,
@@ -168,7 +168,6 @@ import type { ProjectileVisualStyle } from '../battleVisuals';
 import {
   buildProjectileGraphic,
   createKnightAura,
-  createStrongStrikeHeroAura,
   spawnArcaneTrailSpark,
   spawnDeathTrailSpark,
   spawnShadowTrailSpark,
@@ -260,6 +259,12 @@ const ARENA_Y_MIN = Math.round(192 * LAYOUT_SCALE);
 const ARENA_Y_MAX = Math.round(1108 * LAYOUT_SCALE);
 const KNIGHT_CHARGE_SPEED_MULT = 2.65;
 const KNIGHT_CHARGE_HIT_DIST = Math.round(48 * LAYOUT_SCALE);
+/** 冲锋/濒死冲锋：仍受击，单次伤害封顶（非无敌） */
+const KNIGHT_CHARGE_MITIGATE_DMG = 1;
+const KNIGHT_DEATH_DENY_HEAL_RATIO = 0.3;
+const SKILL_HERO_ARCHER_SNARE_TRAP = 'skill_hero_archer_snare_trap';
+const SNARE_TRAP_WINDOW_SEC = 2;
+const SNARE_TRAP_STUN_SEC = 3;
 
 /** 与 `skillIds` / `wowBookMonsters` 中小怪跃后排技能一致 */
 const MINION_LEAP_SKILL_IDS = ['skill_batrider_leap', 'skill_raider_leap', 'skill_beserker_leap'] as const;
@@ -501,8 +506,8 @@ type SimUnit = {
   /** 环形血条几何与配色（战斗代币） */
   tokenRing?: { cx: number; cy: number; ringR: number; thick: number; solidColor: number };
   aura?: Graphics;
-  /** 席拉拉强击光环脚底特效（与骑士 `aura` 分立） */
-  strongStrikeAuraGfx?: Graphics;
+  /** 诱捕陷阱：一次性射手 Buff */
+  archerSnareBuff?: { phase: 'armed' | 'active'; remainSec: number; stunUsed?: boolean };
   bossId?: BossId;
   allyKind?: AllyClass;
   enemyPaint?: EnemyPaintKind;
@@ -865,6 +870,8 @@ export class BattleScreen extends Container {
     const heroUnits = this.spawnDeployedHeroes(alliesSpawned);
     this.units = [...alliesSpawned, ...heroUnits, ...this.spawnEnemies(meta)];
     this.jitterChaosSpawnPositions();
+    this.applyBattleOpenArcherSnareTrap();
+    this.initKnightChargeTargets();
     this.applyRevengeSpiritOpening();
     this.applyUnitCollisionSeparation(5);
     const devHooks = this.run.devBattleHooks;
@@ -1603,7 +1610,7 @@ export class BattleScreen extends Container {
               knightChargeTargetId: null,
               knightBond12: this.bondKnight12,
               knightDeathDenyLeft: this.bondKnight12 ? 1 : 0,
-              invulnerable: true,
+              collisionDisabled: true,
               allySourceSlot: slot,
               bonusCrit: ab.crit,
               hitRadiusDesign: def.hitRadius,
@@ -1715,7 +1722,7 @@ export class BattleScreen extends Container {
             knightChargeTargetId: null,
             knightBond12: this.bondKnight12,
             knightDeathDenyLeft: this.bondKnight12 ? 1 : 0,
-            invulnerable: true,
+            collisionDisabled: true,
             bonusCrit: heroBonusCrit,
             hitRadiusDesign: hd.hitRadius,
             heroId: hid,
@@ -1971,6 +1978,7 @@ export class BattleScreen extends Container {
       knightBond12?: boolean;
       knightDeathDenyLeft?: number;
       invulnerable?: boolean;
+      collisionDisabled?: boolean;
       allySourceSlot?: number;
       bonusCrit?: number;
       /** 来自 allies.json / wowBookMonsters；缺省按步兵 */
@@ -1995,17 +2003,11 @@ export class BattleScreen extends Container {
     const hitRadiusPx = Math.round((opts.hitRadiusDesign ?? ENEMY_DEFS.grunt.hitRadius) * LAYOUT_SCALE);
 
     let aura: Graphics | undefined;
-    let strongStrikeAuraGfx: Graphics | undefined;
     if (side === 'ally' && opts.allyKind === 'knight') {
       aura = createKnightAura(hitRadiusPx);
       aura.position.set(0, -hitRadiusPx);
-      aura.visible = !!opts.invulnerable;
+      aura.visible = false;
       root.addChild(aura);
-    }
-    if (side === 'ally' && opts.heroId && isArcherStrongStrikeAuraHero(opts.heroId)) {
-      strongStrikeAuraGfx = createStrongStrikeHeroAura(hitRadiusPx);
-      strongStrikeAuraGfx.position.set(0, -hitRadiusPx);
-      root.addChildAt(strongStrikeAuraGfx, 0);
     }
 
     let body: Container;
@@ -2106,8 +2108,8 @@ export class BattleScreen extends Container {
       skillIds = ['skill_hero_mage_arcane_missiles'];
     } else if (side === 'ally' && opts.heroId && isPriestMassShelterHero(opts.heroId)) {
       skillIds = ['skill_hero_priest_mass_shelter'];
-    } else if (side === 'ally' && opts.heroId && isArcherStrongStrikeAuraHero(opts.heroId)) {
-      skillIds = ['skill_hero_archer_strong_strike_aura'];
+    } else if (side === 'ally' && opts.heroId && isArcherSnareTrapHero(opts.heroId)) {
+      skillIds = [SKILL_HERO_ARCHER_SNARE_TRAP];
     } else if (side === 'ally' && opts.heroId && isKnightHolySanctionHero(opts.heroId)) {
       skillIds = ['skill_hero_knight_holy_sanction'];
     } else if (side === 'enemy') {
@@ -2162,7 +2164,6 @@ export class BattleScreen extends Container {
       hitFlashOverlay,
       heroChannelDiskOverlay,
       aura,
-      strongStrikeAuraGfx,
       bossId: opts.bossId,
       allyKind: opts.allyKind,
       enemyPaint,
@@ -2175,6 +2176,7 @@ export class BattleScreen extends Container {
       knightBond12: opts.knightBond12,
       knightDeathDenyLeft: opts.knightDeathDenyLeft,
       invulnerable: opts.invulnerable,
+      collisionDisabled: opts.collisionDisabled,
       allySourceSlot: opts.allySourceSlot,
       bonusCrit: opts.bonusCrit,
       enemyLeapCd:
@@ -4618,8 +4620,7 @@ export class BattleScreen extends Container {
 
     if (target.invincible) return;
 
-    /** 无敌仅用于我方骑士冲锋等；敌方不应吃该标记（避免误伤导致打不动） */
-    if (target.invulnerable && target.side === 'ally') return;
+    if (target.invulnerable && target.side === 'ally' && !this.knightIsCharging(target)) return;
 
     if (
       !ctx?.skipWarriorShare &&
@@ -4702,6 +4703,17 @@ export class BattleScreen extends Container {
       }
     }
 
+    if (
+      target.side === 'ally' &&
+      ctx?.attacker?.side === 'enemy' &&
+      this.knightIsCharging(target)
+    ) {
+      amt = KNIGHT_CHARGE_MITIGATE_DMG;
+    }
+    if (target.side === 'ally' && ctx?.attacker?.side === 'enemy') {
+      amt = this.applyArcherSnareTrapMitigate(target, amt, ctx);
+    }
+
     let dmgToHp = Math.max(0, Math.round(amt));
     let shieldAbsorbed = 0;
     if (!ctx?.trueDamage && dmgToHp > 0) {
@@ -4722,11 +4734,8 @@ export class BattleScreen extends Container {
       dmgToHp >= target.hp
     ) {
       target.knightDeathDenyLeft = 0;
-      target.hp = Math.max(1, Math.round(target.maxHp * 0.12));
-      target.invulnerable = true;
-      target.knightState = 'death_charge';
-      const t = this.nearestEnemy(target);
-      target.knightChargeTargetId = t?.unitId ?? null;
+      target.hp = Math.max(1, Math.round(target.maxHp * KNIGHT_DEATH_DENY_HEAL_RATIO));
+      this.beginKnightCharge(target, 'death_charge');
       return;
     }
 
@@ -4856,37 +4865,79 @@ export class BattleScreen extends Container {
   }
 
   /** 存活强击光环英雄（archer_01 / archer_02，蓝/紫品质弓手签名）在场时强击光环生效 */
-  private allyStrongStrikeAuraHeroAlive(): boolean {
-    return this.alive('ally').some((u) => isArcherStrongStrikeAuraHero(u.heroId));
-  }
-
-  /** 远程单位额外暴击率（按射手备战羁绊档 6→12%） */
-  private strongStrikeAuraRangedCritBonus(): number {
-    if (!this.allyStrongStrikeAuraHeroAlive()) return 0;
-    return this.bondStacks.archer >= 6 ? 0.12 : 0.06;
-  }
-
-  /** 远程单位暴击伤害额外比例（羁绊≥10 时 +24%，与暴伤倍率叠乘为 ×(1+本值)） */
-  private strongStrikeAuraRangedCritDmgAdd(): number {
-    if (!this.allyStrongStrikeAuraHeroAlive()) return 0;
-    return this.bondStacks.archer >= 10 ? 0.24 : 0;
-  }
-
   /** 羁绊15：射手专注换目标不清层 */
   private archerFocusPersistOnTargetSwitch(): boolean {
-    return this.allyStrongStrikeAuraHeroAlive() && this.bondStacks.archer >= 15;
+    return this.bondStacks.archer >= 15;
   }
 
-  /** 强击光环受益方：法师 / 射手（含对应英雄），不含骑士等其它高射程单位 */
-  private isStrongStrikeAuraRangedClass(u: SimUnit): boolean {
-    return u.allyKind === 'mage' || u.allyKind === 'archer';
+  private knightIsCharging(u: SimUnit): boolean {
+    return (
+      u.allyKind === 'knight' &&
+      (u.knightState === 'charge' || u.knightState === 'death_charge')
+    );
+  }
+
+  private beginKnightCharge(u: SimUnit, mode: 'charge' | 'death_charge'): void {
+    u.knightState = mode;
+    u.collisionDisabled = true;
+    u.invulnerable = false;
+    const t = this.farthestEnemy(u);
+    u.knightChargeTargetId = t?.unitId ?? null;
+  }
+
+  private initKnightChargeTargets(): void {
+    for (const u of this.alive('ally')) {
+      if (!this.knightIsCharging(u)) continue;
+      this.beginKnightCharge(u, u.knightState === 'death_charge' ? 'death_charge' : 'charge');
+    }
+  }
+
+  private applyBattleOpenArcherSnareTrap(): void {
+    const caster = this.alive('ally').find((u) => isArcherSnareTrapHero(u.heroId));
+    if (!caster) return;
+    for (const a of this.alive('ally')) {
+      if (a.allyKind !== 'archer') continue;
+      a.archerSnareBuff = { phase: 'armed', remainSec: 0 };
+    }
+    this.floatBattleSkillName(SKILL_HERO_ARCHER_SNARE_TRAP, caster);
+    this.logBattleSkill(SKILL_HERO_ARCHER_SNARE_TRAP, caster, 'opening_trap');
+  }
+
+  private tickArcherSnareTrapBuffs(dt: number): void {
+    for (const u of this.alive('ally')) {
+      const b = u.archerSnareBuff;
+      if (!b || b.phase !== 'active') continue;
+      b.remainSec = Math.max(0, b.remainSec - dt);
+      if (b.remainSec <= 0) u.archerSnareBuff = undefined;
+    }
+  }
+
+  private isPhysicalDamage(ctx?: DamageCtx): boolean {
+    return ctx?.damageTag !== 'magic';
+  }
+
+  private applyArcherSnareTrapMitigate(target: SimUnit, amt: number, ctx?: DamageCtx): number {
+    const b = target.archerSnareBuff;
+    if (!b || target.allyKind !== 'archer') return amt;
+    if (!ctx?.attacker || ctx.attacker.side !== 'enemy') return amt;
+    if (!this.isPhysicalDamage(ctx)) return amt;
+    if (b.phase === 'armed') {
+      b.phase = 'active';
+      b.remainSec = SNARE_TRAP_WINDOW_SEC;
+    }
+    if (b.phase === 'active' && b.remainSec > 0) {
+      if (!b.stunUsed && !ctx.attacker.bossId) {
+        ctx.attacker.stunT = Math.max(ctx.attacker.stunT ?? 0, SNARE_TRAP_STUN_SEC);
+        b.stunUsed = true;
+        this.ringFx.push(spawnRingPulse(this.fxLayer, ctx.attacker.x, ctx.attacker.y, 40, 0x86efac, 0.45));
+      }
+      return 1;
+    }
+    return amt;
   }
 
   private dealAllyHit(u: SimUnit, target: SimUnit, baseDmg: number, ctx?: DamageCtx): void {
     let dmg = baseDmg * this.allyOutgoingDamageMult(u);
-    const rangedAura = this.isStrongStrikeAuraRangedClass(u);
-    const auraCrit = rangedAura ? this.strongStrikeAuraRangedCritBonus() : 0;
-    const auraCritDmg = rangedAura ? this.strongStrikeAuraRangedCritDmgAdd() : 0;
     if (u.allyKind === 'archer') {
       if (target.unitId === u.archerLockedAttackTargetId) {
         const st = Math.min(30, u.archerFocusStacks ?? 0);
@@ -4895,13 +4946,12 @@ export class BattleScreen extends Container {
       }
     }
     let damageTag: DamageCtx['damageTag'] = u.allyKind === 'mage' ? 'magic' : ctx?.damageTag;
-    let critP = (u.bonusCrit ?? 0) + this.run.chaoticAllyCritBonus + auraCrit;
+    let critP = (u.bonusCrit ?? 0) + this.run.chaoticAllyCritBonus;
     if (u.allyKind === 'mage') critP += this.run.mageCritChance;
     if (u.allyKind === 'archer') critP += this.run.archerCritChance;
     if (Math.random() < critP) {
-      const k = 1 + auraCritDmg;
-      if (u.allyKind === 'archer') dmg *= this.run.archerCritDamageMult * k;
-      else dmg *= 1.5 * k;
+      if (u.allyKind === 'archer') dmg *= this.run.archerCritDamageMult;
+      else dmg *= 1.5;
       damageTag = 'crit';
     }
     this.applyDamage(target, dmg, {
@@ -5037,9 +5087,7 @@ export class BattleScreen extends Container {
     if (!attacker || !target || attacker.dead || target.dead) return;
     const mageBond = this.bondStacks.mage;
     let dmg = Math.max(1, Math.round(attacker.atk * coef * this.allyOutgoingDamageMult(attacker)));
-    const rangedAura = this.isStrongStrikeAuraRangedClass(attacker);
-    const auraCrit = rangedAura ? this.strongStrikeAuraRangedCritBonus() : 0;
-    let critP = (attacker.bonusCrit ?? 0) + this.run.chaoticAllyCritBonus + this.run.mageCritChance + auraCrit;
+    let critP = (attacker.bonusCrit ?? 0) + this.run.chaoticAllyCritBonus + this.run.mageCritChance;
     let critMul = 1.5;
     if (mageBond >= 15 && target.bossId) {
       critP += 0.5;
@@ -5047,8 +5095,7 @@ export class BattleScreen extends Container {
     }
     let damageTag: DamageCtx['damageTag'] = 'magic';
     if (Math.random() < critP) {
-      const k = 1 + (rangedAura ? this.strongStrikeAuraRangedCritDmgAdd() : 0);
-      dmg = Math.max(1, Math.round(dmg * critMul * k));
+      dmg = Math.max(1, Math.round(dmg * critMul));
       damageTag = 'crit';
     }
     this.applyDamage(target, dmg, { attacker, damageTag });
@@ -5270,10 +5317,8 @@ export class BattleScreen extends Container {
     const sumAtk = mages.reduce((s, m) => s + m.atk, 0);
     let dmg = Math.max(1, Math.round(sumAtk));
     let meteorTag: 'crit' | 'magic' = 'magic';
-    const meteorCritP = this.run.mageCritChance + this.strongStrikeAuraRangedCritBonus();
-    if (this.run.mageMeteorCrits && Math.random() < meteorCritP) {
-      const k = 1 + this.strongStrikeAuraRangedCritDmgAdd();
-      dmg = Math.round(dmg * 1.5 * k);
+    if (this.run.mageMeteorCrits && Math.random() < this.run.mageCritChance) {
+      dmg = Math.round(dmg * 1.5);
       meteorTag = 'crit';
     }
     this.meteors.push(spawnMeteorAnim(this.fxLayer, epicenter.x, epicenter.y, METEOR_SPLASH_RADIUS));
@@ -5295,6 +5340,7 @@ export class BattleScreen extends Container {
     if (!tgt) {
       u.knightState = 'fight';
       u.invulnerable = false;
+      u.collisionDisabled = false;
       u.knightCooldown = 15;
       return;
     }
@@ -5312,6 +5358,7 @@ export class BattleScreen extends Container {
       this.applyDamage(tgt, dmgHit, { attacker: u });
       u.knightState = 'fight';
       u.invulnerable = false;
+      u.collisionDisabled = false;
       u.knightCooldown = 15;
       u.knightChargeTargetId = null;
       return;
@@ -7018,6 +7065,7 @@ export class BattleScreen extends Container {
     tickRayBurstFx(this.healBursts, dt);
     tickHolySanctionStrikes(this.holySanctionStrikes, dt);
     this.tickProjectiles(dt);
+    this.tickArcherSnareTrapBuffs(dt);
 
     for (const u of this.units) {
       if (u.dead) continue;
@@ -7072,6 +7120,7 @@ export class BattleScreen extends Container {
         if (u.allyKind === 'knight' && (u.knightState === 'charge' || u.knightState === 'death_charge')) {
           u.knightState = 'fight';
           u.invulnerable = false;
+          u.collisionDisabled = false;
           u.knightChargeTargetId = null;
           u.knightCooldown = Math.max(u.knightCooldown ?? 0, 7);
         }
@@ -7118,14 +7167,9 @@ export class BattleScreen extends Container {
       }
 
       if (u.aura) {
-        const charging = u.allyKind === 'knight' && (u.knightState === 'charge' || u.knightState === 'death_charge');
-        u.aura.visible = !!(u.invulnerable && charging);
+        const charging = this.knightIsCharging(u);
+        u.aura.visible = charging;
         if (u.aura.visible) u.aura.rotation += dt * 3.8;
-      }
-
-      if (u.strongStrikeAuraGfx && u.heroId && isArcherStrongStrikeAuraHero(u.heroId)) {
-        u.strongStrikeAuraGfx.visible = !u.dead;
-        if (u.strongStrikeAuraGfx.visible) u.strongStrikeAuraGfx.rotation += dt * 2.1;
       }
 
       if (u.heroChannelDiskOverlay && u.tokenInnerR != null) {
@@ -7169,7 +7213,7 @@ export class BattleScreen extends Container {
       }
 
       let baseBodyTint = 0xffffff;
-      if (u.invulnerable && u.allyKind === 'knight') {
+      if (this.knightIsCharging(u)) {
         baseBodyTint = 0xffe9a8;
       } else if ((u.raiderLeapBuffT ?? 0) > 0 && this.unitHasSkill(u, 'skill_raider_leap')) {
         baseBodyTint = 0xfde047;
@@ -7249,10 +7293,7 @@ export class BattleScreen extends Container {
         }
         u.knightCooldown = Math.max(0, (u.knightCooldown ?? 0) - dt);
         if ((u.knightCooldown ?? 0) <= 0) {
-          u.knightState = 'charge';
-          u.invulnerable = true;
-          const t = this.farthestEnemy(u);
-          u.knightChargeTargetId = t?.unitId ?? null;
+          this.beginKnightCharge(u, 'charge');
           this.tickKnightCharge(u, dt);
           continue;
         }

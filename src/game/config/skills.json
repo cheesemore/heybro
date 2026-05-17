@@ -724,16 +724,15 @@
       "hitSfx": ""
     },
     {
-      "id": "skill_hero_archer_strong_strike_aura",
-      "nameCn": "强击光环",
+      "id": "skill_hero_archer_snare_trap",
+      "nameCn": "诱捕陷阱",
       "limit": "any",
       "codeStatus": "written",
-      "descriptionCn": "被动：当场上有本英雄存活时，全场法师与射手友方获得额外暴击率；射手羁绊可强化暴击率、追加暴击伤害，或使射手专注换目标不清层。",
-      "logicEffectCn": "英雄 archer_01（席拉拉，蓝品质）与 archer_02（奇兰，紫品质，同技能）。BattleScreen：allyStrongStrikeAuraHeroAlive 时 allyKind 为 mage/archer 的友方暴击率 +6%（羁绊≥6 为 +12%）；暴击时在原有倍率上再×(1+24%)（羁绊≥10）；陨石暴击判定叠加同暴击率且暴伤受加成；奥术飞弹同。羁绊≥15 时射手换出手目标不重置 archerFocusStacks。专注：换目标清零在 beginDefaultAttack（出手锁定 archerLockedAttackTargetId）；dealAllyHit 仅当命中目标 id 与锁定一致时叠层并应用每层+3%伤害，避免弹道晚到误清层。脚底 createStrongStrikeHeroAura。",
+      "descriptionCn": "使你和射手都能够诱捕一个靠近的敌人。",
+      "logicEffectCn": "开场技（英雄 archer_01 / archer_02 存活时）：我方所有射手获得一次性 Buff——首次受到物理伤害降为 1 点，随后 2 秒内所受伤害均为 1；若该 2 秒内攻击者非首领，则眩晕其 3 秒。Buff 结束后移除。实现：applyBattleOpenArcherSnareTrap、applyArcherSnareTrapOnHit。",
       "params": [
-        6,
-        12,
-        24
+        2,
+        3
       ],
       "powerTag": "strong",
       "launchSfx": "",
@@ -848,12 +847,12 @@
       "limit": "minion",
       "powerTag": "weak",
       "codeStatus": "written",
-      "descriptionCn": "生命值低于40%时，会边撤离战场边给自己打绷带，每秒恢复3%最大血量，持续20秒。每个迪菲亚成员只有一根绷带！",
+      "descriptionCn": "生命值低于40%时，会边撤离战场边给自己打绷带，每秒恢复6%最大血量，持续10秒。每个迪菲亚成员只有一根绷带！",
       "logicEffectCn": "生命值低于params[0]%时进行引导技能，每秒恢复params[1]%生命值，引导params[2]秒。引导期间单位会不自主的向最近的战场边缘移动，引导期间无法攻击。如果已经到达战场边缘就会停下来。引导被打断则技能解除。这个技能只会发动一次。",
       "params": [
         40,
-        3,
-        20
+        6,
+        10
       ]
     },
     {
