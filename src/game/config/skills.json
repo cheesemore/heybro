@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "editConvention": "全局技能主数据。`id` 唯一；`limit` minion/boss/any；`powerTag` strong|medium|weak|negative（强/中/弱/负面，缺省 medium）供图鉴编辑器「属性重算」叠乘；`codeStatus` written/missing/pending_changes（待修改为手工标记）；`descriptionCn`/`logicEffectCn` 见各条。`params` **仅关键战斗调参**（伤害系数、范围/半径设计值、冷却间隔、眩晕与嗜血持续、触发概率等）；落点偏移、受击火花、镜像攻速节奏、召唤散布角度等**技能实现特性**写在代码里。设计像素乘 LAYOUT_SCALE 用 `skillParamDesignPx`/`skillParamNumber`。单位 `skillIds` 挂载。书本关底首领配置型技能（如 skill_boss_*）的冷却与初动见该条 `params[0]`、`params[1]`，由 `BattleScreen` 调度。 launchSfx/hitSfx 为音效资源 id，空串表示暂无音效；",
+  "editConvention": "全局技能主数据。`id` 唯一；`limit` minion/boss/any；`powerTag` strong|medium|weak|negative（强/中/弱/负面，缺省 medium）供图鉴编辑器「属性重算」叠乘；`codeStatus` written/missing/pending_changes（待修改为手工标记）；`descriptionCn`/`logicEffectCn` 见各条。`params` **最多 5 项**（`skillsCatalog.ts` 启动校验，超出会抛错）；**仅关键战斗调参**（伤害系数、范围/半径设计值、冷却间隔、触发概率等），第 6 个及以后或表现类数值须写死在战斗代码常量里。落点偏移、受击火花、镜像攻速节奏、召唤散布角度、额外眩晕秒数等**技能实现特性**写在代码里。设计像素乘 LAYOUT_SCALE 用 `skillParamDesignPx`/`skillParamNumber`。单位 `skillIds` 挂载。书本关底首领配置型技能（如 skill_boss_*）的冷却与初动见该条 `params[0]`、`params[1]`，由 `BattleScreen` 调度。 launchSfx/hitSfx 为音效资源 id，空串表示暂无音效；",
   "skills": [
     {
       "id": "skill_farseer_chain_lightning",
@@ -237,7 +237,8 @@
         0.32
       ],
       "launchSfx": "",
-      "hitSfx": ""
+      "hitSfx": "",
+      "powerTag": "strong"
     },
     {
       "id": "skill_shadow_bot",
@@ -376,6 +377,255 @@
       "hitSfx": ""
     },
     {
+      "id": "skill_rhahk_smash",
+      "nameCn": "猛击",
+      "limit": "boss",
+      "powerTag": "strong",
+      "codeStatus": "written",
+      "descriptionCn": "冷却 8 秒（开场 3 秒后可施放）。蓄力后对锁定区域猛击：主目标受到攻击力 540% 的伤害，范围内其他我方受到攻击力 180% 的伤害并被击退。蓄力期间不普攻；眩晕或主目标死亡会打断。",
+      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=蓄力秒，[3]=范围伤害系数%，[4]=范围半径设计像素。锁定最近我方为主目标；蓄力期间不普攻；眩晕或主目标死亡则打断。主目标伤害×3，其余目标正常系数并击退。",
+      "params": [
+        8,
+        3,
+        2,
+        180,
+        125
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_rhahk_cleave",
+      "nameCn": "顺劈斩",
+      "limit": "boss",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "近战普攻有 35% 概率触发：对主目标前方扇形内的其他我方各造成攻击力 85% 的伤害（主目标不重复受伤）。",
+      "logicEffectCn": "近战普攻命中后概率触发（35%）。面向主目标扇形内其他我方造成 atk×params[0]/100；params[1]=外缘半径设计像素，params[2]=张角度数。主目标不重复受伤。",
+      "params": [
+        85,
+        125,
+        90
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_rhahk_warcry",
+      "nameCn": "战吼",
+      "limit": "boss",
+      "powerTag": "strong",
+      "codeStatus": "written",
+      "descriptionCn": "冷却 12 秒（开场 5 秒后可施放）。立即回复最大生命值 10%，并永久叠加一层攻击强化（每层攻击力 +10%，层数无上限）。",
+      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=每层攻击+%（叠乘基数），[3]=立即回复最大生命%。每次释放治疗并 +1 攻击层，无层数上限。",
+      "params": [
+        12,
+        5,
+        10,
+        10
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_blade_storm",
+      "nameCn": "剑刃风暴",
+      "limit": "boss",
+      "powerTag": "strong",
+      "codeStatus": "written",
+      "descriptionCn": "冷却 20 秒（开场 10 秒后可施放）。引导期间可移动追敌，每秒对周围我方造成攻击力 100% 的伤害。仅眩晕等硬控可打断。",
+      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=引导秒，[3]=每秒伤害系数%（范围内每秒跳一次，atk×%/100），[4]=半径设计像素。引导前短预警；仅硬控打断。",
+      "params": [
+        20,
+        10,
+        8,
+        100,
+        100
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_blink_fan",
+      "nameCn": "闪现刀扇",
+      "limit": "boss",
+      "powerTag": "strong",
+      "codeStatus": "written",
+      "descriptionCn": "冷却 4 秒（开场 2 秒后可施放）。闪现至我方最密集处并推开周围单位，随后连续掷出飞刀（每柄最多命中 12 人，造成攻击力 15% 的伤害）。",
+      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=刀扇间隔秒，[3]=单次伤害系数%，[4]=每次最多命中人数。闪现后短时段内周期甩刀。",
+      "params": [
+        4,
+        2,
+        0.2,
+        15,
+        12
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_poison_strike",
+      "nameCn": "淬毒",
+      "limit": "any",
+      "powerTag": "negative",
+      "codeStatus": "written",
+      "descriptionCn": "被动：非持续伤害的攻击命中叠 1 层毒（最多 100 层，持续 10 秒，叠层刷新时长）。每秒跳伤 1 次，每层每秒造成攻击力 3% 的伤害。",
+      "logicEffectCn": "params[0]=每层每秒伤害为 atk×该值/100，[1]=持续秒（叠层刷新），[2]=最大层数。非 DoT 伤害叠 1 层；每秒跳伤一次，伤害=层数×系数。叠层不额外跳伤。",
+      "params": [
+        3,
+        10,
+        100
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_overload_explosion",
+      "nameCn": "过载爆炸",
+      "limit": "boss",
+      "powerTag": "strong",
+      "codeStatus": "written",
+      "descriptionCn": "冷却 20 秒（开场 5 秒后可施放）。获得最大生命值 10% 的护盾后原地引导，脚下显示红色爆炸范围警示；护盾存在时免疫控制。引导结束引发范围爆炸（攻击力 250%），命中我方眩晕 8 秒；护盾被击破则晕眩 3 秒并中断。",
+      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=引导秒，[3]=爆炸伤害系数%，[4]=爆炸半径设计像素。成功爆炸命中我方眩晕 8 秒写死在 BattleScreen（OVERLOAD_EXPLOSION_HIT_STUN_SEC）；护盾击破晕眩 3 秒同理。发动时获得最大生命10%护盾；引导期范围警示圈；护盾>0免疫硬控；护盾归零中断。",
+      "params": [
+        20,
+        5,
+        8,
+        250,
+        300
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_overload_laser",
+      "nameCn": "超载激光",
+      "limit": "boss",
+      "powerTag": "strong",
+      "codeStatus": "written",
+      "descriptionCn": "冷却 6 秒（开场 2 秒后可施放）。对当前生命值最低的我方发射激光，造成攻击力 200% 的伤害；若未击杀，下次再额外 +50%（可叠加，击杀后重置）。击杀目标则本次冷却减半。",
+      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=基础威力%（atk×%/100），[3]=未击杀时下次额外+%点（击杀后重置）。击杀则本次冷却后减半。",
+      "params": [
+        6,
+        2,
+        200,
+        50
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_mechano_pioneer",
+      "nameCn": "机械先驱",
+      "limit": "any",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "被动：生命值首次低于 15% 时，获得最大生命值 10% 的护盾，并立即可再次使用所有主动技能（每场战斗仅触发 1 次）。",
+      "logicEffectCn": "params[0]=生命比例阈值%，[1]=护盾为最大生命%。单场一次；刷新本单位已配置主动技能的冷却。",
+      "params": [
+        15,
+        10
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_bang_bang_bomb",
+      "nameCn": "砰砰炸弹",
+      "limit": "boss",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "被动：每第 5 次普攻改为射出炸弹；命中主目标后，对周围其他我方造成攻击力 50% 的伤害并击退。",
+      "logicEffectCn": "params[0]=普攻计数间隔，[1]=溅射半径设计像素，[2]=最小击退设计像素，[3]=最大击退设计像素。第 N 次普攻不结算普攻伤害，改发射炸弹；主目标承受 100% 攻击伤害，半径内其他我方 50% 并随机击退。",
+      "params": [
+        5,
+        50,
+        200,
+        400
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_jetpack_assault",
+      "nameCn": "喷气背包突击",
+      "limit": "boss",
+      "powerTag": "strong",
+      "codeStatus": "written",
+      "descriptionCn": "冷却 20 秒（开场 5 秒后可施放）。获得 8 秒喷气飞行（移速 3 倍），沿弧线无序机动；飞行中可普攻与其他技能，碰撞我方沿行进方向击退 150 像素；期间免疫控制打断。",
+      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=持续秒，[3]=移速倍数，[4]=碰撞击退设计像素。贝塞尔弧线寻点（新点距当前≥100 设计像素）；控制点垂线偏移 30–50 设计像素。",
+      "params": [
+        20,
+        5,
+        8,
+        3,
+        150
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_gyro_missile_defense",
+      "nameCn": "导弹防卫系统",
+      "limit": "boss",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "被动：受到远程攻击后锁定最近攻击者；每 0.2 秒向其发射一枚导弹（攻击力 100%），成功命中一次或目标死亡后清除锁定。晕眩时仍会发射。",
+      "logicEffectCn": "params[0]=发射间隔秒，[1]=伤害系数%。记录最近一次远程攻击者；抛物线导弹；命中或目标死亡清除记录。",
+      "params": [
+        0.2,
+        100
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_vanish_ambush",
+      "nameCn": "消失·伏击",
+      "limit": "boss",
+      "powerTag": "strong",
+      "codeStatus": "written",
+      "descriptionCn": "冷却 6 秒（开场 3 秒后可施放）。锁定当前血量最低我方：1.5 秒内不透明度降至 0 并维持 0.5 秒（期间无敌、原位不移动），随后瞬移至其背后发动伏击，造成 350% 攻击力伤害；远程目标必定暴击。命中时推开周围其他我方并结束无敌。",
+      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=伤害系数%。表外：淡出 1.5s→alpha0 维持 0.5s→伏击瞬移背后 100 设计像素；350% 攻；远程必暴；150 设计像素推开其他友方。",
+      "params": [
+        6,
+        3,
+        350
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_summon_mob_pool",
+      "nameCn": "召唤援军",
+      "limit": "boss",
+      "powerTag": "strong",
+      "codeStatus": "written",
+      "descriptionCn": "生命不高于 50% 时施放：在战场中部附近召唤 2 组、每组 3 只本章怪物池随机小怪，强度与关卡一致；施放后本场不再重复。",
+      "logicEffectCn": "Boss 配置型主动。params[0]=施放后冷却（默认 999），params[1]=开场初始冷却（0），params[2]=每组数量（3），params[3]=组数（2），params[4]=可施放生命上限%（50）。实现 castMobPoolSummon / spawnChapterMobSummonWave；与 skill_rfc3_ch3_summon_rite 共用召唤逻辑。",
+      "params": [
+        999,
+        0,
+        3,
+        2,
+        50
+      ],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
+      "id": "skill_defias_heart",
+      "nameCn": "迪菲亚之心",
+      "limit": "boss",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "被动：场上任意单位死亡时，若本单位的主动技能仍在冷却中，则该技能剩余冷却立刻减少 1 秒（已就绪的技能不受影响）。",
+      "logicEffectCn": "监听全局死亡；仅对拥有者、仅对 isBossConfigured 主动技且 cd>0 时 -1s。",
+      "params": [],
+      "launchSfx": "",
+      "hitSfx": ""
+    },
+    {
       "id": "skill_boss_rush",
       "nameCn": "蓄力冲锋",
       "limit": "boss",
@@ -402,7 +652,7 @@
       "descriptionCn": "普攻（含远程弹道）命中时，在近战范围内额外溅射至多 params[0] 名我方；总伤害按 (1+params[0]) 倍普攻在命中单位间分摊，不足人数则由命中者分摊倍率。可暴击。",
       "logicEffectCn": "BattleScreen.beginDefaultAttack：敌方且挂载本技能时，无论近战出手或远程弹道命中均走 applyBossHotStrikeMelee。以首领当前位置为圆心、近战射程+effectiveSkillRangeTo+margin 选至多 cap=1+params[0] 名我方（必含弹道主目标）；总伤 baseDmg×cap 均分。playBossHotStrikePresentation：首领周身火环 + 各目标收缩红环与火星。applyDamage 且 hotStrikeHeavy：受击闪白延长、额外火星与双环。params[0]=额外目标人数上限（整数）。",
       "params": [
-        2
+        4
       ],
       "launchSfx": "",
       "hitSfx": ""
@@ -512,13 +762,13 @@
       "nameCn": "群体暗影箭",
       "limit": "boss",
       "codeStatus": "written",
-      "descriptionCn": "装配于怒焰裂谷第三/四关首领：对至多 6 名随机我方各发射一枚暗影箭（第三关限射程内；第四关全场）。表现同暗影箭弹道，造成攻击力×100% 暗影魔法伤害。",
-      "logicEffectCn": "BattleScreen.tickRfc3Ch3BossExclusiveSkills：与 skill_shadow_bot 逻辑分离；params[0]=冷却秒（4），[1]=开场初始冷却（3），[2]=最大目标数（6），[3]=伤害 atk×该值/100（100）。第四关巴扎兰装配精神鞭笞/暗影闪现时，本技能选目标无视射程。命中复用 enemy_shadow_bolt。第四关引导精神鞭笞时不施放。",
+      "descriptionCn": "冷却 4 秒（开场 3 秒后可施放）。对至多 12 名我方随机目标各射出一枚暗影箭，每枚造成攻击力 120% 的暗影伤害。",
+      "logicEffectCn": "params[0]=冷却秒，[1]=初冷却，[2]=最大目标数，[3]=每枚伤害为 atk×该值/100。部分战斗配置下选目标可无视射程；引导中不重复施放。",
       "params": [
         4,
         3,
-        6,
-        100
+        12,
+        120
       ],
       "powerTag": "strong",
       "launchSfx": "",
@@ -529,13 +779,13 @@
       "nameCn": "召唤术",
       "limit": "boss",
       "codeStatus": "written",
-      "descriptionCn": "仅装配于怒焰裂谷第三关首领：在战场中央附近召唤两组召唤物，每组 3 只，均为本章怪物池随机种类，强度与本场其它小怪一致。",
+      "descriptionCn": "在战场中央附近召唤两组召唤物，每组 3 只，均为本章怪物池随机种类，强度与本场其它小怪一致。",
       "logicEffectCn": "BattleScreen.tickRfc3Ch3BossExclusiveSkills：params[0]=冷却秒（默认 24），params[1]=开场初始冷却秒（默认 10），params[2]=每组数量（默认 3），params[3]=组数（默认 2）。mobIdsForBookChapter(bookChapterId) 抽 id，scaledEnemyHp/Atk 与 spawnEnemies 小怪一致。眩晕中不施放。",
       "params": [
         24,
         10,
         3,
-        2
+        3
       ],
       "powerTag": "strong",
       "launchSfx": "",
@@ -563,12 +813,12 @@
       "nameCn": "群体精神鞭笞",
       "limit": "boss",
       "codeStatus": "written",
-      "descriptionCn": "仅装配于怒焰裂谷第四关首领：首领生命低于 75% 时可引导 10 秒，对全场至多 18 名我方连线鞭笞（无视射程）；引导期间每秒每目标造成攻击力×30% 伤害，治疗量为造成伤害的 200%。引导结束后再进入 10 秒冷却；引导中眩晕则打断并立刻转冷却。",
-      "logicEffectCn": "BattleScreen.tickRfc4Ch4BossExclusiveSkills：params[0]=引导结束后冷却秒（10），[1]=引导秒（10），[2]=最大目标数（18），[3]=可施放生命比例%（75），[4]=每跳每目标伤害为 atk×该值/100（30）。吸血为造成伤害×2、跳间隔 1 秒、连线圆心对圆心、圆盘引导条为代码写死；眩晕打断。",
+      "descriptionCn": "生命值低于 75% 时可引导，对至多 24 名我方每秒造成攻击力 30% 的伤害，并将造成伤害的 200% 转化为治疗。引导结束后再进入 10 秒冷却；引导中受到眩晕会打断。",
+      "logicEffectCn": "params[0]=引导结束后冷却秒，[1]=引导秒，[2]=最大目标数，[3]=可施放生命比例%，[4]=每跳每目标伤害为 atk×该值/100。治疗为造成伤害×2；每秒跳伤；眩晕打断。",
       "params": [
         10,
         10,
-        18,
+        24,
         75,
         30
       ],
@@ -581,8 +831,8 @@
       "nameCn": "暗影闪现",
       "limit": "boss",
       "codeStatus": "written",
-      "descriptionCn": "仅装配于怒焰裂谷第四关首领：先对当前位置 300 码内全体我方眩晕 3 秒，再闪现至我方人数最少的战场象限角落。",
-      "logicEffectCn": "BattleScreen.tickRfc4Ch4BossExclusiveSkills：params[0]=冷却秒（15），[1]=开场初始冷却秒（5），[2]=眩晕控制秒（3）。先以施放时位置判定眩晕范围，再位移；300 码、田字格最少人象限角落为代码写死。",
+      "descriptionCn": "冷却 15 秒（开场 5 秒后可施放）。先眩晕周围我方 3 秒，再闪现至我方较稀疏的战场区域。",
+      "logicEffectCn": "params[0]=冷却秒，[1]=初冷却，[2]=眩晕秒。施放时以自身位置为中心眩晕范围内我方，再位移至战场象限内我方较少的一角。",
       "params": [
         15,
         5,
@@ -591,6 +841,76 @@
       "powerTag": "strong",
       "launchSfx": "",
       "hitSfx": ""
+    },
+    {
+      "id": "skill_defias",
+      "nameCn": "迪菲亚成员补给",
+      "limit": "minion",
+      "powerTag": "weak",
+      "codeStatus": "written",
+      "descriptionCn": "生命值低于40%时，会边撤离战场边给自己打绷带，每秒恢复3%最大血量，持续20秒。每个迪菲亚成员只有一根绷带！",
+      "logicEffectCn": "生命值低于params[0]%时进行引导技能，每秒恢复params[1]%生命值，引导params[2]秒。引导期间单位会不自主的向最近的战场边缘移动，引导期间无法攻击。如果已经到达战场边缘就会停下来。引导被打断则技能解除。这个技能只会发动一次。",
+      "params": [
+        40,
+        3,
+        20
+      ]
+    },
+    {
+      "id": "skill_defias_fever",
+      "nameCn": "好好干活",
+      "limit": "minion",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "使得附近的单位造成伤害提升15%，如果目标是迪菲亚成员，效果翻倍。",
+      "logicEffectCn": "光环技能，提升周围所有单位params[0]的伤害，光环技能不能重叠，多个光环只生效1个。  对于有skill_defias这个技能的目标，提升params[1]伤害。",
+      "params": [
+        15,
+        30
+      ]
+    },
+    {
+      "id": "skill_stun",
+      "nameCn": "重击",
+      "limit": "minion",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "对一个目标造成200%伤害并且击晕它，持续3秒。",
+      "logicEffectCn": "每params[0]秒释放一次，初始CD为0，对单体目标造成param[1]%伤害，晕眩param[2]秒",
+      "params": [
+        6,
+        200,
+        3
+      ]
+    },
+    {
+      "id": "skill_bomb",
+      "nameCn": "弹性炸弹",
+      "limit": "minion",
+      "powerTag": "strong",
+      "codeStatus": "written",
+      "descriptionCn": "扔出一个炸弹，炸飞一片敌人",
+      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=爆炸半径，[3]=爆炸伤害系数%，[4]=击飞距离。随机选择一个目标，丢出一个红色的炸弹（大约半径15像素）炸弹命中目标后爆炸，爆炸半径内所有目标都被击飞击飞距离。",
+      "params": [
+        12,
+        3,
+        100,
+        35,
+        300
+      ]
+    },
+    {
+      "id": "skill_voidwalker",
+      "nameCn": "虚空行走",
+      "limit": "minion",
+      "powerTag": "medium",
+      "codeStatus": "written",
+      "descriptionCn": "无视碰撞突进远程单位",
+      "logicEffectCn": "params[0]为冷却，初始为0，params[1]为伤害。 寻找一个随机远程单位，以自身速度的两倍突进到目标身边并且造成一次伤害，突进的时候无视碰撞，突进后解除。",
+      "params": [
+        8,
+        200
+      ]
     }
   ]
 }

@@ -3,9 +3,13 @@ import type { AllyClass } from './types';
 import classUpgradeFragmentsJson from './config/classUpgradeFragments.json';
 import { ALLY_DEFS } from './unitDefs';
 
-const CLASS_UPGRADE_FRAGMENT_CAP: number =
-  typeof (classUpgradeFragmentsJson as { fragmentNeedCap?: unknown }).fragmentNeedCap === 'number'
-    ? Math.max(1, Math.floor((classUpgradeFragmentsJson as { fragmentNeedCap: number }).fragmentNeedCap))
+const CLASS_FRAGMENTS_PER_UPGRADE: number =
+  typeof (classUpgradeFragmentsJson as { fragmentsPerUpgrade?: unknown }).fragmentsPerUpgrade ===
+  'number'
+    ? Math.max(
+        1,
+        Math.floor((classUpgradeFragmentsJson as { fragmentsPerUpgrade: number }).fragmentsPerUpgrade),
+      )
     : 5;
 
 const STORAGE_KEY = 'heybro.classProgress.v1';
@@ -120,21 +124,10 @@ export function getClassFragments(cls: AllyClass): number {
   return typeof v === 'number' ? Math.max(0, v) : 0;
 }
 
-/**
- * 从当前等级 L 升到 L+1 所需碎片数：斐波那契数列 F(1)=1,F(2)=1,F(3)=2…
- * 即 L=1→2 需 1，L=2→3 需 1，L=3→4 需 2…；超过 `classUpgradeFragments.json` 的 `fragmentNeedCap` 时按封顶（默认 5）。
- */
+/** 从当前等级升到下一级所需碎片数（固定值，见 `classUpgradeFragments.json`）。 */
 export function fragmentsRequiredForNextLevel(currentLevel: number): number | null {
   if (currentLevel < 1 || currentLevel >= 999) return null;
-  let a = 1;
-  let b = 1;
-  for (let i = 1; i < currentLevel; i++) {
-    const c = a + b;
-    a = b;
-    b = c;
-    if (a > Number.MAX_SAFE_INTEGER / 2) return CLASS_UPGRADE_FRAGMENT_CAP;
-  }
-  return Math.min(CLASS_UPGRADE_FRAGMENT_CAP, Math.max(1, a));
+  return CLASS_FRAGMENTS_PER_UPGRADE;
 }
 
 /**

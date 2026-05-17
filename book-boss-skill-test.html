@@ -13,7 +13,7 @@
         z-index: 30;
         top: 10px;
         left: 10px;
-        max-width: min(420px, 92vw);
+        max-width: min(440px, 92vw);
         padding: 10px 12px;
         border-radius: 10px;
         background: rgba(15, 23, 42, 0.92);
@@ -25,10 +25,123 @@
       <div style="font-weight: 700; margin-bottom: 6px">书本首领技能 · 网页测试</div>
       <p style="margin: 0 0 8px">
         须先在本项目执行 <code>npm run dev</code>，用终端显示的地址打开
-        <code>/book-boss-skill-test.html</code>（端口以终端为准，勿用 file://）。点击「开始测试」进入第 4
-        章关底首领「巴扎兰」（群体暗影箭 / 群体精神鞭笞 / 暗影闪现）；备战为战/牧各 <strong>1</strong>、弓手格 <strong>6</strong> 层、法师格 <strong>6</strong> 层（法/牧格位对调），上阵英雄为<strong>紫法师 / 紫牧师 / 蓝骑士（格温妮）</strong>。开战生成后我方血量 ×10，首领血量 <strong>×3</strong>。右下为开发战斗日志（含
-        <code>[battle-skill]</code>、首领技能、法/牧英雄技能等）。
+        <code>/book-boss-skill-test.html</code>（端口以终端为准，勿用 file://）。
       </p>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px">
+        <button
+          id="preset-rhahk"
+          type="button"
+          aria-pressed="true"
+          style="
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(56, 189, 248, 0.5);
+            cursor: pointer;
+            font-size: 13px;
+            background: rgba(14, 165, 233, 0.15);
+            color: #e2e8f0;
+          "
+        >
+          拉克佐（第5章）
+        </button>
+        <button
+          id="preset-bazzalan"
+          type="button"
+          aria-pressed="false"
+          style="
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            cursor: pointer;
+            font-size: 13px;
+            background: rgba(30, 41, 59, 0.6);
+            color: #e2e8f0;
+          "
+        >
+          巴扎兰（第4章）
+        </button>
+        <button
+          id="preset-sneed"
+          type="button"
+          aria-pressed="false"
+          style="
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            cursor: pointer;
+            font-size: 13px;
+            background: rgba(30, 41, 59, 0.6);
+            color: #e2e8f0;
+          "
+        >
+          斯尼德（第6章）
+        </button>
+        <button
+          id="preset-gilnid"
+          type="button"
+          aria-pressed="false"
+          style="
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            cursor: pointer;
+            font-size: 13px;
+            background: rgba(30, 41, 59, 0.6);
+            color: #e2e8f0;
+          "
+        >
+          基尔尼格（第7章）
+        </button>
+        <button
+          id="preset-smite"
+          type="button"
+          aria-pressed="false"
+          style="
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            cursor: pointer;
+            font-size: 13px;
+            background: rgba(30, 41, 59, 0.6);
+            color: #e2e8f0;
+          "
+        >
+          重拳先生（第8章）
+        </button>
+        <button
+          id="preset-greenskin"
+          type="button"
+          aria-pressed="false"
+          style="
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            cursor: pointer;
+            font-size: 13px;
+            background: rgba(30, 41, 59, 0.6);
+            color: #e2e8f0;
+          "
+        >
+          绿皮队长（第9章）
+        </button>
+        <button
+          id="preset-vancleef"
+          type="button"
+          aria-pressed="false"
+          style="
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            cursor: pointer;
+            font-size: 13px;
+            background: rgba(30, 41, 59, 0.6);
+            color: #e2e8f0;
+          "
+        >
+          范克里夫（第10章）
+        </button>
+      </div>
+      <p id="preset-blurb" style="margin: 0 0 8px"></p>
       <button
         id="start"
         type="button"

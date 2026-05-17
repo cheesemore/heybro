@@ -1,13 +1,42 @@
 import { mobIdsForBookChapter } from './bookChapterConfig';
 import type { RunState } from './runState';
 import type { BossId, RoundMeta } from './types';
-import { legacyProgressRoundIndex } from './roundConfig';
+import { legacyProgressRoundIndex, roundsForBookChapter } from './roundConfig';
 import { mulberry32 } from './seedRandom';
 import { getWowMob, wowFinalBossNameCn, wowMobEnemyPaint } from './wowBookData';
 
 /** 与旧版普通关类似：总兵数随进度增加 */
 function normalEnemyTotal(scaleRoundIndex: number): number {
   return 4 + 2 * scaleRoundIndex;
+}
+
+/**
+ * 书本第 3 章及以后：本章倒数第 2 / 第 1 个普通战节点总量 +25% / +40%（四舍五入）。
+ * 「普通战」不含策略、奖励、首领节点。
+ */
+function normalEnemyCountMultiplierForRound(bookChapterId: number, roundIndex: number): number {
+  if (bookChapterId < 3) return 1;
+  const rounds = roundsForBookChapter(bookChapterId);
+  const normalIndices: number[] = [];
+  for (let i = 0; i < rounds.length; i++) {
+    if (rounds[i]!.kind === 'normal') normalIndices.push(i);
+  }
+  if (normalIndices.length < 2) return 1;
+  const last = normalIndices[normalIndices.length - 1]!;
+  const secondLast = normalIndices[normalIndices.length - 2]!;
+  if (roundIndex === secondLast) return 1.25;
+  if (roundIndex === last) return 1.4;
+  return 1;
+}
+
+function resolveNormalEnemyTotal(
+  bookChapterId: number,
+  roundIndex: number,
+  scaleRoundIndex: number,
+): number {
+  const base = normalEnemyTotal(scaleRoundIndex);
+  const mult = normalEnemyCountMultiplierForRound(bookChapterId, roundIndex);
+  return mult === 1 ? base : Math.round(base * mult);
 }
 
 function pickThreeMobIdsFromPool(pool: readonly string[], rnd: () => number): [string, string, string] {
@@ -42,11 +71,10 @@ function pickThreeMobIdsFromPool(pool: readonly string[], rnd: () => number): [s
 }
 
 function normalWaveFromWowMobPool(
-  scaleRoundIndex: number,
+  total: number,
   mobIds: readonly string[],
   rnd: () => number,
 ): RoundMeta['enemies'] {
-  const total = normalEnemyTotal(scaleRoundIndex);
   const kinds = pickThreeMobIdsFromPool(mobIds, rnd);
 
   let c0 = Math.max(1, Math.round(total * 0.52));
@@ -104,7 +132,8 @@ export function resolveCombatRoundEnemies(run: RunState, roundIndex: number, met
   const pool = effectiveMobPool(run.bookChapterId);
   const rnd = mulberry32(waveSeed(run.bookChapterId, roundIndex));
   const scaleRi = legacyProgressRoundIndex(run.bookChapterId, roundIndex);
-  return normalWaveFromWowMobPool(scaleRi, pool, rnd);
+  const total = resolveNormalEnemyTotal(run.bookChapterId, roundIndex, scaleRi);
+  return normalWaveFromWowMobPool(total, pool, rnd);
 }
 
 /** 深拷贝关卡元数据并填入本局敌阵（勿修改 ROUNDS 静态表） */

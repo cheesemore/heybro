@@ -1,6 +1,9 @@
 import chaptersDoc from './config/wowBookChapters.json';
 import gearDoc from './config/gearItems.json';
 import type { GearDungeonRule } from './gearItems';
+import { getNodeProgressMaxForBookChapter } from './gearItems';
+import { legacyProgressRoundIndex } from './roundConfig';
+import { enemyStatProgressCurve } from './unitDefs';
 import { getWowChapterByBookId } from './wowBookData';
 
 const DEFAULT_STRENGTH_INCREMENT = 1.02;
@@ -72,4 +75,14 @@ export function bookChapterStrengthPercent(chapterId: number): number {
 
   const t = (stage - 1) / (n - 1);
   return Math.round(prevFinale + (thisFinale - prevFinale) * t);
+}
+
+/**
+ * 单节点敌方强度（%）= 本章强度 × 关内节点进度曲线（与 `scaledEnemyHp` / `scaledEnemyAtk` 一致）。
+ */
+export function bookChapterRoundStrengthPercent(chapterId: number, roundIndex: number): number {
+  const bookPct = bookChapterStrengthPercent(chapterId);
+  const leg = legacyProgressRoundIndex(chapterId, roundIndex);
+  const progMax = getNodeProgressMaxForBookChapter(chapterId);
+  return Math.round(bookPct * enemyStatProgressCurve(leg, progMax));
 }

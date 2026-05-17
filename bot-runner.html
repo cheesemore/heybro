@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HeyBro · 关卡难度自动测试</title>
+    <link rel="stylesheet" href="/src/bot-runner/bot-runner.css" />
+  </head>
+  <body>
+    <main id="layout">
+      <section id="game-pane" aria-label="游戏画面（只读）">
+        <div id="game-mount">
+          <div id="app"></div>
+        </div>
+        <div id="game-blocker" title="测试模式：游戏区仅观看，请使用右侧控制"></div>
+      </section>
+      <aside id="side-pane">
+        <section id="controls">
+          <h1>关卡难度测试</h1>
+          <p class="hint">
+            使用本机 <code>localStorage</code> 存档，不注入作弊。流程：能养成则先招募/升级/刷装，再推当前章；失败回养成；连续失败且养成用尽后自动停止。日志实时写入
+            <code>heybro.bot.sessionLog.v1</code>，停止时自动下载 <code>heybro-bot-时间.log</code>。
+          </p>
+          <div class="row">
+            <button id="btn-start" type="button">开始测试</button>
+            <button id="btn-stop" type="button" disabled>停止</button>
+          </div>
+          <label class="field">
+            <span>连续失败终止阈值</span>
+            <input id="fail-threshold" type="number" min="1" max="20" value="3" />
+          </label>
+          <p id="status" class="status">就绪。请先 <code>npm run dev</code>，再打开本页。</p>
+        </section>
+        <section id="log-pane">
+          <h2>日志</h2>
+          <pre id="log"></pre>
+        </section>
+      </aside>
+    </main>
+    <script type="module" src="/src/bot-runner/main.ts"></script>
+  </body>
+</html>

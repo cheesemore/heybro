@@ -5,6 +5,7 @@ import {
   getChapterIntelMobCardParts,
 } from '../nextBattlePreview';
 import { GAME_TERM_ZH } from '../gameTerminology';
+import { bookChapterRoundStrengthPercent } from '../bookChapterConfig';
 import { legacyProgressRoundIndex, roundsForBookChapter } from '../roundConfig';
 import { getResolvedRoundMeta } from '../roundResolve';
 import { rewardChapterPreviewSummary, strategyChapterPreviewSummary } from '../strategyApply';
@@ -20,6 +21,8 @@ import {
   GOLDEN_PANEL_TITLE,
 } from '../ui/goldenSolidPanel';
 import { createStyledGameButton } from '../ui/gameButtons';
+import { isBotModeActive } from '../bot/context';
+import { botRegisterScreen, botUnregisterScreen } from '../bot/registry';
 
 type Handlers = {
   onEnterRound: () => void;
@@ -119,6 +122,20 @@ export class LevelMapScreen extends Container {
     const curIdx = this.run.currentRoundIndex;
     const rounds = roundsForBookChapter(this.run.bookChapterId);
     const totalRounds = rounds.length;
+
+    const hudRoundIdx = Math.min(curIdx, Math.max(0, totalRounds - 1));
+    const strength = new Text({
+      text: `强度 ${bookChapterRoundStrengthPercent(this.run.bookChapterId, hudRoundIdx)}%`,
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
+        fontSize: Math.round(24 * LAYOUT_SCALE),
+        fill: 0x93c5fd,
+        fontWeight: '700',
+      },
+    });
+    strength.anchor.set(1, 0);
+    strength.position.set(GAME_WIDTH - pad, hudY);
+    this.addChild(strength);
     for (let i = 0; i < totalRounds; i++) {
       const meta = rounds[i]!;
       const { cx, cy } = roundNodePosition(i, totalRounds);
@@ -157,6 +174,20 @@ export class LevelMapScreen extends Container {
       t.anchor.set(0.5, 1.55);
       t.position.set(cx, cy);
       this.addChild(t);
+
+      const nodePct = bookChapterRoundStrengthPercent(this.run.bookChapterId, i);
+      const pctT = new Text({
+        text: `${nodePct}%`,
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
+          fontSize: Math.round(13 * LAYOUT_SCALE),
+          fill: isCurrent ? 0xbfdbfe : 0x64748b,
+          fontWeight: '700',
+        },
+      });
+      pctT.anchor.set(0.5, 0);
+      pctT.position.set(cx, cy + nodeRadius + Math.round(6 * LAYOUT_SCALE));
+      this.addChild(pctT);
 
       const mark =
         meta.kind === 'boss' ? 'B' : meta.kind === 'strategy' ? '策' : meta.kind === 'reward' ? '奖' : '';
@@ -274,6 +305,25 @@ export class LevelMapScreen extends Container {
     }
 
     attachScreenDebugLabel(this, 'LevelMapScreen');
+
+    if (isBotModeActive()) {
+      botRegisterScreen({
+        kind: 'levelMap',
+        levelMap: {
+          canEnterRound: () => {
+            const total = roundsForBookChapter(this.run.bookChapterId).length;
+            return this.run.currentRoundIndex < total && !this.run.isGameLost();
+          },
+          enterRound: () => this.h.onEnterRound(),
+          getCurrentRoundIndex: () => this.run.currentRoundIndex,
+        },
+      });
+    }
+  }
+
+  override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
+    botUnregisterScreen('levelMap');
+    super.destroy(options);
   }
 
   private buildCurrentRoundInfoPanel(pad: number, topY: number, panelH: number): Container {
@@ -352,6 +402,8 @@ export class LevelMapScreen extends Container {
     const base = rounds[idx]!;
     const meta = getResolvedRoundMeta(this.run, idx, base);
     const bookM = this.run.bookChapterStrengthMult();
+    const nodeStrengthPct = bookChapterRoundStrengthPercent(this.run.bookChapterId, idx);
+    pushText(`本节点强度 ${nodeStrengthPct}%`, leadStyle);
 
     if (meta.kind === 'strategy') {
       pushText(GAME_TERM_ZH.mapNodeStrategyHead(meta.label), headStyle);

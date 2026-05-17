@@ -1,3 +1,4 @@
 {
-  "fragmentNeedCap": 5
+  "editConvention": "职业强化：每升 1 级固定消耗 fragmentsPerUpgrade 枚该职业碎片（与等级无关）。",
+  "fragmentsPerUpgrade": 5
 }

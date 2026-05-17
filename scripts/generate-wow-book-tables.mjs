@@ -286,6 +286,7 @@ const monsters = [...monsterById.values()].sort((a, b) => a.id.localeCompare(b.i
 mergeLegacyEnemyRows(monsters);
 monsters.sort((a, b) => a.id.localeCompare(b.id));
 assignMonsterUids(monsters);
+mergeMonsterRowsFromPrevious(monsters);
 
 function mobIdFor(dungeonId, mob) {
   const idSimple = `mob_${slug(mob.name_en || mob.name_cn)}`;
@@ -334,7 +335,7 @@ const monsterDoc = {
   designBaseline: 'docs/unit-stat-design-baseline.md',
   sourceReference: 'docs/reference-classic-vanilla-wow-roguelike-level-design.json',
   editConvention:
-    '小怪唯一数值源。`id` 在表内唯一（slug）。`monsterUid` 为出图/资源用稳定唯一号（U+六位数字），重新跑生成脚本时同 `id` 会尽量保留原 `monsterUid`。`refKey` = `dungeonId::mob_pool 怪名 slug`，与参考 JSON 中副本 `slug(name_en|name_cn)` + 该条 mob_pool 怪名 slug 一一对应；legacy 十二兵种为 `legacy::<id>`。立绘可用 `public/assets/wow-mobs/<monsterUid>.png` 或 `<id>.png`；未提供则仍用 enemyPaint 的 `public/assets/enemies/<paint>.png`。',
+    '小怪唯一数值源。`id` 在表内唯一（slug）。`monsterUid` 为出图/资源用稳定唯一号（U+六位数字），重新跑生成脚本时同 `id` 会尽量保留原 `monsterUid` 与 `skillIds` 及手调战斗字段。`refKey` = `dungeonId::mob_pool 怪名 slug`，与参考 JSON 中副本 `slug(name_en|name_cn)` + 该条 mob_pool 怪名 slug 一一对应；legacy 十二兵种为 `legacy::<id>`。立绘可用 `public/assets/wow-mobs/<monsterUid>.png` 或 `<id>.png`；未提供则仍用 enemyPaint 的 `public/assets/enemies/<paint>.png`。',
   monsters,
 };
 
@@ -401,6 +402,35 @@ function mergeBossRowsFromPrevious(newRows) {
 mergeBossRowsFromPrevious(bossRows);
 
 assignBossUids(bossRows);
+
+/** 重跑时按 id 合并旧表中的战斗字段与 skillIds，避免覆盖手调数值 */
+function mergeMonsterRowsFromPrevious(newRows) {
+  /** @type {Map<string, object>} */
+  const prev = new Map();
+  if (fs.existsSync(OUT_MON)) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(OUT_MON, 'utf8'));
+      for (const row of raw.monsters || []) {
+        if (typeof row.id === 'string') prev.set(row.id, row);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  const keys = ['hitRadius', 'baseMaxHp', 'baseAtk', 'attackSpeed', 'range', 'moveSpeed', 'skillIds'];
+  for (const row of newRows) {
+    const old = prev.get(row.id);
+    if (!old) continue;
+    for (const k of keys) {
+      if (old[k] == null) continue;
+      if (k === 'skillIds' && !Array.isArray(old.skillIds) && Array.isArray(old.skills)) {
+        row.skillIds = [...old.skills];
+      } else {
+        row[k] = old[k];
+      }
+    }
+  }
+}
 
 /** 副本 + 章节索引（掉落等扩展字段占位）；与 reference 副本顺序一致 */
 function buildRegistryFromChapters(chapters, book) {

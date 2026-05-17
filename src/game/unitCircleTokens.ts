@@ -92,7 +92,7 @@ export type BattleTokenParts = {
   cy: number;
 };
 
-function diskOutlineWidth(innerR: number): number {
+export function diskOutlineWidth(innerR: number): number {
   return Math.max(1.5, Math.round(Math.min(2.5, innerR * 0.06)));
 }
 

@@ -11,7 +11,7 @@ const root = path.join(__dirname, '..');
 const GEAR_ITEMS = path.join(root, 'src/game/config/gearItems.json');
 const OUT_DIR = path.join(root, 'public', 'assets', 'gear');
 
-const SIZE = 128;
+const SIZE = 64;
 
 function escapeXml(s) {
   return s

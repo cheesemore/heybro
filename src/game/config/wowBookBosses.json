@@ -19,8 +19,8 @@
       "isFinalBoss": false,
       "combatBossId": "white",
       "hitRadius": 80,
-      "baseMaxHp": 1680,
-      "baseAtk": 27,
+      "baseMaxHp": 840,
+      "baseAtk": 14,
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
@@ -96,7 +96,7 @@
       "dungeonNameEn": "Ragefire Chasm",
       "nameCn": "巴扎兰",
       "nameEn": "Bazzalan",
-      "attackType": "近战",
+      "attackType": "远程",
       "role": "输出",
       "creatureType": "输出",
       "isFinalBoss": false,
@@ -135,7 +135,11 @@
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": [],
+      "skillIds": [
+        "skill_rhahk_smash",
+        "skill_rhahk_cleave",
+        "skill_rhahk_warcry"
+      ],
       "bossUid": "B000005"
     },
     {
@@ -159,7 +163,11 @@
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": [],
+      "skillIds": [
+        "skill_blade_storm",
+        "skill_blink_fan",
+        "skill_poison_strike"
+      ],
       "bossUid": "B000006"
     },
     {
@@ -183,7 +191,11 @@
       "attackSpeed": 0.65,
       "range": 210,
       "moveSpeed": 540,
-      "skillIds": [],
+      "skillIds": [
+        "skill_overload_explosion",
+        "skill_overload_laser",
+        "skill_mechano_pioneer"
+      ],
       "bossUid": "B000007"
     },
     {
@@ -205,9 +217,13 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 10,
+      "range": 210,
       "moveSpeed": 540,
-      "skillIds": [],
+      "skillIds": [
+        "skill_boss_punch",
+        "skill_tauren_stomp",
+        "skill_tauren_shockwave"
+      ],
       "bossUid": "B000008"
     },
     {
@@ -220,7 +236,7 @@
       "dungeonNameEn": "Deadmines",
       "nameCn": "绿皮队长",
       "nameEn": "Captain Greenskin",
-      "attackType": "近战",
+      "attackType": "远程",
       "role": "输出",
       "creatureType": "生物",
       "isFinalBoss": false,
@@ -229,9 +245,13 @@
       "baseMaxHp": 1680,
       "baseAtk": 27,
       "attackSpeed": 0.65,
-      "range": 10,
+      "range": 220,
       "moveSpeed": 540,
-      "skillIds": [],
+      "skillIds": [
+        "skill_bang_bang_bomb",
+        "skill_jetpack_assault",
+        "skill_gyro_missile_defense"
+      ],
       "bossUid": "B000009"
     },
     {
@@ -255,7 +275,11 @@
       "attackSpeed": 0.65,
       "range": 10,
       "moveSpeed": 540,
-      "skillIds": [],
+      "skillIds": [
+        "skill_vanish_ambush",
+        "skill_summon_mob_pool",
+        "skill_defias_heart"
+      ],
       "bossUid": "B000010"
     },
     {

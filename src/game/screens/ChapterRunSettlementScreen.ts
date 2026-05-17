@@ -7,6 +7,8 @@ import {
 } from '../ui/goldenSolidPanel';
 import { createStyledGameButton } from '../ui/gameButtons';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
+import { isBotModeActive } from '../bot/context';
+import { botRegisterScreen, botUnregisterScreen } from '../bot/registry';
 
 export type ChapterRunSettlementKind = 'success' | 'fail';
 
@@ -142,5 +144,17 @@ export class ChapterRunSettlementScreen extends Container {
     this.addChild(btn);
 
     attachScreenDebugLabel(this, 'ChapterRunSettlementScreen');
+
+    if (isBotModeActive()) {
+      botRegisterScreen({
+        kind: 'settlement',
+        settlement: { continue: () => o.onContinue() },
+      });
+    }
+  }
+
+  override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
+    botUnregisterScreen('settlement');
+    super.destroy(options);
   }
 }

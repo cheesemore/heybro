@@ -1,53 +1,31 @@
 /**
  * 独立测试：书本关底首领 + 配置技能（与 wowBookBosses 当前章首领 skillIds 一致）。
- * 当前默认：第 4 章「巴扎兰」（群体暗影箭 / 群体精神鞭笞 / 暗影闪现）。
+ * 默认：第 5 章「拉克佐」（猛击 / 顺劈斩 / 战吼）；`?chapter=4` 或 `?boss=bazzalan` 切巴扎兰。
  * 入口：`book-boss-skill-test.html`（须通过 `npm run dev` 访问，勿用 file:// 打开）
  */
 import 'pixi.js/unsafe-eval';
 import '../style.css';
 import { Application, type Container } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH } from '../game/constants';
-import { roundsForBookChapter } from '../game/roundConfig';
-import type { RoundMeta } from '../game/types';
-import { UI_TEST_BLUE_FPM_HERO_DEPLOY } from '../game/uiTestBattle';
+import {
+  BOSS_SKILL_TEST_ALLY_HP_MULT,
+  BOSS_SKILL_TEST_BOSS_HP_MULT,
+  bossSkillTestPresetFromSearch,
+  DEFAULT_BOSS_SKILL_TEST_PRESET_ID,
+  seedBossSkillTestRun,
+  type BossSkillTestPreset,
+  type BossSkillTestPresetId,
+} from './bossSkillTestPresets';
 
-const BOOK_CHAPTER_ID = 4;
-const ALLY_HP_MULT = 10;
-const BOSS_HP_MULT = 3;
-
-function seedBossSkillTestRun(run: import('../game/runState').RunState): RoundMeta {
-  run.resetRun();
-  run.bookChapterId = BOOK_CHAPTER_ID;
-  const rounds = roundsForBookChapter(BOOK_CHAPTER_ID);
-  run.currentRoundIndex = Math.max(0, rounds.length - 1);
-  run.board = [
-    { kind: 'warrior', stacks: 1 },
-    { kind: 'priest', stacks: 1 },
-    { kind: 'archer', stacks: 6 },
-    { kind: 'mage', stacks: 6 },
-    null,
-    null,
-    null,
-    null,
-    null,
-  ];
-  run.devBattleHooks = {
-    heroDeploy: [...UI_TEST_BLUE_FPM_HERO_DEPLOY],
-    heroSlotCap: 3,
-    postSpawnHpMult: ALLY_HP_MULT,
-    postSpawnHpMultSkipBoss: true,
-    postSpawnBossHpMult: BOSS_HP_MULT,
-    bondStacksBattleOverride: { mage: 21, priest: 21, knight: 21 },
-  };
-  return {
-    label: `开发：第4章首领巴扎兰 · 战1牧1弓6法6 · 群体暗影箭/精神鞭笞/暗影闪现 · 我方血×${ALLY_HP_MULT} · 首领血×${BOSS_HP_MULT}`,
-    chapter: 3,
-    sub: 6,
-    kind: 'boss',
-    enemies: [{ type: 'boss', count: 1, bossId: 'white', wowBossDisplayName: '巴扎兰' }],
-    skipBattleOpeningCountdown: true,
-  };
-}
+const PRESET_UI: { id: BossSkillTestPresetId; buttonId: string }[] = [
+  { id: 'rhahk', buttonId: 'preset-rhahk' },
+  { id: 'bazzalan', buttonId: 'preset-bazzalan' },
+  { id: 'sneed', buttonId: 'preset-sneed' },
+  { id: 'gilnid', buttonId: 'preset-gilnid' },
+  { id: 'smite', buttonId: 'preset-smite' },
+  { id: 'greenskin', buttonId: 'preset-greenskin' },
+  { id: 'vancleef', buttonId: 'preset-vancleef' },
+];
 
 function boot(): void {
   if (location.protocol === 'file:') {
@@ -61,8 +39,14 @@ function boot(): void {
   const mountEl = document.querySelector<HTMLDivElement>('#app');
   const hudEl = document.querySelector<HTMLDivElement>('#hud');
   const btnEl = document.querySelector<HTMLButtonElement>('#start');
+  const blurbEl = document.querySelector<HTMLParagraphElement>('#preset-blurb');
   const statusEl = document.querySelector<HTMLParagraphElement>('#status');
   const battleLogEl = document.querySelector<HTMLPreElement>('#battle-log');
+  const presetButtons = PRESET_UI.map(({ id, buttonId }) => ({
+    id,
+    el: document.querySelector<HTMLButtonElement>(`#${buttonId}`),
+  }));
+
   if (!mountEl || !btnEl || !statusEl || !battleLogEl) {
     document.body.insertAdjacentHTML(
       'beforeend',
@@ -75,6 +59,47 @@ function boot(): void {
   const btn = btnEl;
   const status = statusEl;
   const battleLog = battleLogEl;
+
+  let activePreset =
+    location.search.length > 0
+      ? bossSkillTestPresetFromSearch(location.search)
+      : bossSkillTestPresetFromSearch(`?boss=${DEFAULT_BOSS_SKILL_TEST_PRESET_ID}`);
+
+  function applyPresetToUrl(id: BossSkillTestPresetId): void {
+    const url = new URL(location.href);
+    url.searchParams.set('boss', id);
+    url.searchParams.delete('chapter');
+    history.replaceState(null, '', url);
+  }
+
+  function setPresetButtonsDisabled(disabled: boolean): void {
+    for (const { el } of presetButtons) {
+      if (!el) continue;
+      if (disabled) el.setAttribute('disabled', '');
+      else el.removeAttribute('disabled');
+    }
+  }
+
+  function setActivePreset(preset: BossSkillTestPreset): void {
+    activePreset = preset;
+    applyPresetToUrl(preset.id);
+    if (blurbEl) {
+      blurbEl.innerHTML = `${preset.hudBlurb} 开战生成后我方血量 ×${BOSS_SKILL_TEST_ALLY_HP_MULT}，首领血量 <strong>×${BOSS_SKILL_TEST_BOSS_HP_MULT}</strong>。右下为开发战斗日志。`;
+    }
+    for (const { id, el } of presetButtons) {
+      const on = preset.id === id;
+      el?.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (el) el.style.outline = on ? '2px solid #38bdf8' : 'none';
+    }
+    status.textContent = `已选：第 ${preset.bookChapterId} 章「${preset.bossNameCn}」（${preset.skillSummaryCn}）。点击「开始测试」。`;
+  }
+
+  for (const { id, el } of presetButtons) {
+    el?.addEventListener('click', () => {
+      setActivePreset(bossSkillTestPresetFromSearch(`?boss=${id}`));
+    });
+  }
+  setActivePreset(activePreset);
 
   const battleLogLines: string[] = [];
   function appendBattleLog(line: string): void {
@@ -101,7 +126,9 @@ function boot(): void {
       status.textContent = '战斗已在进行中。';
       return;
     }
+    const preset = activePreset;
     btn.disabled = true;
+    setPresetButtonsDisabled(true);
     status.textContent = '加载资源…';
     try {
       const [{ preloadAllyPortraitTextures }, { preloadEnemyTextures }, { preloadHeroPortraitTextures }] =
@@ -116,7 +143,7 @@ function boot(): void {
       ]);
 
       await preloadAllyPortraitTextures();
-      await preloadEnemyTextures(BOOK_CHAPTER_ID);
+      await preloadEnemyTextures(preset.bookChapterId);
       await preloadHeroPortraitTextures().catch(() => {});
 
       if (!appInited) {
@@ -144,7 +171,7 @@ function boot(): void {
       }
 
       const run = new RunState();
-      const meta = seedBossSkillTestRun(run);
+      const meta = seedBossSkillTestRun(run, preset);
       battleLogLines.length = 0;
       battleLog.textContent = '';
       run.devBattleTestLog = (line: string) => {
@@ -160,6 +187,8 @@ function boot(): void {
         activeBattle = null;
         run.devBattleTestLog = undefined;
         btn.disabled = false;
+        setPresetButtonsDisabled(false);
+        setActivePreset(preset);
       });
       activeBattle = battle;
       app.stage.addChild(battle);
@@ -176,12 +205,13 @@ function boot(): void {
         sync();
       });
 
-      status.textContent = `战斗中：第4章巴扎兰；战1牧1弓6法6；英雄 mage_02/priest_02/knight_01；我方×${ALLY_HP_MULT}血；首领×${BOSS_HP_MULT}血。`;
+      status.textContent = preset.statusLine;
     } catch (e) {
       console.error(e);
       const msg = e instanceof Error ? e.message : String(e);
       status.textContent = `启动失败：${msg}（详见控制台）`;
       btn.disabled = false;
+      setPresetButtonsDisabled(false);
       mount.style.pointerEvents = 'none';
     }
   }
@@ -189,8 +219,6 @@ function boot(): void {
   btn.addEventListener('click', () => {
     void startTest();
   });
-
-  status.textContent = '页面已就绪，点击「开始测试」。';
 }
 
 if (document.readyState === 'loading') {

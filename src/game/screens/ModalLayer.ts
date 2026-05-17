@@ -36,11 +36,30 @@ function makeLotteryHeroQualityGlow(cx: number, glowCy: number, dia: number, qua
 }
 
 export class ModalLayer extends Container {
+  /** 本地 bot 测试：模拟点击主按钮（确定/关闭）；装备对比按 GS 取舍 */
+  private botPrimaryDismiss: (() => void) | null = null;
+
   constructor() {
     super();
     this.visible = false;
     this.eventMode = 'none';
     this.hitArea = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
+  }
+
+  private clearBotPrimaryDismiss(): void {
+    this.botPrimaryDismiss = null;
+  }
+
+  private setBotPrimaryDismiss(fn: () => void): void {
+    this.botPrimaryDismiss = fn;
+  }
+
+  botDismissPrimary(): boolean {
+    if (!this.visible || !this.botPrimaryDismiss) return false;
+    const fn = this.botPrimaryDismiss;
+    this.clearBotPrimaryDismiss();
+    fn();
+    return true;
   }
 
   alert(message: string, onClose: () => void): void {
@@ -103,20 +122,23 @@ export class ModalLayer extends Container {
     body.position.set(GAME_WIDTH / 2, panelY + padTop);
     this.addChild(body);
 
+    const dismiss = (): void => {
+      this.visible = false;
+      this.eventMode = 'none';
+      this.removeChildren();
+      this.clearBotPrimaryDismiss();
+      onClose();
+    };
     const okBtn = createStyledGameButton('classic', {
       text: '确定',
       width: okW,
       height: okH,
       fontSize: Math.round(26 * LAYOUT_SCALE),
-      onTap: () => {
-        this.visible = false;
-        this.eventMode = 'none';
-        this.removeChildren();
-        onClose();
-      },
+      onTap: dismiss,
     });
     okBtn.position.set((GAME_WIDTH - okW) / 2, panelY + ph - padBottom - okH);
     this.addChild(okBtn);
+    this.setBotPrimaryDismiss(dismiss);
 
     attachScreenDebugLabel(this, 'ModalLayer.alert');
   }
@@ -198,6 +220,12 @@ export class ModalLayer extends Container {
       this.visible = false;
       this.eventMode = 'none';
       this.removeChildren();
+      this.clearBotPrimaryDismiss();
+    };
+
+    const cancelDismiss = (): void => {
+      close();
+      onCancel?.();
     };
 
     const cancelBtn = createStyledGameButton('classicMuted', {
@@ -205,10 +233,7 @@ export class ModalLayer extends Container {
       width: btnW,
       height: btnH,
       fontSize: Math.round(24 * LAYOUT_SCALE),
-      onTap: () => {
-        close();
-        onCancel?.();
-      },
+      onTap: cancelDismiss,
     });
     cancelBtn.position.set(rowLeft, btnY);
     this.addChild(cancelBtn);
@@ -225,6 +250,7 @@ export class ModalLayer extends Container {
     });
     okBtn.position.set(rowLeft + btnW + btnGap, btnY);
     this.addChild(okBtn);
+    this.setBotPrimaryDismiss(cancelDismiss);
 
     attachScreenDebugLabel(this, 'ModalLayer.confirmDestructive');
   }
@@ -321,20 +347,23 @@ export class ModalLayer extends Container {
     body.position.set(GAME_WIDTH / 2, panelY + padTop + title.height + gapTitleBody);
     this.addChild(body);
 
+    const dismiss = (): void => {
+      this.visible = false;
+      this.eventMode = 'none';
+      this.removeChildren();
+      this.clearBotPrimaryDismiss();
+      onClose();
+    };
     const okBtn = createStyledGameButton('classic', {
       text: '确定',
       width: okW,
       height: okH,
       fontSize: Math.round(26 * LAYOUT_SCALE),
-      onTap: () => {
-        this.visible = false;
-        this.eventMode = 'none';
-        this.removeChildren();
-        onClose();
-      },
+      onTap: dismiss,
     });
     okBtn.position.set((GAME_WIDTH - okW) / 2, panelY + ph - padBottom - okH);
     this.addChild(okBtn);
+    this.setBotPrimaryDismiss(dismiss);
 
     attachScreenDebugLabel(this, 'ModalLayer.alertBattleSettlement');
   }
@@ -621,20 +650,23 @@ export class ModalLayer extends Container {
 
     const okW = Math.round(240 * LAYOUT_SCALE);
     const okH = Math.round(52 * LAYOUT_SCALE);
+    const dismiss = (): void => {
+      this.visible = false;
+      this.eventMode = 'none';
+      this.removeChildren();
+      this.clearBotPrimaryDismiss();
+      onClose();
+    };
     const okBtn = createStyledGameButton('classic', {
       text: '确定',
       width: okW,
       height: okH,
       fontSize: Math.round(22 * LAYOUT_SCALE),
-      onTap: () => {
-        this.visible = false;
-        this.eventMode = 'none';
-        this.removeChildren();
-        onClose();
-      },
+      onTap: dismiss,
     });
     okBtn.position.set(px + (pw - okW) / 2, py + ph - okH - Math.round(20 * LAYOUT_SCALE));
     this.addChild(okBtn);
+    this.setBotPrimaryDismiss(dismiss);
 
     attachScreenDebugLabel(this, 'ModalLayer.alertTenPullLotteryResults');
   }
@@ -750,20 +782,23 @@ export class ModalLayer extends Container {
 
     const okW = Math.round(240 * LAYOUT_SCALE);
     const okH = Math.round(52 * LAYOUT_SCALE);
+    const dismiss = (): void => {
+      this.visible = false;
+      this.eventMode = 'none';
+      this.removeChildren();
+      this.clearBotPrimaryDismiss();
+      onClose();
+    };
     const okBtn = createStyledGameButton('classic', {
       text: '确定',
       width: okW,
       height: okH,
       fontSize: Math.round(22 * LAYOUT_SCALE),
-      onTap: () => {
-        this.visible = false;
-        this.eventMode = 'none';
-        this.removeChildren();
-        onClose();
-      },
+      onTap: dismiss,
     });
     okBtn.position.set(px + (pw - okW) / 2, py + ph - okH - Math.round(20 * LAYOUT_SCALE));
     this.addChild(okBtn);
+    this.setBotPrimaryDismiss(dismiss);
 
     attachScreenDebugLabel(this, 'ModalLayer.alertSinglePullLotteryResult');
   }
@@ -855,6 +890,7 @@ export class ModalLayer extends Container {
       this.visible = false;
       this.eventMode = 'none';
       this.removeChildren();
+      this.clearBotPrimaryDismiss();
     };
 
     const keepBtn = createStyledGameButton('classic', {
@@ -882,6 +918,16 @@ export class ModalLayer extends Container {
     });
     replaceBtn.position.set(rightCx - btnW / 2, btnY);
     this.addChild(replaceBtn);
+
+    this.setBotPrimaryDismiss(() => {
+      if (incoming.gs > equipped.gs) {
+        close();
+        handlers.onReplace();
+      } else {
+        close();
+        handlers.onKeep();
+      }
+    });
 
     attachScreenDebugLabel(this, 'ModalLayer.gearCompare');
   }
@@ -935,6 +981,7 @@ export class ModalLayer extends Container {
       this.visible = false;
       this.eventMode = 'none';
       this.removeChildren();
+      this.clearBotPrimaryDismiss();
       onClose?.();
     };
 
@@ -949,6 +996,7 @@ export class ModalLayer extends Container {
     });
     okBtn.position.set((GAME_WIDTH - btnW) / 2, panelY + ph - btnH - Math.round(28 * LAYOUT_SCALE));
     this.addChild(okBtn);
+    this.setBotPrimaryDismiss(close);
 
     attachScreenDebugLabel(this, 'ModalLayer.gearDetail');
   }

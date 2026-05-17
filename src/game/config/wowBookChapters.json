@@ -210,7 +210,7 @@
       "finalBoss": {
         "nameCn": "重拳先生",
         "nameEn": "Mr. Smite",
-        "attackType": "近战",
+        "attackType": "远程",
         "role": "输出",
         "creatureType": "生物",
         "isFinalBoss": false

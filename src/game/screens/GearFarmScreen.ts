@@ -35,6 +35,8 @@ import { gearSlotLocalCenter } from '../gearSlotLayout';
 import { playGearReplaceFx } from '../ui/gearEquipReplaceFx';
 import { spawnFloatingGameTip } from '../ui/floatingGameTip';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
+import { isBotModeActive } from '../bot/context';
+import { botRegisterScreen, botUnregisterScreen } from '../bot/registry';
 
 const PAD = Math.round(24 * LAYOUT_SCALE);
 const FF = 'system-ui, "Microsoft YaHei", Segoe UI, sans-serif';
@@ -396,6 +398,20 @@ export class GearFarmScreen extends Container {
 
     this.tickHandler = () => this.onTick();
     Ticker.shared.add(this.tickHandler);
+
+    if (isBotModeActive()) {
+      botRegisterScreen({
+        kind: 'gearFarm',
+        gearFarm: {
+          farmOnce: () => this.botFarmOnce(),
+          back: () => this.onBack(),
+        },
+      });
+    }
+  }
+
+  botFarmOnce(): boolean {
+    return this.runFarmOnce(true);
   }
 
   private onTick(): void {
@@ -537,6 +553,7 @@ export class GearFarmScreen extends Container {
   }
 
   override destroy(options?: Parameters<Container['destroy']>[0]): void {
+    botUnregisterScreen('gearFarm');
     this.stopAutoFarm();
     Ticker.shared.remove(this.tickHandler);
     super.destroy(options);

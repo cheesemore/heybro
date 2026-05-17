@@ -10,8 +10,8 @@
   python tools/饥荒风格装备图标生成.py
 
 数据：classic-vanilla-dungeon-equipment.json + gearItems.json + wowBookRegistry.json
-输出：temp/gear-icons-staging/（raw/ 原图，icons/ 128×128 图标）
-画风：饥荒 / Klei Don't Starve（gptimage/dont_starve_style.py）
+输出：temp/gear-icons-staging/（raw/ 原图，icons/ 64×64 图标，边长可在界面改）
+画风：饥荒 / Klei Don't Starve（gptimage/dont_starve_style.py）；图标底 #e2e8f0 浅灰纯色
 
 发布：将 icons/<gearId>.png 复制到 public/assets/gear/<gearId>.png
 """
@@ -36,11 +36,14 @@ from gear_icon_jobs import (  # noqa: E402
     COOLDOWN_SEC,
     CONSECUTIVE_FAILS_COOLDOWN,
     DEFAULT_STAGING,
+    ICON_SIZE,
     GearIconJob,
     PER_JOB_MAX_TRIES,
     RETRY_GAP_SEC,
+    GEAR_ICON_PUBLISH_DIR,
     build_gear_icon_prompt,
     icon_ready,
+    import_gear_icons_to_project,
     load_gear_icon_jobs,
     process_icon_png,
     write_manifest,
@@ -87,7 +90,7 @@ class App(tk.Tk):
         r0.pack(fill=tk.X, pady=2)
         ttk.Label(
             r0,
-            text="从 classic 装备表 + gearItems 读取 252 件；提示词为饥荒/Klei 手绘风，非 WoW 写实。",
+            text="从 classic 装备表 + gearItems 读取 252 件；饥荒/Klei 手绘风；统一浅灰底 #e2e8f0。",
             wraplength=920,
         ).pack(anchor=tk.W)
 
@@ -99,7 +102,7 @@ class App(tk.Tk):
         ttk.Button(r1, text="浏览…", command=self._browse_out).pack(side=tk.LEFT)
         ttk.Label(
             f,
-            text="子目录 raw/（API 原图）→ icons/（裁切 128×128）；清单 manifest.tsv / manifest.json",
+            text=f"子目录 raw/（API 原图）→ icons/（裁切为图标边长，默认 {ICON_SIZE}×{ICON_SIZE}）；清单 manifest.tsv / manifest.json",
             wraplength=920,
         ).pack(anchor=tk.W, pady=(0, 4))
 
@@ -121,7 +124,7 @@ class App(tk.Tk):
         self.var_size = tk.StringVar(value="1024x1024")
         ttk.Entry(r3, textvariable=self.var_size, width=14).pack(side=tk.LEFT, padx=4)
         ttk.Label(r3, text="图标边长：").pack(side=tk.LEFT, padx=(8, 0))
-        self.var_icon_size = tk.StringVar(value="128")
+        self.var_icon_size = tk.StringVar(value=str(ICON_SIZE))
         ttk.Entry(r3, textvariable=self.var_icon_size, width=6).pack(side=tk.LEFT, padx=2)
 
         r3b = ttk.Frame(f)
@@ -154,6 +157,7 @@ class App(tk.Tk):
         ttk.Button(r5, text="取消当前任务", command=self._on_cancel).pack(side=tk.LEFT, padx=2)
         ttk.Button(r5, text="仅测第 1 条", command=self._on_test_one).pack(side=tk.LEFT, padx=2)
         ttk.Button(r5, text="查看第 1 条提示词", command=self._on_preview_prompt).pack(side=tk.LEFT, padx=2)
+        ttk.Button(r5, text="一键导入项目", command=self._on_import_project).pack(side=tk.LEFT, padx=8)
 
         self.var_status = tk.StringVar(value="就绪。请先点「生成清单」。")
         ttk.Label(f, textvariable=self.var_status, foreground="#0b57d0").pack(fill=tk.X, pady=4)
@@ -258,7 +262,7 @@ class App(tk.Tk):
         try:
             v = int(self.var_icon_size.get().strip())
         except ValueError:
-            v = 128
+            v = ICON_SIZE
         return max(32, min(v, 512))
 
     def _on_cancel(self) -> None:
@@ -269,6 +273,41 @@ class App(tk.Tk):
         self.var_from.set("1")
         self.var_to.set("1")
         self._on_generate()
+
+    def _on_import_project(self) -> None:
+        out_root = Path(self.var_out.get().strip()).resolve()
+        icons_dir = out_root / "icons"
+        if not icons_dir.is_dir():
+            messagebox.showerror("导入失败", f"未找到裁切目录：\n{icons_dir}\n请先完成裁切或检查输出目录。")
+            return
+        dest = GEAR_ICON_PUBLISH_DIR.resolve()
+        if not messagebox.askyesno(
+            "一键导入",
+            f"将把已裁切图标从：\n  {icons_dir}\n复制到：\n  {dest}\n\n"
+            "按 gearItems 清单匹配 gearId；目标文件将强制覆盖。\n是否继续？",
+        ):
+            return
+        try:
+            result = import_gear_icons_to_project(out_root)
+        except Exception as e:
+            messagebox.showerror("导入失败", str(e))
+            return
+        self._log(f"[导入] 已复制 {result.copied} 个 → {result.dest_dir}")
+        if result.missing:
+            self._log(f"[导入] icons/ 缺失 {result.missing} 件（未复制）")
+        if result.manifest_rebuilt:
+            self._log("[导入] 已刷新 assetManifest.json")
+        elif result.manifest_error:
+            self._log(f"[导入] assetManifest 未刷新：{result.manifest_error}")
+        self.var_status.set(f"已导入 {result.copied} 个图标到 public/assets/gear/")
+        msg = f"已覆盖复制 {result.copied} 个图标。\n目标：{dest}"
+        if result.missing:
+            msg += f"\n\nicons/ 中缺少 {result.missing} 件（见日志）。"
+        if result.manifest_rebuilt:
+            msg += "\n\n已更新 assetManifest.json。"
+        elif result.manifest_error:
+            msg += f"\n\nassetManifest 未自动更新，请手动运行 npm run build:asset-manifest。\n{result.manifest_error}"
+        messagebox.showinfo("导入完成", msg)
 
     def _on_preview_prompt(self) -> None:
         if not self._ensure_jobs():
@@ -434,7 +473,7 @@ class App(tk.Tk):
                 elif msg[0] == "done":
                     self.var_status.set("本轮结束。")
                     self._log("—— 本轮结束 ——")
-                    self._log("发布：复制 icons/*.png → public/assets/gear/")
+                    self._log("裁切完成；可点「一键导入项目」复制到 public/assets/gear/")
         except queue.Empty:
             pass
         self.after(200, self._pump_queue)

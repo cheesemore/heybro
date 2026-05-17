@@ -36,13 +36,19 @@ import type { ModalLayer } from './ModalLayer';
 import { allyBasicSkillDesc } from '../bondCopy';
 import { createDraftAllyToken, createDraftHeroToken } from '../unitCircleTokens';
 import { ALLY_DEFS } from '../unitDefs';
+import { ALLY_CLASSES } from '../constants';
+import { botAutoDeployPreferredHeroes } from '../bot/heroDeployPolicy';
+import { isBotModeActive } from '../bot/context';
+import { botRegisterScreen, botUnregisterScreen } from '../bot/registry';
+import { wowChapterStageTitle } from '../wowBookData';
 const PAD = Math.round(22 * LAYOUT_SCALE);
 /** 垂直位移超过此值才视为滚动，避免误吞卡片点击 */
 const HERO_SCROLL_SLOP_PX = 10;
 
 function chapterLabelForSlot(slotIndex: number): string {
-  const ch = HERO_DEPLOY_SLOT_CHAPTER[slotIndex] ?? 1;
-  return `通关第${ch}章后解锁`;
+  const ch = HERO_DEPLOY_SLOT_CHAPTER[slotIndex];
+  if (ch == null) return '默认可用';
+  return `通关${wowChapterStageTitle(ch)}后解锁`;
 }
 
 /** 五角星顶点（朝上） */
@@ -351,6 +357,63 @@ export class StrengthenScreen extends Container {
     this.refreshRecruitChrome();
 
     attachScreenDebugLabel(this, 'StrengthenScreen');
+
+    if (isBotModeActive()) {
+      botRegisterScreen({
+        kind: 'strengthen',
+        strengthen: {
+          tryAutoDeployHeroes: () => this.botTryAutoDeployHeroes(),
+          tryRecruitTen: () => this.botTryRecruitTen(),
+          tryRecruitOne: () => this.botTryRecruitOne(),
+          tryUpgradeOnce: () => this.botTryUpgradeOnce(),
+          back: () => this.onBack(),
+        },
+      });
+    }
+  }
+
+  botTryAutoDeployHeroes(): boolean {
+    const changed = botAutoDeployPreferredHeroes();
+    if (changed) this.refreshAll();
+    return changed;
+  }
+
+  botTryRecruitTen(): boolean {
+    this.setTab('recruit');
+    const r = performHeroLotteryTenDraw();
+    if (!r.ok) return false;
+    this.modal.alertTenPullLotteryResults(r.results, () => {
+      this.botTryAutoDeployHeroes();
+      this.refreshAll();
+      this.refreshRecruitChrome();
+      this.drawClassStrengthenPanels();
+    });
+    return true;
+  }
+
+  botTryRecruitOne(): boolean {
+    this.setTab('recruit');
+    const r = performHeroLotteryDraw();
+    if (!r.ok) return false;
+    this.modal.alertSinglePullLotteryResult(r, () => {
+      this.botTryAutoDeployHeroes();
+      this.refreshAll();
+      this.refreshRecruitChrome();
+      this.drawClassStrengthenPanels();
+    });
+    return true;
+  }
+
+  botTryUpgradeOnce(): boolean {
+    this.setTab('class');
+    for (const cls of ALLY_CLASSES) {
+      if (tryUpgradeClassLevel(cls)) {
+        this.drawClassStrengthenPanels();
+        this.refreshTabsVisual();
+        return true;
+      }
+    }
+    return false;
   }
 
   private clampClassScroll(): void {
@@ -639,6 +702,7 @@ export class StrengthenScreen extends Container {
   }
 
   override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
+    botUnregisterScreen('strengthen');
     this.endHeroScrollDrag();
     this.closeHeroSheet();
     super.destroy(options);
@@ -704,12 +768,12 @@ export class StrengthenScreen extends Container {
       '· 单抽约 95% 职业碎片（五职业均等）、约 5% 英雄卡；英雄：未集齐蓝卡仅出蓝，蓝齐后至紫齐仅蓝/紫（60%:30%），紫齐后 60% 蓝 / 30% 紫 / 10% 橙（橙含品质 3～5）。十连若前 9 次无英雄，第 10 次必出英雄。',
       '',
       '【职业强化】',
-      '· 消耗碎片升级各职业：相对 1 级初始，每升一级乘区 +3%（线性：Lv 对应 1+(Lv−1)×3%），局内再取整；升级预览里的「（+N）」为升到下一级后的取整差分，各级 N 可能略有不同。',
+      `· 消耗碎片升级各职业：每级固定消耗 ${fragmentsRequiredForNextLevel(1) ?? 5} 枚该职业碎片；相对 1 级初始每升一级乘区 +3%（线性：Lv 对应 1+(Lv−1)×3%），局内再取整；升级预览里的「（+N）」为升到下一级后的取整差分。`,
       '',
       '【栏位解锁】',
-      '· 第 1 个上阵栏：通关第 1 关后解锁',
-      '· 第 2 个上阵栏：通关第 3 关后解锁',
-      '· 第 3 个上阵栏：通关第 5 关后解锁',
+      '· 第 1 个上阵栏：默认可用',
+      `· 第 2 个上阵栏：通关${wowChapterStageTitle(HERO_DEPLOY_SLOT_CHAPTER[1]!)}后解锁`,
+      `· 第 3 个上阵栏：通关${wowChapterStageTitle(HERO_DEPLOY_SLOT_CHAPTER[2]!)}后解锁`,
       '· 最多可同时上阵 3 名英雄；同职业仅能保留一名在阵上，新上阵同职业会自动换下阵上该职业英雄（有飘字提示）。',
     ].join('\n');
     this.modal.alert(msg, () => {});
@@ -1100,8 +1164,8 @@ export class StrengthenScreen extends Container {
             return;
           }
           if (r.reason === 'no_slots_unlocked') {
-            const ch = HERO_DEPLOY_SLOT_CHAPTER[0] ?? 1;
-            this.modal.alert(`尚未解锁上阵栏位，请先通关第 ${ch} 章。`, () => {});
+            const ch = HERO_DEPLOY_SLOT_CHAPTER.find((x) => x != null) ?? 6;
+            this.modal.alert(`尚未解锁上阵栏位，请先通关${wowChapterStageTitle(ch)}。`, () => {});
             return;
           }
           return;

@@ -20,6 +20,8 @@ import {
   stopScreenMusic,
 } from '../gameAudio';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
+import { isBotModeActive } from '../bot/context';
+import { botRegisterScreen, botUnregisterScreen } from '../bot/registry';
 import type { AllyClass, BattleOutcome, BossId, EnemyClass, RoundMeta } from '../types';
 import type { RunState } from '../runState';
 import { ALLY_DEFS, ENEMY_DEFS, enemyCombatBaseAtkFromTable, scaledEnemyAtk, scaledEnemyHp } from '../unitDefs';
@@ -30,12 +32,84 @@ import {
   distPointToSegment,
   isBossConfiguredSkill,
   type BossPunchWindupState,
+  type BossRhahkSmashWindupState,
   type BossRushChargeState,
+  type BossBladeStormChannelState,
+  type BossJetpackAssaultState,
+  type BossOverloadExplosionChannelState,
   type BossRushWindupState,
   type BossSkillCastState,
+  type BossVanishAmbushState,
 } from '../bossConfiguredSkillTypes';
 import { BossPunchSectorWarnFx } from '../bossPunchSectorWarnFx';
 import { BossRushLineWarnFx } from '../bossRushLineWarnFx';
+import { BossSmashCircleWarnFx } from '../bossSmashCircleWarnFx';
+import {
+  attachRhahkSmashCrackOverlay,
+  destroyRhahkWarcryPresentation,
+  isRhahkWarcryPresentationDone,
+  redrawRhahkWarcryBossRim,
+  RhahkCleaveXSlashFx,
+  type RhahkWarcryPresentation,
+  spawnRhahkWarcryPresentation,
+  tickRhahkWarcryPresentation,
+} from '../rhahkBossFx';
+import {
+  buildElasticBombGraphic,
+  createBladeStormTrail,
+  drawBladeStormKnifeRing,
+  flashFanKnifeHit,
+  pushBladeStormTrailPoint,
+  redrawBladeStormTrail,
+  spawnBladeStormShatter,
+  spawnBlinkAfterimage,
+  spawnFanKnifeProjectile,
+  spawnVoidWalkAfterimage,
+  spawnVoidWalkTrailSegment,
+  tickBladeStormShatter,
+  tickBlinkAfterimages,
+  tickFanKnifeProjectiles,
+  tickVoidWalkAfterimages,
+  type BladeStormShatterBit,
+  type BladeStormTrailFx,
+  type BlinkAfterimageFx,
+  type FanKnifeProjectileFx,
+  type VoidWalkAfterimageFx,
+} from '../genericSkillFx';
+import {
+  OverloadExplosionRangeWarnFx,
+  attachOverloadShieldBubble,
+  destroyOverloadShieldBubble,
+  redrawOverloadShieldBubble,
+  spawnOverloadExplosionWave,
+  overloadLaserColorCountFromStacks,
+  spawnOverloadLaserBeam,
+  spawnOverloadShieldBreak,
+  tickOverloadExplosionWaves,
+  tickOverloadLaserBeams,
+  tickOverloadShieldBreaks,
+  type OverloadExplosionWaveFx,
+  type OverloadLaserBeamFx,
+  type OverloadShieldBreakFx,
+} from '../gilnidSkillFx';
+import {
+  JetpackAssaultFx,
+  buildBangBangBombGraphic,
+  buildGreenskinBasicOrbGraphic,
+  buildGyroMissileGraphic,
+  createGyroMissileTrail,
+  fadeDestroyGyroMissileTrail,
+  pushGyroMissileTrailPoint,
+  spawnJetpackSmokePuff,
+  tickJetpackSmokePuffs,
+  type GyroMissileTrailFx,
+  type JetpackSmokePuffFx,
+} from '../greenskinSkillFx';
+import {
+  VanishInvulnRingFx,
+  spawnVanishAmbushStrike,
+  tickVanishAmbushStrikeFx,
+} from '../vancleefSkillFx';
 import type { SkillDef } from '../skillsCatalog';
 import { gsCombatStatMult } from '../gearCombatBonus';
 import { getNodeProgressMaxForBookChapter } from '../gearItems';
@@ -100,7 +174,10 @@ import {
   spawnShadowTrailSpark,
   spawnDualShotSlash,
   drawMulanWhirlwindBladeRing,
+  destroyOverloadExplosionChannelBanner,
   spawnFloatNumber,
+  spawnOverloadExplosionChannelBanner,
+  tickOverloadExplosionChannelBanner,
   spawnHealBurst,
   spawnHolySanctionStrike,
   spawnMeteorAnim,
@@ -191,6 +268,55 @@ const MINION_LEAP_SKILL_IDS = ['skill_batrider_leap', 'skill_raider_leap', 'skil
 const RFC3_CH3_SKILL_GROUP_SHADOW = 'skill_rfc3_ch3_group_shadow_sword';
 const RFC3_CH3_SKILL_SUMMON = 'skill_rfc3_ch3_summon_rite';
 const RFC3_CH3_SKILL_CORROSION = 'skill_rfc3_ch3_corrosion';
+const SKILL_BLADE_STORM = 'skill_blade_storm';
+const SKILL_BLINK_FAN = 'skill_blink_fan';
+const SKILL_POISON_STRIKE = 'skill_poison_strike';
+const SKILL_OVERLOAD_EXPLOSION = 'skill_overload_explosion';
+const SKILL_OVERLOAD_LASER = 'skill_overload_laser';
+const SKILL_MECHANO_PIONEER = 'skill_mechano_pioneer';
+const SKILL_BANG_BANG_BOMB = 'skill_bang_bang_bomb';
+const SKILL_JETPACK_ASSAULT = 'skill_jetpack_assault';
+const SKILL_GYRO_MISSILE_DEFENSE = 'skill_gyro_missile_defense';
+const SKILL_VANISH_AMBUSH = 'skill_vanish_ambush';
+const SKILL_SUMMON_MOB_POOL = 'skill_summon_mob_pool';
+const SKILL_DEFIAS_HEART = 'skill_defias_heart';
+const SKILL_DEFIAS_BANDAGE = 'skill_defias';
+const SKILL_DEFIAS_FEVER = 'skill_defias_fever';
+/** 好好干活：光环半径（设计像素，表外） */
+const DEFIAS_FEVER_AURA_RADIUS_DESIGN = 180;
+const SKILL_ENEMY_HEAVY_STUN = 'skill_stun';
+const SKILL_ELASTIC_BOMB = 'skill_bomb';
+const SKILL_VOID_WALK = 'skill_voidwalker';
+/** 虚空行走：突进移速倍率、残影间隔（秒，表外） */
+const VOID_WALK_SPEED_MULT = 2;
+const VOID_WALK_AFTERIMAGE_INTERVAL_SEC = 0.055;
+const SKILL_TAUREN_STOMP = 'skill_tauren_stomp';
+const SKILL_TAUREN_SHOCKWAVE = 'skill_tauren_shockwave';
+/** 踩地板 / 冲击波：周期冷却与开场初动（秒，表外；技能表 params 为伤害/范围） */
+const TAUREN_STOMP_CD_SEC = 10;
+const TAUREN_SHOCKWAVE_CD_SEC = 8;
+const TAUREN_STOMP_INIT_CD_SEC = 3;
+const TAUREN_SHOCKWAVE_INIT_CD_SEC = 2;
+/** 消失·伏击：淡出至完全透明（秒，表外） */
+const VANISH_AMBUSH_FADE_SEC = 1.5;
+/** 消失·伏击：完全透明维持（秒，表外） */
+const VANISH_AMBUSH_HOLD_SEC = 0.5;
+/** 消失·伏击：潜行总时长 = 淡出 + 维持 */
+const VANISH_AMBUSH_VANISH_SEC = VANISH_AMBUSH_FADE_SEC + VANISH_AMBUSH_HOLD_SEC;
+/** 消失·伏击：伏击瞬间瞬移至目标背后（设计像素，表外） */
+const VANISH_AMBUSH_BACK_DIST_DESIGN = 100;
+/** 消失·伏击：命中时推开其他友方（设计像素） */
+const VANISH_AMBUSH_PUSH_DESIGN = 150;
+/** 喷气背包：随机航点与当前位置最小间距（720 设计像素系） */
+const JETPACK_MIN_WAYPOINT_DESIGN = 300;
+/** 过载爆炸：护盾被击破后的晕眩（秒，表外） */
+const OVERLOAD_EXPLOSION_BREAK_STUN_SEC = 3;
+/** 过载爆炸：引导成功爆炸命中我方的眩晕（秒，表外；skills.json params 最多 5 项） */
+const OVERLOAD_EXPLOSION_HIT_STUN_SEC = 8;
+/** 剑刃风暴：表外固定预警时长（秒） */
+const BLADE_STORM_WARN_SEC = 0.5;
+/** 闪现刀扇：甩刀阶段总时长（秒） */
+const BLINK_FAN_VOLLEY_SEC = 2;
 
 /** 怒焰裂谷第四关首领（巴扎兰）专属 */
 const RFC4_CH4_SKILL_MIND_LASH = 'skill_rfc4_ch4_mind_lash';
@@ -219,6 +345,11 @@ const LEAP_NYOFF_DESIGN_RAIDER = 44;
 const LEAP_NYOFF_DESIGN_BESERKER = 36;
 /** 投石车燃烧区 tick 受击火花概率（演出） */
 const CATAPULT_BURN_SPARK_CHANCE = 0.45;
+
+/** 拉克佐·顺劈斩：普攻触发概率（写死，非表参） */
+const RHAKH_CLEAVE_PROC_CHANCE = 0.35;
+/** 拉克佐·猛击：主目标伤害系数 = 范围系数 × 该倍率 */
+const RHAKH_SMASH_PRIMARY_DMG_MULT = 3;
 
 /** 弹道无有效发射者单位时，用于命中判定的等效半径下限 */
 const PROJECTILE_HIT_BASE = Math.round(28 * LAYOUT_SCALE);
@@ -267,6 +398,37 @@ type BattleProjectile = {
   shadowTrailAcc?: number;
 };
 
+type BangBangBombProjectile = {
+  gfx: Graphics;
+  x: number;
+  y: number;
+  speed: number;
+  targetId: number;
+  attackerId: number;
+  life: number;
+  onHit: () => void;
+  skillId?: string;
+};
+
+type GyroHomingMissile = {
+  gfx: Graphics;
+  x: number;
+  y: number;
+  sx: number;
+  sy: number;
+  tx: number;
+  ty: number;
+  t: number;
+  dur: number;
+  arcLift: number;
+  targetId: number;
+  attackerId: number;
+  trailAcc: number;
+  skillId: string;
+  trail?: GyroMissileTrailFx;
+  onHit: () => void;
+};
+
 type DamageCtx = {
   attacker?: SimUnit;
   /** 溅射、流星雨等可再走格挡 */
@@ -282,7 +444,21 @@ type DamageCtx = {
   meleeBasic?: boolean;
   /** skill_hot_strike：受击目标加强闪红与火花 */
   hotStrikeHeavy?: boolean;
+  /** skill_poison_strike：毒 DoT 跳伤，不叠层 */
+  poisonStrikeDot?: boolean;
 };
+
+type BossBlinkFanVolleyState = {
+  t: number;
+  dur: number;
+  knifeAcc: number;
+  knifeInterval: number;
+  coeff: number;
+  maxTargets: number;
+  knifeRange: number;
+};
+
+type FanKnifeSlashFlash = { g: Graphics; t: number };
 
 type MulanWhirlwindRingFx = {
   g: Graphics;
@@ -343,6 +519,8 @@ type SimUnit = {
   /** 十五层骑羁绊：尚可用一次免死冲锋 */
   knightDeathDenyLeft?: number;
   invulnerable?: boolean;
+  /** 无敌：免疫伤害与控制，不可被选为目标；飞行物命中无效 */
+  invincible?: boolean;
   /** 战士盾反闪一下 */
   flashT?: number;
   /** 近战挥砍/突刺动画剩余时间 */
@@ -396,12 +574,25 @@ type SimUnit = {
   bossSkillCast?: BossSkillCastState;
   /** skill_berserker：表底攻击力（随阶段乘算后再写入 `atk`） */
   bossBerserkBaseAtk?: number;
+  /** skill_rhahk_warcry：战吼叠层前的表底攻击 */
+  rhahkWarcryBaseAtk?: number;
+  /** skill_rhahk_warcry：已释放战吼次数（攻击 +params[2]%×层数，无上限） */
+  rhahkWarcryStacks?: number;
+  /** 战吼叠层：圆盘描边（叠在立绘 rim 之上） */
+  rhahkWarcryRimG?: Graphics;
+  /** 顺劈斩命中：血环闪白剩余秒 */
+  rhahkCleaveFlashT?: number;
+  /** 猛击主目标裂痕 overlay */
+  rhahkSmashCrackGfx?: Graphics;
+  rhahkSmashCrackT?: number;
   /** 0 常态；1 一阶段狂暴；2 极度狂暴 */
   bossBerserkStage?: 0 | 1 | 2;
   /** 怒火粒子：喷发间隔累积 */
   bossBerserkSparkAcc?: number;
   /** 击退：ease-out 缓动位移 */
   knockbackTween?: { elapsed: number; dur: number; sx: number; sy: number; tx: number; ty: number };
+  /** 喷气背包等：飞行中不参与软碰撞分离 */
+  collisionDisabled?: boolean;
   /** 非首领死亡：根节点沿抛物线飞出；代币本体绕圆心自转（非绕脚底公转） */
   deathAnim?: {
     elapsed: number;
@@ -438,6 +629,52 @@ type SimUnit = {
   rfc4MindLashCdRem?: number;
   /** 怒焰裂谷第四关：暗影闪现冷却（秒） */
   rfc4ShadowBlinkCdRem?: number;
+  /** skill_blink_fan：甩刀阶段 */
+  bossBlinkFanVolley?: BossBlinkFanVolleyState;
+  /** skill_poison_strike：叠层 */
+  poisonStrikeStacks?: number;
+  poisonStrikeRemainSec?: number;
+  poisonStrikeSourceId?: number;
+  poisonStrikeAtkSnap?: number;
+  /** 淬毒 DoT：距下次 1 秒跳伤累积 */
+  poisonStrikeTickAcc?: number;
+  /** 飞刀命中白色刀痕 */
+  fanKnifeSlashGfx?: Graphics;
+  fanKnifeSlashT?: number;
+  /** skill_overload_laser：未击杀累计威力加点（%） */
+  overloadLaserPowerBonus?: number;
+  /** skill_mechano_pioneer：本场是否已触发 */
+  mechanoPioneerUsed?: boolean;
+  /** 过载爆炸引导：蓝白护盾罩 */
+  overloadShieldBubbleGfx?: Graphics;
+  /** 剑刃风暴预警：圆缘闪红相位 */
+  bladeStormWarnFlashT?: number;
+  /** skill_bang_bang_bomb：普攻计数（满间隔后归零并发射炸弹） */
+  bangBangBombAtkCount?: number;
+  /** skill_gyro_missile_defense：待反击的远程攻击者 unitId */
+  gyroRetaliateTargetId?: number | null;
+  /** skill_gyro_missile_defense：发射间隔累积 */
+  gyroMissileFireAcc?: number;
+  /** skill_defias：本场是否已用过绷带 */
+  defiasBandageUsed?: boolean;
+  /** skill_defias：打绷带引导中 */
+  defiasBandageChannel?: { t: number; healAcc: number };
+  /** skill_stun：重击剩余冷却（秒），开场 0 */
+  enemyHeavyStunCdRem?: number;
+  /** skill_bomb：弹性炸弹剩余冷却（秒） */
+  enemyBombCdRem?: number;
+  /** skill_voidwalker：虚空行走冷却（秒），开场 0 */
+  voidWalkCdRem?: number;
+  /** skill_voidwalker：突进中 */
+  voidWalkDash?: {
+    targetId: number;
+    tx: number;
+    ty: number;
+    dmgCoeff: number;
+    trailAcc: number;
+    lastX: number;
+    lastY: number;
+  };
   tokenDisk?: Container;
   tokenLetter?: Text;
   tokenInnerR?: number;
@@ -525,6 +762,21 @@ export class BattleScreen extends Container {
     tickSec: number;
   }> = [];
   private deathTrailSparks: TinySparkFx[] = [];
+  private rhahkCleaveFx: RhahkCleaveXSlashFx[] = [];
+  private rhahkWarcryFx: RhahkWarcryPresentation[] = [];
+  private bladeStormShatter: BladeStormShatterBit[] = [];
+  private bladeStormTrail: BladeStormTrailFx | null = null;
+  private blinkAfterimages: BlinkAfterimageFx[] = [];
+  private voidWalkAfterimages: VoidWalkAfterimageFx[] = [];
+  private fanKnives: FanKnifeProjectileFx[] = [];
+  private fanKnifeSlashFlashes: FanKnifeSlashFlash[] = [];
+  private overloadExplosionWaves: OverloadExplosionWaveFx[] = [];
+  private overloadShieldBreaks: OverloadShieldBreakFx[] = [];
+  private overloadLaserBeams: OverloadLaserBeamFx[] = [];
+  private bangBombProjectiles: BangBangBombProjectile[] = [];
+  private gyroHomingMissiles: GyroHomingMissile[] = [];
+  private jetpackSmokePuffs: JetpackSmokePuffFx[] = [];
+  private gyroMissileTrailFade: GyroMissileTrailFx[] = [];
   /** 开发：复合特效验收战场 */
   private readonly uiTestBattle: boolean;
   private uiTestSkillAcc = 0;
@@ -542,7 +794,8 @@ export class BattleScreen extends Container {
     this.onEnd = onEnd;
     this.uiTestBattle = !!meta.uiTestBattle;
     this.uiTestSkillAcc = this.uiTestBattle ? -0.45 : 0;
-    this.statsPanelExpanded = battleStatsPanelExpandedSession;
+    this.statsPanelExpanded = isBotModeActive() ? true : battleStatsPanelExpandedSession;
+    if (isBotModeActive()) battleStatsPanelExpandedSession = true;
 
     const bondFromBoard = allBondStacks(run.board);
     const bondOv = run.devBattleHooks?.bondStacksBattleOverride;
@@ -686,6 +939,7 @@ export class BattleScreen extends Container {
     this.addChild(this.hudEnemyBar);
 
     this.mountBattleStatsPanel();
+    if (isBotModeActive()) this.syncBattleStatsPanelLayout();
 
     this.openingCountdownT =
       this.uiTestBattle || meta.skipBattleOpeningCountdown ? 0 : BATTLE_OPENING_COUNTDOWN_SEC;
@@ -718,11 +972,16 @@ export class BattleScreen extends Container {
     attachScreenDebugLabel(this, 'BattleScreen');
     startScreenMusic('battle');
 
+    if (isBotModeActive()) {
+      botRegisterScreen({ kind: 'battle' });
+    }
+
     this._tick = (ticker) => this.updateFrame(ticker.deltaMS / 1000);
     this.app.ticker.add(this._tick);
   }
 
   override destroy(): void {
+    botUnregisterScreen('battle');
     stopScreenMusic();
     if (this.uiTestKeyHandler) {
       window.removeEventListener('keydown', this.uiTestKeyHandler);
@@ -766,6 +1025,7 @@ export class BattleScreen extends Container {
 
   /** 软碰撞分离用半径；可小于 `hitRadiusPx` 以允许代币视觉重叠 */
   private collisionRadiusPx(u: SimUnit): number {
+    if (u.collisionDisabled) return 0;
     return u.hitRadiusPx * this.collisionRadiusCoeff(u);
   }
 
@@ -937,7 +1197,7 @@ export class BattleScreen extends Container {
   }
 
   /** 将友方沿远离 (ox,oy) 方向推开（ease-out） */
-  private knockbackAllyFromPoint(a: SimUnit, ox: number, oy: number, dist: number): void {
+  private knockbackAllyFromPoint(a: SimUnit, ox: number, oy: number, dist: number, instant = false): void {
     if (a.side !== 'ally' || a.dead || a.invulnerable) return;
     const dx = a.x - ox;
     const dy = a.y - oy;
@@ -947,6 +1207,13 @@ export class BattleScreen extends Container {
     const c = this.clampAllyKnockbackXY(tx, ty, this.unitTokenRootYOffsetPx(a));
     tx = c.x;
     ty = c.y;
+    if (instant) {
+      a.x = tx;
+      a.y = ty;
+      delete a.knockbackTween;
+      this.syncUnitRootFromStance(a);
+      return;
+    }
     a.knockbackTween = {
       elapsed: 0,
       dur: KNOCKBACK_TWEEN_DUR,
@@ -991,6 +1258,70 @@ export class BattleScreen extends Container {
     this.floatWords.push(
       spawnFloatNumber(this.floatLayer, target.x, this.floatAnchorY(target) - 48, '击退', 'magic'),
     );
+  }
+
+  private syncRhahkWarcryAtk(u: SimUnit): void {
+    if (!this.unitHasSkill(u, 'skill_rhahk_warcry') || u.rhahkWarcryBaseAtk == null) return;
+    const def = getSkillById('skill_rhahk_warcry');
+    const perStack = skillParamNumber(def, 2, 10) / 100;
+    const stacks = u.rhahkWarcryStacks ?? 0;
+    u.atk = Math.max(1, Math.round(u.rhahkWarcryBaseAtk * (1 + perStack * stacks)));
+  }
+
+  /** 拉克佐·顺劈斩：近战普攻后概率扇形额外伤害 */
+  private rhahkCleaveFollowup(attacker: SimUnit, primary: SimUnit): void {
+    if (!this.unitHasSkill(attacker, 'skill_rhahk_cleave') || attacker.dead || primary.dead) return;
+    if (Math.random() >= RHAKH_CLEAVE_PROC_CHANCE) return;
+    const def = getSkillById('skill_rhahk_cleave');
+    if (!def) return;
+    const coeff = skillParamNumber(def, 0, 85) / 100;
+    const rOuter = skillParamDesignPx(def, 1, 125) + this.hitRadius(attacker);
+    const halfRad = ((skillParamNumber(def, 2, 90) / 180) * Math.PI) / 2;
+    const aim = Math.atan2(primary.y - attacker.y, primary.x - attacker.x);
+    const ac = this.unitBattleTokenCenterXY(attacker);
+    const cx = ac.x;
+    const cy = ac.y;
+    const dmg = Math.max(1, Math.round(attacker.atk * coeff));
+    let hits = 0;
+    for (const a of this.alive('ally')) {
+      if (a.unitId === primary.unitId) continue;
+      if (!allyInPunchSector(a.x, a.y, a.hitRadiusPx, cx, cy, aim, halfRad, rOuter)) continue;
+      hits += 1;
+      this.applyDamage(a, dmg, { attacker, damageTag: 'magic', meleeBasic: true });
+      this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, a.x, a.y));
+      a.rhahkCleaveFlashT = Math.max(a.rhahkCleaveFlashT ?? 0, 0.2);
+    }
+    const sector = new RhahkCleaveXSlashFx(cx, cy, aim, rOuter);
+    this.fxLayer.addChild(sector);
+    this.rhahkCleaveFx.push(sector);
+
+    if (hits > 0) {
+      this.logBattleSkill('skill_rhahk_cleave', attacker, `扇形额外命中=${hits}`);
+    }
+  }
+
+  private knockbackAllyRadialFromPoint(a: SimUnit, cx: number, cy: number, distPx: number): void {
+    if (a.side !== 'ally' || a.dead || a.invulnerable) return;
+    const dx = a.x - cx;
+    const dy = a.y - cy;
+    const d = Math.hypot(dx, dy) || 1;
+    const nx = dx / d;
+    const ny = dy / d;
+    const want = distPx * (0.9 + Math.random() * 0.25);
+    const ir = this.unitTokenRootYOffsetPx(a);
+    const capped = this.clampAllyKnockbackXY(a.x + nx * want, a.y + ny * want, ir);
+    a.knockbackTween = {
+      elapsed: 0,
+      dur: KNOCKBACK_TWEEN_DUR,
+      sx: a.x,
+      sy: a.y,
+      tx: capped.x,
+      ty: capped.y,
+    };
+    a.moveSlowDecayRem = 2.2;
+    a.moveSlowDecayDur = 2.2;
+    a.moveSlowDecayPeak = 0.55;
+    this.syncUnitMoveSpeed(a);
   }
 
   private abominationCleaveFollowup(attacker: SimUnit, primary: SimUnit): void {
@@ -1132,6 +1463,7 @@ export class BattleScreen extends Container {
         for (let j = i + 1; j < alive.length; j++) {
           const a = alive[i]!;
           const b = alive[j]!;
+          if (a.collisionDisabled || b.collisionDisabled) continue;
           const dx = b.x - a.x;
           const dy = b.y - a.y;
           const dist = Math.hypot(dx, dy) || 1e-4;
@@ -1857,12 +2189,29 @@ export class BattleScreen extends Container {
       shadowBoltCdRem: side === 'enemy' && skillIds.includes('skill_shadow_bot') ? 0 : undefined,
       evilFrenzyCdRem: side === 'enemy' && skillIds.includes('skill_evil_strenth') ? 0 : undefined,
       evilFrenzyBuffT: side === 'enemy' && skillIds.includes('skill_evil_strenth') ? 0 : undefined,
+      enemyHeavyStunCdRem: side === 'enemy' && skillIds.includes(SKILL_ENEMY_HEAVY_STUN) ? 0 : undefined,
+      enemyBombCdRem:
+        side === 'enemy' && skillIds.includes(SKILL_ELASTIC_BOMB)
+          ? skillParamNumber(getSkillById(SKILL_ELASTIC_BOMB), 1, 3)
+          : undefined,
+      voidWalkCdRem: side === 'enemy' && skillIds.includes(SKILL_VOID_WALK) ? 0 : undefined,
       heroId: opts.heroId,
     };
     if (side === 'enemy' && skillIds.includes('skill_berserker')) {
       u.bossBerserkBaseAtk = atk;
       u.bossBerserkStage = 0;
       u.bossBerserkSparkAcc = 0;
+    }
+    if (side === 'enemy' && skillIds.includes('skill_rhahk_warcry')) {
+      u.rhahkWarcryBaseAtk = atk;
+      u.rhahkWarcryStacks = 0;
+      if (tokenDisk && tokenInnerR != null) {
+        const rim = new Graphics();
+        rim.eventMode = 'none';
+        tokenDisk.addChild(rim);
+        u.rhahkWarcryRimG = rim;
+        redrawRhahkWarcryBossRim(rim, tokenInnerR, 0);
+      }
     }
     if (side === 'enemy' && opts.bossId) {
       if (skillIds.includes(RFC3_CH3_SKILL_GROUP_SHADOW)) {
@@ -1902,10 +2251,40 @@ export class BattleScreen extends Container {
     u.shield = Math.min(u.maxHp, Math.max(0, Math.floor(u.shield ?? 0)));
     const ratio = u.hp / Math.max(1, u.maxHp);
     const shRatio = (u.shield ?? 0) / Math.max(1, u.maxHp);
+    const ringColor = (u.rhahkCleaveFlashT ?? 0) > 0 ? 0xffffff : tr.solidColor;
     if (rs) {
-      redrawHpRingWithShield(rc, rl, rs, tr.cx, tr.cy, tr.ringR, tr.thick, ratio, shRatio, tr.solidColor);
+      redrawHpRingWithShield(rc, rl, rs, tr.cx, tr.cy, tr.ringR, tr.thick, ratio, shRatio, ringColor);
     } else {
-      redrawHpRingPair(rc, rl, tr.cx, tr.cy, tr.ringR, tr.thick, ratio, tr.solidColor);
+      redrawHpRingPair(rc, rl, tr.cx, tr.cy, tr.ringR, tr.thick, ratio, ringColor);
+    }
+  }
+
+  private tickRhahkUnitFx(u: SimUnit, dt: number): void {
+    if ((u.rhahkCleaveFlashT ?? 0) > 0) u.rhahkCleaveFlashT = Math.max(0, (u.rhahkCleaveFlashT ?? 0) - dt);
+    if ((u.rhahkSmashCrackT ?? 0) > 0) {
+      u.rhahkSmashCrackT = Math.max(0, (u.rhahkSmashCrackT ?? 0) - dt);
+      if (u.rhahkSmashCrackT <= 0 && u.rhahkSmashCrackGfx) {
+        u.rhahkSmashCrackGfx.destroy();
+        u.rhahkSmashCrackGfx = undefined;
+      }
+    }
+  }
+
+  private tickRhahkPresentationFx(dt: number): void {
+    for (let i = this.rhahkCleaveFx.length - 1; i >= 0; i--) {
+      const fx = this.rhahkCleaveFx[i]!;
+      if (fx.tick(dt)) {
+        fx.destroy({ children: true });
+        this.rhahkCleaveFx.splice(i, 1);
+      }
+    }
+    for (let i = this.rhahkWarcryFx.length - 1; i >= 0; i--) {
+      const pres = this.rhahkWarcryFx[i]!;
+      tickRhahkWarcryPresentation(pres, dt);
+      if (isRhahkWarcryPresentationDone(pres)) {
+        destroyRhahkWarcryPresentation(pres);
+        this.rhahkWarcryFx.splice(i, 1);
+      }
     }
   }
 
@@ -2030,6 +2409,100 @@ export class BattleScreen extends Container {
   /**
    * 狼骑兵 / 狂战士 / 蝙蝠骑士：冷却结束跃迁至「距该刺客当前位置最远」的存活我方单位附近（视为后排）。
    */
+  private endDefiasBandageChannel(u: SimUnit, reason: string): void {
+    u.defiasBandageChannel = undefined;
+    u.defiasBandageUsed = true;
+    this.logBattleSkill(SKILL_DEFIAS_BANDAGE, u, reason);
+  }
+
+  private defiasBandageRetreatStep(u: SimUnit, dt: number): void {
+    const ir = this.unitTokenRootYOffsetPx(u);
+    const padX = Math.round(38 * LAYOUT_SCALE);
+    const yLo = Math.round(192 * LAYOUT_SCALE) - ir;
+    const yHi = Math.round(1108 * LAYOUT_SCALE) - ir;
+    const dL = u.x - padX;
+    const dR = GAME_WIDTH - padX - u.x;
+    const dT = u.y - yLo;
+    const dB = yHi - u.y;
+    const minD = Math.min(dL, dR, dT, dB);
+    const stop = Math.max(8, Math.round(14 * LAYOUT_SCALE));
+    if (minD <= stop) return;
+
+    let tx = u.x;
+    let ty = u.y;
+    if (minD === dL) tx = padX + stop;
+    else if (minD === dR) tx = GAME_WIDTH - padX - stop;
+    else if (minD === dT) ty = yLo + stop;
+    else ty = yHi - stop;
+
+    const dx = tx - u.x;
+    const dy = ty - u.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const step = u.speed * dt * 0.9;
+    const move = Math.min(step, dist);
+    u.x += (dx / dist) * move;
+    u.y += (dy / dist) * move;
+    this.syncUnitRootFromStance(u);
+  }
+
+  private tickDefiasBandageHeal(u: SimUnit, ch: { healAcc: number }, pctPerSec: number, dt: number): void {
+    ch.healAcc += dt;
+    if (ch.healAcc < 1) return;
+    ch.healAcc -= 1;
+    const heal = Math.max(1, Math.round(u.maxHp * (pctPerSec / 100)));
+    u.hp = Math.min(u.maxHp, u.hp + heal);
+    this.syncUnitHpRing(u);
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, u.x, this.floatAnchorY(u) - 28, `+${heal}`, 'heal'),
+    );
+    if (Math.random() < 0.35) {
+      this.ringFx.push(spawnRingPulse(this.fxLayer, u.x, u.y, 32, 0x86efac, 0.38));
+    }
+  }
+
+  /** 迪菲亚成员补给：低血引导撤边打绷带；返回 true 时本帧不普攻/追击 */
+  private tickDefiasBandage(u: SimUnit, dt: number): boolean {
+    if (u.side !== 'enemy' || u.dead || !this.unitHasSkill(u, SKILL_DEFIAS_BANDAGE)) return false;
+    const def = getSkillById(SKILL_DEFIAS_BANDAGE);
+    if (!def) return false;
+
+    const ch = u.defiasBandageChannel;
+    if (ch) {
+      if ((u.stunT ?? 0) > 0) {
+        this.endDefiasBandageChannel(u, 'bandage_interrupt_stun');
+        return false;
+      }
+      const dur = skillParamNumber(def, 2, 20);
+      const pct = skillParamNumber(def, 1, 3);
+      ch.t += dt;
+      this.tickDefiasBandageHeal(u, ch, pct, dt);
+      this.defiasBandageRetreatStep(u, dt);
+      if (ch.t >= dur) {
+        this.endDefiasBandageChannel(u, 'bandage_complete');
+      }
+      return true;
+    }
+
+    if (u.defiasBandageUsed) return false;
+    const gate = skillParamNumber(def, 0, 40) / 100;
+    if (u.hp / Math.max(1, u.maxHp) > gate) return false;
+
+    u.defiasBandageChannel = { t: 0, healAcc: 0 };
+    u.stunT = 0;
+    this.floatWords.push(
+      spawnFloatNumber(
+        this.floatLayer,
+        u.x,
+        this.floatAnchorY(u) - Math.round(44 * LAYOUT_SCALE),
+        '打绷带',
+        'buff',
+      ),
+    );
+    this.logBattleSkill(SKILL_DEFIAS_BANDAGE, u, 'bandage_start');
+    this.ringFx.push(spawnRingPulse(this.fxLayer, u.x, u.y, 40, 0xa7f3d0, 0.45));
+    return true;
+  }
+
   private tickEnemyBacklineLeap(u: SimUnit, dt: number): boolean {
     const leapIds = MINION_LEAP_SKILL_IDS as readonly string[];
     if (!u.skillIds.some((id) => leapIds.includes(id))) return false;
@@ -2216,6 +2689,214 @@ export class BattleScreen extends Container {
     );
   }
 
+  /** skill_defias_fever：附近敌方增伤；带 skill_defias 的受益方用 params[1]；多光环取最高一档 */
+  private enemyDefiasFeverDamageMult(attacker: SimUnit): number {
+    if (attacker.side !== 'enemy' || attacker.dead) return 1;
+    const def = getSkillById(SKILL_DEFIAS_FEVER);
+    if (!def) return 1;
+    const auraR = Math.round(DEFIAS_FEVER_AURA_RADIUS_DESIGN * LAYOUT_SCALE);
+    const pctNormal = skillParamNumber(def, 0, 15);
+    const pctDefias = skillParamNumber(def, 1, 30);
+    let bestPct = 0;
+    for (const carrier of this.alive('enemy')) {
+      if (carrier.unitId === attacker.unitId) continue;
+      if (!this.unitHasSkill(carrier, SKILL_DEFIAS_FEVER)) continue;
+      const dist = Math.hypot(attacker.x - carrier.x, attacker.y - carrier.y);
+      if (dist > auraR + this.hitRadius(attacker) + this.hitRadius(carrier)) continue;
+      const pct = this.unitHasSkill(attacker, SKILL_DEFIAS_BANDAGE) ? pctDefias : pctNormal;
+      bestPct = Math.max(bestPct, pct);
+    }
+    return 1 + bestPct / 100;
+  }
+
+  private tickEnemyHeavyStunTry(u: SimUnit, dt: number): void {
+    if (!this.unitHasSkill(u, SKILL_ENEMY_HEAVY_STUN)) return;
+    const def = getSkillById(SKILL_ENEMY_HEAVY_STUN);
+    if (!def) return;
+    u.enemyHeavyStunCdRem = Math.max(0, (u.enemyHeavyStunCdRem ?? 0) - dt);
+    if ((u.stunT ?? 0) > 0) return;
+    if ((u.enemyHeavyStunCdRem ?? 0) > 0) return;
+    const tgt = this.nearestAlly(u);
+    if (!tgt) return;
+    const dist = Math.hypot(tgt.x - u.x, tgt.y - u.y);
+    if (dist > this.effectiveSkillRangeTo(u, tgt)) return;
+    const period = skillParamNumber(def, 0, 6);
+    u.enemyHeavyStunCdRem = period;
+    const coeff = skillParamNumber(def, 1, 200) / 100;
+    const stunSec = skillParamNumber(def, 2, 3);
+    const dmg = Math.max(1, Math.round(u.atk * coeff));
+    this.applyDamage(tgt, dmg, { attacker: u });
+    tgt.stunT = Math.max(tgt.stunT ?? 0, stunSec);
+    this.floatBattleSkillName(SKILL_ENEMY_HEAVY_STUN, u);
+    this.logBattleSkill(SKILL_ENEMY_HEAVY_STUN, u, `→ ${this.unitDebugLabel(tgt)} stun=${stunSec.toFixed(1)}s`);
+    this.ringFx.push(spawnRingPulse(this.fxLayer, tgt.x, tgt.y, 28, 0xfbbf24, 0.5));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, tgt.x, tgt.y, 56, 0xf59e0b, 0.38));
+    this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, tgt.x, tgt.y));
+  }
+
+  private tickEnemyElasticBombTry(u: SimUnit, dt: number): void {
+    if (!this.unitHasSkill(u, SKILL_ELASTIC_BOMB)) return;
+    const def = getSkillById(SKILL_ELASTIC_BOMB);
+    if (!def) return;
+    u.enemyBombCdRem = Math.max(0, (u.enemyBombCdRem ?? 0) - dt);
+    if ((u.stunT ?? 0) > 0) return;
+    if ((u.enemyBombCdRem ?? 0) > 0) return;
+    const allies = this.alive('ally');
+    if (!allies.length) return;
+    const tgt = allies[Math.floor(Math.random() * allies.length)]!;
+    u.enemyBombCdRem = skillParamNumber(def, 0, 12);
+    this.castEnemyElasticBomb(u, tgt);
+  }
+
+  private castEnemyElasticBomb(attacker: SimUnit, target: SimUnit): void {
+    const def = getSkillById(SKILL_ELASTIC_BOMB);
+    if (!def) return;
+    this.floatBattleSkillName(SKILL_ELASTIC_BOMB, attacker);
+    const uid = attacker.unitId;
+    const tid = target.unitId;
+    const splashR = skillParamDesignPx(def, 2, 100);
+    const coeff = skillParamNumber(def, 3, 35) / 100;
+    const kbDist = skillParamDesignPx(def, 4, 300);
+    const m = this.projectileMuzzleXY(attacker, target);
+    const gfx = buildElasticBombGraphic();
+    gfx.position.set(m.x, m.y);
+    this.fxLayer.addChild(gfx);
+    const onBombHit = () => {
+      const a = this.byId(uid);
+      const primary = this.byId(tid);
+      if (!a || a.dead) return;
+      const cx = primary?.x ?? a.x;
+      const cy = primary?.y ?? a.y;
+      const inSplash: SimUnit[] = [];
+      for (const ally of this.alive('ally')) {
+        if (Math.hypot(ally.x - cx, ally.y - cy) > splashR + ally.hitRadiusPx) continue;
+        inSplash.push(ally);
+      }
+      for (const ally of inSplash) {
+        this.knockbackAllyFromPoint(ally, cx, cy, kbDist, true);
+      }
+      this.applyUnitCollisionSeparation(4);
+      const dmg = Math.max(1, Math.round(a.atk * coeff));
+      for (const ally of inSplash) {
+        this.applyDamage(ally, dmg, { attacker: a, damageTag: 'magic' });
+      }
+      this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, cx, cy));
+      this.ringFx.push(spawnRingPulse(this.fxLayer, cx, cy, splashR, 0x7f1d1d, 0.5));
+      this.ringFx.push(spawnRingPulse(this.fxLayer, cx, cy, Math.round(splashR * 0.55), 0xef4444, 0.42));
+    };
+    this.bangBombProjectiles.push({
+      gfx,
+      x: m.x,
+      y: m.y,
+      speed: Math.round(680 * LAYOUT_SCALE),
+      targetId: tid,
+      attackerId: uid,
+      life: 0,
+      onHit: onBombHit,
+      skillId: SKILL_ELASTIC_BOMB,
+    });
+    playSkillLaunchSfx(SKILL_ELASTIC_BOMB);
+    this.logBattleSkill(SKILL_ELASTIC_BOMB, attacker, `→ ${this.unitDebugLabel(target)}`);
+  }
+
+  private voidWalkLandingXY(u: SimUnit, tgt: SimUnit): { x: number; y: number } {
+    const dx = tgt.x - u.x;
+    const dy = tgt.y - u.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const landDist = this.hitRadius(u) + tgt.hitRadiusPx + Math.round(10 * LAYOUT_SCALE);
+    const raw = { x: tgt.x - (dx / d) * landDist, y: tgt.y - (dy / d) * landDist };
+    return this.clampBattleSpawnXY(raw.x, raw.y);
+  }
+
+  /** @returns 本帧是否由虚空行走接管（突进中或刚发动） */
+  private tickEnemyVoidWalk(u: SimUnit, dt: number): boolean {
+    if (!this.unitHasSkill(u, SKILL_VOID_WALK)) return false;
+    const def = getSkillById(SKILL_VOID_WALK);
+    if (!def) return false;
+
+    const dash = u.voidWalkDash;
+    if (dash) {
+      u.collisionDisabled = true;
+      const prevX = u.x;
+      const prevY = u.y;
+      const dx = dash.tx - u.x;
+      const dy = dash.ty - u.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const stepLen = u.speed * dt * VOID_WALK_SPEED_MULT;
+      dash.trailAcc += dt;
+      while (dash.trailAcc >= VOID_WALK_AFTERIMAGE_INTERVAL_SEC) {
+        dash.trailAcc -= VOID_WALK_AFTERIMAGE_INTERVAL_SEC;
+        this.voidWalkAfterimages.push(
+          spawnVoidWalkAfterimage(this.fxLayer, u.x, u.y, u.hitRadiusPx * 0.95),
+        );
+      }
+      if (dist <= stepLen + Math.round(6 * LAYOUT_SCALE)) {
+        u.x = dash.tx;
+        u.y = dash.ty;
+        this.syncUnitRootFromStance(u);
+        this.voidWalkAfterimages.push(
+          spawnVoidWalkAfterimage(this.fxLayer, u.x, u.y, u.hitRadiusPx),
+        );
+        const tgt = this.byId(dash.targetId);
+        if (tgt && !tgt.dead) {
+          const dmg = Math.max(1, Math.round(u.atk * dash.dmgCoeff));
+          this.applyDamage(tgt, dmg, { attacker: u, damageTag: 'magic' });
+          this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, tgt.x, tgt.y));
+        }
+        u.voidWalkDash = undefined;
+        u.collisionDisabled = false;
+        u.body.alpha = 1;
+        u.voidWalkCdRem = skillParamNumber(def, 0, 8);
+        this.logBattleSkill(SKILL_VOID_WALK, u, tgt ? `命中 #${tgt.unitId}` : '到达');
+      } else {
+        u.x += (dx / dist) * stepLen;
+        u.y += (dy / dist) * stepLen;
+        this.syncUnitRootFromStance(u);
+        if (Math.hypot(u.x - dash.lastX, u.y - dash.lastY) > Math.round(4 * LAYOUT_SCALE)) {
+          this.voidWalkAfterimages.push(
+            spawnVoidWalkTrailSegment(this.fxLayer, dash.lastX, dash.lastY, u.x, u.y),
+          );
+          dash.lastX = u.x;
+          dash.lastY = u.y;
+        }
+      }
+      if (Math.hypot(u.x - prevX, u.y - prevY) > 1) {
+        u.body.alpha = 0.72 + 0.28 * Math.sin(this.elapsed * 22);
+      }
+      return true;
+    }
+
+    u.body.alpha = 1;
+    u.collisionDisabled = false;
+    u.voidWalkCdRem = Math.max(0, (u.voidWalkCdRem ?? 0) - dt);
+    if ((u.stunT ?? 0) > 0) return false;
+    if ((u.voidWalkCdRem ?? 0) > 0) return false;
+
+    const ranged = this.alive('ally').filter((a) => this.isRangedAttacker(a));
+    if (!ranged.length) return false;
+    const tgt = ranged[Math.floor(Math.random() * ranged.length)]!;
+    const land = this.voidWalkLandingXY(u, tgt);
+    const coeff = skillParamNumber(def, 1, 200) / 100;
+    u.voidWalkDash = {
+      targetId: tgt.unitId,
+      tx: land.x,
+      ty: land.y,
+      dmgCoeff: coeff,
+      trailAcc: 0,
+      lastX: u.x,
+      lastY: u.y,
+    };
+    u.collisionDisabled = true;
+    this.floatBattleSkillName(SKILL_VOID_WALK, u);
+    this.voidWalkAfterimages.push(spawnVoidWalkAfterimage(this.fxLayer, u.x, u.y, u.hitRadiusPx));
+    this.voidWalkAfterimages.push(
+      spawnVoidWalkTrailSegment(this.fxLayer, u.x, u.y, land.x, land.y),
+    );
+    playSkillLaunchSfx(SKILL_VOID_WALK);
+    this.logBattleSkill(SKILL_VOID_WALK, u, `→ ${this.unitDebugLabel(tgt)}`);
+    return true;
+  }
+
   /** 怒焰裂谷第三关首领专属：群体暗影剑 / 召唤术 / 腐蚀术（与 skill_shadow_bot 等逻辑分离） */
   private tickRfc3Ch3BossExclusiveSkills(u: SimUnit, dt: number): void {
     if (!u.bossId || u.dead) return;
@@ -2323,7 +3004,7 @@ export class BattleScreen extends Container {
     }
   }
 
-  private spawnRfc3SummonWave(cx: number, cy: number, count: number, groupTag: number): void {
+  private spawnChapterMobSummonWave(cx: number, cy: number, count: number, groupTag: number): void {
     const pool = mobIdsForBookChapter(this.run.bookChapterId);
     if (!pool.length) return;
     const chapter = this.meta.chapter;
@@ -2359,20 +3040,35 @@ export class BattleScreen extends Container {
     this.currentEnemyHp += addCur;
   }
 
-  private castRfc3SummonRite(u: SimUnit, def: SkillDef): void {
-    this.floatBattleSkillName(RFC3_CH3_SKILL_SUMMON, u);
+  private castMobPoolSummon(caster: SimUnit, skillId: string): void {
+    const def = getSkillById(skillId);
+    if (!def) return;
+    this.floatBattleSkillName(skillId, caster);
     const groups = Math.max(1, Math.floor(skillParamNumber(def, 3, 2)));
     const per = Math.max(1, Math.floor(skillParamNumber(def, 2, 3)));
     const arenaTop = Math.round(188 * LAYOUT_SCALE);
     const arenaH = Math.round(1012 * LAYOUT_SCALE);
     const centerX = GAME_WIDTH * 0.5;
     const centerY = arenaTop + arenaH * 0.46;
-    this.logBattleSkill(RFC3_CH3_SKILL_SUMMON, u, `groups=${groups} each=${per}`);
+    this.logBattleSkill(skillId, caster, `groups=${groups} each=${per}`);
     for (let g = 0; g < groups; g++) {
       const gx = centerX + (g === 0 ? -Math.round(72 * LAYOUT_SCALE) : Math.round(72 * LAYOUT_SCALE));
-      this.spawnRfc3SummonWave(gx, centerY, per, g);
+      this.spawnChapterMobSummonWave(gx, centerY, per, g);
+      this.ringFx.push(spawnRingPulse(this.fxLayer, gx, centerY, 40, 0x94a3b8, 0.45));
+      this.ringFx.push(spawnRingPulse(this.fxLayer, gx, centerY, 68, 0x64748b, 0.32));
     }
     this.applyUnitCollisionSeparation(3);
+    this.triggerBattleScreenShake(0.14, Math.round(9 * LAYOUT_SCALE));
+  }
+
+  private castRfc3SummonRite(u: SimUnit, _def: SkillDef): void {
+    this.castMobPoolSummon(u, RFC3_CH3_SKILL_SUMMON);
+  }
+
+  private castBossMobPoolSummon(boss: SimUnit): void {
+    this.castMobPoolSummon(boss, SKILL_SUMMON_MOB_POOL);
+    this.bossPutSkillOnCooldown(boss, SKILL_SUMMON_MOB_POOL);
+    this.pulseKnightHolySanctionCdFromBossCast();
   }
 
   private tryCastRfc3Corrosion(u: SimUnit, def: SkillDef): void {
@@ -2756,6 +3452,7 @@ export class BattleScreen extends Container {
       volleyIndex?: number;
       volleyCount?: number;
       skillId?: string;
+      customGfx?: Graphics;
     },
   ): void {
     const skillId = opts?.skillId;
@@ -2781,7 +3478,7 @@ export class BattleScreen extends Container {
         sy += Math.sin(base + off + Math.PI / 2) * r;
       }
     }
-    const gfx = buildProjectileGraphic(style);
+    const gfx = opts?.customGfx ?? buildProjectileGraphic(style);
     gfx.position.set(sx, sy);
     this.fxLayer.addChild(gfx);
     this.projectiles.push({
@@ -2827,6 +3524,11 @@ export class BattleScreen extends Container {
         ? Math.max(Math.round(12 * LAYOUT_SCALE), rSrc * 0.42)
         : this.hitRadius(tgt) + rSrc;
       if (dist <= hitDist) {
+        if (tgt.invincible) {
+          p.gfx.destroy();
+          this.projectiles.splice(i, 1);
+          continue;
+        }
         if (p.skillId) playSkillHitSfx(p.skillId);
         p.onHit();
         p.gfx.destroy();
@@ -2857,7 +3559,610 @@ export class BattleScreen extends Container {
     }
   }
 
+  private castBangBangBomb(attacker: SimUnit, target: SimUnit, nx: number, ny: number): void {
+    const def = getSkillById(SKILL_BANG_BANG_BOMB);
+    if (!def) return;
+    this.floatBattleSkillName(SKILL_BANG_BANG_BOMB, attacker);
+    const uid = attacker.unitId;
+    const tid = target.unitId;
+    const primaryDmg = attacker.atk;
+    const splashCoeff = 0.5;
+    const splashR = skillParamDesignPx(def, 1, 50);
+    const kbMin = skillParamDesignPx(def, 2, 200);
+    const kbMax = skillParamDesignPx(def, 3, 400);
+    const gfx = buildBangBangBombGraphic();
+    const m = this.projectileMuzzleXY(attacker, target);
+    gfx.position.set(m.x, m.y);
+    this.fxLayer.addChild(gfx);
+    const onBombHit = () => {
+      const a = this.byId(uid);
+      const primary = this.byId(tid);
+      if (!a || a.dead) return;
+      const cx = primary?.x ?? a.x;
+      const cy = primary?.y ?? a.y;
+      const inSplash: SimUnit[] = [];
+      for (const ally of this.alive('ally')) {
+        const d = Math.hypot(ally.x - cx, ally.y - cy);
+        if (d > splashR + ally.hitRadiusPx) continue;
+        inSplash.push(ally);
+      }
+      for (const ally of inSplash) {
+        const kb = kbMin + Math.random() * Math.max(0, kbMax - kbMin);
+        this.knockbackAllyFromPoint(ally, cx, cy, kb, true);
+      }
+      this.applyUnitCollisionSeparation(4);
+      for (const ally of inSplash) {
+        if (primary && ally.unitId === primary.unitId) {
+          this.applyDamage(ally, Math.max(1, primaryDmg), {
+            attacker: a,
+            damageTag: 'magic',
+            meleeBasic: true,
+          });
+        } else {
+          const splash = Math.max(1, Math.round(a.atk * splashCoeff));
+          this.applyDamage(ally, splash, { attacker: a, damageTag: 'magic' });
+        }
+      }
+      this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, cx, cy));
+      this.ringFx.push(spawnRingPulse(this.fxLayer, cx, cy, splashR, 0x1f2937, 0.45));
+    };
+    this.bangBombProjectiles.push({
+      gfx,
+      x: m.x,
+      y: m.y,
+      speed: Math.round(720 * LAYOUT_SCALE),
+      targetId: tid,
+      attackerId: uid,
+      life: 0,
+      onHit: onBombHit,
+    });
+    attacker.cd = Math.max(0.25, this.effectiveAttackInterval(attacker));
+    attacker.atkLungeT = ATTACK_LUNGE_DUR;
+    attacker.atkLungeDx = nx;
+    attacker.atkLungeDy = ny;
+    playSkillLaunchSfx(SKILL_BANG_BANG_BOMB);
+    this.logBattleSkill(SKILL_BANG_BANG_BOMB, attacker, `→ #${target.unitId}`);
+  }
+
+  private tickBangBangBombProjectiles(dt: number): void {
+    for (let i = this.bangBombProjectiles.length - 1; i >= 0; i--) {
+      const p = this.bangBombProjectiles[i]!;
+      p.life += dt;
+      if (p.life > 4) {
+        p.gfx.destroy();
+        this.bangBombProjectiles.splice(i, 1);
+        continue;
+      }
+      const tgt = this.byId(p.targetId);
+      if (!tgt) {
+        p.gfx.destroy();
+        this.bangBombProjectiles.splice(i, 1);
+        continue;
+      }
+      const tx = tgt.x;
+      const ty = tgt.y;
+      const dx = tx - p.x;
+      const dy = ty - p.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const src = this.byId(p.attackerId);
+      const rSrc = src && !src.dead ? this.hitRadius(src) : PROJECTILE_HIT_BASE;
+      const hitDist = Math.max(Math.round(12 * LAYOUT_SCALE), rSrc * 0.42);
+      if (dist <= hitDist + tgt.hitRadiusPx) {
+        if (p.skillId) playSkillHitSfx(p.skillId);
+        else playSkillHitSfx(SKILL_BANG_BANG_BOMB);
+        p.onHit();
+        p.gfx.destroy();
+        this.bangBombProjectiles.splice(i, 1);
+        continue;
+      }
+      const step = Math.min(p.speed * dt, dist);
+      p.x += (dx / dist) * step;
+      p.y += (dy / dist) * step;
+      p.gfx.position.set(p.x, p.y);
+      p.gfx.rotation = Math.atan2(dy, dx);
+    }
+  }
+
+  private maybeRecordGyroMissileRetaliateTarget(defender: SimUnit, attacker: SimUnit | undefined): void {
+    if (!attacker || attacker.dead || attacker.side !== 'ally') return;
+    if (!this.unitHasSkill(defender, SKILL_GYRO_MISSILE_DEFENSE)) return;
+    if (!this.isRangedAttacker(attacker)) return;
+    defender.gyroRetaliateTargetId = attacker.unitId;
+    if (defender.gyroMissileFireAcc == null) defender.gyroMissileFireAcc = 0;
+  }
+
+  private fireGyroRetaliationMissile(defender: SimUnit, target: SimUnit): void {
+    const def = getSkillById(SKILL_GYRO_MISSILE_DEFENSE);
+    if (!def) return;
+    const coeff = skillParamNumber(def, 1, 100) / 100;
+    const dmg = Math.max(1, Math.round(defender.atk * coeff));
+    const m = this.projectileMuzzleXY(defender, target);
+    const gfx = buildGyroMissileGraphic();
+    gfx.position.set(m.x, m.y);
+    this.fxLayer.addChild(gfx);
+    const dur = 0.95;
+    const arcLift = Math.round(95 * LAYOUT_SCALE);
+    const uid = defender.unitId;
+    const tid = target.unitId;
+    const onHit = () => {
+      const d = this.byId(uid);
+      const t = this.byId(tid);
+      if (!d || d.dead) return;
+      if (!t || t.dead) {
+        d.gyroRetaliateTargetId = null;
+        return;
+      }
+      this.applyDamage(t, dmg, { attacker: d, damageTag: 'magic' });
+      d.gyroRetaliateTargetId = null;
+      playSkillHitSfx(SKILL_GYRO_MISSILE_DEFENSE);
+      this.logBattleSkill(SKILL_GYRO_MISSILE_DEFENSE, d, `命中 #${tid}`);
+    };
+    const trail = createGyroMissileTrail(this.fxLayer);
+    pushGyroMissileTrailPoint(trail, m.x, m.y);
+    this.gyroHomingMissiles.push({
+      gfx,
+      x: m.x,
+      y: m.y,
+      sx: m.x,
+      sy: m.y,
+      tx: target.x,
+      ty: target.y,
+      t: 0,
+      dur,
+      arcLift,
+      targetId: tid,
+      attackerId: uid,
+      trailAcc: 0,
+      skillId: SKILL_GYRO_MISSILE_DEFENSE,
+      trail,
+      onHit,
+    });
+    playSkillLaunchSfx(SKILL_GYRO_MISSILE_DEFENSE);
+  }
+
+  private tickGyroHomingMissiles(dt: number): void {
+    for (let i = this.gyroHomingMissiles.length - 1; i >= 0; i--) {
+      const m = this.gyroHomingMissiles[i]!;
+      m.t += dt;
+      const tgt = this.byId(m.targetId);
+      if (!tgt || tgt.dead) {
+        const d = this.byId(m.attackerId);
+        if (d) d.gyroRetaliateTargetId = null;
+        m.gfx.destroy();
+        if (m.trail) this.gyroMissileTrailFade.push(m.trail);
+        this.gyroHomingMissiles.splice(i, 1);
+        continue;
+      }
+      m.tx = tgt.x;
+      m.ty = tgt.y;
+      const k = Math.min(1, m.t / m.dur);
+      const bx = m.sx + (m.tx - m.sx) * k;
+      const by = m.sy + (m.ty - m.sy) * k;
+      const arc = -m.arcLift * 4 * k * (1 - k);
+      const px = bx;
+      const py = by + arc;
+      if (m.trail) pushGyroMissileTrailPoint(m.trail, px, py);
+      m.x = px;
+      m.y = py;
+      m.gfx.position.set(px, py);
+      const dx = m.tx - m.x;
+      const dy = m.ty - m.y;
+      m.gfx.rotation = Math.atan2(dy, dx);
+      if (k >= 1 || Math.hypot(dx, dy) < Math.round(16 * LAYOUT_SCALE)) {
+        m.onHit?.();
+        m.gfx.destroy();
+        if (m.trail) this.gyroMissileTrailFade.push(m.trail);
+        this.gyroHomingMissiles.splice(i, 1);
+      }
+    }
+    for (let i = this.gyroMissileTrailFade.length - 1; i >= 0; i--) {
+      if (fadeDestroyGyroMissileTrail(this.gyroMissileTrailFade[i]!, dt)) {
+        this.gyroMissileTrailFade.splice(i, 1);
+      }
+    }
+  }
+
+  private tickGyroMissileDefensePassive(u: SimUnit, dt: number): void {
+    if (!this.unitHasSkill(u, SKILL_GYRO_MISSILE_DEFENSE) || u.dead) return;
+    const def = getSkillById(SKILL_GYRO_MISSILE_DEFENSE);
+    if (!def) return;
+    const interval = skillParamNumber(def, 0, 0.2);
+    const tid = u.gyroRetaliateTargetId;
+    if (tid == null) return;
+    const target = this.byId(tid);
+    if (!target || target.dead || target.side !== 'ally') {
+      u.gyroRetaliateTargetId = null;
+      return;
+    }
+    if (this.gyroHomingMissiles.some((m) => m.attackerId === u.unitId)) return;
+    u.gyroMissileFireAcc = (u.gyroMissileFireAcc ?? 0) + dt;
+    if (u.gyroMissileFireAcc < interval) return;
+    u.gyroMissileFireAcc = 0;
+    this.fireGyroRetaliationMissile(u, target);
+  }
+
+  private pickJetpackWaypoint(fromX: number, fromY: number): { x: number; y: number } {
+    const minD = JETPACK_MIN_WAYPOINT_DESIGN * LAYOUT_SCALE;
+    for (let i = 0; i < 24; i++) {
+      const ang = Math.random() * Math.PI * 2;
+      const dist = minD + Math.random() * minD * 1.4;
+      const raw = this.clampBattleSpawnXY(fromX + Math.cos(ang) * dist, fromY + Math.sin(ang) * dist);
+      if (Math.hypot(raw.x - fromX, raw.y - fromY) >= minD * 0.92) return raw;
+    }
+    const ang = Math.random() * Math.PI * 2;
+    return this.clampBattleSpawnXY(fromX + Math.cos(ang) * minD, fromY + Math.sin(ang) * minD);
+  }
+
+  private startJetpackBezierSegment(st: BossJetpackAssaultState, boss: SimUnit): void {
+    st.p0x = boss.x;
+    st.p0y = boss.y;
+    const end = this.pickJetpackWaypoint(boss.x, boss.y);
+    st.p2x = end.x;
+    st.p2y = end.y;
+    const mx = (st.p0x + st.p2x) * 0.5;
+    const my = (st.p0y + st.p2y) * 0.5;
+    const dx = st.p2x - st.p0x;
+    const dy = st.p2y - st.p0y;
+    const len = Math.hypot(dx, dy) || 1;
+    const px = -dy / len;
+    const py = dx / len;
+    const off = (30 + Math.random() * 20) * LAYOUT_SCALE * (Math.random() < 0.5 ? 1 : -1);
+    st.cpx = mx + px * off;
+    st.cpy = my + py * off;
+    st.segT = 0;
+    const speed = boss.speedBase * st.speedMult * BATTLE_MOVE_SPEED_MULT;
+    const approxLen = len * 1.15;
+    st.segDur = Math.max(0.35, approxLen / Math.max(80, speed));
+  }
+
+  private quadBezierPoint(
+    p0x: number,
+    p0y: number,
+    cpx: number,
+    cpy: number,
+    p2x: number,
+    p2y: number,
+    t: number,
+  ): { x: number; y: number } {
+    const u = 1 - t;
+    return {
+      x: u * u * p0x + 2 * u * t * cpx + t * t * p2x,
+      y: u * u * p0y + 2 * u * t * cpy + t * t * p2y,
+    };
+  }
+
+  private quadBezierTangent(
+    p0x: number,
+    p0y: number,
+    cpx: number,
+    cpy: number,
+    p2x: number,
+    p2y: number,
+    t: number,
+  ): { x: number; y: number } {
+    const u = 1 - t;
+    return {
+      x: 2 * u * (cpx - p0x) + 2 * t * (p2x - cpx),
+      y: 2 * u * (cpy - p0y) + 2 * t * (p2y - cpy),
+    };
+  }
+
+  private jetpackKnockbackAllyAlongTangent(
+    ally: SimUnit,
+    tdx: number,
+    tdy: number,
+    kbDist: number,
+  ): void {
+    if (ally.dead || ally.invulnerable) return;
+    const d = Math.hypot(tdx, tdy) || 1;
+    const nx = tdx / d;
+    const ny = tdy / d;
+    const ir = this.unitTokenRootYOffsetPx(ally);
+    const capped = this.clampAllyKnockbackXY(ally.x + nx * kbDist, ally.y + ny * kbDist, ir);
+    ally.knockbackTween = {
+      elapsed: 0,
+      dur: KNOCKBACK_TWEEN_DUR,
+      sx: ally.x,
+      sy: ally.y,
+      tx: capped.x,
+      ty: capped.y,
+    };
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, ally.x, this.floatAnchorY(ally) - 36, '击退', 'magic'),
+    );
+  }
+
+  private startBossJetpackAssault(boss: SimUnit): void {
+    const def = getSkillById(SKILL_JETPACK_ASSAULT);
+    if (!def) return;
+    this.floatBattleSkillName(SKILL_JETPACK_ASSAULT, boss);
+    const dur = skillParamNumber(def, 2, 8);
+    const speedMult = skillParamNumber(def, 3, 3);
+    const kbDist = skillParamDesignPx(def, 4, 150);
+    let jetpackFx: JetpackAssaultFx | undefined;
+    if (boss.body) {
+      jetpackFx = new JetpackAssaultFx();
+      boss.body.addChild(jetpackFx);
+    }
+    const st: BossJetpackAssaultState = {
+      kind: 'jetpack_assault',
+      skillId: SKILL_JETPACK_ASSAULT,
+      t: 0,
+      dur,
+      speedMult,
+      kbDist,
+      segT: 0,
+      segDur: 1,
+      p0x: boss.x,
+      p0y: boss.y,
+      cpx: boss.x,
+      cpy: boss.y,
+      p2x: boss.x,
+      p2y: boss.y,
+      jetpackFx,
+      pulsePhase: 0,
+      hitAllyIds: new Set(),
+    };
+    boss.bossSkillCast = st;
+    boss.collisionDisabled = true;
+    this.startJetpackBezierSegment(st, boss);
+    this.logBattleSkill(SKILL_JETPACK_ASSAULT, boss, '喷气背包开始');
+    this.pulseKnightHolySanctionCdFromBossCast();
+  }
+
+  private finishBossJetpackAssault(boss: SimUnit, st: BossJetpackAssaultState): void {
+    st.jetpackFx?.destroy({ children: true });
+    boss.bossSkillCast = undefined;
+    boss.collisionDisabled = false;
+    this.syncUnitRootFromStance(boss);
+    this.applyUnitCollisionSeparation(4);
+    this.bossPutSkillOnCooldown(boss, SKILL_JETPACK_ASSAULT);
+    this.logBattleSkill(SKILL_JETPACK_ASSAULT, boss, '喷气背包结束');
+  }
+
+  private onBattleUnitDied(_victim: SimUnit): void {
+    for (const u of this.units) {
+      if (u.dead || !this.unitHasSkill(u, SKILL_DEFIAS_HEART)) continue;
+      this.applyDefiasHeartCooldownTick(u);
+    }
+  }
+
+  /** 迪菲亚之心：场上死亡时，拥有者正在转冷的主动技 -1s */
+  private applyDefiasHeartCooldownTick(owner: SimUnit): void {
+    for (const sid of owner.skillIds) {
+      if (!isBossConfiguredSkill(sid)) continue;
+      const k = this.bossSkillStateKey(owner, sid);
+      const cur = this.bossSkillCdRemain.get(k) ?? 0;
+      if (cur <= 1e-4) continue;
+      this.bossSkillCdRemain.set(k, Math.max(0, cur - 1));
+    }
+  }
+
+  private positionBossBehindAlly(boss: SimUnit, ally: SimUnit, backDistPx: number): void {
+    const dx = ally.x - boss.x;
+    const dy = ally.y - boss.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const nx = dx / d;
+    const ny = dy / d;
+    const p = this.clampBattleSpawnXY(ally.x + nx * backDistPx, ally.y + ny * backDistPx);
+    boss.x = p.x;
+    boss.y = p.y;
+    this.syncUnitRootFromStance(boss);
+  }
+
+  private resolveBossOutgoingCritDamage(
+    boss: SimUnit,
+    baseDmg: number,
+    forceCrit: boolean,
+  ): { dmg: number; tag?: DamageCtx['damageTag'] } {
+    let crit = forceCrit;
+    if (!crit) {
+      const bc = getSkillById('skill_boss_crit');
+      if (this.unitHasSkill(boss, 'skill_boss_crit') && Math.random() < skillParamNumber(bc, 0, 20) / 100) {
+        crit = true;
+      } else {
+        const bm = getSkillById('skill_blademaster_crit');
+        if (this.unitHasSkill(boss, 'skill_blademaster_crit') && Math.random() < skillParamNumber(bm, 0, 0.35)) {
+          crit = true;
+        } else if (this.unitHasSkill(boss, 'skill_normal_crit')) {
+          const nc = getSkillById('skill_normal_crit');
+          if (Math.random() < skillParamNumber(nc, 0, 20) / 100) crit = true;
+        }
+      }
+    }
+    let dmg = baseDmg;
+    if (crit) {
+      if (this.unitHasSkill(boss, 'skill_boss_crit')) {
+        dmg *= skillParamNumber(getSkillById('skill_boss_crit'), 1, 3);
+      } else if (this.unitHasSkill(boss, 'skill_blademaster_crit')) {
+        dmg *= skillParamNumber(getSkillById('skill_blademaster_crit'), 1, 2);
+      } else {
+        dmg *= skillParamNumber(getSkillById('skill_normal_crit'), 1, 2);
+      }
+      return { dmg: Math.max(1, Math.round(dmg)), tag: 'crit' };
+    }
+    return { dmg: Math.max(1, Math.round(baseDmg)), tag: undefined };
+  }
+
+  private clearBossVanishAmbushFx(boss: SimUnit, st: BossVanishAmbushState): void {
+    st.invulnFx?.destroy({ children: true });
+    st.invulnFx = undefined;
+    if (st.ambushFx) {
+      st.ambushFx.root.destroy({ children: true });
+      st.ambushFx = undefined;
+    }
+    boss.invincible = false;
+    if (boss.root) boss.root.alpha = 1;
+  }
+
+  private startBossVanishAmbush(boss: SimUnit): void {
+    const def = getSkillById(SKILL_VANISH_AMBUSH);
+    if (!def) return;
+    const target = this.pickLowestHpAlly();
+    if (!target) return;
+    this.floatBattleSkillName(SKILL_VANISH_AMBUSH, boss);
+    const coeff = skillParamNumber(def, 2, 350) / 100;
+    const pushR = Math.round(VANISH_AMBUSH_PUSH_DESIGN * LAYOUT_SCALE);
+    const backDist = Math.round(VANISH_AMBUSH_BACK_DIST_DESIGN * LAYOUT_SCALE);
+    boss.invincible = true;
+    boss.stunT = 0;
+    let invulnFx: VanishInvulnRingFx | undefined;
+    if (boss.body) {
+      invulnFx = new VanishInvulnRingFx();
+      boss.body.addChild(invulnFx);
+    }
+    boss.bossSkillCast = {
+      kind: 'vanish_ambush',
+      skillId: SKILL_VANISH_AMBUSH,
+      t: 0,
+      vanishDur: VANISH_AMBUSH_VANISH_SEC,
+      targetId: target.unitId,
+      coeff,
+      pushR,
+      backDist,
+      invulnFx,
+      ringSpin: 0,
+    };
+    this.logBattleSkill(SKILL_VANISH_AMBUSH, boss, `消失·伏击 → #${target.unitId}`);
+    this.pulseKnightHolySanctionCdFromBossCast();
+  }
+
+  private applyVanishAmbushImpact(boss: SimUnit, st: BossVanishAmbushState): void {
+    const target = this.byId(st.targetId);
+    if (target && !target.dead) {
+      this.positionBossBehindAlly(boss, target, st.backDist);
+    }
+    const innerR = boss.tokenInnerR ?? boss.hitRadiusPx;
+    const isCrit = !!(target && !target.dead && this.isRangedAttacker(target));
+    if (target && !target.dead) {
+      st.ambushFx = spawnVanishAmbushStrike(this.fxLayer, target.x, target.y, target.hitRadiusPx, isCrit);
+    } else {
+      st.ambushFx = spawnVanishAmbushStrike(this.fxLayer, boss.x, boss.y, innerR, false);
+    }
+    boss.root.alpha = 1;
+    boss.invincible = false;
+    if (target && !target.dead) {
+      const base = Math.max(1, Math.round(boss.atk * st.coeff));
+      const { dmg, tag } = this.resolveBossOutgoingCritDamage(boss, base, isCrit);
+      this.applyDamage(target, dmg, { attacker: boss, damageTag: tag ?? 'magic', bypassBlock: true });
+      if (isCrit) {
+        this.floatWords.push(
+          spawnFloatNumber(
+            this.floatLayer,
+            target.x,
+            this.floatAnchorY(target) - Math.round(52 * LAYOUT_SCALE),
+            '暴击',
+            'crit',
+          ),
+        );
+      }
+      if (target.hitFlashOverlay) target.hitFlashT = HIT_FLASH_DUR * (isCrit ? 3.2 : 2.4);
+      for (let k = 0; k < (isCrit ? 4 : 2); k++) {
+        this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x + (k - 1) * 6 * LAYOUT_SCALE, target.y));
+      }
+    }
+    const pushDist = Math.round(st.pushR * (0.92 + Math.random() * 0.2));
+    for (const a of this.alive('ally')) {
+      if (target && a.unitId === target.unitId) continue;
+      const d = Math.hypot(a.x - boss.x, a.y - boss.y);
+      if (d > st.pushR + a.hitRadiusPx) continue;
+      this.knockbackAllyRadialFromPoint(a, boss.x, boss.y, pushDist);
+    }
+    this.triggerBattleScreenShake(isCrit ? 0.26 : 0.2, Math.round((isCrit ? 14 : 11) * LAYOUT_SCALE));
+    this.bossPutSkillOnCooldown(boss, SKILL_VANISH_AMBUSH);
+    this.logBattleSkill(SKILL_VANISH_AMBUSH, boss, target && !target.dead ? '伏击命中' : '伏击落空');
+  }
+
+  private finishBossVanishAmbush(boss: SimUnit, st: BossVanishAmbushState): void {
+    this.clearBossVanishAmbushFx(boss, st);
+    boss.bossSkillCast = undefined;
+  }
+
+  private tickBossVanishAmbush(boss: SimUnit, st: BossVanishAmbushState, dt: number): void {
+    if (st.ambushFx) {
+      const innerR = boss.tokenInnerR ?? boss.hitRadiusPx;
+      if (tickVanishAmbushStrikeFx(st.ambushFx, dt, innerR)) {
+        st.ambushFx.root.destroy({ children: true });
+        st.ambushFx = undefined;
+        this.finishBossVanishAmbush(boss, st);
+      }
+      return;
+    }
+    st.t += dt;
+    st.ringSpin += dt * 2.4;
+    let alpha = 1;
+    if (st.t < VANISH_AMBUSH_FADE_SEC) {
+      alpha = 1 - st.t / VANISH_AMBUSH_FADE_SEC;
+    } else if (st.t < VANISH_AMBUSH_VANISH_SEC) {
+      alpha = 0;
+    }
+    if (boss.root) boss.root.alpha = alpha;
+    const ir = boss.tokenInnerR ?? boss.hitRadiusPx;
+    const pulse01 = 0.5 + 0.5 * Math.sin(st.t * 7);
+    if (st.invulnFx) st.invulnFx.redraw(ir, pulse01, st.ringSpin);
+    if (st.t >= st.vanishDur) {
+      st.invulnFx?.destroy({ children: true });
+      st.invulnFx = undefined;
+      this.applyVanishAmbushImpact(boss, st);
+    }
+  }
+
+  private tickBossJetpackAssault(boss: SimUnit, st: BossJetpackAssaultState, dt: number): void {
+    st.t += dt;
+    st.pulsePhase += dt * 6;
+    const pulse01 = 0.5 + 0.5 * Math.sin(st.pulsePhase);
+    const ir = boss.tokenInnerR ?? boss.hitRadiusPx;
+    if (st.jetpackFx) st.jetpackFx.redraw(ir, pulse01);
+
+    st.segT += dt;
+    const segK = Math.min(1, st.segT / st.segDur);
+    const pos = this.quadBezierPoint(st.p0x, st.p0y, st.cpx, st.cpy, st.p2x, st.p2y, segK);
+    const tan = this.quadBezierTangent(st.p0x, st.p0y, st.cpx, st.cpy, st.p2x, st.p2y, Math.min(0.99, segK));
+    if (st.jetpackFx) st.jetpackFx.setMoveDir(tan.x, tan.y);
+
+    const prevX = boss.x;
+    const prevY = boss.y;
+    boss.x = pos.x;
+    boss.y = pos.y;
+    this.syncUnitRootFromStance(boss);
+
+    if (Math.hypot(boss.x - prevX, boss.y - prevY) > 2) {
+      this.jetpackSmokePuffs.push(spawnJetpackSmokePuff(this.fxLayer, (prevX + boss.x) * 0.5, (prevY + boss.y) * 0.5));
+    }
+
+    const br = this.hitRadius(boss);
+    for (const a of this.alive('ally')) {
+      const d = Math.hypot(a.x - boss.x, a.y - boss.y);
+      if (d > br + a.hitRadiusPx + 6) continue;
+      const key = a.unitId;
+      if (st.hitAllyIds.has(key)) continue;
+      st.hitAllyIds.add(key);
+      this.jetpackKnockbackAllyAlongTangent(a, tan.x, tan.y, st.kbDist);
+    }
+
+    if (segK >= 1) {
+      st.hitAllyIds.clear();
+      if (st.t >= st.dur) {
+        this.finishBossJetpackAssault(boss, st);
+        return;
+      }
+      this.startJetpackBezierSegment(st, boss);
+    }
+  }
+
   private beginDefaultAttack(u: SimUnit, target: SimUnit, dist: number, dx: number, dy: number): void {
+    if (u.side === 'enemy' && this.unitHasSkill(u, SKILL_BANG_BANG_BOMB)) {
+      const bb = getSkillById(SKILL_BANG_BANG_BOMB);
+      const interval = Math.max(1, Math.round(skillParamNumber(bb, 0, 5)));
+      const next = (u.bangBangBombAtkCount ?? 0) + 1;
+      if (next >= interval) {
+        u.bangBangBombAtkCount = 0;
+        const nd = dist || 1;
+        this.castBangBangBomb(u, target, dx / nd, dy / nd);
+        return;
+      }
+      u.bangBangBombAtkCount = next;
+    }
     if (u.side === 'ally' && u.allyKind === 'archer') {
       const prev = u.archerLockedAttackTargetId;
       const next = target.unitId;
@@ -2923,15 +4228,33 @@ export class BattleScreen extends Container {
       if (u.side === 'ally') {
         this.dealAllyHit(u, target, dmgF);
         this.maybeDoubleShotArcher(u, target, u.atk);
+      } else if (this.unitHasSkill(u, SKILL_BANG_BANG_BOMB)) {
+        this.queueProjectile(
+          u,
+          tid,
+          () => {
+            const a = this.units.find((x) => x.unitId === uid && !x.dead);
+            const t = this.byId(tid);
+            if (!a || !t) return;
+            this.applyDamage(t, dmgF, { attacker: a, damageTag: enemyTag, meleeBasic: true });
+          },
+          { customGfx: buildGreenskinBasicOrbGraphic(), speedMul: 1.05 },
+        );
       } else if (this.unitHasSkill(u, 'skill_hot_strike')) {
         this.applyBossHotStrikeMelee(u, target, dmgF, enemyTag);
         if (this.unitHasSkill(u, 'skill_abomination_cleave')) {
           this.abominationCleaveFollowup(u, target);
         }
+        if (this.unitHasSkill(u, 'skill_rhahk_cleave')) {
+          this.rhahkCleaveFollowup(u, target);
+        }
       } else {
         this.applyDamage(target, dmgF, { attacker: u, damageTag: enemyTag, meleeBasic: true });
         if (this.unitHasSkill(u, 'skill_abomination_cleave')) {
           this.abominationCleaveFollowup(u, target);
+        }
+        if (this.unitHasSkill(u, 'skill_rhahk_cleave')) {
+          this.rhahkCleaveFollowup(u, target);
         }
       }
       u.atkLungeT = ATTACK_LUNGE_DUR;
@@ -3056,6 +4379,7 @@ export class BattleScreen extends Container {
     let best: SimUnit | null = null;
     let bestD = Number.POSITIVE_INFINITY;
     for (const u of this.alive('enemy')) {
+      if (u.invincible) continue;
       const d = Math.hypot(u.x - from.x, u.y - from.y);
       if (d < bestD) {
         bestD = d;
@@ -3254,7 +4578,7 @@ export class BattleScreen extends Container {
     this.applyDamage(target, dmg, { attacker: hero });
     if (!target.dead) {
       const stunT = target.bossId ? HOLY_SANCTION_STUN_BOSS_SEC : HOLY_SANCTION_STUN_SEC;
-      target.stunT = Math.max(target.stunT ?? 0, stunT);
+      this.applyEnemyHardControlStun(target, stunT);
     }
     if (kb >= 10) {
       this.applyHeal(hero, hero.maxHp * 0.1, hero);
@@ -3291,6 +4615,8 @@ export class BattleScreen extends Container {
 
   private applyDamage(target: SimUnit, amount: number, ctx?: DamageCtx): void {
     if (target.dead || amount <= 0) return;
+
+    if (target.invincible) return;
 
     /** 无敌仅用于我方骑士冲锋等；敌方不应吃该标记（避免误伤导致打不动） */
     if (target.invulnerable && target.side === 'ally') return;
@@ -3341,6 +4667,7 @@ export class BattleScreen extends Container {
         const ev = getSkillById('skill_evil_strenth');
         amt *= 1 + skillParamNumber(ev, 2, 50) / 100;
       }
+      amt *= this.enemyDefiasFeverDamageMult(ctx.attacker);
       if (
         target.allyKind === 'priest' &&
         this.run.priestAllyProtection &&
@@ -3409,6 +4736,7 @@ export class BattleScreen extends Container {
     if (target.hp <= 0) {
       target.hp = 0;
       target.dead = true;
+      this.onBattleUnitDied(target);
       if (!target.bossId) {
         if (target.hpRingCur) target.hpRingCur.visible = false;
         if (target.hpRingLost) target.hpRingLost.visible = false;
@@ -3451,6 +4779,12 @@ export class BattleScreen extends Container {
     }
     if (ctx?.attacker && !target.dead && ctx.attacker.side === 'enemy' && target.side === 'ally') {
       this.maybeDarkspearKnockback(ctx.attacker, target);
+    }
+    if (lost > 0 && ctx?.attacker && !ctx.poisonStrikeDot) {
+      this.maybeStackPoisonStrike(ctx.attacker, target);
+    }
+    if (target.side === 'enemy' && ctx?.attacker && !ctx.attacker.dead) {
+      this.maybeRecordGyroMissileRetaliateTarget(target, ctx.attacker);
     }
     if (
       lost > 0 &&
@@ -4094,6 +5428,18 @@ export class BattleScreen extends Container {
     return `${boss.unitId}|${skillId}`;
   }
 
+  private bossSkillInitialCdSec(skillId: string, def: SkillDef | undefined): number {
+    if (skillId === SKILL_TAUREN_STOMP) return TAUREN_STOMP_INIT_CD_SEC;
+    if (skillId === SKILL_TAUREN_SHOCKWAVE) return TAUREN_SHOCKWAVE_INIT_CD_SEC;
+    return skillParamNumber(def, 1, 0);
+  }
+
+  private bossSkillCooldownSec(skillId: string, def: SkillDef | undefined): number {
+    if (skillId === SKILL_TAUREN_STOMP) return TAUREN_STOMP_CD_SEC;
+    if (skillId === SKILL_TAUREN_SHOCKWAVE) return TAUREN_SHOCKWAVE_CD_SEC;
+    return skillParamNumber(def, 0, 12);
+  }
+
   private ensureBossConfiguredCdInit(boss: SimUnit): void {
     for (const sid of boss.skillIds) {
       if (!isBossConfiguredSkill(sid)) continue;
@@ -4101,7 +5447,7 @@ export class BattleScreen extends Container {
       if (!skillFiresInBattle(def)) continue;
       const k = this.bossSkillStateKey(boss, sid);
       if (this.bossSkillCdRemain.has(k)) continue;
-      this.bossSkillCdRemain.set(k, skillParamNumber(def, 1, 0));
+      this.bossSkillCdRemain.set(k, this.bossSkillInitialCdSec(sid, def));
     }
   }
 
@@ -4117,6 +5463,15 @@ export class BattleScreen extends Container {
     }
   }
 
+  private bossConfiguredSkillMayCast(boss: SimUnit, skillId: string): boolean {
+    if (skillId === SKILL_SUMMON_MOB_POOL) {
+      const def = getSkillById(skillId);
+      const gate = skillParamNumber(def, 4, 50) / 100;
+      if (boss.hp / Math.max(1, boss.maxHp) > gate) return false;
+    }
+    return true;
+  }
+
   private pickReadyBossSkill(boss: SimUnit): string | null {
     let best: string | null = null;
     let bestFinish = Number.POSITIVE_INFINITY;
@@ -4127,6 +5482,7 @@ export class BattleScreen extends Container {
       if (!isBossConfiguredSkill(sid)) return;
       const def = getSkillById(sid);
       if (!skillFiresInBattle(def)) return;
+      if (!this.bossConfiguredSkillMayCast(boss, sid)) return;
       const k = this.bossSkillStateKey(boss, sid);
       const cd = this.bossSkillCdRemain.get(k) ?? 0;
       if (cd > 1e-4) return;
@@ -4143,6 +5499,17 @@ export class BattleScreen extends Container {
   private startBossSkillFromReady(boss: SimUnit, skillId: string): void {
     if (skillId === 'skill_boss_punch') this.startBossPunchWindup(boss);
     else if (skillId === 'skill_boss_rush') this.startBossRushWindup(boss);
+    else if (skillId === 'skill_rhahk_smash') this.startBossRhahkSmashWindup(boss);
+    else if (skillId === 'skill_rhahk_warcry') this.castRhahkWarcry(boss);
+    else if (skillId === SKILL_BLADE_STORM) this.startBossBladeStormWarn(boss);
+    else if (skillId === SKILL_BLINK_FAN) this.castBossBlinkFan(boss);
+    else if (skillId === SKILL_OVERLOAD_EXPLOSION) this.startBossOverloadExplosion(boss);
+    else if (skillId === SKILL_OVERLOAD_LASER) this.castBossOverloadLaser(boss);
+    else if (skillId === SKILL_JETPACK_ASSAULT) this.startBossJetpackAssault(boss);
+    else if (skillId === SKILL_VANISH_AMBUSH) this.startBossVanishAmbush(boss);
+    else if (skillId === SKILL_SUMMON_MOB_POOL) this.castBossMobPoolSummon(boss);
+    else if (skillId === SKILL_TAUREN_STOMP) this.castTaurenStomp(boss);
+    else if (skillId === SKILL_TAUREN_SHOCKWAVE) this.castTaurenShockwave(boss);
   }
 
   private bossArenaRayMaxDist(x: number, y: number, dx: number, dy: number): number {
@@ -4207,6 +5574,468 @@ export class BattleScreen extends Container {
     const tEdge = this.bossArenaRayMaxDist(bx, by, bestDx, bestDy) - Math.round(4 * LAYOUT_SCALE);
     const effLen = Math.max(Math.round(24 * LAYOUT_SCALE), Math.min(lineLen, tEdge));
     return { dirx: bestDx, diry: bestDy, effLen };
+  }
+
+  private interruptRhahkSmash(boss: SimUnit, st: BossRhahkSmashWindupState, reason: string): void {
+    st.warnFx.destroy({ children: true });
+    boss.bossSkillCast = undefined;
+    this.bossPutSkillOnCooldown(boss, 'skill_rhahk_smash');
+    this.logBattleSkill('skill_rhahk_smash', boss, reason);
+  }
+
+  private startBossRhahkSmashWindup(boss: SimUnit): void {
+    const def = getSkillById('skill_rhahk_smash');
+    if (!def) return;
+    const primary = this.nearestAlly(boss);
+    if (!primary) return;
+    const dur = skillParamNumber(def, 2, 2);
+    const rMax = skillParamDesignPx(def, 4, 125);
+    const cx = primary.x;
+    const cy = primary.y;
+    const warnFx = new BossSmashCircleWarnFx({ cx, cy, rMax, windupSec: dur });
+    this.fxLayer.addChildAt(warnFx, 0);
+    boss.bossSkillCast = {
+      kind: 'rhahk_smash_windup',
+      skillId: 'skill_rhahk_smash',
+      t: 0,
+      dur,
+      targetId: primary.unitId,
+      cx,
+      cy,
+      rMax,
+      warnFx,
+    };
+    this.logBattleSkill('skill_rhahk_smash', boss, `蓄力开始 → #${primary.unitId}`);
+    this.pulseKnightHolySanctionCdFromBossCast();
+  }
+
+  private applyRhahkSmashImpact(boss: SimUnit, st: BossRhahkSmashWindupState): void {
+    const def = getSkillById('skill_rhahk_smash');
+    const coeff = skillParamNumber(def, 3, 180) / 100;
+    const primary = this.byId(st.targetId);
+    const kbDist = Math.round(40 * LAYOUT_SCALE);
+    let any = false;
+    let hitPrimary = false;
+    for (const a of this.alive('ally')) {
+      const d = Math.hypot(a.x - st.cx, a.y - st.cy);
+      if (d > st.rMax + a.hitRadiusPx) continue;
+      const isPrimary = primary && !primary.dead && a.unitId === primary.unitId;
+      const mult = isPrimary ? RHAKH_SMASH_PRIMARY_DMG_MULT : 1;
+      any = true;
+      const dmg = Math.max(1, Math.round(boss.atk * coeff * mult));
+      this.applyDamage(a, dmg, { attacker: boss, damageTag: 'magic', bypassBlock: true });
+      if (isPrimary) {
+        hitPrimary = true;
+        if (a.rhahkSmashCrackGfx) {
+          a.rhahkSmashCrackGfx.destroy();
+          a.rhahkSmashCrackGfx = undefined;
+        }
+        const innerR = a.tokenInnerR ?? a.hitRadiusPx;
+        a.rhahkSmashCrackGfx = attachRhahkSmashCrackOverlay(a.body, innerR);
+        a.rhahkSmashCrackT = 1.35;
+      } else {
+        this.knockbackAllyRadialFromPoint(a, st.cx, st.cy, kbDist);
+      }
+      if (a.hitFlashOverlay) a.hitFlashT = HIT_FLASH_DUR * (isPrimary ? 2.8 : 2.2);
+      for (let k = 0; k < (isPrimary ? 4 : 2); k++) {
+        this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, a.x + (k - 1) * 8 * LAYOUT_SCALE, a.y));
+      }
+    }
+    this.bossPutSkillOnCooldown(boss, 'skill_rhahk_smash');
+    this.logBattleSkill('skill_rhahk_smash', boss, any ? '猛击结算' : '未命中');
+    this.triggerBattleScreenShake(hitPrimary ? 0.28 : 0.18, Math.round((hitPrimary ? 16 : 10) * LAYOUT_SCALE));
+  }
+
+  private castRhahkWarcry(boss: SimUnit): void {
+    const def = getSkillById('skill_rhahk_warcry');
+    if (!def) return;
+    if (boss.rhahkWarcryBaseAtk == null) boss.rhahkWarcryBaseAtk = boss.atk;
+    const healPct = skillParamNumber(def, 3, 10) / 100;
+    const heal = Math.max(1, Math.round(boss.maxHp * healPct));
+    boss.hp = Math.min(boss.maxHp, boss.hp + heal);
+    boss.rhahkWarcryStacks = (boss.rhahkWarcryStacks ?? 0) + 1;
+    this.syncRhahkWarcryAtk(boss);
+    if (boss.rhahkWarcryRimG && boss.tokenInnerR != null) {
+      redrawRhahkWarcryBossRim(boss.rhahkWarcryRimG, boss.tokenInnerR, boss.rhahkWarcryStacks);
+    }
+    this.syncUnitHpRing(boss);
+    if (boss.tokenDisk && boss.tokenInnerR != null) {
+      const pres = spawnRhahkWarcryPresentation(
+        this.fxLayer,
+        boss.x,
+        boss.y,
+        this.hitRadius(boss),
+        boss.tokenDisk,
+        boss.tokenInnerR,
+      );
+      this.rhahkWarcryFx.push(pres);
+    }
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, boss.x, this.floatAnchorY(boss) - 44, '战吼', 'buff'),
+    );
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, boss.x, this.floatAnchorY(boss) - 12, `+${heal}`, 'heal'),
+    );
+    this.bossPutSkillOnCooldown(boss, 'skill_rhahk_warcry');
+    this.logBattleSkill(
+      'skill_rhahk_warcry',
+      boss,
+      `层数=${boss.rhahkWarcryStacks} 攻=${boss.atk} 治疗=${heal}`,
+    );
+  }
+
+  private tickGenericSkillPresentationFx(dt: number): void {
+    tickBladeStormShatter(this.bladeStormShatter, dt);
+    tickBlinkAfterimages(this.blinkAfterimages, dt);
+    tickVoidWalkAfterimages(this.voidWalkAfterimages, dt);
+    tickOverloadExplosionWaves(this.overloadExplosionWaves, dt);
+    tickOverloadShieldBreaks(this.overloadShieldBreaks, dt);
+    tickOverloadLaserBeams(this.overloadLaserBeams, dt);
+    this.tickBangBangBombProjectiles(dt);
+    this.tickGyroHomingMissiles(dt);
+    tickJetpackSmokePuffs(this.jetpackSmokePuffs, dt);
+    const { arrived } = tickFanKnifeProjectiles(this.fanKnives, dt);
+    for (const p of arrived) {
+      const tgt = this.byId(p.targetId);
+      if (tgt && !tgt.dead) {
+        const ir = tgt.tokenInnerR ?? tgt.hitRadiusPx;
+        if (tgt.fanKnifeSlashGfx) tgt.fanKnifeSlashGfx.destroy();
+        tgt.fanKnifeSlashGfx = flashFanKnifeHit(tgt.body, ir);
+        tgt.fanKnifeSlashT = 0.14;
+      }
+    }
+    for (let i = this.fanKnifeSlashFlashes.length - 1; i >= 0; i--) {
+      const f = this.fanKnifeSlashFlashes[i]!;
+      f.t += dt;
+      f.g.alpha = Math.max(0, 1 - f.t / 0.14);
+      if (f.t >= 0.14) {
+        f.g.destroy();
+        this.fanKnifeSlashFlashes.splice(i, 1);
+      }
+    }
+    for (const u of this.units) {
+      if ((u.fanKnifeSlashT ?? 0) > 0) {
+        u.fanKnifeSlashT = Math.max(0, (u.fanKnifeSlashT ?? 0) - dt);
+        if ((u.fanKnifeSlashT ?? 0) <= 0 && u.fanKnifeSlashGfx) {
+          u.fanKnifeSlashGfx.destroy();
+          u.fanKnifeSlashGfx = undefined;
+        }
+      }
+    }
+  }
+
+  private maybeStackPoisonStrike(attacker: SimUnit, target: SimUnit): void {
+    if (!this.unitHasSkill(attacker, SKILL_POISON_STRIKE)) return;
+    if (attacker.dead || target.dead || target.side !== 'ally' || attacker.side !== 'enemy') return;
+    const def = getSkillById(SKILL_POISON_STRIKE);
+    if (!def) return;
+    const maxStacks = Math.max(1, Math.round(skillParamNumber(def, 2, 100)));
+    const dur = skillParamNumber(def, 1, 10);
+    const prevStacks = target.poisonStrikeStacks ?? 0;
+    const stacks = Math.min(maxStacks, prevStacks + 1);
+    target.poisonStrikeStacks = stacks;
+    target.poisonStrikeRemainSec = dur;
+    target.poisonStrikeSourceId = attacker.unitId;
+    target.poisonStrikeAtkSnap = attacker.atk;
+    if (prevStacks === 0) {
+      target.poisonStrikeTickAcc = 0;
+    }
+    this.ringFx.push(spawnRingPulse(this.fxLayer, target.x, target.y, 24, 0x22c55e, 0.42));
+    if (stacks === 1 || stacks % 5 === 0) {
+      this.logBattleSkill(SKILL_POISON_STRIKE, attacker, `→ #${target.unitId} 层=${stacks}`);
+    }
+  }
+
+  private tickAllyPoisonStrikeDot(u: SimUnit, dt: number): void {
+    const rem = u.poisonStrikeRemainSec ?? 0;
+    const stacks = u.poisonStrikeStacks ?? 0;
+    if (rem <= 0 || stacks <= 0) {
+      if (rem <= 0) {
+        u.poisonStrikeRemainSec = undefined;
+        u.poisonStrikeStacks = undefined;
+        u.poisonStrikeSourceId = undefined;
+        u.poisonStrikeAtkSnap = undefined;
+        u.poisonStrikeTickAcc = undefined;
+      }
+      return;
+    }
+    const def = getSkillById(SKILL_POISON_STRIKE);
+    const pct = skillParamNumber(def, 0, 3) / 100;
+    const srcId = u.poisonStrikeSourceId;
+    const src = srcId != null ? (this.byId(srcId) ?? undefined) : undefined;
+    const atk =
+      src && !src.dead && this.unitHasSkill(src, SKILL_POISON_STRIKE)
+        ? src.atk
+        : (u.poisonStrikeAtkSnap ?? 0);
+    u.poisonStrikeRemainSec = rem - dt;
+    u.poisonStrikeTickAcc = (u.poisonStrikeTickAcc ?? 0) + dt;
+    if ((u.poisonStrikeTickAcc ?? 0) >= 1) {
+      u.poisonStrikeTickAcc = (u.poisonStrikeTickAcc ?? 0) - 1;
+      const dmg = Math.max(1, Math.round(atk * pct * stacks));
+      this.applyDamage(u, dmg, {
+        attacker: src,
+        damageTag: 'magic',
+        poisonStrikeDot: true,
+        showFloat: true,
+      });
+    }
+    if ((u.poisonStrikeRemainSec ?? 0) <= 0) {
+      u.poisonStrikeRemainSec = undefined;
+      u.poisonStrikeStacks = undefined;
+      u.poisonStrikeSourceId = undefined;
+      u.poisonStrikeAtkSnap = undefined;
+      u.poisonStrikeTickAcc = undefined;
+    }
+  }
+
+  private syncBladeStormWarnRim(boss: SimUnit, t: number, dur: number): void {
+    const phase = Math.floor((t / Math.max(0.08, dur)) * 6);
+    const on = phase % 2 === 0;
+    boss.body.tint = on ? 0xef4444 : 0xffffff;
+  }
+
+  private restoreBossTokenRingAfterBladeWarn(boss: SimUnit): void {
+    boss.body.tint = 0xffffff;
+    this.syncUnitHpRing(boss);
+  }
+
+  private interruptBossBladeStorm(boss: SimUnit, reason: string): void {
+    const st = boss.bossSkillCast;
+    if (!st || (st.kind !== 'blade_storm_warn' && st.kind !== 'blade_storm_channel')) return;
+    if (st.kind === 'blade_storm_channel') {
+      const c = this.unitBattleTokenCenterXY(boss);
+      this.bladeStormShatter.push(...spawnBladeStormShatter(this.fxLayer, c.x, c.y));
+      st.bladeGfx.destroy();
+      if (this.bladeStormTrail) {
+        this.bladeStormTrail.g.destroy();
+        this.bladeStormTrail = null;
+      }
+    }
+    boss.bossSkillCast = undefined;
+    boss.bladeStormWarnFlashT = undefined;
+    this.restoreBossTokenRingAfterBladeWarn(boss);
+    this.bossPutSkillOnCooldown(boss, SKILL_BLADE_STORM);
+    this.logBattleSkill(SKILL_BLADE_STORM, boss, reason);
+  }
+
+  private startBossBladeStormWarn(boss: SimUnit): void {
+    const def = getSkillById(SKILL_BLADE_STORM);
+    if (!def) return;
+    boss.bossSkillCast = {
+      kind: 'blade_storm_warn',
+      skillId: SKILL_BLADE_STORM,
+      t: 0,
+      dur: BLADE_STORM_WARN_SEC,
+    };
+    this.logBattleSkill(SKILL_BLADE_STORM, boss, '预警');
+    this.pulseKnightHolySanctionCdFromBossCast();
+  }
+
+  private beginBossBladeStormChannel(boss: SimUnit): void {
+    const def = getSkillById(SKILL_BLADE_STORM);
+    if (!def) return;
+    const dur = skillParamNumber(def, 2, 8);
+    const radius = skillParamDesignPx(def, 4, 100);
+    const coeff = skillParamNumber(def, 3, 100) / 100;
+    const bladeGfx = new Graphics();
+    bladeGfx.eventMode = 'none';
+    const c = this.unitBattleTokenCenterXY(boss);
+    bladeGfx.position.set(c.x, c.y);
+    this.fxLayer.addChild(bladeGfx);
+    if (this.bladeStormTrail) this.bladeStormTrail.g.destroy();
+    this.bladeStormTrail = createBladeStormTrail(this.fxLayer);
+    boss.bossSkillCast = {
+      kind: 'blade_storm_channel',
+      skillId: SKILL_BLADE_STORM,
+      t: 0,
+      dur,
+      radius,
+      coeffPerSec: coeff,
+      spin: 0,
+      bladeGfx,
+      dmgTickAcc: 0,
+    };
+    this.restoreBossTokenRingAfterBladeWarn(boss);
+    this.logBattleSkill(SKILL_BLADE_STORM, boss, `引导开始 r=${radius}`);
+  }
+
+  private bladeStormBladeGeometry(boss: SimUnit, radius: number): { innerR: number; outerR: number } | null {
+    const ir = boss.tokenInnerR ?? boss.hitRadiusPx;
+    const fillR = battleTokenDiskFillRadiusPx(ir);
+    const innerR = fillR + Math.round(4 * LAYOUT_SCALE);
+    const outerR = radius + this.hitRadius(boss);
+    if (outerR <= innerR + 2) return null;
+    return { innerR, outerR };
+  }
+
+  private moveBossDuringBladeStorm(boss: SimUnit, dt: number, radius: number): void {
+    const allies = this.alive('ally');
+    if (!allies.length) return;
+    const inRange = allies.filter((a) => {
+      const d = Math.hypot(a.x - boss.x, a.y - boss.y);
+      return d <= radius + a.hitRadiusPx + this.hitRadius(boss);
+    });
+    const target = inRange.length ? this.nearestAlly(boss) : this.nearestAlly(boss);
+    if (!target) return;
+    const dx = target.x - boss.x;
+    const dy = target.y - boss.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const reach = this.effectiveSkillRangeTo(boss, target);
+    const margin = this.meleeEngagementMarginPx(boss, target);
+    const aimDist = reach + margin;
+    if (dist <= aimDist) return;
+    const nx = dx / dist;
+    const ny = dy / dist;
+    const step = boss.speed * dt;
+    const travel = Math.min(step, dist - aimDist);
+    if (travel <= 0) return;
+    const nxPos = boss.x + nx * travel;
+    const nyPos = boss.y + ny * travel;
+    const c = this.clampBattleSpawnXY(nxPos, nyPos);
+    boss.x = c.x;
+    boss.y = c.y;
+    this.syncUnitRootFromStance(boss);
+  }
+
+  private tickBossBladeStormChannel(boss: SimUnit, st: BossBladeStormChannelState, dt: number): void {
+    st.t += dt;
+    st.spin += dt * Math.PI * 22;
+    this.moveBossDuringBladeStorm(boss, dt, st.radius);
+    const c = this.unitBattleTokenCenterXY(boss);
+    if (this.bladeStormTrail) {
+      pushBladeStormTrailPoint(this.bladeStormTrail, c.x, c.y);
+      redrawBladeStormTrail(this.bladeStormTrail);
+    }
+    const geom = this.bladeStormBladeGeometry(boss, st.radius);
+    if (geom) {
+      st.bladeGfx.position.set(c.x, c.y);
+      drawBladeStormKnifeRing(st.bladeGfx, geom.innerR, geom.outerR, st.spin);
+    }
+    st.dmgTickAcc += dt;
+    if (st.dmgTickAcc >= 1) {
+      st.dmgTickAcc -= 1;
+      const dmg = Math.max(1, Math.round(boss.atk * st.coeffPerSec));
+      for (const a of this.alive('ally')) {
+        const d = Math.hypot(a.x - boss.x, a.y - boss.y);
+        if (d > st.radius + a.hitRadiusPx + this.hitRadius(boss)) continue;
+        this.applyDamage(a, dmg, { attacker: boss, damageTag: 'magic', bypassBlock: true });
+      }
+    }
+    if (st.t >= st.dur) {
+      st.bladeGfx.destroy();
+      if (this.bladeStormTrail) {
+        this.bladeStormTrail.g.destroy();
+        this.bladeStormTrail = null;
+      }
+      boss.bossSkillCast = undefined;
+      this.bossPutSkillOnCooldown(boss, SKILL_BLADE_STORM);
+      this.logBattleSkill(SKILL_BLADE_STORM, boss, '引导结束');
+    }
+  }
+
+  private pickBlinkFanDestination(): { x: number; y: number } | null {
+    const allies = this.alive('ally');
+    if (!allies.length) return null;
+    const clusterR = Math.round(100 * LAYOUT_SCALE);
+    const candidates: { x: number; y: number }[] = allies.map((a) => ({ x: a.x, y: a.y }));
+    for (let i = 0; i < allies.length; i++) {
+      for (let j = i + 1; j < allies.length; j++) {
+        candidates.push({
+          x: (allies[i]!.x + allies[j]!.x) / 2,
+          y: (allies[i]!.y + allies[j]!.y) / 2,
+        });
+      }
+    }
+    let best = candidates[0]!;
+    let bestN = -1;
+    for (const p of candidates) {
+      let n = 0;
+      for (const a of allies) {
+        if (Math.hypot(a.x - p.x, a.y - p.y) <= clusterR) n += 1;
+      }
+      if (n > bestN) {
+        bestN = n;
+        best = p;
+      }
+    }
+    return this.clampBattleSpawnXY(best.x, best.y);
+  }
+
+  private pushAlliesFromBlink(boss: SimUnit, pushR: number): void {
+    const br = this.hitRadius(boss);
+    for (const a of this.alive('ally')) {
+      const d = Math.hypot(a.x - boss.x, a.y - boss.y);
+      const minD = br + a.hitRadiusPx + 4;
+      if (d >= minD) continue;
+      const need = minD - d + pushR;
+      this.knockbackAllyFromPoint(a, boss.x, boss.y, need);
+    }
+  }
+
+  private castBossBlinkFan(boss: SimUnit): void {
+    const def = getSkillById(SKILL_BLINK_FAN);
+    if (!def) return;
+    const dest = this.pickBlinkFanDestination();
+    if (!dest) return;
+    const x0 = boss.x;
+    const y0 = boss.y;
+    this.blinkAfterimages.push(spawnBlinkAfterimage(this.fxLayer, x0, y0, dest.x, dest.y));
+    boss.x = dest.x;
+    boss.y = dest.y;
+    this.syncUnitRootFromStance(boss);
+    this.pushAlliesFromBlink(boss, Math.round(36 * LAYOUT_SCALE));
+    const interval = skillParamNumber(def, 2, 0.2);
+    boss.bossBlinkFanVolley = {
+      t: 0,
+      dur: BLINK_FAN_VOLLEY_SEC,
+      knifeAcc: 0,
+      knifeInterval: interval,
+      coeff: skillParamNumber(def, 3, 15) / 100,
+      maxTargets: Math.max(1, Math.round(skillParamNumber(def, 4, 6))),
+      knifeRange: Math.round(140 * LAYOUT_SCALE),
+    };
+    this.bossPutSkillOnCooldown(boss, SKILL_BLINK_FAN);
+    this.logBattleSkill(SKILL_BLINK_FAN, boss, `闪现 (${Math.round(dest.x)},${Math.round(dest.y)})`);
+    this.pulseKnightHolySanctionCdFromBossCast();
+  }
+
+  private fireBossBlinkFanKnives(boss: SimUnit, volley: BossBlinkFanVolleyState): void {
+    const allies = this.alive('ally')
+      .map((a) => ({ a, d: Math.hypot(a.x - boss.x, a.y - boss.y) }))
+      .filter((x) => x.d <= volley.knifeRange + x.a.hitRadiusPx + this.hitRadius(boss))
+      .sort((p, q) => p.d - q.d)
+      .slice(0, volley.maxTargets);
+    const c = this.unitBattleTokenCenterXY(boss);
+    const ir = boss.tokenInnerR ?? boss.hitRadiusPx;
+    const edge = battleTokenDiskFillRadiusPx(ir);
+    for (const { a } of allies) {
+      const ac = this.unitBattleTokenCenterXY(a);
+      const ang = Math.atan2(ac.y - c.y, ac.x - c.x);
+      const sx = c.x + Math.cos(ang) * edge;
+      const sy = c.y + Math.sin(ang) * edge;
+      this.fanKnives.push(spawnFanKnifeProjectile(this.fxLayer, sx, sy, ac.x, ac.y, a.unitId));
+      const dmg = Math.max(1, Math.round(boss.atk * volley.coeff));
+      this.applyDamage(a, dmg, { attacker: boss, damageTag: 'magic' });
+    }
+    if (allies.length) {
+      this.logBattleSkill(SKILL_BLINK_FAN, boss, `刀扇 hit=${allies.length}`);
+    }
+  }
+
+  private tickBossBlinkFanVolley(boss: SimUnit, dt: number): void {
+    const v = boss.bossBlinkFanVolley;
+    if (!v) return;
+    if (boss.dead || (boss.stunT ?? 0) > 0) {
+      boss.bossBlinkFanVolley = undefined;
+      return;
+    }
+    v.t += dt;
+    v.knifeAcc += dt;
+    while (v.knifeAcc >= v.knifeInterval - 1e-6) {
+      v.knifeAcc -= v.knifeInterval;
+      this.fireBossBlinkFanKnives(boss, v);
+    }
+    if (v.t >= v.dur) boss.bossBlinkFanVolley = undefined;
   }
 
   private startBossPunchWindup(boss: SimUnit): void {
@@ -4280,10 +6109,320 @@ export class BattleScreen extends Container {
 
   private bossPutSkillOnCooldown(boss: SimUnit, skillId: string): void {
     const def = getSkillById(skillId);
-    const cd = skillParamNumber(def, 0, 12);
+    const cd = this.bossSkillCooldownSec(skillId, def);
+    this.bossPutSkillOnCooldownSec(boss, skillId, cd);
+  }
+
+  private castTaurenStomp(boss: SimUnit): void {
+    const def = getSkillById(SKILL_TAUREN_STOMP);
+    if (!def) return;
+    const coeff = skillParamNumber(def, 0, 0.105);
+    const stunSec = skillParamNumber(def, 1, 2.6);
+    const r = skillParamDesignPx(def, 2, 680);
+    const dmg = Math.max(1, Math.round(boss.atk * coeff));
+    let hit = 0;
+    for (const a of this.alive('ally')) {
+      const d = Math.hypot(a.x - boss.x, a.y - boss.y);
+      if (d > r + a.hitRadiusPx) continue;
+      hit += 1;
+      this.applyDamage(a, dmg, { attacker: boss, damageTag: 'magic', bypassBlock: true });
+      a.stunT = Math.max(a.stunT ?? 0, stunSec);
+      if (a.hitFlashOverlay) a.hitFlashT = HIT_FLASH_DUR * 1.8;
+      this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, a.x, a.y));
+    }
+    this.ringFx.push(spawnRingPulse(this.fxLayer, boss.x, boss.y, r * 0.35, 0x78716c, 0.42));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, boss.x, boss.y, r, 0xa8a29e, 0.32));
+    this.triggerBattleScreenShake(0.2, Math.round(10 * LAYOUT_SCALE));
+    this.floatBattleSkillName(SKILL_TAUREN_STOMP, boss);
+    this.bossPutSkillOnCooldown(boss, SKILL_TAUREN_STOMP);
+    this.logBattleSkill(SKILL_TAUREN_STOMP, boss, hit ? `命中${hit}` : '未命中');
+    this.pulseKnightHolySanctionCdFromBossCast();
+  }
+
+  private castTaurenShockwave(boss: SimUnit): void {
+    const def = getSkillById(SKILL_TAUREN_SHOCKWAVE);
+    if (!def) return;
+    const tgt = this.nearestAlly(boss);
+    if (!tgt) return;
+    let dirx = tgt.x - boss.x;
+    let diry = tgt.y - boss.y;
+    const mag = Math.hypot(dirx, diry) || 1;
+    dirx /= mag;
+    diry /= mag;
+    const lenDesign = skillParamDesignPx(def, 0, 780);
+    const halfW = skillParamDesignPx(def, 1, 70);
+    const coeff = skillParamNumber(def, 2, 0.7125);
+    const effLen = Math.min(lenDesign, this.bossArenaRayMaxDist(boss.x, boss.y, dirx, diry));
+    const ax = boss.x;
+    const ay = boss.y;
+    const bx = ax + dirx * effLen;
+    const by = ay + diry * effLen;
+    let hit = 0;
+    for (const a of this.alive('ally')) {
+      const segD = distPointToSegment(a.x, a.y, ax, ay, bx, by);
+      if (segD > halfW + a.hitRadiusPx) continue;
+      const apx = a.x - ax;
+      const apy = a.y - ay;
+      let t = (apx * dirx + apy * diry) / Math.max(effLen, 1);
+      t = Math.max(0, Math.min(1, t));
+      const falloff = 1 - 0.55 * t;
+      const dmg = Math.max(1, Math.round(boss.atk * coeff * falloff));
+      hit += 1;
+      this.applyDamage(a, dmg, { attacker: boss, damageTag: 'magic', bypassBlock: true });
+      if (a.hitFlashOverlay) a.hitFlashT = HIT_FLASH_DUR * 1.4;
+      this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, a.x, a.y));
+    }
+    const steps = 5;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const px = ax + (bx - ax) * t;
+      const py = ay + (by - ay) * t;
+      const pulseR = Math.round(halfW * (0.55 + 0.25 * (1 - t)));
+      this.ringFx.push(spawnRingPulse(this.fxLayer, px, py, pulseR, 0x38bdf8, 0.28 + 0.12 * (1 - t)));
+    }
+    this.floatBattleSkillName(SKILL_TAUREN_SHOCKWAVE, boss);
+    this.bossPutSkillOnCooldown(boss, SKILL_TAUREN_SHOCKWAVE);
+    this.logBattleSkill(SKILL_TAUREN_SHOCKWAVE, boss, hit ? `命中${hit}` : '未命中');
+    this.pulseKnightHolySanctionCdFromBossCast();
+  }
+
+  private bossPutSkillOnCooldownSec(boss: SimUnit, skillId: string, cdSec: number): void {
     const k = this.bossSkillStateKey(boss, skillId);
-    this.bossSkillCdRemain.set(k, cd);
+    this.bossSkillCdRemain.set(k, Math.max(0, cdSec));
     this.bossSkillLastFinish.set(k, this.elapsed);
+  }
+
+  private refreshBossActiveSkillCds(boss: SimUnit): void {
+    for (const sid of boss.skillIds) {
+      if (!isBossConfiguredSkill(sid)) continue;
+      const k = this.bossSkillStateKey(boss, sid);
+      this.bossSkillCdRemain.set(k, 0);
+    }
+  }
+
+  /** 过载爆炸引导中且护盾>0：免疫硬控 */
+  private unitHasOverloadExplosionSuperArmor(u: SimUnit): boolean {
+    return u.bossSkillCast?.kind === 'overload_explosion_channel' && (u.shield ?? 0) > 0;
+  }
+
+  private applyEnemyHardControlStun(target: SimUnit, stunSec: number, force = false): void {
+    if (target.side !== 'enemy' || stunSec <= 0) return;
+    if (target.invincible) return;
+    if (!force && this.unitHasOverloadExplosionSuperArmor(target)) return;
+    target.stunT = Math.max(target.stunT ?? 0, stunSec);
+  }
+
+  private pickLowestHpAlly(): SimUnit | null {
+    const allies = this.alive('ally');
+    if (!allies.length) return null;
+    let best = allies[0]!;
+    for (const a of allies) {
+      if (a.hp < best.hp) best = a;
+    }
+    return best;
+  }
+
+  private grantOverloadExplosionChannelShield(boss: SimUnit): void {
+    const add = Math.max(1, Math.round(boss.maxHp * 0.1));
+    const cap = boss.maxHp;
+    const cur = Math.max(0, Math.floor(boss.shield ?? 0));
+    boss.shield = Math.min(cap, cur + add);
+    const gained = boss.shield - cur;
+    if (gained > 0) {
+      this.floatWords.push(
+        spawnFloatNumber(
+          this.floatLayer,
+          boss.x,
+          this.floatAnchorY(boss) - Math.round(22 * LAYOUT_SCALE),
+          `护盾+${gained}`,
+          'shield',
+        ),
+      );
+    }
+    this.syncUnitHpRing(boss);
+    if (boss.overloadShieldBubbleGfx) destroyOverloadShieldBubble(boss.overloadShieldBubbleGfx);
+    const ir = boss.tokenInnerR ?? boss.hitRadiusPx;
+    if (boss.body) {
+      boss.overloadShieldBubbleGfx = attachOverloadShieldBubble(boss.body, ir);
+    }
+  }
+
+  private disposeBossOverloadExplosionFx(boss: SimUnit, st?: BossOverloadExplosionChannelState): void {
+    destroyOverloadExplosionChannelBanner(st?.channelBanner);
+    st?.rangeWarnFx?.destroy({ children: true });
+    if (st?.shieldGfx) destroyOverloadShieldBubble(st.shieldGfx);
+    if (boss.overloadShieldBubbleGfx) {
+      destroyOverloadShieldBubble(boss.overloadShieldBubbleGfx);
+      boss.overloadShieldBubbleGfx = undefined;
+    }
+  }
+
+  private interruptBossOverloadExplosion(boss: SimUnit, reason: string, shieldBroken: boolean): void {
+    const st = boss.bossSkillCast;
+    if (st?.kind !== 'overload_explosion_channel') return;
+    const c = this.unitBattleTokenCenterXY(boss);
+    const ir = boss.tokenInnerR ?? boss.hitRadiusPx;
+    if (shieldBroken) {
+      this.overloadShieldBreaks.push(spawnOverloadShieldBreak(this.fxLayer, c.x, c.y, ir));
+    }
+    this.disposeBossOverloadExplosionFx(boss, st);
+    boss.bossSkillCast = undefined;
+    boss.body.scale.set(1);
+    if (shieldBroken) {
+      boss.stunT = Math.max(boss.stunT ?? 0, OVERLOAD_EXPLOSION_BREAK_STUN_SEC);
+      this.floatWords.push(
+        spawnFloatNumber(this.floatLayer, boss.x, this.floatAnchorY(boss) - 40, '护盾破碎', 'magic'),
+      );
+    }
+    this.bossPutSkillOnCooldown(boss, SKILL_OVERLOAD_EXPLOSION);
+    this.logBattleSkill(SKILL_OVERLOAD_EXPLOSION, boss, reason);
+  }
+
+  private applyBossOverloadExplosionImpact(boss: SimUnit, st: BossOverloadExplosionChannelState): void {
+    const c = this.unitBattleTokenCenterXY(boss);
+    const stunSec = OVERLOAD_EXPLOSION_HIT_STUN_SEC;
+    this.overloadExplosionWaves.push(spawnOverloadExplosionWave(this.fxLayer, c.x, c.y, st.radius));
+    this.triggerBattleScreenShake(0.32, Math.round(18 * LAYOUT_SCALE));
+    let hits = 0;
+    for (const a of this.alive('ally')) {
+      const d = Math.hypot(a.x - c.x, a.y - c.y);
+      if (d > st.radius + a.hitRadiusPx + this.hitRadius(boss)) continue;
+      hits += 1;
+      const dmg = Math.max(1, Math.round(boss.atk * st.coeff));
+      this.applyDamage(a, dmg, { attacker: boss, damageTag: 'magic', bypassBlock: true });
+      if (stunSec > 0) a.stunT = Math.max(a.stunT ?? 0, stunSec);
+      if (a.hitFlashOverlay) a.hitFlashT = HIT_FLASH_DUR * 2.5;
+    }
+    this.floatWords.push(
+      spawnFloatNumber(this.floatLayer, boss.x, this.floatAnchorY(boss) - 48, '爆炸', 'crit'),
+    );
+    this.logBattleSkill(SKILL_OVERLOAD_EXPLOSION, boss, `爆炸命中=${hits}`);
+  }
+
+  private startBossOverloadExplosion(boss: SimUnit): void {
+    const def = getSkillById(SKILL_OVERLOAD_EXPLOSION);
+    if (!def) return;
+    this.grantOverloadExplosionChannelShield(boss);
+    const dur = skillParamNumber(def, 2, 8);
+    const radius = skillParamDesignPx(def, 4, 300);
+    const coeff = skillParamNumber(def, 3, 250) / 100;
+    const rangeWarnFx = new OverloadExplosionRangeWarnFx();
+    this.fxLayer.addChild(rangeWarnFx);
+    const bc = this.unitBattleTokenCenterXY(boss);
+    rangeWarnFx.tick(bc.x, bc.y, radius, 0);
+    const bannerY = this.floatAnchorY(boss) - Math.round(52 * LAYOUT_SCALE);
+    const channelBanner = spawnOverloadExplosionChannelBanner(this.floatLayer, bc.x, bannerY);
+    boss.bossSkillCast = {
+      kind: 'overload_explosion_channel',
+      skillId: SKILL_OVERLOAD_EXPLOSION,
+      t: 0,
+      dur,
+      radius,
+      coeff,
+      channelHadShield: (boss.shield ?? 0) > 0,
+      shieldGfx: boss.overloadShieldBubbleGfx,
+      pulsePhase: 0,
+      rangeWarnFx,
+      channelBanner,
+    };
+    this.logBattleSkill(SKILL_OVERLOAD_EXPLOSION, boss, `引导开始 护盾=${boss.shield ?? 0}`);
+    this.pulseKnightHolySanctionCdFromBossCast();
+  }
+
+  private tickBossOverloadExplosionChannel(boss: SimUnit, st: BossOverloadExplosionChannelState, dt: number): void {
+    st.t += dt;
+    const bc = this.unitBattleTokenCenterXY(boss);
+    if (st.channelBanner) {
+      const bannerY = this.floatAnchorY(boss) - Math.round(52 * LAYOUT_SCALE);
+      tickOverloadExplosionChannelBanner(st.channelBanner, bc.x, bannerY, dt);
+    }
+    st.rangeWarnFx?.tick(bc.x, bc.y, st.radius, st.t);
+    st.pulsePhase += dt * 5.5;
+    const pulse01 = 0.5 + 0.5 * Math.sin(st.pulsePhase);
+    const ir = boss.tokenInnerR ?? boss.hitRadiusPx;
+    if (st.shieldGfx) redrawOverloadShieldBubble(st.shieldGfx, ir, pulse01);
+    if (boss.overloadShieldBubbleGfx) redrawOverloadShieldBubble(boss.overloadShieldBubbleGfx, ir, pulse01);
+    const scale = 1 + pulse01 * 0.06;
+    boss.body.scale.set(scale);
+    if (st.channelHadShield && (boss.shield ?? 0) <= 0) {
+      this.interruptBossOverloadExplosion(boss, '护盾破裂·中断', true);
+      return;
+    }
+    if ((boss.shield ?? 0) > 0) st.channelHadShield = true;
+    if (st.t >= st.dur) {
+      this.applyBossOverloadExplosionImpact(boss, st);
+      this.disposeBossOverloadExplosionFx(boss, st);
+      boss.bossSkillCast = undefined;
+      boss.body.scale.set(1);
+      this.bossPutSkillOnCooldown(boss, SKILL_OVERLOAD_EXPLOSION);
+    }
+  }
+
+  private castBossOverloadLaser(boss: SimUnit): void {
+    const def = getSkillById(SKILL_OVERLOAD_LASER);
+    if (!def) return;
+    const target = this.pickLowestHpAlly();
+    if (!target) return;
+    this.floatBattleSkillName(SKILL_OVERLOAD_LASER, boss);
+    const basePct = skillParamNumber(def, 2, 200);
+    const step = skillParamNumber(def, 3, 50);
+    const bonus = boss.overloadLaserPowerBonus ?? 0;
+    const powerPct = basePct + bonus;
+    const strengthenStacks = step > 0 ? Math.floor(bonus / step) : 0;
+    const laserColors = overloadLaserColorCountFromStacks(strengthenStacks);
+    const bc = this.unitBattleTokenCenterXY(boss);
+    const tc = this.unitBattleTokenCenterXY(target);
+    const dmg = Math.max(1, Math.round((boss.atk * powerPct) / 100));
+    this.overloadLaserBeams.push(
+      spawnOverloadLaserBeam(this.fxLayer, bc.x, bc.y, tc.x, tc.y, laserColors),
+    );
+    const prevHp = target.hp;
+    this.applyDamage(target, dmg, { attacker: boss, damageTag: 'magic', bypassBlock: true });
+    const killed = target.dead || target.hp <= 0;
+    if (killed) {
+      boss.overloadLaserPowerBonus = 0;
+      const halfCd = skillParamNumber(def, 0, 6) / 2;
+      this.bossPutSkillOnCooldownSec(boss, SKILL_OVERLOAD_LASER, halfCd);
+      this.logBattleSkill(SKILL_OVERLOAD_LASER, boss, `击杀 #${target.unitId} 威力=${powerPct}% CD=${halfCd}s`);
+    } else {
+      boss.overloadLaserPowerBonus = bonus + step;
+      this.bossPutSkillOnCooldown(boss, SKILL_OVERLOAD_LASER);
+      this.logBattleSkill(
+        SKILL_OVERLOAD_LASER,
+        boss,
+        `→ #${target.unitId} dmg=${dmg} hp ${prevHp}→${target.hp} 下次威力=${basePct + boss.overloadLaserPowerBonus}%`,
+      );
+    }
+    if (target.hitFlashOverlay) target.hitFlashT = HIT_FLASH_DUR * 2;
+  }
+
+  private tickMechanoPioneerPassive(u: SimUnit): void {
+    if (!this.unitHasSkill(u, SKILL_MECHANO_PIONEER) || u.mechanoPioneerUsed || u.dead) return;
+    const def = getSkillById(SKILL_MECHANO_PIONEER);
+    if (!def) return;
+    const threshold = skillParamNumber(def, 0, 15) / 100;
+    if (u.hp / Math.max(1, u.maxHp) > threshold) return;
+    u.mechanoPioneerUsed = true;
+    const shieldPct = skillParamNumber(def, 1, 10) / 100;
+    const add = Math.max(1, Math.round(u.maxHp * shieldPct));
+    const cur = Math.max(0, Math.floor(u.shield ?? 0));
+    u.shield = Math.min(u.maxHp, cur + add);
+    const gained = u.shield - cur;
+    if (gained > 0) {
+      this.floatWords.push(
+        spawnFloatNumber(
+          this.floatLayer,
+          u.x,
+          this.floatAnchorY(u) - Math.round(22 * LAYOUT_SCALE),
+          `护盾+${gained}`,
+          'shield',
+        ),
+      );
+    }
+    this.syncUnitHpRing(u);
+    this.refreshBossActiveSkillCds(u);
+    this.floatBattleSkillName(SKILL_MECHANO_PIONEER, u);
+    this.logBattleSkill(SKILL_MECHANO_PIONEER, u, '主动技冷却已刷新');
   }
 
   private applyBossPunchImpact(boss: SimUnit, st: BossPunchWindupState): void {
@@ -4428,7 +6567,38 @@ export class BattleScreen extends Container {
   private tickBossSkillCast(boss: SimUnit, dt: number): void {
     const st = boss.bossSkillCast;
     if (!st) return;
-    if (st.kind === 'punch_windup' || st.kind === 'rush_windup') {
+    if (st.kind === 'blade_storm_warn' || st.kind === 'blade_storm_channel') {
+      if ((boss.stunT ?? 0) > 0) {
+        this.interruptBossBladeStorm(boss, '眩晕打断');
+        return;
+      }
+    }
+    if (st.kind === 'blade_storm_warn') {
+      st.t += dt;
+      boss.bladeStormWarnFlashT = st.t;
+      this.syncBladeStormWarnRim(boss, st.t, st.dur);
+      if (st.t >= st.dur) {
+        this.beginBossBladeStormChannel(boss);
+      }
+      return;
+    }
+    if (st.kind === 'blade_storm_channel') {
+      this.tickBossBladeStormChannel(boss, st, dt);
+      return;
+    }
+    if (st.kind === 'overload_explosion_channel') {
+      this.tickBossOverloadExplosionChannel(boss, st, dt);
+      return;
+    }
+    if (st.kind === 'jetpack_assault') {
+      this.tickBossJetpackAssault(boss, st, dt);
+      return;
+    }
+    if (st.kind === 'vanish_ambush') {
+      this.tickBossVanishAmbush(boss, st, dt);
+      return;
+    }
+    if (st.kind === 'punch_windup' || st.kind === 'rush_windup' || st.kind === 'rhahk_smash_windup') {
       if ((boss.stunT ?? 0) > 0) {
         const sid = st.skillId;
         st.warnFx.destroy({ children: true });
@@ -4437,6 +6607,24 @@ export class BattleScreen extends Container {
         this.logBattleSkill(sid, boss, '蓄力·眩晕打断');
         return;
       }
+    }
+    if (st.kind === 'rhahk_smash_windup') {
+      const primary = this.byId(st.targetId);
+      if (!primary || primary.dead) {
+        this.interruptRhahkSmash(boss, st, '主目标死亡·打断');
+        return;
+      }
+      st.t += dt;
+      const fx = st.warnFx.tick(dt);
+      if (fx.impactNow && !st.impactApplied) {
+        st.impactApplied = true;
+        this.applyRhahkSmashImpact(boss, st);
+      }
+      if (fx.done) {
+        st.warnFx.destroy({ children: true });
+        boss.bossSkillCast = undefined;
+      }
+      return;
     }
     if (st.kind === 'punch_windup') {
       st.t += dt;
@@ -4476,20 +6664,38 @@ export class BattleScreen extends Container {
     const boss = this.units.find((u) => u.bossId && !u.dead);
     if (!boss?.bossId) return;
     this.ensureBossConfiguredCdInit(boss);
+    if (boss.bossBlinkFanVolley) {
+      this.tickBossBlinkFanVolley(boss, dt);
+    }
     const cur = boss.bossSkillCast;
     const skip =
       cur?.kind === 'rush_charge'
         ? 'skill_boss_rush'
         : cur?.kind === 'punch_windup'
           ? 'skill_boss_punch'
-          : cur?.kind === 'rush_windup'
-            ? 'skill_boss_rush'
-            : null;
+          : cur?.kind === 'rhahk_smash_windup'
+            ? 'skill_rhahk_smash'
+            : cur?.kind === 'rush_windup'
+              ? 'skill_boss_rush'
+              : cur?.kind === 'blade_storm_warn' || cur?.kind === 'blade_storm_channel'
+                ? SKILL_BLADE_STORM
+                : cur?.kind === 'overload_explosion_channel'
+                  ? SKILL_OVERLOAD_EXPLOSION
+                  : cur?.kind === 'jetpack_assault'
+                    ? SKILL_JETPACK_ASSAULT
+                    : cur?.kind === 'vanish_ambush'
+                      ? SKILL_VANISH_AMBUSH
+                      : null;
     this.tickBossConfiguredSkillCds(boss, dt, skip);
+    if (boss.bossSkillCast?.kind === 'jetpack_assault' || boss.bossSkillCast?.kind === 'vanish_ambush') {
+      this.tickBossSkillCast(boss, dt);
+      return;
+    }
     if (boss.bossSkillCast) {
       this.tickBossSkillCast(boss, dt);
       return;
     }
+    if (boss.bossBlinkFanVolley) return;
     if ((boss.stunT ?? 0) > 0) return;
     const next = this.pickReadyBossSkill(boss);
     if (!next) return;
@@ -4803,6 +7009,8 @@ export class BattleScreen extends Container {
     tickFloatEntries(this.floatWords, dt);
     tickRingPulses(this.ringFx, dt);
     tickHitSparkBursts(this.hitSparks, dt);
+    this.tickRhahkPresentationFx(dt);
+    this.tickGenericSkillPresentationFx(dt);
     this.tickShamanBloodlustAll(dt);
     this.tickCatapultBurns(dt);
     tickMeteorAnims(this.meteors, dt);
@@ -4817,13 +7025,17 @@ export class BattleScreen extends Container {
 
       if (u.side === 'ally') {
         this.tickAllyRfc3CorrosionDot(u, dt);
+        this.tickAllyPoisonStrikeDot(u, dt);
       }
 
       if (u.side === 'enemy') {
         this.tickEnemyEvilFrenzy(u, dt);
         this.tickEnemyShadowBoltTry(u, dt);
+        this.tickEnemyHeavyStunTry(u, dt);
+        this.tickEnemyElasticBombTry(u, dt);
         this.tickRfc4Ch4BossExclusiveSkills(u, dt);
         this.tickRfc3Ch3BossExclusiveSkills(u, dt);
+        this.tickMechanoPioneerPassive(u);
       }
 
       if (u.bossId && this.unitHasSkill(u, 'skill_berserker') && u.bossBerserkBaseAtk != null) {
@@ -4831,7 +7043,9 @@ export class BattleScreen extends Container {
       }
 
       const kbActive = this.tickKnockbackTween(u, dt);
+      this.tickRhahkUnitFx(u, dt);
       this.syncHitFlash(u, dt);
+      if ((u.rhahkCleaveFlashT ?? 0) > 0) this.syncUnitHpRing(u);
 
       if ((u.moveSlowT ?? 0) > 0) {
         u.moveSlowT = Math.max(0, (u.moveSlowT ?? 0) - dt);
@@ -4843,6 +7057,13 @@ export class BattleScreen extends Container {
         u.mulanWhirlwindProcLockT = Math.max(0, (u.mulanWhirlwindProcLockT ?? 0) - dt);
       }
       this.syncUnitMoveSpeed(u);
+
+      if (u.side === 'enemy' && this.unitHasOverloadExplosionSuperArmor(u)) {
+        u.stunT = 0;
+        u.moveSlowT = 0;
+        u.moveSlowDecayRem = 0;
+        u.knockbackTween = undefined;
+      }
 
       if ((u.stunT ?? 0) > 0) {
         if (u.heroArcaneChannel) this.interruptHeroArcaneMissilesChannel(u);
@@ -4964,6 +7185,11 @@ export class BattleScreen extends Container {
         baseBodyTint = 0x5eead4;
       } else if ((u.rfc3CorrosionRemainSec ?? 0) > 0 && u.side === 'ally') {
         baseBodyTint = 0x86efac;
+      } else if (((u.poisonStrikeStacks ?? 0) > 0 || (u.poisonStrikeRemainSec ?? 0) > 0) && u.side === 'ally') {
+        const poisonDeep = Math.min(1, (u.poisonStrikeStacks ?? 0) / 20);
+        baseBodyTint = poisonDeep > 0.5 ? 0x4ade80 : 0x86efac;
+      } else if (u.defiasBandageChannel) {
+        baseBodyTint = 0xc4b5fd;
       }
 
       if ((u.flashT ?? 0) > 0) {
@@ -5032,15 +7258,48 @@ export class BattleScreen extends Container {
         }
       }
 
+      if (u.side === 'enemy' && this.tickDefiasBandage(u, dt)) {
+        continue;
+      }
+
+      if (u.side === 'enemy' && this.tickEnemyVoidWalk(u, dt)) {
+        continue;
+      }
+
       if (u.side === 'enemy' && this.tickEnemyBacklineLeap(u, dt)) {
         continue;
       }
 
-      if (u.bossId && u.bossSkillCast) {
+      if (
+        u.bossId &&
+        u.bossSkillCast &&
+        u.bossSkillCast.kind !== 'jetpack_assault' &&
+        u.bossSkillCast.kind !== 'vanish_ambush'
+      ) {
         continue;
       }
 
       if (u.bossId && u.rfc4MindLashChannel) {
+        continue;
+      }
+
+      if (u.side === 'enemy') {
+        this.tickGyroMissileDefensePassive(u, dt);
+      }
+
+      if (u.bossId && (u.bossSkillCast?.kind === 'jetpack_assault' || u.bossSkillCast?.kind === 'vanish_ambush')) {
+        if (u.bossSkillCast?.kind === 'jetpack_assault') {
+          u.cd -= dt;
+          if (u.cd <= 0) {
+            const target = this.nearestAlly(u);
+            if (target) {
+              const dx = target.x - u.x;
+              const dy = target.y - u.y;
+              const dist = Math.hypot(dx, dy) || 1;
+              this.beginDefaultAttack(u, target, dist, dx, dy);
+            }
+          }
+        }
         continue;
       }
 

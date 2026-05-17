@@ -1,11 +1,14 @@
-import type { Application } from 'pixi.js';
+import type { Application, Ticker } from 'pixi.js';
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { allBondStacks } from '../battleBonds';
 import { recruitCardBondedStats } from '../recruitCardBondStats';
 import { ALLY_CLASSES } from '../constants';
-import { applyPick, boardHasAnyUnit, randomThreeFromFive } from '../draftLogic';
+import { applyPick, boardHasAnyUnit, canAcceptPick, randomThreeFromFive } from '../draftLogic';
+import { botDraftClassPriority } from '../bot/draftPickPolicy';
+import { isBotModeActive } from '../bot/context';
+import { botRegisterScreen, botUnregisterScreen } from '../bot/registry';
 import { roguePickGoldCost, rogueRefreshGoldCost } from '../strategyApply';
 import type { ArtifactKind } from '../strategyTypes';
 import { roundsForBookChapter } from '../roundConfig';
@@ -133,6 +136,10 @@ export class DraftScreen extends Container {
   private readonly roundMeta: RoundMeta;
   private choices: AllyClass[] = randomThreeFromFive();
   private picksThisRound = 0;
+  private draftFinishCommitted = false;
+  /** tryFinish 已调用 onFinished（Bot 用于判断是否真正提交） */
+  private draftExitRequested = false;
+  private readonly screenTickers = new Set<(ticker: Ticker) => void>();
   private dragMode: DragMode = null;
   private dragFromSlot: number | null = null;
   private tip: Text;
@@ -338,9 +345,95 @@ export class DraftScreen extends Container {
     this.addChild(this.boardDragOutline);
 
     attachScreenDebugLabel(this, 'DraftScreen');
+
+    if (isBotModeActive()) {
+      botRegisterScreen({
+        kind: 'draft',
+        draft: {
+          hasBoardUnit: () => boardHasAnyUnit(this.run.board),
+          canPickMore: () => this.botCanPickMore(),
+          isReadyForBattle: () => this.botIsReadyForBattle(),
+          tryPick: () => this.botTryPick(),
+          tryStartBattle: () => this.botTryStartBattle(),
+          resetSubmit: () => this.botResetSubmit(),
+        },
+      });
+    }
+  }
+
+  botResetSubmit(): void {
+    this.draftFinishCommitted = false;
+    this.draftExitRequested = false;
+  }
+
+  private botPickCandidates(): { index: number; kind: AllyClass; cost: number; priority: number }[] {
+    const out: { index: number; kind: AllyClass; cost: number; priority: number }[] = [];
+    for (let i = 0; i < 3; i++) {
+      const kind = this.choices[i]!;
+      const cost = roguePickGoldCost(this.run, kind, this.picksThisRound);
+      if (cost > 0 && this.run.gold < cost) continue;
+      if (!canAcceptPick(this.run.board, this.run.artifactBySlot, kind)) continue;
+      out.push({ index: i, kind, cost, priority: botDraftClassPriority(kind) });
+    }
+    out.sort((a, b) => {
+      if (a.priority !== b.priority) return a.priority - b.priority;
+      return b.cost - a.cost;
+    });
+    return out;
+  }
+
+  botCanPickMore(): boolean {
+    return this.botPickCandidates().length > 0;
+  }
+
+  botIsReadyForBattle(): boolean {
+    const needsUnits = this.roundMeta.kind === 'normal' || this.roundMeta.kind === 'boss';
+    if (needsUnits && !boardHasAnyUnit(this.run.board)) return false;
+    return !this.botCanPickMore();
+  }
+
+  /**
+   * Bot 选牌：优先战/法/牧；同优先级下优先花更多金（尽量花完钱）。
+   * 每 tick 至多选 1 张，由 orchestrator 重复调用直至无法再选。
+   */
+  botTryPick(): boolean {
+    const candidates = this.botPickCandidates();
+    if (!candidates.length) return false;
+    const best = candidates[0]!;
+    const picksBefore = this.picksThisRound;
+    this.pickChoice(best.index);
+    return this.picksThisRound > picksBefore;
+  }
+
+  /** Bot：与「开始战斗」相同；仅当 tryFinish 真正触发 onFinished 时返回 true */
+  botTryStartBattle(): boolean {
+    if (this.draftExitRequested || this.draftFinishCommitted) return false;
+    if (!this.botIsReadyForBattle()) return false;
+    this.tryFinish();
+    return this.draftExitRequested;
+  }
+
+  private addScreenTicker(fn: (ticker: Ticker) => void): void {
+    this.screenTickers.add(fn);
+    this.app.ticker.add(fn);
+  }
+
+  private removeScreenTicker(fn: (ticker: Ticker) => void): void {
+    this.app.ticker.remove(fn);
+    this.screenTickers.delete(fn);
+  }
+
+  private clearScreenTickers(): void {
+    for (const fn of this.screenTickers) {
+      this.app.ticker.remove(fn);
+    }
+    this.screenTickers.clear();
   }
 
   override destroy(): void {
+    this.clearScreenTickers();
+    this.botResetSubmit();
+    botUnregisterScreen('draft');
     document.removeEventListener('pointerup', this.onDocPointerUp);
     this.closeHeroIntro();
     super.destroy({ children: true });
@@ -559,6 +652,7 @@ export class DraftScreen extends Container {
 
   /** 选牌落入九宫格时的流光粒子 */
   private playPickToBoardParticles(fromX: number, fromY: number, toX: number, toY: number): void {
+    if (isBotModeActive()) return;
     const n = 18;
     const colors = [0x38bdf8, 0x7dd3fc, 0xc4b5fd, 0xfbbf24];
     for (let i = 0; i < n; i++) {
@@ -573,6 +667,10 @@ export class DraftScreen extends Container {
       const durMs = 380 + Math.random() * 140;
       let acc = -delayMs;
       const onTick = (): void => {
+        if (this.destroyed || g.destroyed) {
+          this.removeScreenTicker(onTick);
+          return;
+        }
         acc += this.app.ticker.deltaMS;
         if (acc < 0) return;
         const p = Math.min(1, acc / durMs);
@@ -581,11 +679,11 @@ export class DraftScreen extends Container {
         g.alpha = 1 - p * 0.35;
         g.scale.set(1 + 0.35 * Math.sin(p * Math.PI));
         if (p >= 1) {
-          this.app.ticker.remove(onTick);
+          this.removeScreenTicker(onTick);
           g.destroy();
         }
       };
-      this.app.ticker.add(onTick);
+      this.addScreenTicker(onTick);
     }
   }
 
@@ -632,6 +730,10 @@ export class DraftScreen extends Container {
     let ms = 0;
     const totalMs = 480;
     const onTick = (): void => {
+      if (this.destroyed || glow.destroyed) {
+        this.removeScreenTicker(onTick);
+        return;
+      }
       ms += this.app.ticker.deltaMS;
       const t = Math.min(1, ms / totalMs);
       glow.alpha = 1 - t;
@@ -639,11 +741,11 @@ export class DraftScreen extends Container {
       glow.scale.set(s);
       glow.position.set(((1 - s) * bw) / 2, ((1 - s) * bh) / 2);
       if (ms >= totalMs) {
-        this.app.ticker.remove(onTick);
+        this.removeScreenTicker(onTick);
         glow.destroy();
       }
     };
-    this.app.ticker.add(onTick);
+    this.addScreenTicker(onTick);
   }
 
   /** 「羁绊/规则」按钮短时闪动 */
@@ -653,19 +755,23 @@ export class DraftScreen extends Container {
     let ms = 0;
     const totalMs = 720;
     const onTick = (): void => {
+      if (this.destroyed || btn.destroyed) {
+        this.removeScreenTicker(onTick);
+        return;
+      }
       ms += this.app.ticker.deltaMS;
       const p = ms / totalMs;
       if (p >= 1) {
         btn.scale.set(1);
         btn.alpha = 1;
-        this.app.ticker.remove(onTick);
+        this.removeScreenTicker(onTick);
         return;
       }
       const wave = Math.sin(p * Math.PI * 7);
       btn.scale.set(1 + Math.abs(wave) * 0.07);
       btn.alpha = 0.82 + Math.abs(wave) * 0.18;
     };
-    this.app.ticker.add(onTick);
+    this.addScreenTicker(onTick);
   }
 
   private drawBoard(): void {
@@ -1007,6 +1113,12 @@ export class DraftScreen extends Container {
       return;
     }
     document.removeEventListener('pointerup', this.onDocPointerUp);
-    this.onFinished();
+    this.draftFinishCommitted = true;
+    this.draftExitRequested = true;
+    if (isBotModeActive()) {
+      queueMicrotask(() => this.onFinished());
+    } else {
+      this.onFinished();
+    }
   }
 }

@@ -337,6 +337,64 @@ export function tickFloatEntries(entries: FloatEntry[], dt: number): void {
   }
 }
 
+/** 过载爆炸引导：持续显示、大小脉冲，直至调用方销毁 */
+export type OverloadExplosionChannelBanner = {
+  root: Container;
+  pulsePhase: number;
+};
+
+const OVERLOAD_EXPLOSION_CHANNEL_BANNER_TEXT = '过载爆炸发动中，尽快击破护盾';
+
+export function spawnOverloadExplosionChannelBanner(
+  layer: Container,
+  x: number,
+  y: number,
+): OverloadExplosionChannelBanner {
+  const root = new Container();
+  root.eventMode = 'none';
+  const size = Math.round(36 * LAYOUT_SCALE);
+  const t = new Text({
+    text: OVERLOAD_EXPLOSION_CHANNEL_BANNER_TEXT,
+    style: {
+      fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+      fontSize: size,
+      fill: 0xfca5a5,
+      fontWeight: '800',
+      stroke: { color: 0x450a0a, width: Math.round(5 * LAYOUT_SCALE) },
+      dropShadow: {
+        alpha: 0.6,
+        angle: Math.PI / 4,
+        blur: 4,
+        color: 0x000000,
+        distance: 2,
+      },
+    },
+  });
+  t.anchor.set(0.5, 1);
+  root.addChild(t);
+  root.position.set(x, y);
+  layer.addChild(root);
+  return { root, pulsePhase: 0 };
+}
+
+export function tickOverloadExplosionChannelBanner(
+  banner: OverloadExplosionChannelBanner,
+  x: number,
+  y: number,
+  dt: number,
+): void {
+  banner.pulsePhase += dt * 8;
+  const wave = 0.5 + 0.5 * Math.sin(banner.pulsePhase);
+  const scale = 0.86 + wave * 0.22;
+  banner.root.position.set(x, y);
+  banner.root.scale.set(scale);
+  banner.root.alpha = 1;
+}
+
+export function destroyOverloadExplosionChannelBanner(banner: OverloadExplosionChannelBanner | undefined): void {
+  banner?.root.destroy({ children: true });
+}
+
 export type RingPulseFlow = 'expand' | 'shrink';
 
 export type RingPulseOpts = { flow?: RingPulseFlow; delay?: number };

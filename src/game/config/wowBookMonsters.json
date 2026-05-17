@@ -3,7 +3,7 @@
   "generator": "scripts/generate-wow-book-tables.mjs",
   "designBaseline": "docs/unit-stat-design-baseline.md",
   "sourceReference": "docs/reference-classic-vanilla-wow-roguelike-level-design.json",
-  "editConvention": "小怪唯一数值源。`id` 在表内唯一（slug）。`monsterUid` 为出图/资源用稳定唯一号（U+六位数字），重新跑生成脚本时同 `id` 会尽量保留原 `monsterUid`。`refKey` = `dungeonId::mob_pool 怪名 slug`，与参考 JSON 中副本 `slug(name_en|name_cn)` + 该条 mob_pool 怪名 slug 一一对应；legacy 十二兵种为 `legacy::<id>`。立绘可用 `public/assets/wow-mobs/<monsterUid>.png` 或 `<id>.png`；未提供则仍用 enemyPaint 的 `public/assets/enemies/<paint>.png`。",
+  "editConvention": "小怪唯一数值源。`id` 在表内唯一（slug）。`monsterUid` 为出图/资源用稳定唯一号（U+六位数字），重新跑生成脚本时同 `id` 会尽量保留原 `monsterUid` 与 `skillIds` 及手调战斗字段。`refKey` = `dungeonId::mob_pool 怪名 slug`，与参考 JSON 中副本 `slug(name_en|name_cn)` + 该条 mob_pool 怪名 slug 一一对应；legacy 十二兵种为 `legacy::<id>`。立绘可用 `public/assets/wow-mobs/<monsterUid>.png` 或 `<id>.png`；未提供则仍用 enemyPaint 的 `public/assets/enemies/<paint>.png`。",
   "monsters": [
     {
       "id": "abomination",
@@ -22,7 +22,10 @@
       "range": 10,
       "moveSpeed": 355,
       "refKey": "legacy::abomination",
-      "monsterUid": "U000001"
+      "monsterUid": "U000001",
+      "skillIds": [
+        "skill_abomination_cleave"
+      ]
     },
     {
       "id": "batrider",
@@ -41,7 +44,10 @@
       "range": 228,
       "moveSpeed": 550,
       "refKey": "legacy::batrider",
-      "monsterUid": "U000002"
+      "monsterUid": "U000002",
+      "skillIds": [
+        "skill_batrider_leap"
+      ]
     },
     {
       "id": "beserker",
@@ -60,7 +66,10 @@
       "range": 10,
       "moveSpeed": 525,
       "refKey": "legacy::beserker",
-      "monsterUid": "U000003"
+      "monsterUid": "U000003",
+      "skillIds": [
+        "skill_beserker_leap"
+      ]
     },
     {
       "id": "catapult",
@@ -79,7 +88,10 @@
       "range": 295,
       "moveSpeed": 265,
       "refKey": "legacy::catapult",
-      "monsterUid": "U000004"
+      "monsterUid": "U000004",
+      "skillIds": [
+        "skill_catapult_burn_field"
+      ]
     },
     {
       "id": "darkspear",
@@ -117,7 +129,10 @@
       "range": 10,
       "moveSpeed": 488,
       "refKey": "legacy::dread_warrior",
-      "monsterUid": "U000006"
+      "monsterUid": "U000006",
+      "skillIds": [
+        "skill_dread_warrior_assault"
+      ]
     },
     {
       "id": "grunt",
@@ -701,12 +716,16 @@
       "creatureType": "其他",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 324,
-      "baseAtk": 10.08,
+      "baseMaxHp": 339,
+      "baseAtk": 10,
       "attackSpeed": 0.66,
       "range": 10,
       "moveSpeed": 515,
-      "monsterUid": "U000037"
+      "monsterUid": "U000037",
+      "skillIds": [
+        "skill_voidwalker",
+        "skill_knight_weak"
+      ]
     },
     {
       "id": "mob_death_s_head_priest",
@@ -753,17 +772,21 @@
       "nameEn": "Defias Blackguard",
       "dungeonId": "deadmines",
       "dungeonNameCn": "死亡矿井",
-      "attackType": "近战",
-      "role": "坦克",
+      "attackType": "远程",
+      "role": "输出",
       "creatureType": "生物",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 339,
-      "baseAtk": 9.67,
-      "attackSpeed": 0.69,
+      "baseMaxHp": 205,
+      "baseAtk": 14,
+      "attackSpeed": 0.78,
       "range": 10,
       "moveSpeed": 525,
-      "monsterUid": "U000040"
+      "monsterUid": "U000040",
+      "skillIds": [
+        "skill_defias",
+        "skill_raider_leap"
+      ]
     },
     {
       "id": "mob_defias_enchanter",
@@ -773,16 +796,20 @@
       "dungeonId": "deadmines",
       "dungeonNameCn": "死亡矿井",
       "attackType": "远程",
-      "role": "辅助",
+      "role": "输出",
       "creatureType": "生物",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 230,
-      "baseAtk": 12.41,
+      "baseMaxHp": 279,
+      "baseAtk": 22,
       "attackSpeed": 1.01,
       "range": 223,
       "moveSpeed": 499,
-      "monsterUid": "U000041"
+      "monsterUid": "U000041",
+      "skillIds": [
+        "skill_defias",
+        "skill_catapult_burn_field"
+      ]
     },
     {
       "id": "mob_defias_miner",
@@ -796,12 +823,16 @@
       "creatureType": "生物",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 240,
-      "baseAtk": 11.18,
+      "baseMaxHp": 232,
+      "baseAtk": 11,
       "attackSpeed": 0.62,
       "range": 10,
       "moveSpeed": 497,
-      "monsterUid": "U000042"
+      "monsterUid": "U000042",
+      "skillIds": [
+        "skill_defias",
+        "skill_stun"
+      ]
     },
     {
       "id": "mob_defias_overseer",
@@ -816,11 +847,16 @@
       "traits": [],
       "hitRadius": 36,
       "baseMaxHp": 304,
-      "baseAtk": 10.29,
+      "baseAtk": 10,
       "attackSpeed": 0.7,
       "range": 10,
       "moveSpeed": 521,
-      "monsterUid": "U000043"
+      "monsterUid": "U000043",
+      "skillIds": [
+        "skill_defias",
+        "skill_defias_fever",
+        "skill_darkspear_slow_knockback"
+      ]
     },
     {
       "id": "mob_defias_pirate",
@@ -830,16 +866,19 @@
       "dungeonId": "deadmines",
       "dungeonNameCn": "死亡矿井",
       "attackType": "近战",
-      "role": "输出",
+      "role": "坦克",
       "creatureType": "生物",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 262,
-      "baseAtk": 11.2,
-      "attackSpeed": 0.59,
+      "baseMaxHp": 301,
+      "baseAtk": 12,
+      "attackSpeed": 0.81,
       "range": 10,
       "moveSpeed": 503,
-      "monsterUid": "U000044"
+      "monsterUid": "U000044",
+      "skillIds": [
+        "skill_defias"
+      ]
     },
     {
       "id": "mob_defias_wizard",
@@ -853,12 +892,16 @@
       "creatureType": "生物",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 296,
-      "baseAtk": 13.93,
-      "attackSpeed": 0.76,
+      "baseMaxHp": 245,
+      "baseAtk": 13,
+      "attackSpeed": 0.78,
       "range": 233,
       "moveSpeed": 492,
-      "monsterUid": "U000045"
+      "monsterUid": "U000045",
+      "skillIds": [
+        "skill_defias",
+        "skill_shadow_bot"
+      ]
     },
     {
       "id": "mob_deviate_python",
@@ -953,7 +996,10 @@
       "attackSpeed": 0.6,
       "range": 10,
       "moveSpeed": 510,
-      "monsterUid": "U000050"
+      "monsterUid": "U000050",
+      "skillIds": [
+        "skill_batrider_leap"
+      ]
     },
     {
       "id": "mob_earthen",
@@ -1252,12 +1298,15 @@
       "creatureType": "生物",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 256,
-      "baseAtk": 11.24,
+      "baseMaxHp": 246,
+      "baseAtk": 11,
       "attackSpeed": 0.62,
       "range": 10,
       "moveSpeed": 493,
-      "monsterUid": "U000066"
+      "monsterUid": "U000066",
+      "skillIds": [
+        "skill_normal_crit"
+      ]
     },
     {
       "id": "mob_goblin_engineer",
@@ -1271,12 +1320,15 @@
       "creatureType": "生物",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 261,
-      "baseAtk": 12.57,
+      "baseMaxHp": 308,
+      "baseAtk": 12,
       "attackSpeed": 0.96,
       "range": 223,
       "moveSpeed": 499,
-      "monsterUid": "U000067"
+      "monsterUid": "U000067",
+      "skillIds": [
+        "skill_bomb"
+      ]
     },
     {
       "id": "mob_gordok_ogre",
@@ -1675,7 +1727,11 @@
       "attackSpeed": 0.81,
       "range": 235,
       "moveSpeed": 504,
-      "monsterUid": "U000088"
+      "monsterUid": "U000088",
+      "skillIds": [
+        "skill_boom",
+        "skill_mage_weak"
+      ]
     },
     {
       "id": "mob_murloc_aberration",
@@ -1960,7 +2016,10 @@
       "attackSpeed": 0.98,
       "range": 223,
       "moveSpeed": 480,
-      "monsterUid": "U000103"
+      "monsterUid": "U000103",
+      "skillIds": [
+        "skill_shaman_bloodlust"
+      ]
     },
     {
       "id": "mob_ragefire_trogg",
@@ -2473,7 +2532,10 @@
       "attackSpeed": 0.76,
       "range": 216,
       "moveSpeed": 473,
-      "monsterUid": "U000130"
+      "monsterUid": "U000130",
+      "skillIds": [
+        "skill_evil_strenth"
+      ]
     },
     {
       "id": "mob_searing_blade_enforcer",
@@ -2492,7 +2554,10 @@
       "attackSpeed": 0.61,
       "range": 10,
       "moveSpeed": 514,
-      "monsterUid": "U000131"
+      "monsterUid": "U000131",
+      "skillIds": [
+        "skill_normal_crit"
+      ]
     },
     {
       "id": "mob_searing_blade_warlock",
@@ -2511,7 +2576,10 @@
       "attackSpeed": 0.76,
       "range": 230,
       "moveSpeed": 502,
-      "monsterUid": "U000132"
+      "monsterUid": "U000132",
+      "skillIds": [
+        "skill_shadow_bot"
+      ]
     },
     {
       "id": "mob_shade_of_eranikus",
@@ -2943,8 +3011,8 @@
       "creatureType": "其他",
       "traits": [],
       "hitRadius": 36,
-      "baseMaxHp": 327,
-      "baseAtk": 9.85,
+      "baseMaxHp": 331,
+      "baseAtk": 9,
       "attackSpeed": 0.69,
       "range": 10,
       "moveSpeed": 524,
@@ -3233,7 +3301,10 @@
       "range": 10,
       "moveSpeed": 590,
       "refKey": "legacy::raider",
-      "monsterUid": "U000170"
+      "monsterUid": "U000170",
+      "skillIds": [
+        "skill_raider_leap"
+      ]
     },
     {
       "id": "shaman",
@@ -3252,7 +3323,10 @@
       "range": 218,
       "moveSpeed": 420,
       "refKey": "legacy::shaman",
-      "monsterUid": "U000171"
+      "monsterUid": "U000171",
+      "skillIds": [
+        "skill_shaman_bloodlust"
+      ]
     },
     {
       "id": "ultralisk",
@@ -3271,7 +3345,10 @@
       "range": 10,
       "moveSpeed": 315,
       "refKey": "legacy::ultralisk",
-      "monsterUid": "U000172"
+      "monsterUid": "U000172",
+      "skillIds": [
+        "skill_ultralisk_mage_fragile"
+      ]
     }
   ]
 }

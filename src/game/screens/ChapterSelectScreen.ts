@@ -3,12 +3,16 @@ import { getGearItemById } from '../gearItems';
 import type { GearFarmSlotPreview } from '../gearFarmProgress';
 import { mountChapterBossPortraitFx } from '../ui/chapterBossPortraitFx';
 import {
-  gearFarmPreviewGridMetrics,
+  gearFarmPreviewCompactMetrics,
   mountHorizontalGearFarmPreviewStrip,
 } from '../ui/gearFarmPreviewSlot';
 import { getWowBookRegistryChapter, isWowBookGearDrop } from '../wowBookRegistry';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { getChapterIntelBossCardParts, getChapterIntelMobCardParts } from '../nextBattlePreview';
+import {
+  chapterEnemyTraitDisplayLines,
+  chapterHasEnemyTraitPanel,
+} from '../chapterEnemyTraits';
 import { BOOK_CHAPTER_COUNT, bookChapterStrengthPercent, mobIdsForBookChapter } from '../bookChapterConfig';
 import {
   getChapterStarFilledCount,
@@ -52,6 +56,8 @@ import {
   wowFinalBossNameCn,
   wowMobEnemyPaint,
 } from '../wowBookData';
+import { isBotModeActive } from '../bot/context';
+import { botRegisterScreen, botUnregisterScreen } from '../bot/registry';
 
 function chapterGearDropPreviews(chapterId: number): GearFarmSlotPreview[] {
   const reg = getWowBookRegistryChapter(chapterId);
@@ -234,6 +240,19 @@ export class ChapterSelectScreen extends Container {
 
     attachScreenDebugLabel(this, 'ChapterSelectScreen');
     startScreenMusic('chapterSelect');
+
+    if (isBotModeActive()) {
+      botRegisterScreen({
+        kind: 'chapterSelect',
+        chapterSelect: {
+          enterChapter: () => this.onPickChapter(this.viewChapterId),
+          openStrengthen: () => this.onStrengthen?.(),
+          openGearFarm: () => {
+            if (isRagefireChasmBookCleared()) this.onGearFarm?.();
+          },
+        },
+      });
+    }
   }
 
   private refreshDungeonBackground(): void {
@@ -290,7 +309,13 @@ export class ChapterSelectScreen extends Container {
 
     const portraitD = Math.round(268 * LAYOUT_SCALE);
     const cardW = Math.min(Math.round(1048 * LAYOUT_SCALE), GAME_WIDTH - pad * 2);
-    const cardH = Math.round(668 * LAYOUT_SCALE);
+    const traitPanelExtraH = Math.round(50 * LAYOUT_SCALE);
+    /** 选关掉落条相对默认布局再压缩的高度（设计像素） */
+    const dropPanelCompressH = Math.round(40 * LAYOUT_SCALE);
+    /** 掉落装备板相对特性条/首领行的额外下移（设计像素） */
+    const dropPanelShiftH = Math.round(40 * LAYOUT_SCALE);
+    const hasEnemyTraitPanel = chapterHasEnemyTraitPanel(targetId);
+    const showDropPanel = isRagefireChasmBookCleared();
     const cardX = (GAME_WIDTH - cardW) / 2;
     const cardY = Math.round(118 * LAYOUT_SCALE);
 
@@ -300,7 +325,6 @@ export class ChapterSelectScreen extends Container {
 
     const plate = new Graphics();
     const frameOrn = new Graphics();
-    drawGoldenSolidPanel(plate, frameOrn, cardW, cardH, LAYOUT_SCALE, { plateAlpha: 0.56 });
     card.addChild(plate);
     card.addChild(frameOrn);
 
@@ -328,7 +352,6 @@ export class ChapterSelectScreen extends Container {
       },
     });
     str.position.set(Math.round(28 * LAYOUT_SCALE), Math.round(86 * LAYOUT_SCALE));
-    str.visible = false;
     card.addChild(str);
 
     const detW = Math.round(200 * LAYOUT_SCALE);
@@ -435,36 +458,86 @@ export class ChapterSelectScreen extends Container {
 
     const dropStripX = Math.round(28 * LAYOUT_SCALE);
     const dropStripW = cardW - dropStripX * 2;
-    const dropPad = Math.round(12 * LAYOUT_SCALE);
-    const dropInnerW = dropStripW - dropPad * 2;
-    const dropIconsOffsetY = Math.round(10 * LAYOUT_SCALE);
-    const dropLabelH = Math.round(22 * LAYOUT_SCALE);
-    const { rowStride: dropRowStride } = gearFarmPreviewGridMetrics(dropInnerW);
-    const dropInnerH = dropLabelH + dropIconsOffsetY + dropRowStride;
-    const dropBoxH = dropPad * 2 + dropInnerH;
 
-    const dropBox = new Container();
-    dropBox.position.set(dropStripX, bossLine.y + bossLine.height + Math.round(12 * LAYOUT_SCALE));
-    card.addChild(dropBox);
+    let contentY = bossLine.y + bossLine.height + Math.round(12 * LAYOUT_SCALE);
 
-    const dropPlate = new Graphics();
-    const dropFrame = new Graphics();
-    drawGoldenSolidPanel(dropPlate, dropFrame, dropStripW, dropBoxH, LAYOUT_SCALE, {
-      plateAlpha: 0.78,
-    });
-    dropBox.addChild(dropPlate);
-    dropBox.addChild(dropFrame);
+    if (hasEnemyTraitPanel) {
+      const traitLines = chapterEnemyTraitDisplayLines(targetId, 2);
+      const traitBox = new Container();
+      traitBox.position.set(dropStripX, contentY);
+      card.addChild(traitBox);
 
-    mountHorizontalGearFarmPreviewStrip(
-      dropBox,
-      dropPad,
-      dropPad,
-      dropInnerW,
-      chapterGearDropPreviews(targetId),
-      '掉落装备',
-      GOLDEN_PANEL_MUTED,
-      dropIconsOffsetY,
-    );
+      const traitPlate = new Graphics();
+      const traitFrame = new Graphics();
+      drawGoldenSolidPanel(traitPlate, traitFrame, dropStripW, traitPanelExtraH, LAYOUT_SCALE, {
+        plateAlpha: 0.78,
+      });
+      traitBox.addChild(traitPlate);
+      traitBox.addChild(traitFrame);
+
+      const traitPad = Math.round(8 * LAYOUT_SCALE);
+      const traitText = new Text({
+        text: traitLines.join('\n'),
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontSize: Math.round(15 * LAYOUT_SCALE),
+          fill: GOLDEN_PANEL_BODY,
+          fontWeight: '600',
+          wordWrap: true,
+          wordWrapWidth: dropStripW - traitPad * 2,
+          lineHeight: Math.round(20 * LAYOUT_SCALE),
+          breakWords: true,
+        },
+      });
+      traitText.position.set(traitPad, Math.round(8 * LAYOUT_SCALE));
+      traitBox.addChild(traitText);
+
+      contentY += traitPanelExtraH + Math.round(6 * LAYOUT_SCALE);
+    }
+
+    if (showDropPanel) {
+      const dropPad = Math.round(8 * LAYOUT_SCALE);
+      const dropInnerW = dropStripW - dropPad * 2;
+      const dropIconsOffsetY = Math.round(4 * LAYOUT_SCALE);
+      const dropLabelH = Math.round(18 * LAYOUT_SCALE);
+      const { rowStride: dropRowStride } = gearFarmPreviewCompactMetrics(dropInnerW);
+      const dropInnerH = dropLabelH + dropIconsOffsetY + dropRowStride;
+      const dropBoxH = Math.max(
+        dropPad * 2 + dropRowStride + dropLabelH,
+        dropPad * 2 +
+          dropInnerH +
+          (hasEnemyTraitPanel ? Math.max(0, traitPanelExtraH - dropPanelCompressH) : 0),
+      );
+
+      const dropBox = new Container();
+      dropBox.position.set(dropStripX, contentY + dropPanelShiftH);
+      card.addChild(dropBox);
+
+      const dropPlate = new Graphics();
+      const dropFrame = new Graphics();
+      drawGoldenSolidPanel(dropPlate, dropFrame, dropStripW, dropBoxH, LAYOUT_SCALE, {
+        plateAlpha: 0.78,
+      });
+      dropBox.addChild(dropPlate);
+      dropBox.addChild(dropFrame);
+
+      mountHorizontalGearFarmPreviewStrip(
+        dropBox,
+        dropPad,
+        dropPad,
+        dropInnerW,
+        chapterGearDropPreviews(targetId),
+        '掉落装备',
+        GOLDEN_PANEL_MUTED,
+        dropIconsOffsetY,
+        true,
+      );
+
+      contentY += dropPanelShiftH + dropBoxH;
+    }
+
+    const cardH = contentY + Math.round(22 * LAYOUT_SCALE);
+    drawGoldenSolidPanel(plate, frameOrn, cardW, cardH, LAYOUT_SCALE, { plateAlpha: 0.56 });
 
     const navGap = Math.round(18 * LAYOUT_SCALE);
     const arrowW = Math.round(148 * LAYOUT_SCALE);
@@ -731,6 +804,7 @@ export class ChapterSelectScreen extends Container {
       localY += Math.round(t.height + 12 * LAYOUT_SCALE);
     };
 
+    pushMutedLine(`本关强度：${bookChapterStrengthPercent(cid)}%（敌方数值按此缩放）`);
     pushSectionTitle('普通小怪：');
     pushMutedLine('各兵种以「首节点 1-1」进度估算数值；实战中随节点推进会变强。');
 
@@ -832,6 +906,7 @@ export class ChapterSelectScreen extends Container {
   }
 
   override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
+    botUnregisterScreen('chapterSelect');
     stopScreenMusic();
     this.bossPortraitFxDispose?.();
     this.bossPortraitFxDispose = null;

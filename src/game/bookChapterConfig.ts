@@ -1,6 +1,6 @@
 import { WOW_BOOK_CHAPTER_COUNT, mobPoolForBookChapter } from './wowBookData';
 
-export { bookChapterStrengthPercent } from './bookChapterStrength';
+export { bookChapterRoundStrengthPercent, bookChapterStrengthPercent } from './bookChapterStrength';
 export {
   COMBAT_POWER_INDEX_PER_DUNGEON_ORDINAL,
   dungeonCombatPowerIndex,

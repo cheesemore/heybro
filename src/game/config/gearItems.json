@@ -63,7 +63,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 6.5,
       "topGearSetGs": 3296,
-      "combatPowerIndex": 116.48
+      "combatPowerIndex": 136.48
     },
     {
       "dungeonId": "wailing_caverns",
@@ -85,7 +85,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 6.5,
       "topGearSetGs": 5056,
-      "combatPowerIndex": 125.28
+      "combatPowerIndex": 145.28
     },
     {
       "dungeonId": "shadowfang_keep",
@@ -107,7 +107,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 6.5,
       "topGearSetGs": 6192,
-      "combatPowerIndex": 130.96
+      "combatPowerIndex": 150.96
     },
     {
       "dungeonId": "blackfathom_deeps",
@@ -129,7 +129,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 6.5,
       "topGearSetGs": 7584,
-      "combatPowerIndex": 137.92
+      "combatPowerIndex": 157.92
     },
     {
       "dungeonId": "gnomeregan",
@@ -153,7 +153,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 8,
       "topGearSetGs": 11760,
-      "combatPowerIndex": 158.8
+      "combatPowerIndex": 178.8
     },
     {
       "dungeonId": "razorfen_kraul",
@@ -177,7 +177,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 8,
       "topGearSetGs": 14416,
-      "combatPowerIndex": 172.08
+      "combatPowerIndex": 192.08
     },
     {
       "dungeonId": "scarlet_monastery",
@@ -201,7 +201,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 8,
       "topGearSetGs": 17648,
-      "combatPowerIndex": 188.24
+      "combatPowerIndex": 208.24
     },
     {
       "dungeonId": "razorfen_downs",
@@ -225,7 +225,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 8,
       "topGearSetGs": 21632,
-      "combatPowerIndex": 208.16
+      "combatPowerIndex": 228.16
     },
     {
       "dungeonId": "uldaman",
@@ -249,7 +249,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 8,
       "topGearSetGs": 26496,
-      "combatPowerIndex": 232.48
+      "combatPowerIndex": 252.48
     },
     {
       "dungeonId": "zul_farrak",
@@ -273,7 +273,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 8,
       "topGearSetGs": 32464,
-      "combatPowerIndex": 262.32
+      "combatPowerIndex": 282.32
     },
     {
       "dungeonId": "maraudon",
@@ -297,7 +297,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 8,
       "topGearSetGs": 39760,
-      "combatPowerIndex": 298.8
+      "combatPowerIndex": 318.8
     },
     {
       "dungeonId": "sunken_temple",
@@ -323,7 +323,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 9.6,
       "topGearSetGs": 64096,
-      "combatPowerIndex": 420.48
+      "combatPowerIndex": 440.48
     },
     {
       "dungeonId": "blackrock_depths",
@@ -349,7 +349,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 9.6,
       "topGearSetGs": 78512,
-      "combatPowerIndex": 492.56
+      "combatPowerIndex": 512.56
     },
     {
       "dungeonId": "dire_maul",
@@ -375,7 +375,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 9.6,
       "topGearSetGs": 96176,
-      "combatPowerIndex": 580.88
+      "combatPowerIndex": 600.88
     },
     {
       "dungeonId": "stratholme",
@@ -401,7 +401,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 9.6,
       "topGearSetGs": 117824,
-      "combatPowerIndex": 689.12
+      "combatPowerIndex": 709.12
     },
     {
       "dungeonId": "scholomance",
@@ -427,7 +427,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 9.6,
       "topGearSetGs": 144352,
-      "combatPowerIndex": 821.76
+      "combatPowerIndex": 841.76
     },
     {
       "dungeonId": "lower_blackrock_spire",
@@ -453,7 +453,7 @@
       "strengthIncrement": 1.02,
       "nodeProgressMax": 9.6,
       "topGearSetGs": 176832,
-      "combatPowerIndex": 984.16
+      "combatPowerIndex": 1004.16
     }
   ],
   "items": [

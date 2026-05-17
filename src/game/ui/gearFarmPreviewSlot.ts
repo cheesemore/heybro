@@ -23,6 +23,19 @@ export function gearFarmPreviewGridMetrics(rowW: number, cols = GEAR_FARM_PREVIE
   return { gap, colW, iconSize, rowStride, nameBelow };
 }
 
+/** 选关等窄版面：单行掉落预览压缩约 40 设计像素高度 */
+export function gearFarmPreviewCompactMetrics(rowW: number, cols = GEAR_FARM_PREVIEW_COLS) {
+  const gap = Math.round(8 * LAYOUT_SCALE);
+  const colW = (rowW - (cols - 1) * gap) / cols;
+  const iconSize = Math.min(
+    Math.round(58 * LAYOUT_SCALE),
+    Math.floor(colW - Math.round(8 * LAYOUT_SCALE)),
+  );
+  const nameBelow = Math.round(24 * LAYOUT_SCALE);
+  const rowStride = iconSize + nameBelow + Math.round(4 * LAYOUT_SCALE);
+  return { gap, colW, iconSize, rowStride, nameBelow };
+}
+
 /** 金板内：最高品质外观 + 图标右下角最高等级 + 装备名称 */
 export function drawGearFarmPreviewSlot(
   parent: Container,
@@ -128,6 +141,7 @@ export function mountHorizontalGearFarmPreviewStrip(
   labelText = '掉落装备',
   labelFill = 0x94a3b8,
   iconsOffsetY = 0,
+  compact = false,
 ): number {
   if (previews.length === 0) return 0;
 
@@ -135,7 +149,7 @@ export function mountHorizontalGearFarmPreviewStrip(
     text: labelText,
     style: {
       fontFamily: FF,
-      fontSize: Math.round(18 * LAYOUT_SCALE),
+      fontSize: Math.round((compact ? 16 : 18) * LAYOUT_SCALE),
       fill: labelFill,
       fontWeight: '700',
     },
@@ -143,8 +157,10 @@ export function mountHorizontalGearFarmPreviewStrip(
   label.position.set(x, y);
   parent.addChild(label);
 
-  const labelH = Math.round(22 * LAYOUT_SCALE);
-  const { gap, colW, iconSize, rowStride } = gearFarmPreviewGridMetrics(viewportW);
+  const labelH = Math.round((compact ? 18 : 22) * LAYOUT_SCALE);
+  const { gap, colW, iconSize, rowStride } = compact
+    ? gearFarmPreviewCompactMetrics(viewportW)
+    : gearFarmPreviewGridMetrics(viewportW);
   const stripY = y + labelH + iconsOffsetY;
 
   const viewport = new Container();

@@ -34,20 +34,52 @@ import {
   UI_TEST_BOOK_CHAPTER_ID,
   UI_TEST_ROUND_META,
 } from './uiTestBattle';
+import { notifyBotChapterOutcome, setBotAfterDraftHandler } from './bot/events';
+import { botLog, isBotModeActive } from './bot/context';
+
+export type GameRootOptions = {
+  /** 跳过封面，直接进入选关（本地 bot 测试页） */
+  skipTitle?: boolean;
+};
 
 export class GameRoot extends Container {
   readonly run = new RunState();
   private readonly app: Application;
   private readonly layer = new Container();
   private readonly modal: ModalLayer;
+  private afterDraftInFlight = false;
 
-  constructor(app: Application) {
+  constructor(app: Application, opts?: GameRootOptions) {
     super();
     this.app = app;
     this.modal = new ModalLayer();
     this.addChild(this.layer);
     this.addChild(this.modal);
-    this.showTitle();
+    if (opts?.skipTitle) {
+      this.showChapterSelect(false);
+    } else {
+      this.showTitle();
+    }
+    if (isBotModeActive()) {
+      setBotAfterDraftHandler((force) => this.enterBattleAfterDraft(!!force));
+    }
+  }
+
+  /** Bot：选牌结束后进入战斗；force 用于超时重试 */
+  enterBattleAfterDraft(force = false): void {
+    if (force) {
+      this.afterDraftInFlight = false;
+      botLog('强制重试：加载战斗');
+    }
+    this.afterDraft();
+  }
+
+  getModalLayer(): ModalLayer {
+    return this.modal;
+  }
+
+  isBotMode(): boolean {
+    return isBotModeActive();
   }
 
   /** 封面：点击后进章节选择 */
@@ -135,6 +167,9 @@ export class GameRoot extends Container {
       successExtra?: string;
     },
   ): void {
+    if (isBotModeActive()) {
+      notifyBotChapterOutcome(opts.kind, chapterId);
+    }
     this.clearLayer();
     this.layer.addChild(
       new ChapterRunSettlementScreen({
@@ -262,7 +297,7 @@ export class GameRoot extends Container {
       this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
         kind: 'success',
         stars: st,
-        successExtra: '首领已击破，进度已保存。',
+        successExtra: '本关已通关，进度已保存。',
       });
       return;
     }
@@ -318,19 +353,41 @@ export class GameRoot extends Container {
   }
 
   private afterDraft(): void {
+    if (this.afterDraftInFlight) {
+      if (isBotModeActive()) botLog('afterDraft 跳过：上一次加载尚未结束');
+      return;
+    }
+    this.afterDraftInFlight = true;
+    const idx0 = this.run.currentRoundIndex;
+    const ch = this.run.bookChapterId;
+    if (isBotModeActive()) botLog(`afterDraft 开始：第 ${ch} 章 回合索引 ${idx0}`);
     void (async () => {
-      await preloadAllyPortraitTextures();
-      await preloadEnemyTextures(this.run.bookChapterId);
-      const idx = this.run.currentRoundIndex;
-      const base = roundsForBookChapter(this.run.bookChapterId)[idx];
-      if (!base) {
+      try {
+        await preloadAllyPortraitTextures();
+        await preloadEnemyTextures(this.run.bookChapterId);
+        const idx = this.run.currentRoundIndex;
+        const rounds = roundsForBookChapter(this.run.bookChapterId);
+        const base = rounds[idx];
+        if (!base) {
+          if (isBotModeActive()) {
+            botLog(`afterDraft 中止：回合索引 ${idx} 无效（共 ${rounds.length} 节点）`);
+          }
+          this.showLevelMap();
+          return;
+        }
+        const meta = getResolvedRoundMeta(this.run, idx, base);
+        if (isBotModeActive()) botLog(`加载战斗：${meta.label}（${meta.kind}）`);
+        this.clearLayer();
+        const battle = new BattleScreen(this.app, this.run, meta, (outcome) => this.afterBattle(outcome));
+        this.layer.addChild(battle);
+        if (isBotModeActive()) botLog('BattleScreen 已挂载');
+      } catch (e) {
+        if (isBotModeActive()) botLog(`afterDraft 失败：${String(e)}`);
+        console.error(e);
         this.showLevelMap();
-        return;
+      } finally {
+        this.afterDraftInFlight = false;
       }
-      const meta = getResolvedRoundMeta(this.run, idx, base);
-      this.clearLayer();
-      const battle = new BattleScreen(this.app, this.run, meta, (outcome) => this.afterBattle(outcome));
-      this.layer.addChild(battle);
     })();
   }
 
@@ -349,31 +406,12 @@ export class GameRoot extends Container {
     this.run.bossHpDerivedFinalAtkMult = 1;
     this.run.bossHpDerivedFinalHpMult = 1;
 
-    if (metaDone.kind === 'boss' && !cleared) {
-      const res = resolveAftermath(leg, outcome.perfect, outcome.enemyHpRatioRemaining);
-      this.run.playerHp += res.playerHpDelta;
-      this.run.clampPlayerHpToMax();
-      const econ = this.run.grantRoundEndEconomy(metaDone, outcome, 'compact').join('\n');
-      const detail = ['首领未击退', ...res.lines, `生命 ${this.run.playerHp}`, econ].join('\n');
-      if (this.run.playerHp <= 0) {
-        this.modal.alertBattleSettlement(`${detail}\n生命耗尽 · 本关失败`, () =>
-          this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
-            kind: 'fail',
-            failMessage: '生命耗尽，本关失败。',
-          }),
-        );
-        return;
-      }
-      this.modal.alertBattleSettlement(`${detail}\n返回地图再战首领`, () =>
-        this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
-          kind: 'fail',
-          failMessage: '首领未被击败。\n可返回选关后再次进入本关继续挑战。',
-        }),
-      );
-      return;
-    }
-
-    const res = resolveAftermath(leg, outcome.perfect, outcome.enemyHpRatioRemaining);
+    const res = resolveAftermath(
+      leg,
+      outcome.perfect,
+      outcome.enemyHpRatioRemaining,
+      metaDone.kind === 'boss',
+    );
     this.run.playerHp += res.playerHpDelta;
     this.run.clampPlayerHpToMax();
 

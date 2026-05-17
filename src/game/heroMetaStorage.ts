@@ -350,13 +350,17 @@ export function performHeroLotteryTenDraw():
   return { ok: true, results };
 }
 
-/** 通关第 1 / 3 / 5 章各解锁 1 个栏位，最多 3 */
+/** 各栏位解锁条件：`null` 表示默认可用；否则需通关对应书本章节 */
 export function maxHeroDeploySlots(): number {
   const cleared = new Set(loadChapterProgress().clearedChapterIds);
   let n = 0;
-  if (cleared.has(1)) n += 1;
-  if (cleared.has(3)) n += 1;
-  if (cleared.has(5)) n += 1;
+  for (const ch of HERO_DEPLOY_SLOT_CHAPTER) {
+    if (ch == null) {
+      n += 1;
+      continue;
+    }
+    if (cleared.has(ch)) n += 1;
+  }
   return n;
 }
 
@@ -399,8 +403,13 @@ export function nextStarCost(stars: number): number | null {
   return HERO_STAR_COST[stars - 1] ?? null;
 }
 
-/** 第 1 / 2 / 3 个栏位分别需通关的章节 id */
-export const HERO_DEPLOY_SLOT_CHAPTER: readonly [1, 3, 5] = [1, 3, 5];
+/**
+ * 第 1 / 2 / 3 个栏位解锁条件（书本章节 id）：
+ * - 第 1 栏：默认可用
+ * - 第 2 栏：通关死亡矿井第二关（chapterIndex 6）
+ * - 第 3 栏：通关死亡矿井第六关（chapterIndex 10）
+ */
+export const HERO_DEPLOY_SLOT_CHAPTER: readonly [number | null, number, number] = [null, 6, 10];
 
 export type TryDeployHeroOutcome =
   | { ok: true; replaced?: { slot: number; oldId: HeroId } }

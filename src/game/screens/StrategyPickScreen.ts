@@ -6,6 +6,8 @@ import type { RunState } from '../runState';
 import { applyChosenStrategy, pickThreeStrategies } from '../strategyApply';
 import { mountStretchedDungeonBackground } from '../dungeonBackground';
 import { dungeonIdForBookChapter } from '../wowBookData';
+import { isBotModeActive } from '../bot/context';
+import { botRegisterScreen, botUnregisterScreen } from '../bot/registry';
 
 const PAD_X = Math.round(20 * LAYOUT_SCALE);
 
@@ -108,5 +110,25 @@ export class StrategyPickScreen extends Container {
     }
 
     attachScreenDebugLabel(this, 'StrategyPickScreen');
+
+    if (isBotModeActive()) {
+      botRegisterScreen({
+        kind: 'strategyPick',
+        strategyPick: { pick: (index) => this.botPick(index) },
+      });
+    }
+  }
+
+  botPick(index: number): void {
+    const opt = this.options[index];
+    if (!opt) return;
+    this.run.strategyPicks.push({ id: opt.id, title: opt.title, desc: opt.desc });
+    const lines = [`已选择：${opt.title}`, ...applyChosenStrategy(opt.id, this.run)];
+    this.onDone(lines);
+  }
+
+  override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
+    botUnregisterScreen('strategyPick');
+    super.destroy(options);
   }
 }
