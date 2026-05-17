@@ -1,0 +1,23 @@
+---
+description: 在 tools/ 下写文生图或批量出图工具前，先读 tools/image2-api-and-batch-guis.md
+globs: tools/**
+alwaysApply: false
+---
+
+# tools/ 文生图与批量 GUI
+
+在 `tools/` 目录**新增或修改**与**文生图、批量出图、tkinter 批量 GUI**相关的脚本前，必须先阅读：
+
+**`tools/image2-api-and-batch-guis.md`**
+
+要点（细节以 `tools/image2-api-and-batch-guis.md` 为准）：
+
+**三条标准流程**：`API → temp/raw → 裁切 → temp/icons` → **一键导入** `public/assets/`（新 GUI 必须遵守）。
+
+1. **接口**：`image2_generate.py`；payload 仅 `model/prompt/n:1/size/output_format`；**勿**默认传 `background`；`generate_to_file` 返回 `(path, hint)`；`format_api_error` 打日志。
+2. **临时目录再切图**：禁止 API 直写 `public/`；装备参考 `raw/`→`icons/`（`process_icon_png`）；可勾选「仅裁切」。
+3. **一键导入**：装备 GUI 有「一键导入项目」→ `import_gear_icons_to_project` → `public/assets/gear/` 覆盖 + 刷新 manifest；新工具须同等能力或说明例外。
+
+Tk：**禁止**子线程 `var.get()`/`_log()`；`alert` 用 `title, body, ok = msg[1]`。
+
+现有 GUI 对照表见 MD §5；新工具更新 MD §5、§6。
