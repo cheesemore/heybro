@@ -54,6 +54,14 @@ function allyRecruitTraitText(kind: AllyClass): string {
       return '越射越猛';
     case 'priest':
       return '治疗';
+    case 'druid':
+      return '变熊';
+    case 'assassin':
+      return '突袭后排';
+    case 'warlock':
+      return '制造恐惧';
+    case 'shaman':
+      return '边打边奶';
     default:
       return '';
   }
