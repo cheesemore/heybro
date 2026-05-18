@@ -1,5 +1,7 @@
 import type { Texture } from 'pixi.js';
 import { loadPublicTexture, publicAssetUrl } from './loadPublicTexture';
+import { preloadAllyPortraitVariantTextures } from './allyPortraitVariants';
+import { ALLY_CLASSES } from './constants';
 import type { AllyClass } from './types';
 
 /**
@@ -21,10 +23,10 @@ let preloadPromise: Promise<void> | null = null;
 
 export async function preloadAllyPortraitTextures(): Promise<void> {
   if (!preloadPromise) {
-    const kinds: AllyClass[] = ['warrior', 'mage', 'priest', 'archer', 'knight'];
+    const kinds: AllyClass[] = [...ALLY_CLASSES];
     preloadPromise = (async () => {
-      await Promise.all(
-        kinds.map(async (kind) => {
+      await Promise.all([
+        ...kinds.map(async (kind) => {
           try {
             const tex = await loadPublicTexture(portraitUrl(kind));
             textureByKind.set(kind, tex);
@@ -32,7 +34,8 @@ export async function preloadAllyPortraitTextures(): Promise<void> {
             /* 缺文件或网络失败：战斗 UI 回退为色盘 + 字 */
           }
         }),
-      );
+        preloadAllyPortraitVariantTextures(),
+      ]);
     })();
   }
   await preloadPromise;

@@ -23,6 +23,10 @@ export const CLASS_BALANCE_BLUE_HERO: Record<AllyClass, HeroId> = {
   priest: PRIEST_SHELTER_BLUE_ID,
   archer: ARCHER_STRONG_STRIKE_BLUE_ID,
   knight: KNIGHT_HOLY_SANCTION_BLUE_ID,
+  warlock: 'warlock_01',
+  shaman: 'shaman_01',
+  assassin: 'assassin_01',
+  druid: 'druid_01',
 };
 
 export type ClassBalanceDeadminesPresetId = 'dm_s3' | 'dm_s4' | 'dm_s5' | 'dm_s6';
@@ -166,6 +170,10 @@ function formationLabelFromFormation(formation: readonly [AllyClass, AllyClass, 
     priest: '牧',
     archer: '射',
     knight: '骑',
+    warlock: '术',
+    shaman: '萨',
+    assassin: '刺',
+    druid: '德',
   };
   return formation.map((c) => map[c]).join('');
 }

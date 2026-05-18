@@ -1,3 +1,4 @@
+import { getUnlockedAllyClasses, isAllyClassUnlocked } from './allyClassUnlock';
 import { ALLY_CLASSES } from './constants';
 import { addClassFragments } from './classProgressStorage';
 import { getTotalStarFilledCount, loadChapterProgress } from './chapterProgressStorage';
@@ -37,7 +38,12 @@ export type LotteryTenResultItem =
 const FRAGMENT_CHANCE = 0.95;
 
 function pickRandomFragmentClass(): AllyClass {
-  return ALLY_CLASSES[Math.floor(Math.random() * ALLY_CLASSES.length)]!;
+  const pool = getUnlockedAllyClasses();
+  return pool[Math.floor(Math.random() * pool.length)]!;
+}
+
+function heroRegistryForLottery(): typeof HERO_REGISTRY {
+  return HERO_REGISTRY.filter((h) => isAllyClassUnlocked(h.allyClass));
 }
 
 export type HeroMetaFile = {
@@ -232,7 +238,7 @@ function applyAddHeroDuplicateToMeta(meta: HeroMetaFile, id: HeroId): void {
 }
 
 function allHeroesOfQualityOwned(meta: HeroMetaFile, q: HeroQuality): boolean {
-  const list = HERO_REGISTRY.filter((h) => h.quality === q);
+  const list = heroRegistryForLottery().filter((h) => h.quality === q);
   if (!list.length) return true;
   return list.every((h) => !!meta.heroes[h.id]);
 }
@@ -265,14 +271,15 @@ function pickLotteryColorBand(meta: HeroMetaFile): LotteryColorBand {
 
 function pickHeroIdForLotteryFromMeta(meta: HeroMetaFile): HeroId {
   const band = pickLotteryColorBand(meta);
+  const registry = heroRegistryForLottery();
   let pool: typeof HERO_REGISTRY;
-  if (band === 'blue') pool = HERO_REGISTRY.filter((h) => h.quality === 1);
-  else if (band === 'purple') pool = HERO_REGISTRY.filter((h) => h.quality === 2);
-  else pool = HERO_REGISTRY.filter((h) => h.quality >= 3);
+  if (band === 'blue') pool = registry.filter((h) => h.quality === 1);
+  else if (band === 'purple') pool = registry.filter((h) => h.quality === 2);
+  else pool = registry.filter((h) => h.quality >= 3);
   if (!pool.length) {
-    pool = HERO_REGISTRY.filter((h) => h.quality === 1);
+    pool = registry.filter((h) => h.quality === 1);
   }
-  if (!pool.length) return HERO_REGISTRY[0]!.id;
+  if (!pool.length) return registry[0]?.id ?? HERO_REGISTRY[0]!.id;
   return pool[Math.floor(Math.random() * pool.length)]!.id;
 }
 

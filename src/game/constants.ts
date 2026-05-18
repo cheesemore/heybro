@@ -46,7 +46,17 @@ export const BATTLE_COLLISION_RADIUS_COEFF_BOSS = 1;
  */
 export const GLOBAL_UNIT_ATK_MULT = 2;
 
-export const ALLY_CLASSES = ['warrior', 'mage', 'priest', 'archer', 'knight'] as const;
+export const ALLY_CLASSES = [
+  'warrior',
+  'mage',
+  'priest',
+  'archer',
+  'knight',
+  'warlock',
+  'shaman',
+  'assassin',
+  'druid',
+] as const;
 /**
  * 普通敌方兵种（12 种）。书本关底首领见 `wowBookBosses.json`（缺省字段用 `wowBookData.WOW_BOOK_BOSS_TABLE_DEFAULT`）。
  *

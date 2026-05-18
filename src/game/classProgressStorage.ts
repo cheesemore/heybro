@@ -14,13 +14,17 @@ const CLASS_FRAGMENTS_PER_UPGRADE: number =
 
 const STORAGE_KEY = 'heybro.classProgress.v1';
 
-/** 章节界面与养成页展示顺序：战士 / 法师 / 牧师 / 骑士 / 弓手 */
+/** 章节界面与养成页展示顺序 */
 export const CLASS_PROGRESS_DISPLAY_ORDER: readonly AllyClass[] = [
   'warrior',
   'mage',
   'priest',
   'knight',
   'archer',
+  'warlock',
+  'shaman',
+  'assassin',
+  'druid',
 ] as const;
 
 export type ClassProgressFile = {

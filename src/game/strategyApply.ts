@@ -1,4 +1,6 @@
-import { ALLY_CLASSES, BOARD_CELL_MAX_STACKS, ROGUE_PICK_AFTER_FIRST_COST, ROGUE_REFRESH_TRIO_COST } from './constants';
+import { getUnlockedAllyClasses, rogueRefreshTrioBaseCost } from './allyClassUnlock';
+import { distinctAllyClassesOnBoard } from './draftLogic';
+import { BOARD_CELL_MAX_STACKS, ROGUE_PICK_AFTER_FIRST_COST } from './constants';
 import { stacksOnBoard } from './battleBonds';
 import { applyPick } from './draftLogic';
 import type { RunState } from './runState';
@@ -205,8 +207,11 @@ function randomIntInclusive(lo: number, hi: number): number {
   return lo + Math.floor(Math.random() * (hi - lo + 1));
 }
 
-function randomDistinctClasses(n: number): AllyClass[] {
-  const pool = [...ALLY_CLASSES];
+function randomDistinctClasses(n: number, run: RunState): AllyClass[] {
+  const unlocked = getUnlockedAllyClasses();
+  const onBoard = distinctAllyClassesOnBoard(run.board);
+  const atCap = onBoard.size >= 5;
+  const pool = unlocked.filter((k) => !atCap || onBoard.has(k));
   shuffleInPlace(pool);
   return pool.slice(0, Math.min(n, pool.length));
 }
@@ -247,7 +252,7 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
       lines.push('余额宝：计息上限已提升，+15 金');
       break;
     case 'c1_random_deploy':
-      for (const k of randomDistinctClasses(3)) {
+      for (const k of randomDistinctClasses(3, run)) {
         applyPick(run.board, run.artifactBySlot, k);
         lines.push(`部署 ${ALLY_DEFS[k].name}`);
       }
@@ -315,7 +320,7 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
       lines.push('破釜沉舟：生命置 1，+50 金');
       break;
     case 'c3_random_enhance':
-      for (const k of randomDistinctClasses(5)) {
+      for (const k of randomDistinctClasses(5, run)) {
         applyPick(run.board, run.artifactBySlot, k);
         lines.push(`获得 ${ALLY_DEFS[k].name}`);
       }
@@ -411,8 +416,9 @@ export function applyRewardChapter(run: RunState, chapter: 1 | 2 | 3): string[] 
   run.gold += g;
   lines.push(`奖励：+${g} 金`);
   const n = randomIntInclusive(uLo, uHi);
+  const unlocked = getUnlockedAllyClasses();
   for (let i = 0; i < n; i++) {
-    const k = ALLY_CLASSES[Math.floor(Math.random() * ALLY_CLASSES.length)]!;
+    const k = unlocked[Math.floor(Math.random() * unlocked.length)]!;
     applyPick(run.board, run.artifactBySlot, k);
     lines.push(`随机角色：${ALLY_DEFS[k].name}`);
   }
@@ -441,7 +447,7 @@ export function roguePickGoldCost(run: RunState, kind: AllyClass, picksThisRound
  * 刷新三选一金币：当**当前三张**里任一兵种在棋盘上总层数 >20 时，刷新价 ×2。
  */
 export function rogueRefreshGoldCost(run: RunState, choices: readonly AllyClass[]): number {
-  let c = ROGUE_REFRESH_TRIO_COST;
+  let c = rogueRefreshTrioBaseCost();
   if (choices.some((k) => stacksOnBoard(run.board, k) > 20)) c *= 2;
   return c;
 }

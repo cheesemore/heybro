@@ -1,4 +1,5 @@
-import { ALLY_CLASSES, BOARD_CELL_MAX_STACKS } from './constants';
+import { BOARD_CELL_MAX_STACKS } from './constants';
+import { getUnlockedAllyClasses, MAX_DISTINCT_ALLY_CLASSES_ON_BOARD } from './allyClassUnlock';
 import type { ArtifactKind } from './strategyTypes';
 import type { AllyClass, BoardCell } from './types';
 
@@ -47,11 +48,50 @@ function shuffleInPlace<T>(arr: T[]): void {
   }
 }
 
-/** 从 5 兵种中随机不重复取 3 个，用于传统肉鸽三选一 */
-export function randomThreeFromFive(): AllyClass[] {
-  const pool = [...ALLY_CLASSES];
+export function distinctAllyClassesOnBoard(board: BoardCell[]): Set<AllyClass> {
+  const s = new Set<AllyClass>();
+  for (const c of board) {
+    if (c) s.add(c.kind);
+  }
+  return s;
+}
+
+function buildDraftChoicePool(
+  board: BoardCell[],
+  artifactBySlot: readonly (ArtifactKind | null)[],
+): AllyClass[] {
+  const unlocked = getUnlockedAllyClasses();
+  const onBoard = distinctAllyClassesOnBoard(board);
+  const atClassCap = onBoard.size >= MAX_DISTINCT_ALLY_CLASSES_ON_BOARD;
+  return unlocked.filter((k) => {
+    if (atClassCap && !onBoard.has(k)) return false;
+    return canAcceptPick(board, artifactBySlot, k) || onBoard.has(k);
+  });
+}
+
+/**
+ * 从已解锁职业中随机不重复取最多 3 个（受棋盘 5 兵种上限与空格约束）。
+ */
+export function randomThreeDraftChoices(
+  board: BoardCell[],
+  artifactBySlot: readonly (ArtifactKind | null)[],
+): AllyClass[] {
+  let pool = buildDraftChoicePool(board, artifactBySlot);
+  if (pool.length < 3) {
+    pool = getUnlockedAllyClasses().filter(
+      (k) => canAcceptPick(board, artifactBySlot, k) || distinctAllyClassesOnBoard(board).has(k),
+    );
+  }
+  if (!pool.length) pool = [...getUnlockedAllyClasses()];
   shuffleInPlace(pool);
-  return [pool[0]!, pool[1]!, pool[2]!];
+  return pool.slice(0, Math.min(3, pool.length));
+}
+
+/** @deprecated 使用 randomThreeDraftChoices(board, artifactBySlot) */
+export function randomThreeFromFive(): AllyClass[] {
+  const board: BoardCell[] = Array.from({ length: 9 }, () => null);
+  const artifactBySlot: (ArtifactKind | null)[] = Array.from({ length: 9 }, () => null);
+  return randomThreeDraftChoices(board, artifactBySlot);
 }
 
 export function boardHasAnyUnit(board: BoardCell[]): boolean {

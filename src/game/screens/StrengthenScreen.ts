@@ -36,6 +36,7 @@ import type { ModalLayer } from './ModalLayer';
 import { allyBasicSkillDesc } from '../bondCopy';
 import { createDraftAllyToken, createDraftHeroToken } from '../unitCircleTokens';
 import { ALLY_DEFS } from '../unitDefs';
+import { allyClassUnlockHint, isAllyClassUnlocked } from '../allyClassUnlock';
 import { ALLY_CLASSES } from '../constants';
 import { botAutoDeployPreferredHeroes } from '../bot/heroDeployPolicy';
 import { isBotModeActive } from '../bot/context';
@@ -107,6 +108,7 @@ export class StrengthenScreen extends Container {
   private scrollViewH = 0;
   private scrollMinY = 0;
   private scrollDragActive = false;
+  private scrollDragTarget: 'hero' | 'class' | null = null;
   private scrollDragPointerId: number | null = null;
   private scrollDragStartClientY = 0;
   private scrollDragStartContentY = 0;
@@ -213,7 +215,7 @@ export class StrengthenScreen extends Container {
     this.classScrollMaskG.rect(0, 0, GAME_WIDTH - PAD * 2, this.classScrollViewH).fill(0xffffff);
     this.classScrollViewport.addChild(this.classScrollMaskG);
     this.classScrollViewport.mask = this.classScrollMaskG;
-    this.classScrollContent.eventMode = 'static';
+    this.classScrollContent.eventMode = 'passive';
     this.classScrollViewport.addChild(this.classScrollContent);
     this.classScrollViewport.hitArea = new Rectangle(0, 0, GAME_WIDTH - PAD * 2, this.classScrollViewH);
     this.classScrollViewport.on('wheel', (e: FederatedWheelEvent) => {
@@ -224,6 +226,11 @@ export class StrengthenScreen extends Container {
       else if (e.deltaMode === 2) dy *= 96;
       this.classScrollContent.y -= dy * 0.85;
       this.clampClassScroll();
+    });
+    this.classScrollViewport.on('pointerdown', (e: FederatedPointerEvent) => {
+      if (this.tab !== 'class') return;
+      if (this.classScrollMinY >= -0.5) return;
+      this.beginPanelScrollDrag(e, 'class');
     });
     this.classRoot.addChild(this.classScrollViewport);
 
@@ -281,7 +288,7 @@ export class StrengthenScreen extends Container {
     this.scrollViewport.on('pointerdown', (e: FederatedPointerEvent) => {
       if (this.tab !== 'hero') return;
       if (this.scrollMinY >= -0.5) return;
-      this.beginHeroScrollDrag(e);
+      this.beginPanelScrollDrag(e, 'hero');
     });
 
     this.heroRoot.addChild(this.scrollViewport);
@@ -435,8 +442,30 @@ export class StrengthenScreen extends Container {
     const midX = leftW + Math.round(16 * LAYOUT_SCALE);
 
     let y = 0;
+    const footFs = Math.round(15 * LAYOUT_SCALE);
+    const footLh = Math.round(22 * LAYOUT_SCALE);
+    const heroBondFootnote = new Text({
+      text: '英雄单位同样享有职业技能和职业羁绊，但是不提供职业羁绊人口',
+      style: {
+        fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+        fontSize: footFs,
+        fill: GOLDEN_PANEL_ACCENT,
+        wordWrap: true,
+        wordWrapWidth: rowW,
+        lineHeight: footLh,
+        align: 'center',
+      },
+    });
+    heroBondFootnote.eventMode = 'none';
+    heroBondFootnote.anchor.set(0.5, 0);
+    heroBondFootnote.position.set(rowW / 2, y);
+    this.classScrollContent.addChild(heroBondFootnote);
+    y += heroBondFootnote.height + Math.round(12 * LAYOUT_SCALE);
+
     for (const cls of CLASS_PROGRESS_DISPLAY_ORDER) {
+      const locked = !isAllyClassUnlocked(cls);
       const row = new Container();
+      row.eventMode = 'passive';
       row.position.set(0, y);
 
       const AVATAR_SHIFT_Y = Math.round(30 * LAYOUT_SCALE);
@@ -466,7 +495,37 @@ export class StrengthenScreen extends Container {
           AVATAR_SHIFT_Y -
           Math.round(30 * LAYOUT_SCALE),
       );
+      if (locked) nameT.style.fill = 0x64748b;
       row.addChild(nameT);
+
+      if (locked) {
+        if (avWrap) avWrap.alpha = 0.4;
+        const panelRowH = Math.round(140 * LAYOUT_SCALE);
+        const bg = new Graphics();
+        bg.eventMode = 'none';
+        bg.roundRect(0, 0, rowW, panelRowH, Math.round(16 * LAYOUT_SCALE)).fill(0x0a0f18).stroke({
+          width: Math.max(2, Math.round(2 * LAYOUT_SCALE)),
+          color: 0x1e293b,
+        });
+        row.addChildAt(bg, 0);
+        const lockT = new Text({
+          text: allyClassUnlockHint(cls),
+          style: {
+            fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+            fontSize: Math.round(17 * LAYOUT_SCALE),
+            fill: 0x94a3b8,
+            fontWeight: '600',
+            wordWrap: true,
+            wordWrapWidth: rowW - leftW - Math.round(32 * LAYOUT_SCALE),
+            lineHeight: Math.round(26 * LAYOUT_SCALE),
+          },
+        });
+        lockT.position.set(leftW + Math.round(16 * LAYOUT_SCALE), Math.round(48 * LAYOUT_SCALE));
+        row.addChild(lockT);
+        this.classScrollContent.addChild(row);
+        y += panelRowH + rowGap;
+        continue;
+      }
 
       const st = classDisplayBaseStats(cls);
       const need = fragmentsRequiredForNextLevel(st.level);
@@ -527,6 +586,7 @@ export class StrengthenScreen extends Container {
       const skillY = panelRowH - skillBottomPad - skillBlockH;
 
       const bg = new Graphics();
+      bg.eventMode = 'none';
       bg.roundRect(0, 0, rowW, panelRowH, Math.round(16 * LAYOUT_SCALE)).fill(0x111827).stroke({
         width: Math.max(2, Math.round(2 * LAYOUT_SCALE)),
         color: 0x334155,
@@ -664,73 +724,67 @@ export class StrengthenScreen extends Container {
       y += panelRowH + rowGap;
     }
 
-    const footFs = Math.round(15 * LAYOUT_SCALE);
-    const footLh = Math.round(22 * LAYOUT_SCALE);
-    const heroBondFootnote = new Text({
-      text: '英雄单位同样享有职业技能和职业羁绊，但是不提供职业羁绊人口',
-      style: {
-        fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
-        fontSize: footFs,
-        fill: GOLDEN_PANEL_ACCENT,
-        wordWrap: true,
-        wordWrapWidth: rowW,
-        lineHeight: footLh,
-        align: 'center',
-      },
-    });
-    heroBondFootnote.anchor.set(0.5, 0);
-    heroBondFootnote.position.set(rowW / 2, y + Math.round(4 * LAYOUT_SCALE));
-    this.classScrollContent.addChild(heroBondFootnote);
-    y += heroBondFootnote.height + Math.round(10 * LAYOUT_SCALE);
-
     const contentH = y - rowGap;
     this.classScrollMinY = Math.min(0, this.classScrollViewH - contentH);
     this.classScrollContent.y = 0;
     this.clampClassScroll();
+    this.updateScrollViewportCursors();
   }
 
-  private beginHeroScrollDrag(e: FederatedPointerEvent): void {
-    if (this.scrollMinY >= -0.5) return;
-    this.endHeroScrollDrag();
+  private beginPanelScrollDrag(e: FederatedPointerEvent, target: 'hero' | 'class'): void {
+    const minY = target === 'hero' ? this.scrollMinY : this.classScrollMinY;
+    if (minY >= -0.5) return;
+    this.endPanelScrollDrag();
     this.scrollDragActive = true;
+    this.scrollDragTarget = target;
     this.scrollGestureForTap = false;
     this.scrollDragPointerId = e.pointerId;
     this.scrollDragStartClientY = e.client.y;
-    this.scrollDragStartContentY = this.scrollContent.y;
+    this.scrollDragStartContentY =
+      target === 'hero' ? this.scrollContent.y : this.classScrollContent.y;
     document.addEventListener('pointermove', this.boundDocPointerMove, { passive: true });
     document.addEventListener('pointerup', this.boundDocPointerUp, { passive: true });
     document.addEventListener('pointercancel', this.boundDocPointerUp, { passive: true });
-    this.scrollViewport.cursor = 'grabbing';
+    if (target === 'hero') this.scrollViewport.cursor = 'grabbing';
+    else this.classScrollViewport.cursor = 'grabbing';
   }
 
   private onDocPointerMove(e: PointerEvent): void {
     if (!this.scrollDragActive || e.pointerId !== this.scrollDragPointerId) return;
     const dy = e.clientY - this.scrollDragStartClientY;
     if (Math.abs(dy) > HERO_SCROLL_SLOP_PX) this.scrollGestureForTap = true;
-    this.scrollContent.y = this.scrollDragStartContentY + dy;
-    this.clampScroll();
+    if (this.scrollDragTarget === 'class') {
+      this.classScrollContent.y = this.scrollDragStartContentY + dy;
+      this.clampClassScroll();
+    } else {
+      this.scrollContent.y = this.scrollDragStartContentY + dy;
+      this.clampScroll();
+    }
   }
 
   private onDocPointerUp(e: PointerEvent): void {
     if (!this.scrollDragActive || e.pointerId !== this.scrollDragPointerId) return;
-    if (this.scrollGestureForTap) this.blockNextHeroCardTap = true;
+    if (this.scrollGestureForTap && this.scrollDragTarget === 'hero') this.blockNextHeroCardTap = true;
     this.scrollGestureForTap = false;
-    this.endHeroScrollDrag();
+    this.endPanelScrollDrag();
   }
 
-  private endHeroScrollDrag(): void {
+  private endPanelScrollDrag(): void {
     if (!this.scrollDragActive && this.scrollDragPointerId === null) return;
     this.scrollDragActive = false;
+    this.scrollDragTarget = null;
     this.scrollDragPointerId = null;
     document.removeEventListener('pointermove', this.boundDocPointerMove);
     document.removeEventListener('pointerup', this.boundDocPointerUp);
     document.removeEventListener('pointercancel', this.boundDocPointerUp);
-    this.updateScrollViewportCursor();
+    this.updateScrollViewportCursors();
   }
 
-  private updateScrollViewportCursor(): void {
-    const canScroll = this.tab === 'hero' && this.scrollMinY < -0.5;
-    this.scrollViewport.cursor = canScroll ? 'grab' : 'default';
+  private updateScrollViewportCursors(): void {
+    const heroCan = this.tab === 'hero' && this.scrollMinY < -0.5;
+    this.scrollViewport.cursor = heroCan ? 'grab' : 'default';
+    const classCan = this.tab === 'class' && this.classScrollMinY < -0.5;
+    this.classScrollViewport.cursor = classCan ? 'grab' : 'default';
   }
 
   private clampScroll(): void {
@@ -745,10 +799,10 @@ export class StrengthenScreen extends Container {
     this.refreshTabsVisual();
     if (t === 'hero') {
       this.clampScroll();
-      this.updateScrollViewportCursor();
-    } else {
-      this.endHeroScrollDrag();
+    } else if (t !== 'class') {
+      this.endPanelScrollDrag();
     }
+    this.updateScrollViewportCursors();
     if (t === 'class') {
       this.drawClassStrengthenPanels();
       this.clampClassScroll();
@@ -760,7 +814,7 @@ export class StrengthenScreen extends Container {
 
   override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
     botUnregisterScreen('strengthen');
-    this.endHeroScrollDrag();
+    this.endPanelScrollDrag();
     this.closeHeroSheet();
     super.destroy(options);
   }
@@ -1116,7 +1170,7 @@ export class StrengthenScreen extends Container {
     const contentH = rows * cellH + Math.max(0, rows - 1) * gap;
     this.scrollMinY = Math.min(0, this.scrollViewH - contentH);
     this.clampScroll();
-    this.updateScrollViewportCursor();
+    this.updateScrollViewportCursors();
   }
 
   private closeHeroSheet(): void {

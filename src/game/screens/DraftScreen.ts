@@ -6,7 +6,7 @@ import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { allBondStacks } from '../battleBonds';
 import { recruitCardBondedStats } from '../recruitCardBondStats';
 import { ALLY_CLASSES } from '../constants';
-import { applyPick, boardHasAnyUnit, canAcceptPick, randomThreeFromFive } from '../draftLogic';
+import { applyPick, boardHasAnyUnit, canAcceptPick, randomThreeDraftChoices } from '../draftLogic';
 import { botDraftClassPriority } from '../bot/draftPickPolicy';
 import { isBotModeActive } from '../bot/context';
 import { botRegisterScreen, botUnregisterScreen } from '../bot/registry';
@@ -137,7 +137,7 @@ export class DraftScreen extends Container {
   private readonly run: RunState;
   private readonly onFinished: () => void;
   private readonly roundMeta: RoundMeta;
-  private choices: AllyClass[] = randomThreeFromFive();
+  private choices: AllyClass[] = [];
   private picksThisRound = 0;
   private draftFinishCommitted = false;
   /** tryFinish 已调用 onFinished（Bot 用于判断是否真正提交） */
@@ -357,6 +357,7 @@ export class DraftScreen extends Container {
     this.addChild(this.tip);
 
     this.refreshHud();
+    this.rollChoices();
     this.drawTrio();
     this.drawBoard();
     this.drawControls();
@@ -552,7 +553,7 @@ export class DraftScreen extends Container {
   }
 
   private rollChoices(): void {
-    this.choices = randomThreeFromFive();
+    this.choices = randomThreeDraftChoices(this.run.board, this.run.artifactBySlot);
   }
 
   private drawTrio(): void {

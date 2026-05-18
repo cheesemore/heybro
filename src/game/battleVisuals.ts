@@ -615,6 +615,63 @@ export function tickSlashFx(list: SlashFx[], dt: number): void {
   }
 }
 
+const DRUID_BEAR_SWIPE_ARC_DUR = (): number => Math.max(0.16, 0.26 * (LAYOUT_SCALE / 1));
+
+/** 德鲁伊熊形态横扫：扇形范围内几道左右相交的红色弧线 */
+function drawDruidBearSwipeArcs(g: Graphics, size: number, alpha: number): void {
+  if (alpha < 0.02 || size < 3) {
+    g.clear();
+    return;
+  }
+  const w = Math.max(4, Math.round(5.5 * LAYOUT_SCALE));
+  const sweep = Math.PI * 0.36;
+  const r = size * 1.06;
+  g.clear();
+  const red = 0xdc2626;
+  const redHi = 0xf87171;
+  const c1x = size * 0.4;
+  const c1y = -size * 0.1;
+  const mid1 = Math.PI * 0.74;
+  g.arc(c1x, c1y, r, mid1 - sweep / 2, mid1 + sweep / 2);
+  g.stroke({ width: w, color: red, alpha, cap: 'round', join: 'round' });
+  const c2x = -size * 0.4;
+  const c2y = -size * 0.1;
+  const mid2 = Math.PI * 0.26;
+  g.arc(c2x, c2y, r, mid2 - sweep / 2, mid2 + sweep / 2);
+  g.stroke({ width: w * 0.88, color: redHi, alpha: alpha * 0.94, cap: 'round', join: 'round' });
+  g.arc(0, size * 0.06, r * 0.9, -Math.PI * 0.52, -Math.PI * 0.08);
+  g.stroke({ width: w * 0.72, color: red, alpha: alpha * 0.8, cap: 'round' });
+  g.arc(0, -size * 0.2, r * 0.86, Math.PI * 0.08, Math.PI * 0.52);
+  g.stroke({ width: w * 0.72, color: redHi, alpha: alpha * 0.75, cap: 'round' });
+}
+
+/** 熊德横扫 VFX：容器 rotation = 面向，半径覆盖近战扇形 */
+export class DruidBearSwipeArcFx extends Container {
+  private readonly g = new Graphics();
+  private t = 0;
+  private readonly dur: number;
+  private readonly rMax: number;
+
+  constructor(cx: number, cy: number, aimAngle: number, rOuter: number) {
+    super();
+    this.position.set(cx, cy);
+    this.rotation = aimAngle;
+    this.rMax = rOuter;
+    this.dur = DRUID_BEAR_SWIPE_ARC_DUR();
+    this.addChild(this.g);
+  }
+
+  tick(dt: number): boolean {
+    this.t += dt;
+    const prog = Math.min(1, this.t / this.dur);
+    const eased = 1 - (1 - prog) ** 2;
+    const size = this.rMax * (0.12 + eased * 0.92);
+    const alpha = 0.9 * (1 - prog * 0.88);
+    drawDruidBearSwipeArcs(this.g, size, alpha);
+    return this.t >= this.dur;
+  }
+}
+
 export type RayBurstFx = { g: Graphics; t: number; max: number };
 
 export function spawnHealBurst(layer: Container, x: number, y: number): RayBurstFx {
@@ -883,6 +940,10 @@ export type ProjectileVisualStyle =
   | 'ally_arcane_missile'
   | 'ally_archer'
   | 'ally_priest'
+  | 'ally_warlock'
+  | 'ally_warlock_soul_fire'
+  | 'ally_druid'
+  | 'ally_shaman_lightning'
   | 'ally_generic'
   | 'enemy_headhunter'
   | 'enemy_boss_magic'
@@ -913,6 +974,38 @@ export function buildProjectileGraphic(style: ProjectileVisualStyle): Graphics {
       g.moveTo(0, -6).lineTo(0, 6).stroke({ width: 1.5, color: 0xfbbf24, alpha: 0.9 });
       g.moveTo(-5, 0).lineTo(5, 0).stroke({ width: 1.5, color: 0xfbbf24, alpha: 0.9 });
       break;
+    case 'ally_warlock': {
+      const oW = { width: 1.3, color: 0x3b0764, alpha: 0.55 };
+      g.ellipse(-14, 0, 12, 5).fill({ color: 0x6d28d9, alpha: 0.5 }).stroke(oW);
+      g.circle(0, 0, 8).fill({ color: 0xa855f7, alpha: 0.98 }).stroke({ width: 1.5, color: 0xf3e8ff, alpha: 0.92 });
+      g.circle(2, -2, 3).fill({ color: 0xede9fe, alpha: 0.95 });
+      break;
+    }
+    case 'ally_druid': {
+      const oG = { width: 1.3, color: 0x14532d, alpha: 0.55 };
+      g.ellipse(-12, 0, 10, 4).fill({ color: 0x22c55e, alpha: 0.5 }).stroke(oG);
+      g.circle(0, 0, 8).fill({ color: 0x4ade80, alpha: 0.98 }).stroke(oG);
+      g.poly([0, -10, 5, 2, 0, 8, -5, 2]).fill({ color: 0x86efac, alpha: 0.95 }).stroke(oG);
+      g.circle(2, -2, 3).fill({ color: 0xdcfce7, alpha: 0.9 });
+      break;
+    }
+    case 'ally_shaman_lightning': {
+      const oL = { width: 1.5, color: 0xcbd5e1, alpha: 0.55 };
+      g.moveTo(-16, 0).lineTo(8, -10).lineTo(2, 0).lineTo(12, 10).lineTo(-4, 2).lineTo(6, 14).lineTo(-16, 0);
+      g.fill({ color: 0xffffff, alpha: 0.98 }).stroke(oL);
+      g.moveTo(-10, -4).lineTo(4, -8).lineTo(0, 0).lineTo(8, 6).closePath();
+      g.fill({ color: 0xf1f5f9, alpha: 0.88 });
+      break;
+    }
+    case 'ally_warlock_soul_fire': {
+      const oS = { width: 2, color: 0x4c1d95, alpha: 0.65 };
+      g.ellipse(-28, 0, 24, 10).fill({ color: 0x5b21b6, alpha: 0.55 }).stroke(oS);
+      g.ellipse(-16, 0, 16, 7).fill({ color: 0x7c3aed, alpha: 0.68 }).stroke(oS);
+      g.circle(0, 0, 14).fill({ color: 0xc084fc, alpha: 0.98 }).stroke({ width: 2, color: 0xfae8ff, alpha: 0.95 });
+      g.circle(4, -4, 5).fill({ color: 0xf5f3ff, alpha: 0.9 });
+      g.poly([0, -18, 10, 6, -10, 6]).fill({ color: 0x9333ea, alpha: 0.75 }).stroke(oS);
+      break;
+    }
     case 'enemy_headhunter':
       g.moveTo(9, 0).lineTo(-7, -3).lineTo(-7, 3).closePath().fill(0xf97316).stroke(o);
       break;
@@ -947,6 +1040,77 @@ export function buildProjectileGraphic(style: ProjectileVisualStyle): Graphics {
   }
   g.scale.set(LAYOUT_SCALE);
   return g;
+}
+
+/** 萨满羁绊嗜血：圆盘内左右两枚固定红球，仅呼吸（不旋转、不漂移） */
+export function attachAllyBondBloodlustGlow(body: Container, innerRadiusPx: number): Container {
+  const wrap = new Container();
+  wrap.eventMode = 'none';
+  const ir = innerRadiusPx;
+  const cy = -ir;
+  const outline = Math.max(1.5, ir * 0.06);
+  const rFill = Math.max(2, ir - outline);
+  const side = rFill * 0.48;
+  const glowR = Math.max(5, rFill * 0.22);
+  for (const sign of [-1, 1] as const) {
+    const g = new Graphics();
+    g.eventMode = 'none';
+    g.position.set(sign * side, cy);
+    g.circle(0, 0, glowR).fill({ color: 0xdc2626, alpha: 0.55 });
+    g.circle(0, 0, glowR * 0.52).fill({ color: 0xfca5a5, alpha: 0.78 });
+    wrap.addChild(g);
+  }
+  body.addChild(wrap);
+  return wrap;
+}
+
+type FearSpiralWrap = Container & { __fearIr?: number };
+
+/** 术士恐惧：目标头像上螺旋旋转（叠在圆盘立绘上） */
+export function attachWarlockFearSpiralFx(body: Container, innerRadiusPx: number): Container {
+  const wrap = new Container() as FearSpiralWrap;
+  wrap.eventMode = 'none';
+  wrap.__fearIr = innerRadiusPx;
+  const g = new Graphics();
+  g.eventMode = 'none';
+  g.position.set(0, -innerRadiusPx);
+  wrap.addChild(g);
+  body.addChild(wrap);
+  return wrap;
+}
+
+export function tickWarlockFearSpiralFx(wrap: Container, _dt: number, phase: number): void {
+  const g = wrap.children[0];
+  if (!(g instanceof Graphics)) return;
+  const ir = (wrap as FearSpiralWrap).__fearIr ?? 28;
+  g.clear();
+  const baseR = Math.max(10, ir * 0.72);
+  const rot = phase * 3.4;
+  const arms = 3;
+  for (let i = 0; i < arms; i++) {
+    const t0 = rot + (i * Math.PI * 2) / arms;
+    const r1 = baseR * 0.55;
+    const r2 = baseR * 1.05;
+    g.moveTo(Math.cos(t0) * r1, Math.sin(t0) * r1);
+    g.lineTo(Math.cos(t0 + 0.15) * r2, Math.sin(t0 + 0.15) * r2);
+    g.arc(0, 0, baseR, t0 + 0.2, t0 + Math.PI * 0.55, false);
+  }
+  g.stroke({ width: Math.max(2, ir * 0.07), color: 0xc084fc, alpha: 0.82 });
+  g.stroke({ width: Math.max(1.2, ir * 0.04), color: 0xf5f3ff, alpha: 0.45 });
+  const pulse = 0.88 + 0.12 * Math.sin(phase * 7.2);
+  g.scale.set(pulse);
+}
+
+export function tickAllyBondBloodlustGlow(glow: Container, _dt: number, phase: number): void {
+  let i = 0;
+  for (const ch of glow.children) {
+    if (!(ch instanceof Graphics)) continue;
+    const off = i * 0.65;
+    const s = 0.9 + 0.1 * Math.sin(phase * 5.8 + off);
+    ch.scale.set(s);
+    ch.alpha = 0.5 + 0.42 * (0.5 + 0.5 * Math.sin(phase * 5.8 + off + 0.25));
+    i += 1;
+  }
 }
 
 /** 死亡飞出时的微粒拖尾 */

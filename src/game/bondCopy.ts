@@ -1,4 +1,5 @@
 import allyBondDescDoc from './config/allyBondDescriptions.json';
+import { allBondStacks, type BoardSlot } from './battleBonds';
 import { ALLY_CLASSES } from './constants';
 import type { ArtifactKind } from './strategyTypes';
 import type { AllyClass } from './types';
@@ -90,4 +91,14 @@ export const ARTIFACT_BATTLE_DESC: Record<ArtifactKind, string> = {
 
 export function allAllyClassesOrdered(): readonly AllyClass[] {
   return ALLY_CLASSES;
+}
+
+/** 羁绊列表：当前棋盘层数多的职业靠前（同层数保持 `ALLY_CLASSES` 顺序） */
+export function allyClassesOrderedByBondStacks(board: readonly BoardSlot[]): AllyClass[] {
+  const stacks = allBondStacks(board);
+  return [...ALLY_CLASSES].sort((a, b) => {
+    const d = stacks[b] - stacks[a];
+    if (d !== 0) return d;
+    return ALLY_CLASSES.indexOf(a) - ALLY_CLASSES.indexOf(b);
+  });
 }

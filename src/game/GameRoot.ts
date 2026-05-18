@@ -30,8 +30,8 @@ import { preloadAllyPortraitTextures } from './allyPortraitAssets';
 import { preloadHeroPortraitTextures } from './heroPortraitAssets';
 import {
   seedUiTestRunBoard,
-  UI_TEST_BLUE_FPM_HERO_DEPLOY,
   UI_TEST_BOOK_CHAPTER_ID,
+  UI_TEST_NEW_CLASS_HERO_DEPLOY,
   UI_TEST_ROUND_META,
 } from './uiTestBattle';
 import { notifyBotChapterOutcome, setBotAfterDraftHandler } from './bot/events';
@@ -130,17 +130,17 @@ export class GameRoot extends Container {
       const testRun = new RunState();
       seedUiTestRunBoard(testRun);
       testRun.devBattleHooks = {
-        heroDeploy: [...UI_TEST_BLUE_FPM_HERO_DEPLOY],
-        heroSlotCap: 3,
+        heroDeploy: [...UI_TEST_NEW_CLASS_HERO_DEPLOY],
+        heroSlotCap: 4,
         postSpawnHpMult: 1,
-        /** 法/牧/骑满层（含 ≥21 极巨化档），不增加棋盘出兵数 */
-        bondStacksBattleOverride: { mage: 21, priest: 21, knight: 21 },
+        /** 四新兵种满层（含 21 极巨化 / 入场技等） */
+        bondStacksBattleOverride: { warlock: 21, shaman: 21, assassin: 21, druid: 21 },
       };
       testRun.devBattleTestLog = (line: string): void => {
         console.log(`[HeyBro/ui-test] ${line}`);
       };
       testRun.devBattleTestLog(
-        '[ui-test] 书本第4章首领巴扎兰（群体暗影箭/精神鞭笞/暗影闪现）；棋盘牧/法/弓；英雄 mage_02 priest_02 knight_01；羁绊法/牧/骑=21。技能见控制台 [HeyBro/ui-test]。',
+        '[ui-test] 巴扎兰首领；棋盘术士/萨满/刺客/德鲁伊(4层)；英雄 warlock_01 shaman_01 assassin_01 druid_01；四职业羁绊=21。见控制台 [HeyBro/ui-test]。',
       );
       this.clearLayer();
       const battle = new BattleScreen(this.app, testRun, UI_TEST_ROUND_META, () => {

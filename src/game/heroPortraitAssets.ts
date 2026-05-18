@@ -8,7 +8,21 @@ function urlFor(id: HeroId): string {
   return publicAssetUrl(`assets/heroes/${id}.png`);
 }
 
+/** 德鲁伊熊形态：`public/assets/heroes/<HeroId>_bear.png`（见 `gptimage/generate_hero_unit_portraits.py`） */
+export function heroBearPortraitAssetId(id: HeroId): string {
+  return `${id}_bear`;
+}
+
+function bearUrlFor(id: HeroId): string {
+  return publicAssetUrl(`assets/heroes/${heroBearPortraitAssetId(id)}.png`);
+}
+
+export function isDruidHeroId(id: HeroId): boolean {
+  return id.startsWith('druid_');
+}
+
 const textureById = new Map<HeroId, Texture>();
+const bearTextureById = new Map<HeroId, Texture>();
 let preloadPromise: Promise<void> | null = null;
 
 export async function preloadHeroPortraitTextures(): Promise<void> {
@@ -22,6 +36,14 @@ export async function preloadHeroPortraitTextures(): Promise<void> {
           } catch {
             /* 缺图：战斗/界面回退为职业色盘 */
           }
+          if (isDruidHeroId(id)) {
+            try {
+              const bearTex = await loadPublicTexture(bearUrlFor(id));
+              bearTextureById.set(id, bearTex);
+            } catch {
+              /* 缺熊图时战斗熊形态回退人形态或盟友 druid_bear */
+            }
+          }
         }),
       );
     })();
@@ -31,4 +53,8 @@ export async function preloadHeroPortraitTextures(): Promise<void> {
 
 export function getHeroPortraitTexture(id: HeroId): Texture | undefined {
   return textureById.get(id);
+}
+
+export function getHeroBearPortraitTexture(id: HeroId): Texture | undefined {
+  return bearTextureById.get(id);
 }

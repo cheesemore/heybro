@@ -1,6 +1,7 @@
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import { getAllyPortraitTexture } from './allyPortraitAssets';
-import { getHeroPortraitTexture } from './heroPortraitAssets';
+import { getAllyPortraitVariantTexture, type AllyPortraitVariantId } from './allyPortraitVariants';
+import { getHeroBearPortraitTexture, getHeroPortraitTexture } from './heroPortraitAssets';
 import { getHeroDef, heroQualityAccent, type HeroId } from './heroRegistry';
 import { getEnemyPortraitTexture, getWowCirclePortraitTexture } from './enemyPortraitTextures';
 import { LAYOUT_SCALE } from './constants';
@@ -44,6 +45,10 @@ export const ALLY_DISK_COLORS: Record<AllyClass, number> = {
   priest: 0xf1f5f9,
   archer: 0x4ade80,
   knight: 0xf9a8d4,
+  warlock: 0x8787ed,
+  shaman: 0x0070de,
+  assassin: 0xfff569,
+  druid: 0xff7d0a,
 };
 
 export const ENEMY_MINION_DISK = 0xe5e7eb;
@@ -67,6 +72,14 @@ function allyLetter(kind: AllyClass): string {
       return '弓';
     case 'knight':
       return '骑';
+    case 'warlock':
+      return '术';
+    case 'shaman':
+      return '萨';
+    case 'assassin':
+      return '刺';
+    case 'druid':
+      return '德';
     default:
       return '?';
   }
@@ -113,8 +126,14 @@ export function battleTokenDiskFillRadiusPx(innerRadiusPx: number): number {
 }
 
 /** 盟友：有预加载立绘则圆内贴图，否则同色盘 + 简称字 */
-function buildAllyDiskAndLetter(innerR: number, kind: AllyClass): { disk: Container; letter: Text } {
-  const tex = getAllyPortraitTexture(kind);
+function buildAllyDiskAndLetter(
+  innerR: number,
+  kind: AllyClass,
+  portraitVariant?: AllyPortraitVariantId,
+): { disk: Container; letter: Text } {
+  const tex =
+    (portraitVariant ? getAllyPortraitVariantTexture(portraitVariant) : undefined) ??
+    getAllyPortraitTexture(kind);
   const cx = 0;
   const cy = -innerR;
   const disk = new Container();
@@ -164,6 +183,7 @@ function buildHeroDiskAndLetter(
   heroId: HeroId,
   allyKind: AllyClass,
   portraitLocked: boolean,
+  bearForm = false,
 ): { disk: Container; letter: Text } {
   const cx = 0;
   const cy = -innerR;
@@ -197,7 +217,8 @@ function buildHeroDiskAndLetter(
     return { disk, letter: letterNode };
   }
 
-  const tex = getHeroPortraitTexture(heroId);
+  const tex =
+    (bearForm ? getHeroBearPortraitTexture(heroId) : undefined) ?? getHeroPortraitTexture(heroId);
 
   if (tex) {
     const sprite = new Sprite(tex);
@@ -415,7 +436,11 @@ export function redrawHpRingWithShield(
   }
 }
 
-export function createBattleAllyToken(kind: AllyClass, innerRadiusPx: number): BattleTokenParts {
+export function createBattleAllyToken(
+  kind: AllyClass,
+  innerRadiusPx: number,
+  portraitVariant?: AllyPortraitVariantId,
+): BattleTokenParts {
   const innerR = innerRadiusPx;
   const cx = 0;
   const cy = -innerR;
@@ -426,7 +451,7 @@ export function createBattleAllyToken(kind: AllyClass, innerRadiusPx: number): B
   const ringLost = new Graphics();
   const ringShield = new Graphics();
   const ringCur = new Graphics();
-  const { disk, letter } = buildAllyDiskAndLetter(innerR, kind);
+  const { disk, letter } = buildAllyDiskAndLetter(innerR, kind, portraitVariant);
 
   root.addChild(ringLost);
   root.addChild(ringCur);
@@ -436,6 +461,35 @@ export function createBattleAllyToken(kind: AllyClass, innerRadiusPx: number): B
 
   redrawHpRingWithShield(ringCur, ringLost, ringShield, cx, cy, ringR, thick, 1, 0, BATTLE_ALLY_HP_RING_COLOR);
   return { root, ringCur, ringLost, ringShield, disk, letter, ringR, thick, cx, cy };
+}
+
+/** 战斗中将英雄代币换为熊形态立绘（德鲁伊英雄专用；缺图时 build 内已回退人形态） */
+export function swapHeroTokenPortrait(
+  parts: Pick<BattleTokenParts, 'disk' | 'letter'>,
+  innerR: number,
+  heroId: HeroId,
+  allyKind: AllyClass,
+  bearForm: boolean,
+): void {
+  parts.disk.removeChildren();
+  const { disk: inner, letter } = buildHeroDiskAndLetter(innerR, heroId, allyKind, false, bearForm);
+  for (const ch of inner.children) parts.disk.addChild(ch);
+  parts.letter.visible = letter.visible;
+  parts.letter.text = letter.text;
+}
+
+/** 战斗中将盟友代币圆盘换为另一立绘变体（如德鲁伊变熊） */
+export function swapAllyTokenPortrait(
+  parts: Pick<BattleTokenParts, 'disk' | 'letter'>,
+  innerR: number,
+  kind: AllyClass,
+  portraitVariant?: AllyPortraitVariantId,
+): void {
+  parts.disk.removeChildren();
+  const { disk: inner, letter } = buildAllyDiskAndLetter(innerR, kind, portraitVariant);
+  for (const ch of inner.children) parts.disk.addChild(ch);
+  parts.letter.visible = letter.visible;
+  parts.letter.text = letter.text;
 }
 
 export function createBattleHeroToken(

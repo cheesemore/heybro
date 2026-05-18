@@ -14,6 +14,10 @@ export const CLASS_SHORT_CN: Record<AllyClass, string> = {
   priest: '牧',
   archer: '射',
   knight: '骑',
+  warlock: '术',
+  shaman: '萨',
+  assassin: '刺',
+  druid: '德',
 };
 
 export function formationLabel(formation: readonly [AllyClass, AllyClass, AllyClass]): string {

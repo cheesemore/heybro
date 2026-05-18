@@ -3,7 +3,7 @@ import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { allBondStacks } from '../battleBonds';
 import {
-  allAllyClassesOrdered,
+  allyClassesOrderedByBondStacks,
   allyBondDisplayName,
   ARTIFACT_BATTLE_DESC,
   BOND_TIER_THRESHOLDS,
@@ -771,7 +771,7 @@ export class SynergyOverlay extends Container {
     const rowPadY = Math.round(10 * LAYOUT_SCALE);
     const stripFs = Math.round(19 * LAYOUT_SCALE);
     const hintFs = Math.round(15 * LAYOUT_SCALE);
-    for (const kind of allAllyClassesOrdered()) {
+    for (const kind of allyClassesOrderedByBondStacks(this.run.board)) {
       const n = stacks[kind];
       const name = allyBondDisplayName(kind);
       const row = new Container();

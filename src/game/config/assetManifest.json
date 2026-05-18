@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-18T09:41:09.311Z",
+  "generatedAt": "2026-05-18T22:55:44.678Z",
   "paths": [
     "assets/battle-floor-bgs/blackfathom_deeps.png",
     "assets/battle-floor-bgs/blackrock_depths.png",
@@ -561,9 +561,14 @@
     "assets/wow-mobs-circle/U000171.png",
     "assets/wow-mobs-circle/U000172.png",
     "portraits/ally/archer.png",
+    "portraits/ally/assassin.png",
+    "portraits/ally/druid.png",
+    "portraits/ally/druid_bear.png",
     "portraits/ally/knight.png",
     "portraits/ally/mage.png",
     "portraits/ally/priest.png",
+    "portraits/ally/shaman.png",
+    "portraits/ally/warlock.png",
     "portraits/ally/warrior.png"
   ]
 }

@@ -1,7 +1,11 @@
 import type { HeroId } from '../game/heroRegistry';
 import type { RunState } from '../game/runState';
 import { roundsForBookChapter } from '../game/roundConfig';
-import type { RoundMeta } from '../game/types';
+import {
+  UI_TEST_BOOK_CHAPTER_ID,
+  UI_TEST_NEW_CLASS_HERO_DEPLOY,
+} from '../game/uiTestBattle';
+import type { AllyClass, RoundMeta } from '../game/types';
 import { wowFinalBossNameCn } from '../game/wowBookData';
 
 export const BOSS_SKILL_TEST_ALLY_HP_MULT = 3;
@@ -15,21 +19,18 @@ export type BossSkillTestPresetId =
   | 'smite'
   | 'greenskin'
   | 'vancleef'
-  | 'archer_trap';
+  | 'archer_trap'
+  | 'new_classes';
 
 export type BossSkillTestPreset = {
   id: BossSkillTestPresetId;
   bookChapterId: number;
   bossNameCn: string;
   skillSummaryCn: string;
-  heroDeploy: readonly [HeroId, HeroId, HeroId];
-  bondStacksBattleOverride: {
-    warrior?: number;
-    mage?: number;
-    priest?: number;
-    archer?: number;
-    knight?: number;
-  };
+  heroDeploy: readonly HeroId[];
+  /** 开发测试上阵栏位（默认 3；四新兵种预设为 4） */
+  heroSlotCap?: number;
+  bondStacksBattleOverride: Partial<Record<AllyClass, number>>;
   board: RunState['board'];
   statusLine: string;
   hudBlurb: string;
@@ -223,6 +224,33 @@ const BAZZALAN: BossSkillTestPreset = {
     '第 4 章关底首领「巴扎兰」（群体暗影箭 / 群体精神鞭笞 / 暗影闪现）；备战战/牧各 <strong>1</strong>、弓 <strong>6</strong>、法 <strong>6</strong>，上阵 <strong>紫法师 / 紫牧师 / 蓝骑士</strong>。',
 };
 
+/** 术士 / 萨满 / 刺客 / 德鲁伊：绿弹、白闪电、熊德横扫等战斗表现验收 */
+const NEW_CLASSES: BossSkillTestPreset = {
+  id: 'new_classes',
+  bookChapterId: UI_TEST_BOOK_CHAPTER_ID,
+  bossNameCn: '巴扎兰',
+  skillSummaryCn: '术/萨/刺/德 新兵种（羁绊21）',
+  heroDeploy: [...UI_TEST_NEW_CLASS_HERO_DEPLOY],
+  heroSlotCap: 4,
+  bondStacksBattleOverride: { warlock: 21, shaman: 21, assassin: 21, druid: 21 },
+  board: [
+    { kind: 'warlock', stacks: 2 },
+    { kind: 'shaman', stacks: 2 },
+    { kind: 'assassin', stacks: 2 },
+    { kind: 'druid', stacks: 4 },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  statusLine:
+    '战斗中：第4章·巴扎兰；术2萨2刺2德4；英雄 莫尔温/塔拉恩/影纱/林语；四职业羁绊=21；我方×3血；首领×3血。',
+  hudBlurb:
+    '第 4 章「巴扎兰」+ <strong>四新兵种</strong>：棋盘术/萨/刺/德（德鲁伊 <strong>4</strong> 层便于前熊后远程），上阵四名蓝英雄，羁绊均 <strong>21</strong>（含极巨化/入场技）。验收绿自然弹、白闪电箭、熊德红色横扫弧等。',
+};
+
 export const BOSS_SKILL_TEST_PRESETS: Record<BossSkillTestPresetId, BossSkillTestPreset> = {
   rhahk: RHAKH,
   bazzalan: BAZZALAN,
@@ -232,6 +260,7 @@ export const BOSS_SKILL_TEST_PRESETS: Record<BossSkillTestPresetId, BossSkillTes
   greenskin: GREENSKIN,
   vancleef: VANCLEEF,
   archer_trap: ARCHER_TRAP,
+  new_classes: NEW_CLASSES,
 };
 
 export const DEFAULT_BOSS_SKILL_TEST_PRESET_ID: BossSkillTestPresetId = 'rhahk';
@@ -247,6 +276,15 @@ export function bossSkillTestPresetFromSearch(search: string): BossSkillTestPres
   if (boss === 'greenskin' || boss === 'ch9') return GREENSKIN;
   if (boss === 'vancleef' || boss === 'edwin' || boss === 'ch10') return VANCLEEF;
   if (boss === 'archer_trap' || boss === 'snare' || boss === 'archer') return ARCHER_TRAP;
+  if (
+    boss === 'new_classes' ||
+    boss === 'new' ||
+    boss === 'four' ||
+    boss === 'ui-test' ||
+    boss === 'uitest'
+  ) {
+    return NEW_CLASSES;
+  }
   const chapter = Number(params.get('chapter'));
   if (chapter === 4) return BAZZALAN;
   if (chapter === 5) return RHAKH;
@@ -266,7 +304,7 @@ export function seedBossSkillTestRun(run: RunState, preset: BossSkillTestPreset)
   run.board = preset.board.map((c) => (c ? { ...c } : null));
   run.devBattleHooks = {
     heroDeploy: [...preset.heroDeploy],
-    heroSlotCap: 3,
+    heroSlotCap: preset.heroSlotCap ?? 3,
     postSpawnHpMult: BOSS_SKILL_TEST_ALLY_HP_MULT,
     postSpawnHpMultSkipBoss: true,
     postSpawnBossHpMult: BOSS_SKILL_TEST_BOSS_HP_MULT,

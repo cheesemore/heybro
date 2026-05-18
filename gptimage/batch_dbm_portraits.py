@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 """
-批量 5 职业胸像：调用同目录 image2_generate.py（gpt-image-2，1024x1024）。
+批量职业胸像（DBM 职业色虚化背景 + 饥荒式线稿风）：经 `batch_image2_api` 调用 `gptimage/image2_generate`（gpt-image-2，1024x1024）。
+
+首批 5 职业（与 WoW 原版职业色对齐）：warrior / mage / hunter(游戏射手) / priest / paladin(游戏骑士)
+扩展 4 职业（死亡矿井后解锁，占位胸像）：warlock / shaman / assassin(盗贼样貌) / druid(魔兽争霸利爪德鲁伊人形态熊脸)
+德鲁伊变体：`druid_bear` 为熊形态战斗代币专用立绘（与 `druid` 人形态分支并存；游戏内 `allyPortraitVariants` + `public/portraits/ally/druid_bear.png`）
+
+DBM 职业色参考（Deadly Boss Mods / WoW 职业色，用于 bokeh 背景）：
+  warrior #C69B6D | mage #3FC7EB | hunter #ABD473 | priest #FFFFFF | paladin #F58CBA
+  warlock #8787ED | shaman #0070DE | rogue(assassin) #FFF569 | druid #FF7D0A
 
 输出（仅此目录，不会动游戏工程）：
-  ./out_dbm/<warrior|mage|hunter|priest|paladin>.png
+  ./out_dbm/<stem>.png
   ./out_dbm/circle/<stem>_circle_<N>.png（Pillow 裁圆，默认 N=256）
 
 不会自动写入 `public/`、`src/` 或任何游戏内资源路径；进游戏需你手动拷贝或走单独的发布/处理脚本。
@@ -12,7 +20,7 @@
   - 方图已存在 → 不调文生图（除非 `--force`）。
   - 圆图已存在 → 不重复裁切（除非 `--force-circle`）。
 
-可选把中转参数原样传给 image2_generate.py：
+可选中转参数（与 gptimage/image2_generate 一致）：
   python batch_dbm_portraits.py --base-url https://xxx/v1 --resource images/generations
 """
 
@@ -20,12 +28,10 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import subprocess
 import sys
 import time
 from pathlib import Path
 
-IMAGE2 = Path(__file__).resolve().parent / "image2_generate.py"
 CIRCLE = Path(__file__).resolve().parent / "circle_avatar.py"
 OUTDIR = Path(__file__).resolve().parent / "out_dbm"
 
@@ -36,6 +42,7 @@ DEFAULT_CIRCLE_SIZE = 256
 _GPTIMG = Path(__file__).resolve().parent
 if str(_GPTIMG) not in sys.path:
     sys.path.insert(0, str(_GPTIMG))
+from batch_image2_api import generate_square_with_retries
 from dont_starve_style import STYLE_CORE
 
 NEG = (
@@ -100,11 +107,70 @@ JOBS: list[tuple[str, str]] = [
         "Side key + mild rim as ink edges; holy light only as faint tick marks, "
         "must not overpower the pink class background.",
     ),
+    (
+        "warlock",
+        "Square 1:1 bust portrait, face centered, no circular badge mask. "
+        f"{STYLE_CORE} "
+        "Human warlock in dark flowing robes (original design), slightly gaunt stylized face. "
+        "~45° three-quarter view, intense guarded eyes with ink outlines, faint fel-green under-eye shadow "
+        "as sparse ink ticks only, no green fire explosion. "
+        "Fel focus or staff top near shoulder, silhouette readable as cut-paper shapes. "
+        "Heavily blurred bokeh dominated by warlock class purple #8787ED, deeper desaturated violet toward edges, "
+        "not neon cyberpunk. Cross-hatched shadow blocks, no glossy gradients.",
+    ),
+    (
+        "shaman",
+        "Square 1:1 bust portrait, face centered, no round frame. "
+        f"{STYLE_CORE} "
+        "Orc or troll shaman in tribal robes and fur shoulder trim (original fantasy design). "
+        "~45° three-quarter view, weathered stern expression, inked brows. "
+        "Totem staff top or lightning crackle motif near shoulder as bold ink shapes, restrained sparks. "
+        "Heavily blurred bokeh dominated by shaman class blue #0070DE, deeper indigo-navy toward edges, "
+        "low saturation. Side key + rim as simple ink edge, readable at small size.",
+    ),
+    (
+        "assassin",
+        "Square 1:1 bust portrait, face centered, no round frame. "
+        f"{STYLE_CORE} "
+        "Human or elf ROGUE appearance: dark leather armor, hood optional pushed back so face is fully visible. "
+        "~45° three-quarter view, sharp alert narrow eyes, subtle confident ink smirk optional. "
+        "Dual daggers or one dagger at shoulder, bandolier and leather straps as readable ink silhouettes, "
+        "class reads as World of Warcraft rogue/thief not plate warrior. "
+        "Blurred bokeh dominated by rogue class yellow #FFF569, darker muted gold-olive at edges. "
+        "Natural side key + rim as ink edges, slightly scruffy survival-sketch mood.",
+    ),
+    (
+        "druid",
+        "Square 1:1 bust portrait, face and eyes at geometric center, no circular badge. "
+        f"{STYLE_CORE} "
+        "Humanoid druid in leather and fur-trim gear (original design), Warcraft III Claw Druid HUMANOID form: "
+        "bear-like face on humanoid body — broad rounded bear snout, bear muzzle, small bear ears, strong jaw, "
+        "fierce calm eyes; optional short antlers as ink accents. "
+        "NOT full bear beast form, NOT quadruped, NOT furry monster body, must read as bipedal druid with bear face. "
+        "~45° three-quarter view. Nature staff or clawed glove near shoulder as cut-paper shapes. "
+        "Heavily blurred bokeh dominated by druid class orange #FF7D0A, deeper burnt sienna toward edges, "
+        "desaturated. Readable at small size; rough paper-game illustration feel.",
+    ),
+    (
+        "druid_bear",
+        "Square 1:1 bust portrait, face centered, no circular badge. "
+        f"{STYLE_CORE} "
+        "BEAR FORM druid: grizzly bear head and shoulders filling the frame, thick fur as ink cross-hatch, "
+        "fierce forward eyes, snout suggested with bold ink shapes not photoreal fur. "
+        "NO human face, NO bipedal elf — reads as beast bear avatar for druid bear combat form. "
+        "~45° three-quarter view. "
+        "Heavily blurred bokeh dominated by druid class orange #FF7D0A, burnt sienna edges. "
+        "Readable at small token size; branch asset paired with `druid` in game.",
+    ),
 ]
+
+JOB_STEMS = [stem for stem, _ in JOBS]
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Batch DBM-hue class portraits via image2_generate.py + circular export")
+    p = argparse.ArgumentParser(
+        description="Batch DBM-hue class portraits via tools/image2_generate + circular export",
+    )
     p.add_argument(
         "--skip-generate",
         action="store_true",
@@ -123,25 +189,25 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--base-url",
         default=None,
-        help="转发给 image2_generate.py（默认用其中转默认值）",
+        help="转发给 tools/image2_generate（默认用其中转默认值）",
     )
     p.add_argument(
         "--resource",
         default=None,
-        help="转发给 image2_generate.py，如 images/generations",
+        help="转发给 tools/image2_generate，如 images/generations",
     )
     p.add_argument(
         "--key-file",
         type=Path,
         default=None,
-        help="转发给 image2_generate.py",
+        help="转发给 tools/image2_generate",
     )
     p.add_argument(
         "--model",
         default="gpt-image-2",
-        help="转发给 image2_generate.py",
+        help="转发给 tools/image2_generate",
     )
-    p.add_argument("--size", default="1024x1024", help="转发给 image2_generate.py")
+    p.add_argument("--size", default="1024x1024", help="转发给 tools/image2_generate")
     p.add_argument(
         "--circle-size",
         type=int,
@@ -160,6 +226,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=OUTDIR,
         help=f"输出目录（默认 {OUTDIR}）",
+    )
+    p.add_argument(
+        "--only",
+        choices=JOB_STEMS,
+        nargs="+",
+        help="只跑指定 stem（可多个），如 --only warlock druid assassin shaman",
     )
     return p
 
@@ -183,27 +255,6 @@ def write_circle_png(square: Path, out_png: Path, circle_size: int) -> int:
     except Exception as e:
         print("circle_avatar failed:", e, file=sys.stderr)
         return 1
-
-
-def run_generate_with_retries(
-    cmd: list[str],
-    square: Path,
-    stem: str,
-    *,
-    max_attempts: int,
-) -> bool:
-    for attempt in range(1, max_attempts + 1):
-        print(f"=== generate {stem} attempt {attempt}/{max_attempts} -> {square}", flush=True)
-        r = subprocess.run(cmd, check=False)
-        if r.returncode == 0 and square.is_file():
-            return True
-        print(
-            f"generate failed: {stem} exit={r.returncode} attempt={attempt}/{max_attempts}",
-            file=sys.stderr,
-        )
-        if attempt < max_attempts:
-            time.sleep(RETRY_SLEEP_SEC)
-    return False
 
 
 def write_circle_with_retries(
@@ -237,9 +288,6 @@ def main() -> int:
     if args.circle_size < 8 or args.circle_size > 8192:
         print("--circle-size 应在合理范围", file=sys.stderr)
         return 2
-    if not IMAGE2.is_file():
-        print("Missing:", IMAGE2, file=sys.stderr)
-        return 2
     if not CIRCLE.is_file():
         print("Missing:", CIRCLE, file=sys.stderr)
         return 2
@@ -249,14 +297,21 @@ def main() -> int:
     circle_root = outdir / "circle"
     circle_root.mkdir(parents=True, exist_ok=True)
 
-    py = sys.executable
     skipped_generate_reuse = 0
     skipped_circle_reuse = 0
     missing_square_skip = 0
     skipped_after_failed_generate = 0
     skipped_after_failed_circle = 0
 
-    for stem, body in JOBS:
+    only_set = set(args.only) if args.only else None
+    jobs = [(s, b) for s, b in JOBS if only_set is None or s in only_set]
+    if only_set:
+        unknown = only_set - {s for s, _ in jobs}
+        if unknown:
+            print("Unknown --only stems:", ", ".join(sorted(unknown)), file=sys.stderr)
+            return 2
+
+    for stem, body in jobs:
         prompt = f"{body} Avoid: {NEG}"
         square = outdir / f"{stem}.png"
         circle_png = circle_root / f"{stem}_circle_{args.circle_size}.png"
@@ -276,26 +331,18 @@ def main() -> int:
         else:
             need_api = bool(args.force or not square.is_file())
             if need_api:
-                cmd: list[str] = [
-                    py,
-                    str(IMAGE2),
-                    "--model",
-                    args.model,
-                    "--size",
-                    args.size,
-                    "--out",
-                    str(square),
-                    "--prompt",
+                if not generate_square_with_retries(
                     prompt,
-                ]
-                if args.base_url:
-                    cmd += ["--base-url", args.base_url]
-                if args.resource:
-                    cmd += ["--resource", args.resource]
-                if args.key_file:
-                    cmd += ["--key-file", str(Path(args.key_file).expanduser())]
-
-                if not run_generate_with_retries(cmd, square, stem, max_attempts=args.max_attempts):
+                    square,
+                    stem,
+                    model=args.model,
+                    size=args.size,
+                    base_url=args.base_url,
+                    resource=args.resource,
+                    key_file=args.key_file,
+                    max_attempts=args.max_attempts,
+                    retry_sleep_sec=RETRY_SLEEP_SEC,
+                ):
                     print("=== skip (generate failed after retries):", stem, flush=True)
                     skipped_after_failed_generate += 1
                     continue

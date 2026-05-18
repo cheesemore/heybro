@@ -66,14 +66,33 @@ def request_json_post(url: str, headers: dict[str, str], body: bytes) -> dict[st
         raise RuntimeError(f"HTTP {e.code} {e.reason}: {parsed}") from e
 
 
-def write_images(data: dict[str, Any], out_path: Path, output_format: str) -> None:
+def generations_url(base_url: str | None = None, resource: str | None = None) -> str:
+    base = (base_url or DEFAULT_BASE_URL).rstrip("/")
+    res = str(resource or DEFAULT_RESOURCE).lstrip("/")
+    return f"{base}/{res}"
+
+
+def write_images(
+    data: dict[str, Any],
+    out_path: Path,
+    output_format: str,
+    *,
+    on_empty: str = "exit",
+    single_only: bool = False,
+) -> list[Path]:
     items = data.get("data") or []
+    if single_only and len(items) > 1:
+        items = items[:1]
     if not items:
-        print(json.dumps(data, ensure_ascii=False, indent=2)[:8000], file=sys.stderr)
+        msg = json.dumps(data, ensure_ascii=False, indent=2)[:8000]
+        if on_empty == "raise":
+            raise RuntimeError(f"Empty image response: {msg}")
+        print(msg, file=sys.stderr)
         raise SystemExit(1)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     ext = output_format or "png"
+    written: list[Path] = []
 
     for idx, item in enumerate(items):
         if not isinstance(item, dict):
@@ -89,13 +108,66 @@ def write_images(data: dict[str, Any], out_path: Path, output_format: str) -> No
             print("响应项无 b64_json/url，keys:", list(item.keys()), file=sys.stderr)
             raise SystemExit(1)
 
-        path = out_path if len(items) == 1 else out_path.with_name(f"{out_path.stem}_{idx + 1}{out_path.suffix or '.' + ext}")
+        path = out_path if idx == 0 else out_path.with_name(f"{out_path.stem}_{idx + 1}{out_path.suffix or '.' + ext}")
         path.write_bytes(raw)
+        written.append(path.resolve())
         print("已保存", path)
 
     usage = data.get("usage")
     if usage:
         print("usage:", json.dumps(usage, ensure_ascii=False))
+    return written
+
+
+def generate_to_file(
+    prompt: str,
+    out_path: Path,
+    *,
+    key_file: Path | None = None,
+    base_url: str | None = None,
+    resource: str | None = None,
+    model: str | None = None,
+    size: str = "1024x1024",
+    quality: str | None = None,
+    background: str | None = None,
+    output_format: str | None = None,
+) -> tuple[Path, str | None]:
+    """与 CLI 同一中转；默认不传 output_format（与 batch_enemy 子进程一致）。"""
+    key = load_api_key(key_file)
+    url = generations_url(base_url, resource)
+
+    payload: dict[str, Any] = {
+        "model": model or DEFAULT_MODEL,
+        "prompt": prompt,
+        "n": 1,
+        "size": size,
+    }
+    if quality:
+        payload["quality"] = quality
+    if background:
+        payload["background"] = background
+    if output_format:
+        payload["output_format"] = output_format
+
+    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    headers = {
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+    }
+
+    data = request_json_post(url, headers=headers, body=body)
+    if not isinstance(data, dict):
+        raise RuntimeError("非 JSON 对象响应")
+    returned_n = len(data.get("data") or [])
+    target = out_path.expanduser().resolve()
+    fmt = output_format or "png"
+    paths = write_images(data, target, fmt, on_empty="raise", single_only=True)
+    multi_hint = (
+        f"（请求 n=1，API 返回 {returned_n} 张，已仅保存第 1 张）" if returned_n > 1 else None
+    )
+    if not paths or not paths[0].is_file():
+        raise RuntimeError(f"文生图未写出文件（目标 {target}）")
+    return paths[0], multi_hint
 
 
 def main() -> int:
@@ -113,7 +185,9 @@ def main() -> int:
         help=f"密钥文件（默认同目录 {DEFAULT_KEY_FILE.name}）",
     )
     p.add_argument("--model", default=DEFAULT_MODEL, help=f"默认 {DEFAULT_MODEL}")
-    p.add_argument("--prompt", required=True, help="提示词")
+    g = p.add_mutually_exclusive_group(required=True)
+    g.add_argument("--prompt", help="提示词")
+    g.add_argument("--prompt-file", type=Path, help="从 UTF-8 文件读取提示词（长 prompt 推荐）")
     p.add_argument("--size", default="1024x1024", help="如 1024x1024")
     p.add_argument("--n", type=int, default=1, help="张数（受网关限制）")
     p.add_argument("--quality", default=None, help='可选 low|medium|high|auto')
@@ -122,9 +196,14 @@ def main() -> int:
         default=None,
         help='可选 opaque|transparent|auto（若网关/模型支持）',
     )
-    p.add_argument("--output-format", default="png", help="png|jpeg|webp")
+    p.add_argument("--output-format", default=None, help="png|jpeg|webp（默认不传，与批量脚本一致）")
     p.add_argument("--out", default="out_image2.png", help="输出路径")
     args = p.parse_args()
+
+    if args.prompt_file:
+        prompt = Path(args.prompt_file).expanduser().read_text(encoding="utf-8").strip()
+    else:
+        prompt = args.prompt or ""
 
     key = load_api_key(args.key_file)
     base = args.base_url.rstrip("/")
@@ -133,7 +212,7 @@ def main() -> int:
 
     payload: dict[str, Any] = {
         "model": args.model,
-        "prompt": args.prompt,
+        "prompt": prompt,
         "n": args.n,
         "size": args.size,
     }
