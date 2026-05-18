@@ -20,8 +20,8 @@ const OUT_REGISTRY = path.join(root, 'src/game/config/wowBookRegistry.json');
 /** 与 `wowBookData.WOW_BOOK_BOSS_TABLE_DEFAULT` / 原用书白板首领表底一致；首领不分近战远程，不加近战额外攻倍率（由运行时 GLOBAL 乘 atk） */
 const DEFAULT_BOOK_BOSS_COMBAT = {
   hitRadius: 80,
-  baseMaxHp: 1680,
-  baseAtk: 27,
+  baseMaxHp: 22740,
+  baseAtk: 46,
   attackSpeed: 0.65,
   range: 10,
   moveSpeed: 540,
@@ -568,7 +568,7 @@ const bossDoc = {
   schemaVersion: 3,
   generator: 'scripts/generate-wow-book-tables.mjs',
   editConvention:
-    '每条对应一章关卡首领（chapterIndex 同 wowBookChapters）。战斗基准：hitRadius、baseMaxHp、baseAtk、attackSpeed、range、moveSpeed、skillIds（缺省与 wowBookData.WOW_BOOK_BOSS_TABLE_DEFAULT / 本脚本 DEFAULT_BOOK_BOSS_COMBAT 一致）；重跑脚本时按 id 从旧文件合并上述字段与 bossUid。进场 HP 仍 baseMaxHp×10 后 scaledEnemyHp。bossUid 立绘 public/assets/wow-bosses/<bossUid>.png。',
+    '每条对应一章关卡首领（chapterIndex 同 wowBookChapters）。战斗基准：hitRadius、baseMaxHp（战场进场生命表底，直接 scaledEnemyHp）、baseAtk、attackSpeed、range、moveSpeed、skillIds（缺省与 wowBookData.WOW_BOOK_BOSS_TABLE_DEFAULT / 本脚本 DEFAULT_BOOK_BOSS_COMBAT 一致）；重跑脚本时按 id 从旧文件合并上述字段与 bossUid。bossUid 立绘 public/assets/wow-bosses/<bossUid>.png。',
   bosses: bossRows,
 };
 

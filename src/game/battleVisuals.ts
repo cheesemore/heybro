@@ -462,13 +462,13 @@ export function tickRingPulses(rings: RingPulse[], dt: number): void {
   }
 }
 
-/** 神圣制裁：竖直白光 + 地面亮斑；`groundY` 为受击者脚底世界 Y */
+/** 神圣制裁：竖直白光 + 地面亮斑；`centerY` 为受击者代币圆心世界 Y */
 export type HolySanctionStrikeFx = { g: Graphics; t: number; max: number };
 
 export function spawnHolySanctionStrike(
   layer: Container,
   x: number,
-  groundY: number,
+  centerY: number,
   hitRadiusPx: number,
 ): HolySanctionStrikeFx {
   const g = new Graphics();
@@ -477,12 +477,12 @@ export function spawnHolySanctionStrike(
   const beamH = Math.round((360 + 180 * scale) * LAYOUT_SCALE);
   const rx = hitRadiusPx * (1.05 + 0.4 * scale);
   const ry = hitRadiusPx * 0.4;
-  g.position.set(x, groundY);
+  g.position.set(x, centerY);
   g.roundRect(-beamW * 0.5, -beamH, beamW, beamH, Math.round(8 * LAYOUT_SCALE)).fill({ color: 0xfffffc, alpha: 0.38 });
   g.ellipse(0, 0, rx, ry)
     .fill({ color: 0xf8fafc, alpha: 0.7 })
     .stroke({ width: Math.max(2, 2.4 * LAYOUT_SCALE), color: 0xffffff, alpha: 0.5 });
-  g.ellipse(0, -hitRadiusPx * 0.28, rx * 0.52, ry * 0.48).fill({ color: 0xffffff, alpha: 0.4 });
+  g.ellipse(0, 0, rx * 0.52, ry * 0.48).fill({ color: 0xffffff, alpha: 0.4 });
   layer.addChild(g);
   return { g, t: 0, max: 0.36 };
 }
@@ -840,39 +840,43 @@ export function createKnightAura(_hitRadiusPx: number): Graphics {
 }
 
 /**
- * 席拉拉强击光环：外环半径 = 2×英雄碰撞半径；几何以 (0,0) 为圆心，
+ * 弓手诱捕陷阱脚底环：外环半径 = 2×碰撞半径；几何以 (0,0) 为圆心，
  * BattleScreen 将节点置于 (0,-hitRadiusPx) 与代币圆心对齐，`rotation` 绕圆心转。
  */
-export function createStrongStrikeHeroAura(hitRadiusPx: number): Graphics {
+export function createArcherSnareTrapRing(hitRadiusPx: number): Graphics {
   const g = new Graphics();
   const R = Math.max(4, hitRadiusPx);
   const ro = Math.round(2 * R);
-  const ri = Math.round(Math.max(3, R * 1.32));
-  const arcR = Math.round(Math.max(4, R * 1.7));
+  const ri = Math.round(Math.max(3, R * 1.28));
+  const spikeR = Math.round(Math.max(4, R * 1.55));
   g.circle(0, 0, ro).stroke({
     width: Math.max(2, Math.round(2.5 * LAYOUT_SCALE)),
-    color: 0x15803d,
-    alpha: 0.72,
+    color: 0x4d7c0f,
+    alpha: 0.7,
   });
   g.circle(0, 0, ri).stroke({
     width: Math.max(1.5, Math.round(2 * LAYOUT_SCALE)),
-    color: 0x4ade80,
+    color: 0xa3e635,
     alpha: 0.55,
   });
-  g.arc(0, 0, arcR, -0.55, 0.55, false).stroke({
-    width: Math.max(2, Math.round(2.2 * LAYOUT_SCALE)),
-    color: 0xfbbf24,
-    alpha: 0.5,
-    cap: 'round',
-  });
-  g.arc(0, 0, arcR, Math.PI - 0.55, Math.PI + 0.55, false).stroke({
-    width: Math.max(2, Math.round(2.2 * LAYOUT_SCALE)),
-    color: 0xfbbf24,
-    alpha: 0.5,
-    cap: 'round',
-  });
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
+    const x0 = Math.cos(a) * spikeR * 0.72;
+    const y0 = Math.sin(a) * spikeR * 0.72;
+    const x1 = Math.cos(a) * spikeR;
+    const y1 = Math.sin(a) * spikeR;
+    g.moveTo(x0, y0).lineTo(x1, y1).stroke({
+      width: Math.max(2, Math.round(2 * LAYOUT_SCALE)),
+      color: 0xca8a04,
+      alpha: 0.55,
+      cap: 'round',
+    });
+  }
   return g;
 }
+
+/** @deprecated 使用 `createArcherSnareTrapRing` */
+export const createStrongStrikeHeroAura = createArcherSnareTrapRing;
 
 export type ProjectileVisualStyle =
   | 'ally_mage'

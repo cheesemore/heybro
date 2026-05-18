@@ -271,7 +271,7 @@ export function getChapterIntelBossCardParts(
   const ri = scaleRoundIndex;
   const progMax = nodeProgressMaxForPreview(bookChapterId);
   const bc = resolveWowBookBossCombat(bookChapterId ?? 0);
-  const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable * 10, bookStrengthMult, progMax);
+  const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable, bookStrengthMult, progMax);
   const combatAtk = scaledEnemyAtk(chapter, ri, bc.combatBaseAtk, bookStrengthMult, progMax);
   const st = intelTwoLineStats(hp, combatAtk, bc.attackSpeed, bc.range);
   const name =
@@ -304,7 +304,7 @@ export function formatNextBattlePreview(
   for (const w of meta.enemies) {
     if (w.type === 'boss' && w.bossId) {
       const bc = resolveWowBookBossCombat(bookChapterId ?? 0);
-      const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable * 10, bookStrengthMult, progMax);
+      const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable, bookStrengthMult, progMax);
       const atk = scaledEnemyAtk(chapter, ri, bc.combatBaseAtk, bookStrengthMult, progMax);
       const atkSp = bc.attackSpeed;
       const rng = bc.range;

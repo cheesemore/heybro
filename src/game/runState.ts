@@ -39,6 +39,12 @@ export type RunDevBattleHooks = {
    * 仅合并写入的兵种；未写的兵种仍用 `allBondStacks(board)`。
    */
   bondStacksBattleOverride?: Partial<Record<AllyClass, number>>;
+  /** 本场战斗装备 GS（缺省读穿戴合计）；平衡性测试可设为 0 */
+  gearGsBattleOverride?: number;
+  /** 战斗逻辑时间倍率（仅平衡/自动化测试页，加快二分扫描） */
+  battleTimeScale?: number;
+  /** 胜负已定后的停留秒数；测试页可设为 0.15 */
+  battleFinishPostDelaySec?: number;
 };
 
 export class RunState {
@@ -98,7 +104,7 @@ export class RunState {
   /** 绝命乱斗：我方全局额外暴击率 */
   chaoticAllyCritBonus = 0;
 
-  /** 已在 1-2 / 2-2 / 3-2 抉择的策略（用于备战与战斗内查看原文） */
+  /** 已在策略节点（如 2-2 / 3-2）抉择的策略（用于备战与战斗内查看原文） */
   strategyPicks: { id: string; title: string; desc: string }[] = [];
 
   /** 永久养成占位：未来从存档注入 */
@@ -245,16 +251,25 @@ export class RunState {
     this.board = Array.from({ length: 9 }, () => null);
   }
 
-  isGameWon(): boolean {
+  /** 本章节点已全部走完（含关底首领战无论胜负） */
+  isChapterRunAtEnd(): boolean {
     const n = roundsForBookChapter(this.bookChapterId).length;
-    return this.currentRoundIndex >= n && this.playerHp > 0 && !this.bookChapterRunFailed;
+    return this.currentRoundIndex >= n;
+  }
+
+  /**
+   * 通关：走完本章所有节点且结算后生命 &gt; 0。
+   * 与是否击破敌人无关；任意战斗战败仅扣血，打完最后一格再按剩余生命记星。
+   */
+  isGameWon(): boolean {
+    return this.isChapterRunAtEnd() && this.playerHp > 0 && !this.bookChapterRunFailed;
   }
 
   isGameLost(): boolean {
     return this.playerHp <= 0 || this.bookChapterRunFailed;
   }
 
-  /** 将玩家生命限制在 [0, PLAYER_MAX_HP]（回血类效果后调用） */
+  /** 回血后不超过上限；生命可低于 0（结算展示用，≤0 即失败） */
   clampPlayerHpToMax(): void {
     if (this.playerHp > PLAYER_MAX_HP) this.playerHp = PLAYER_MAX_HP;
   }

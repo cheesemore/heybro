@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 2,
+  "editConvention": "默认按节点 label 加减兵数；deltaByBookChapterId 可覆盖指定章（如第 1 章用 1-2/1-3）。仅 kind=normal 生效。",
+  "deltaByNodeLabel": {
+    "1-3": -2,
+    "1-4": -3
+  },
+  "deltaByBookChapterId": {
+    "1": {
+      "1-2": -2,
+      "1-3": -3
+    }
+  }
+}

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>兵种平衡 · 全局修正测试</title>
+  </head>
+  <body style="margin: 0; background: #070b14; color: #e2e8f0; font-family: system-ui, sans-serif">
+    <div id="app" style="position: fixed; inset: 0; z-index: 5; pointer-events: none"></div>
+    <div
+      id="hud"
+      style="
+        position: fixed;
+        z-index: 30;
+        top: 10px;
+        left: 10px;
+        width: min(560px, calc(100vw - 20px));
+        max-height: calc(100vh - 20px);
+        overflow: auto;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.94);
+        border: 1px solid rgba(74, 222, 128, 0.35);
+        font-size: 14px;
+        line-height: 1.45;
+      "
+    >
+      <h1 style="margin: 0 0 8px; font-size: 16px; font-weight: 700">兵种平衡 · 全局修正测试</h1>
+      <p id="preset-blurb" style="margin: 0 0 10px; font-size: 13px; color: #cbd5e1"></p>
+      <p style="margin: 0 0 8px; font-size: 13px; color: #94a3b8">
+        左：我方全局修正（血攻%，敌方不修正）。中间列站位，各职业 15 层，蓝英雄，GS=0。
+      </p>
+      <p style="margin: 0 0 8px; font-size: 13px; color: #94a3b8">
+        死亡矿井第 1 章 · 第 3–6 关关底首领（书本 7–10，均为 Boss 战）
+      </p>
+      <div id="preset-row" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px">
+        <button id="preset-dm-s3" type="button" style="padding: 6px 10px; border-radius: 8px; cursor: pointer">第3关·基尔尼格</button>
+        <button id="preset-dm-s4" type="button" style="padding: 6px 10px; border-radius: 8px; cursor: pointer">第4关·重拳</button>
+        <button id="preset-dm-s5" type="button" style="padding: 6px 10px; border-radius: 8px; cursor: pointer">第5关·绿皮队长</button>
+        <button id="preset-dm-s6" type="button" style="padding: 6px 10px; border-radius: 8px; cursor: pointer">第6关·范克里夫</button>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 10px">
+        <label style="display: flex; align-items: center; gap: 6px">
+          <span style="color: #fbbf24; font-weight: 600">全局修正</span>
+          <input
+            id="global-pct"
+            type="number"
+            min="1"
+            max="200"
+            value="100"
+            style="width: 64px; padding: 4px 6px; border-radius: 6px; border: 1px solid #475569"
+          />
+          <span>%</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 6px">
+          <span>职业组合</span>
+          <select id="class-triple" style="padding: 4px 8px; border-radius: 6px; min-width: 88px"></select>
+        </label>
+        <label style="display: flex; align-items: center; gap: 6px">
+          <span>站位</span>
+          <select id="formation" style="padding: 4px 8px; border-radius: 6px; min-width: 88px"></select>
+        </label>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px">
+        <button
+          id="start"
+          type="button"
+          style="padding: 8px 12px; border-radius: 8px; border: none; background: #16a34a; color: #fff; font-weight: 700; cursor: pointer"
+        >
+          开始战斗
+        </button>
+        <button
+          id="auto-binary"
+          type="button"
+          style="padding: 8px 12px; border-radius: 8px; border: none; background: #2563eb; color: #fff; font-weight: 700; cursor: pointer"
+        >
+          自动连续战斗（二分）
+        </button>
+        <button
+          id="scan-formations"
+          type="button"
+          style="padding: 8px 12px; border-radius: 8px; border: none; background: #7c3aed; color: #fff; font-weight: 600; cursor: pointer"
+        >
+          扫描当前组合站位
+        </button>
+        <button
+          id="scan-all"
+          type="button"
+          style="padding: 8px 12px; border-radius: 8px; border: none; background: #b45309; color: #fff; font-weight: 600; cursor: pointer"
+        >
+          扫描全职业组合
+        </button>
+        <button
+          id="abort"
+          type="button"
+          style="padding: 8px 12px; border-radius: 8px; border: 1px solid #64748b; background: transparent; color: #94a3b8; cursor: pointer"
+          disabled
+        >
+          中止
+        </button>
+      </div>
+      <p id="status" style="margin: 0 0 8px">就绪。</p>
+      <pre
+        id="result-log"
+        style="margin: 0; max-height: 28vh; overflow: auto; font-size: 11px; line-height: 1.35; color: #86efac; white-space: pre-wrap"
+      ></pre>
+    </div>
+    <script type="module" src="/src/test/classBalanceTestPage.ts"></script>
+  </body>
+</html>

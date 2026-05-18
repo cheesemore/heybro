@@ -10,6 +10,7 @@ import { ALLY_DEFS } from '../unitDefs';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import type { PlayerGearInstance } from '../playerGearInstance';
 import { mountGearCard } from '../ui/gearCard';
+import { playNodeHeartHpAnim, type NodeHeartHpAnimOpts } from '../ui/nodeHeartHpAnim';
 
 /** 与 `createDraftHeroToken` 一致：根在 `(x, cellTop + dia/2)` 时，圆盘几何中心的屏幕 Y */
 function lotteryDraftHeroDiskCenterY(cellTopY: number, diameterPx: number): number {
@@ -43,6 +44,8 @@ export class ModalLayer extends Container {
     super();
     this.visible = false;
     this.eventMode = 'none';
+    this.sortableChildren = true;
+    this.zIndex = 1000;
     this.hitArea = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
   }
 
@@ -253,6 +256,21 @@ export class ModalLayer extends Container {
     this.setBotPrimaryDismiss(cancelDismiss);
 
     attachScreenDebugLabel(this, 'ModalLayer.confirmDestructive');
+  }
+
+  /**
+   * 节点战斗结束：先播中央爱心掉血/加血（战斗场景可仍在下层），播完再调用 `onSettlement`（通常清层并弹结算）。
+   */
+  playNodeHpChangeThenBattleSettlement(hp: NodeHeartHpAnimOpts, onSettlement: () => void): void {
+    if (hp.hpDelta === 0) {
+      onSettlement();
+      return;
+    }
+    this.removeChildren();
+    this.clearBotPrimaryDismiss();
+    this.visible = true;
+    this.eventMode = 'static';
+    playNodeHeartHpAnim(this, hp, onSettlement);
   }
 
   /**

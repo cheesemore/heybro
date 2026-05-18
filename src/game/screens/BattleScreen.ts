@@ -146,6 +146,7 @@ import {
 import {
   allBondStacks,
   BOND_MEGA_RADIUS_MULT,
+  BOND_MEGA_STAT_MULT,
   classBondHpAtkMultiplier,
   hasBondMega,
   hasBondUltimate,
@@ -167,6 +168,7 @@ import type {
 import type { ProjectileVisualStyle } from '../battleVisuals';
 import {
   buildProjectileGraphic,
+  createArcherSnareTrapRing,
   createKnightAura,
   spawnArcaneTrailSpark,
   spawnDeathTrailSpark,
@@ -209,7 +211,7 @@ import {
 const KNOCKBACK_TWEEN_DUR = 0.3;
 const DEATH_FLIGHT_MAX_T = 2.85;
 const DEATH_EXIT_MARGIN = Math.round(320 * LAYOUT_SCALE);
-const BATTLE_FINISH_POST_DELAY_SEC = 3;
+const BATTLE_FINISH_POST_DELAY_SEC = 1;
 const HIT_FLASH_DUR = 0.11;
 const ATTACK_LUNGE_DUR = 0.12;
 /**
@@ -508,6 +510,8 @@ type SimUnit = {
   /** 环形血条几何与配色（战斗代币） */
   tokenRing?: { cx: number; cy: number; ringR: number; thick: number; solidColor: number };
   aura?: Graphics;
+  /** 诱捕陷阱脚底环（局部圆心对齐代币中心） */
+  snareTrapGfx?: Graphics;
   /** 诱捕陷阱：待触发窗口 + 触发后减伤窗口 */
   snareTrapBuff?: { armedRemainSec: number; activeRemainSec: number; stunUsed?: boolean };
   bossId?: BossId;
@@ -716,6 +720,9 @@ export class BattleScreen extends Container {
   /** 战斗已分出胜负，延后展示结算（等死亡飞出等播完） */
   private pendingFinishOutcome: BattleOutcome | null = null;
   private finishPostDelayLeft = 0;
+  /** 独立测试页注入；`devBattleHooks` 清空后仍保留本场 */
+  private devBattleTimeScale = 1;
+  private devBattleFinishPostDelaySec = BATTLE_FINISH_POST_DELAY_SEC;
   private hudTimer: Text;
   private hudAllyBar: Graphics;
   private hudAllyLabel: Text;
@@ -799,6 +806,15 @@ export class BattleScreen extends Container {
     this.run = run;
     this.meta = meta;
     this.onEnd = onEnd;
+    const devHooksEarly = run.devBattleHooks;
+    if (devHooksEarly) {
+      if (typeof devHooksEarly.battleTimeScale === 'number' && devHooksEarly.battleTimeScale > 0) {
+        this.devBattleTimeScale = devHooksEarly.battleTimeScale;
+      }
+      if (typeof devHooksEarly.battleFinishPostDelaySec === 'number') {
+        this.devBattleFinishPostDelaySec = Math.max(0, devHooksEarly.battleFinishPostDelaySec);
+      }
+    }
     this.uiTestBattle = !!meta.uiTestBattle;
     this.uiTestSkillAcc = this.uiTestBattle ? -0.45 : 0;
     this.statsPanelExpanded = isBotModeActive() ? true : battleStatsPanelExpandedSession;
@@ -1136,7 +1152,7 @@ export class BattleScreen extends Container {
     this.hitSparks.push(spawnHitSparkBurst(this.floatLayer, ax, ay));
     this.healBursts.push(spawnHealBurst(this.fxLayer, ax, ay));
     this.slashes.push(spawnDualShotSlash(this.fxLayer, ex, ey));
-    this.meteors.push(spawnMeteorAnim(this.fxLayer, ex, ey + Math.round(24 * LAYOUT_SCALE), METEOR_SPLASH_RADIUS));
+    this.meteors.push(spawnMeteorAnim(this.fxLayer, ex, ey, METEOR_SPLASH_RADIUS));
     const cat = getSkillById('skill_catapult_burn_field');
     const cr = skillParamDesignPx(cat, 0, 88);
     const tickSec = skillParamNumber(cat, 2, 0.32);
@@ -1568,6 +1584,12 @@ export class BattleScreen extends Container {
   }
 
   /** 九宫格索引 0–8；每种兵按层数拆成多个模型，出生点落在对应格中心附近 */
+  private battleGearStatMult(): number {
+    const ov = this.run.devBattleHooks?.gearGsBattleOverride;
+    const gs = ov !== undefined ? ov : sumEquippedGearGs();
+    return gsCombatStatMult(gs);
+  }
+
   private spawnAllies(): SimUnit[] {
     const out: SimUnit[] = [];
     const priestM = priestBondTeamMultiplier(this.bondStacks.priest);
@@ -1587,7 +1609,7 @@ export class BattleScreen extends Container {
       const bossAtkM = this.meta.kind === 'boss' ? this.run.bossHpDerivedFinalAtkMult : 1;
       const growHp = this.run.externalGrowth.permanentMaxHpMult;
       const growAtk = this.run.externalGrowth.permanentDamageMult;
-      const gearM = gsCombatStatMult(sumEquippedGearGs());
+      const gearM = this.battleGearStatMult();
       const classProg = classLevelStatMult(getClassLevel(cell.kind));
       const eachHp = Math.max(
         1,
@@ -1674,7 +1696,7 @@ export class BattleScreen extends Container {
     const bossAtkM = this.meta.kind === 'boss' ? this.run.bossHpDerivedFinalAtkMult : 1;
     const growHp = this.run.externalGrowth.permanentMaxHpMult;
     const growAtk = this.run.externalGrowth.permanentDamageMult;
-    const gearM = gsCombatStatMult(sumEquippedGearGs());
+    const gearM = this.battleGearStatMult();
     const classProgFor = (cls: AllyClass): number => classLevelStatMult(getClassLevel(cls));
     const jobs: { hid: HeroId; hd: NonNullable<ReturnType<typeof getHeroDef>> }[] = [];
     for (let s = 0; s < cap; s++) {
@@ -1744,9 +1766,10 @@ export class BattleScreen extends Container {
     return out;
   }
 
-  /** 二十一极巨化羁绊：每种职业层数≥21 时，该职业随机 3 个入场小兵极巨化（体型×3，生命与攻击×3） */
+  /** 二十一极巨化羁绊：每种职业层数≥21 时，该职业随机 3 个入场小兵极巨化（半径×1.25，血攻×3） */
   private applyBond25Mega(allies: SimUnit[]): void {
-    const m = BOND_MEGA_RADIUS_MULT;
+    const radiusMult = BOND_MEGA_RADIUS_MULT;
+    const statMult = BOND_MEGA_STAT_MULT;
     for (const kind of ALLY_CLASSES) {
       if (!hasBondMega(this.bondStacks[kind])) continue;
       const pool = allies.filter((u) => u.allyKind === kind && !u.heroId);
@@ -1761,14 +1784,14 @@ export class BattleScreen extends Container {
       for (let k = 0; k < n; k++) {
         const u = pool[k]!;
         const hr = u.hitRadiusPx;
-        u.hitRadiusPx = Math.max(1, Math.round(hr * m));
+        u.hitRadiusPx = Math.max(1, Math.round(hr * radiusMult));
         if (u.tokenInnerR != null) {
-          u.tokenInnerR = Math.max(1, Math.round(u.tokenInnerR * m));
+          u.tokenInnerR = Math.max(1, Math.round(u.tokenInnerR * radiusMult));
         }
-        u.atk = Math.max(1, Math.round(u.atk * m));
-        u.maxHp = Math.max(1, Math.round(u.maxHp * m));
-        u.hp = Math.min(u.maxHp, Math.round(u.hp * m));
-        u.root.scale.set(m);
+        u.atk = Math.max(1, Math.round(u.atk * statMult));
+        u.maxHp = Math.max(1, Math.round(u.maxHp * statMult));
+        u.hp = Math.min(u.maxHp, Math.round(u.hp * statMult));
+        u.root.scale.set(radiusMult);
         this.syncUnitRootFromStance(u);
         this.syncUnitHpRing(u);
       }
@@ -1814,7 +1837,7 @@ export class BattleScreen extends Container {
       }
       const L = Math.min(4, links);
       if (L <= 0) continue;
-      const pct = 0.1 * L;
+      const pct = 0.06 * L;
       for (const e of this.units) {
         if (e.side !== 'enemy' || e.dead) continue;
         const loss = Math.max(1, Math.round(e.hp * pct));
@@ -1845,7 +1868,7 @@ export class BattleScreen extends Container {
     for (const wave of meta.enemies) {
       if (wave.type === 'boss' && wave.bossId) {
         const bc = resolveWowBookBossCombat(this.run.bookChapterId);
-        const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable * 10, bookM, progMax);
+        const hp = scaledEnemyHp(chapter, ri, bc.baseMaxHpTable, bookM, progMax);
         const atk = scaledEnemyAtk(chapter, ri, bc.combatBaseAtk, bookM, progMax);
         const bossLabel =
           wave.wowBossDisplayName && wave.wowBossDisplayName.trim().length > 0
@@ -2549,13 +2572,11 @@ export class BattleScreen extends Container {
 
     const ox = u.x;
     const oy = u.y;
-    const irU = this.unitTokenRootYOffsetPx(u);
-    const oldRootY = oy + irU;
     u.x = nx;
     u.y = ny;
     this.syncUnitRootFromStance(u);
 
-    this.ringFx.push(spawnRingPulse(this.fxLayer, ox, oldRootY - 18, 46, 0xf97316, 0.42));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, ox, oy, 46, 0xf97316, 0.42));
     this.ringFx.push(spawnRingPulse(this.fxLayer, nx, u.y, 58, 0xfbbf24, 0.52));
 
     if (this.unitHasSkill(u, 'skill_raider_leap')) {
@@ -4326,7 +4347,7 @@ export class BattleScreen extends Container {
     this.ringFx.push(
       spawnRingPulse(this.fxLayer, boss.x, boss.y, Math.round(ir * 2.75), 0xfbbf24, 0.54, { delay: 0.045 }),
     );
-    this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, boss.x, boss.y - ir * 0.12));
+    this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, boss.x, boss.y));
     for (const t of hits) {
       this.ringFx.push(
         spawnRingPulse(this.fxLayer, t.x, t.y, Math.max(28, Math.round(t.hitRadiusPx * 1.08)), 0xfca5a5, 0.38, {
@@ -4376,7 +4397,7 @@ export class BattleScreen extends Container {
           spawnRingPulse(this.fxLayer, u.x, u.y, u.hitRadiusPx * 3.05, 0x7f1d1d, 0.5, { delay: 0.05 }),
         );
         this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, u.x, u.y));
-        this.hitSparks.push(spawnHitSparkBurst(this.floatLayer, u.x, u.y - u.hitRadiusPx * 0.2));
+        this.hitSparks.push(spawnHitSparkBurst(this.floatLayer, u.x, u.y));
       }
     }
   }
@@ -4749,6 +4770,7 @@ export class BattleScreen extends Container {
     if (target.hp <= 0) {
       target.hp = 0;
       target.dead = true;
+      this.clearSnareTrapGfx(target);
       this.onBattleUnitDied(target);
       if (!target.bossId) {
         if (target.hpRingCur) target.hpRingCur.visible = false;
@@ -4832,8 +4854,8 @@ export class BattleScreen extends Container {
       );
       if (ctx?.hotStrikeHeavy) {
         this.hitSparks.push(spawnHitSparkBurst(this.floatLayer, target.x, target.y));
-        this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x, target.y - target.hitRadiusPx * 0.2));
-        this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x + target.hitRadiusPx * 0.35, target.y + target.hitRadiusPx * 0.12));
+        this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x, target.y));
+        this.hitSparks.push(spawnHitSparkBurst(this.fxLayer, target.x + target.hitRadiusPx * 0.22, target.y));
         this.ringFx.push(
           spawnRingPulse(this.fxLayer, target.x, target.y, target.hitRadiusPx * 1.45, 0xef4444, 0.42),
         );
@@ -4951,8 +4973,47 @@ export class BattleScreen extends Container {
     return u.allyKind === 'archer';
   }
 
+  private ensureSnareTrapGfx(u: SimUnit): void {
+    if (u.snareTrapGfx || u.dead) return;
+    const ir = u.hitRadiusPx;
+    const g = createArcherSnareTrapRing(ir);
+    g.position.set(0, -ir);
+    u.root.addChildAt(g, 0);
+    u.snareTrapGfx = g;
+  }
+
+  private syncSnareTrapGfxVisual(u: SimUnit): void {
+    const b = u.snareTrapBuff;
+    const g = u.snareTrapGfx;
+    if (!g) return;
+    if (!b) {
+      g.visible = false;
+      return;
+    }
+    g.visible = true;
+    const active = b.activeRemainSec > 0;
+    g.tint = active ? 0xfef08a : 0xffffff;
+    g.alpha = active ? 0.95 : 0.72;
+  }
+
+  private clearSnareTrapGfx(u: SimUnit): void {
+    if (u.snareTrapGfx) {
+      u.snareTrapGfx.destroy();
+      u.snareTrapGfx = undefined;
+    }
+  }
+
   private grantSnareTrapBuff(u: SimUnit): void {
     u.snareTrapBuff = { armedRemainSec: SNARE_TRAP_BUFF_SEC, activeRemainSec: 0 };
+  }
+
+  /** 陷阱首次触发：脚底环 + 脉冲（上 Buff 时不播） */
+  private playSnareTrapTriggerFx(u: SimUnit): void {
+    this.ensureSnareTrapGfx(u);
+    this.syncSnareTrapGfxVisual(u);
+    const c = this.unitBattleTokenCenterXY(u);
+    this.ringFx.push(spawnRingPulse(this.fxLayer, c.x, c.y, u.hitRadiusPx * 1.85, 0x84cc16, 0.42));
+    this.ringFx.push(spawnRingPulse(this.fxLayer, c.x, c.y, u.hitRadiusPx * 2.1, 0xa3e635, 0.48));
   }
 
   private applyBattleOpenArcherSnareTrap(): void {
@@ -4972,12 +5033,19 @@ export class BattleScreen extends Container {
       if (!b) continue;
       if (b.activeRemainSec > 0) {
         b.activeRemainSec = Math.max(0, b.activeRemainSec - dt);
-        if (b.activeRemainSec <= 0) u.snareTrapBuff = undefined;
+        if (b.activeRemainSec <= 0) {
+          u.snareTrapBuff = undefined;
+          this.clearSnareTrapGfx(u);
+        } else {
+          this.syncSnareTrapGfxVisual(u);
+        }
         continue;
       }
       if (b.armedRemainSec > 0) {
         b.armedRemainSec = Math.max(0, b.armedRemainSec - dt);
-        if (b.armedRemainSec <= 0) u.snareTrapBuff = undefined;
+        if (b.armedRemainSec <= 0) {
+          u.snareTrapBuff = undefined;
+        }
       }
     }
   }
@@ -5002,11 +5070,13 @@ export class BattleScreen extends Container {
 
     if (b.activeRemainSec > 0) {
       this.trySnareTrapStun(b, ctx.attacker);
+      this.syncSnareTrapGfxVisual(target);
       return 1;
     }
     if (b.armedRemainSec > 0) {
       b.activeRemainSec = this.snareTrapEffectSec();
       this.trySnareTrapStun(b, ctx.attacker);
+      this.playSnareTrapTriggerFx(target);
       return 1;
     }
     return amt;
@@ -7092,9 +7162,9 @@ export class BattleScreen extends Container {
 
   private updateFrame(dt: number): void {
     if (this.ended) return;
-    this.tickBattleScreenShake(dt);
     const inFinishDelay = this.pendingFinishOutcome != null;
-
+    if (!inFinishDelay) dt *= this.devBattleTimeScale;
+    this.tickBattleScreenShake(dt);
     const remOpen = this.openingCountdownT;
     if (remOpen > 0) {
       const digit = Math.min(3, Math.ceil(remOpen / BATTLE_OPENING_COUNTDOWN_STEP_SEC));
@@ -7247,6 +7317,11 @@ export class BattleScreen extends Container {
         const charging = this.knightIsCharging(u);
         u.aura.visible = charging;
         if (u.aura.visible) u.aura.rotation += dt * 3.8;
+      }
+
+      if (u.snareTrapGfx?.visible) {
+        const trapActive = (u.snareTrapBuff?.activeRemainSec ?? 0) > 0;
+        u.snareTrapGfx.rotation += dt * (trapActive ? 4.4 : 1.6);
       }
 
       if (u.heroChannelDiskOverlay && u.tokenInnerR != null) {
@@ -7494,7 +7569,7 @@ export class BattleScreen extends Container {
     if (this.ended || this.pendingFinishOutcome != null) return;
     this.timeLeft = Math.max(0, this.timeLeft);
     this.pendingFinishOutcome = outcome;
-    this.finishPostDelayLeft = BATTLE_FINISH_POST_DELAY_SEC;
+    this.finishPostDelayLeft = this.devBattleFinishPostDelaySec;
   }
 
   private finish(outcome: BattleOutcome): void {

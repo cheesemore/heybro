@@ -48,7 +48,9 @@ export function hasBondMega(count: number): boolean {
   return count >= 21;
 }
 
-/** 极巨化：代币/碰撞/体型缩放，以及生命与攻击倍率（相对原数值） */
-export const BOND_MEGA_MULT = 3 as const;
-/** @deprecated 使用 BOND_MEGA_MULT */
-export const BOND_MEGA_RADIUS_MULT = BOND_MEGA_MULT;
+/** 极巨化：碰撞/代币半径与视觉缩放（相对原半径 1 → 1.25） */
+export const BOND_MEGA_RADIUS_MULT = 1.25 as const;
+/** 极巨化：生命与攻击（相对原数值 1 → 3） */
+export const BOND_MEGA_STAT_MULT = 3 as const;
+/** @deprecated 使用 BOND_MEGA_STAT_MULT */
+export const BOND_MEGA_MULT = BOND_MEGA_STAT_MULT;

@@ -63,7 +63,7 @@ export type WowBookBossRow = {
   bossUid?: string;
   /** 碰撞/代币半径（设计像素，同小怪表） */
   hitRadius?: number;
-  /** 表定生命基准；战场内仍乘 10 再进 `scaledEnemyHp`（首领池规则） */
+  /** 表定生命基准；战场进场直接进 `scaledEnemyHp`（已含原×10 池化，勿再乘 10） */
   baseMaxHp?: number;
   /** 表定攻击（「乘 GLOBAL 前」的底数；缺省见 `WOW_BOOK_BOSS_TABLE_DEFAULT`） */
   baseAtk?: number;
@@ -97,8 +97,8 @@ export function getWowBookBossByChapter(chapterId: number): WowBookBossRow | und
  */
 export const WOW_BOOK_BOSS_TABLE_DEFAULT = {
   hitRadius: 80,
-  baseMaxHp: 1680,
-  baseAtk: 27,
+  baseMaxHp: 22740,
+  baseAtk: 46,
   attackSpeed: 0.65,
   range: 10,
   moveSpeed: 540,

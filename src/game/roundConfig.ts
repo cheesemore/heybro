@@ -32,15 +32,14 @@ export const ROUNDS: RoundMeta[] = [
   mk('3-6', 3, 6, 'boss'),
 ];
 
-/** 书本第 1 章：1-1…1-6 → 1-7 首领，无 2-1 及以后 */
+/** 书本第 1 章：1-1…1-6（无策略节点），1-6 为关底首领；无 2-1 及以后 */
 const ROUNDS_BOOK_CHAPTER_1: RoundMeta[] = [
   mk('1-1', 1, 1, 'normal'),
-  mk('1-2', 1, 2, 'strategy'),
+  mk('1-2', 1, 2, 'normal'),
   mk('1-3', 1, 3, 'normal'),
-  mk('1-4', 1, 4, 'normal'),
-  mk('1-5', 1, 5, 'reward'),
-  mk('1-6', 2, 6, 'normal'),
-  mk('1-7', 3, 7, 'boss'),
+  mk('1-4', 1, 4, 'reward'),
+  mk('1-5', 2, 5, 'normal'),
+  mk('1-6', 3, 6, 'boss'),
 ];
 
 /** 书本第 2 章：1-1…1-6、2-1…2-6 → 2-7 首领 */
@@ -60,7 +59,7 @@ const ROUNDS_BOOK_CHAPTER_2: RoundMeta[] = [
   mk('2-7', 3, 7, 'boss'),
 ];
 
-/** 当前书本章节对应的关卡列表（长度 7 / 13 / 16） */
+/** 当前书本章节对应的关卡列表（长度 6 / 13 / 16） */
 export function roundsForBookChapter(bookChapterId: number): RoundMeta[] {
   if (bookChapterId === 1) return ROUNDS_BOOK_CHAPTER_1;
   if (bookChapterId === 2) return ROUNDS_BOOK_CHAPTER_2;
@@ -69,12 +68,12 @@ export function roundsForBookChapter(bookChapterId: number): RoundMeta[] {
 
 /**
  * 与旧 16 关进度轴对齐的「难度下标」0…15：用于敌兵数量曲线、敌我数值曲线、战败扣血档等。
- * 特例：第 1 章 1-7 首领等同旧 2-1（下标 5）；第 2 章 2-7 首领等同旧 3-1（下标 10）。
+ * 特例：第 1 章 1-6 首领等同旧 2-1（下标 5）；第 2 章 2-7 首领等同旧 3-1（下标 10）。
  */
 export function legacyProgressRoundIndex(bookChapterId: number, roundIndex: number): number {
   const ri = Math.max(0, Math.floor(roundIndex));
   if (bookChapterId === 1) {
-    const map = [0, 1, 2, 3, 4, 4, 5];
+    const map = [0, 2, 3, 4, 4, 5];
     return map[Math.min(ri, map.length - 1)]!;
   }
   if (bookChapterId === 2) {

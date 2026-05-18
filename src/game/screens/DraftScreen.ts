@@ -1,6 +1,7 @@
 import type { Application, Ticker } from 'pixi.js';
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
+import { clientToGameLogical } from '../layoutStage';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { allBondStacks } from '../battleBonds';
 import { recruitCardBondedStats } from '../recruitCardBondStats';
@@ -37,6 +38,8 @@ const HERO_RAIL_GAP = Math.round(18 * LAYOUT_SCALE);
 const TEXT_INSET = Math.round(14 * LAYOUT_SCALE);
 const HEADER_Y = Math.round(20 * LAYOUT_SCALE);
 const TRIO_CARD_H = Math.round(278 * LAYOUT_SCALE);
+/** 三选一卡顶「N 金」与底部职业特性同色 */
+const DRAFT_CARD_GOLD_ACCENT = 0xa16207;
 
 /** 招募卡第三行：职业特性（不再显示移速） */
 function allyRecruitTraitText(kind: AllyClass): string {
@@ -156,10 +159,27 @@ export class DraftScreen extends Container {
   /** 招募页英雄头像全介绍浮层 */
   private heroIntroLayer: Container | null = null;
 
-  private readonly onDocPointerUp = (ev: PointerEvent): void => {
+  private readonly onDocPointerEnd = (ev: PointerEvent): void => {
+    this.finishSlotDragFromClient(ev.clientX, ev.clientY);
+  };
+
+  private finishSlotDragFromClient(clientX: number, clientY: number): void {
+    const canvas = this.app.canvas as HTMLCanvasElement;
+    const r = canvas.getBoundingClientRect();
+    const screen = this.app.renderer.screen;
+    const pt = clientToGameLogical(clientX, clientY, r, screen.width, screen.height);
+    if (!pt) {
+      this.finishSlotDragFromLocal(Number.NaN, Number.NaN);
+      return;
+    }
+    this.finishSlotDragFromLocal(pt.x, pt.y);
+  }
+
+  private finishSlotDragFromLocal(lx: number, ly: number): void {
+    if (this.dragMode !== 'slot' || this.dragFromSlot === null) return;
     this.clearBoardDragOutline();
-    const j = this.hitSlotFromClient(ev.clientX, ev.clientY);
-    if (this.dragMode === 'slot' && this.dragFromSlot !== null && j !== null && j !== this.dragFromSlot) {
+    const j = Number.isFinite(lx) ? this.hitSlotFromLocal(lx, ly) : null;
+    if (j !== null && j !== this.dragFromSlot) {
       const i = this.dragFromSlot;
       const bu = this.run.board[i];
       const bj = this.run.board[j];
@@ -172,8 +192,9 @@ export class DraftScreen extends Container {
     }
     this.dragMode = null;
     this.dragFromSlot = null;
+    this.removeDocPointerEndListeners();
     this.drawBoard();
-  };
+  }
 
   constructor(app: Application, run: RunState, onFinished: () => void) {
     super();
@@ -434,7 +455,7 @@ export class DraftScreen extends Container {
     this.clearScreenTickers();
     this.botResetSubmit();
     botUnregisterScreen('draft');
-    document.removeEventListener('pointerup', this.onDocPointerUp);
+    this.removeDocPointerEndListeners();
     this.closeHeroIntro();
     super.destroy({ children: true });
   }
@@ -489,17 +510,36 @@ export class DraftScreen extends Container {
     };
   }
 
-  private hitSlotFromClient(clientX: number, clientY: number): number | null {
-    const canvas = this.app.canvas as HTMLCanvasElement;
-    const r = canvas.getBoundingClientRect();
-    if (r.width <= 0 || r.height <= 0) return null;
-    const lx = ((clientX - r.left) / r.width) * GAME_WIDTH;
-    const ly = ((clientY - r.top) / r.height) * GAME_HEIGHT;
+  private hitSlotFromLocal(lx: number, ly: number): number | null {
+    const m = this.boardGridMetrics();
+    const bleed = Math.round(m.gap * 0.45);
     for (let i = 0; i < 9; i++) {
       const b = this.boardSlotRect(i);
       if (lx >= b.x && lx < b.x + b.w && ly >= b.y && ly < b.y + b.h) return i;
     }
+    for (let i = 0; i < 9; i++) {
+      const b = this.boardSlotRect(i);
+      if (
+        lx >= b.x - bleed &&
+        lx < b.x + b.w + bleed &&
+        ly >= b.y - bleed &&
+        ly < b.y + b.h + bleed
+      ) {
+        return i;
+      }
+    }
     return null;
+  }
+
+  private addDocPointerEndListeners(): void {
+    this.removeDocPointerEndListeners();
+    document.addEventListener('pointerup', this.onDocPointerEnd);
+    document.addEventListener('pointercancel', this.onDocPointerEnd);
+  }
+
+  private removeDocPointerEndListeners(): void {
+    document.removeEventListener('pointerup', this.onDocPointerEnd);
+    document.removeEventListener('pointercancel', this.onDocPointerEnd);
   }
 
   private refreshHud(): void {
@@ -544,7 +584,7 @@ export class DraftScreen extends Container {
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           fontSize: Math.round(19 * LAYOUT_SCALE),
-          fill: goldCost === 0 ? 0x166534 : 0xa16207,
+          fill: goldCost === 0 ? 0x166534 : DRAFT_CARD_GOLD_ACCENT,
           fontWeight: '700',
         },
       });
@@ -595,10 +635,10 @@ export class DraftScreen extends Container {
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           fontSize: traitFs,
-          fill: 0x64748b,
+          fill: DRAFT_CARD_GOLD_ACCENT,
           align: 'center',
           lineHeight: Math.round(20 * LAYOUT_SCALE),
-          fontWeight: '500',
+          fontWeight: '700',
           wordWrap: true,
           wordWrapWidth: wrapCard,
           breakWords: true,
@@ -690,11 +730,11 @@ export class DraftScreen extends Container {
   /** 交换两格的「兵种 + 神器」整体（一格仅能有其一） */
   private beginSlotDrag(slotIndex: number): void {
     if (!this.run.board[slotIndex] && !this.run.artifactBySlot[slotIndex]) return;
-    document.removeEventListener('pointerup', this.onDocPointerUp);
+    this.removeDocPointerEndListeners();
     this.dragMode = 'slot';
     this.dragFromSlot = slotIndex;
     this.paintBoardDragOutline();
-    document.addEventListener('pointerup', this.onDocPointerUp, { once: true });
+    this.addDocPointerEndListeners();
   }
 
   private clearBoardDragOutline(): void {
@@ -798,6 +838,7 @@ export class DraftScreen extends Container {
       wrap.position.set(b.x, b.y);
       (wrap as Container & { userData?: string }).userData = 'board-slot';
       wrap.eventMode = 'static';
+      wrap.hitArea = new Rectangle(0, 0, b.w, b.h);
       wrap.cursor = this.run.board[i] || this.run.artifactBySlot[i] ? 'grab' : 'default';
       const g = new Graphics();
       const rr = Math.round(14 * LAYOUT_SCALE);
@@ -860,8 +901,24 @@ export class DraftScreen extends Container {
       t.position.set(b.w / 2, b.h - Math.round(8 * LAYOUT_SCALE));
       wrap.addChild(t);
       const idx = i;
-      wrap.on('pointerdown', () => {
-        if (this.run.board[idx] || this.run.artifactBySlot[idx]) this.beginSlotDrag(idx);
+      wrap.on('pointerdown', (e) => {
+        if (this.run.board[idx] || this.run.artifactBySlot[idx]) {
+          e.stopPropagation();
+          this.beginSlotDrag(idx);
+        }
+      });
+      wrap.on('pointerup', (e) => {
+        if (this.dragMode === 'slot' && this.dragFromSlot !== null) {
+          e.stopPropagation();
+          const p = this.toLocal(e.global);
+          this.finishSlotDragFromLocal(p.x, p.y);
+        }
+      });
+      wrap.on('pointerupoutside', (e) => {
+        if (this.dragMode === 'slot' && this.dragFromSlot !== null) {
+          const p = this.toLocal(e.global);
+          this.finishSlotDragFromLocal(p.x, p.y);
+        }
       });
       this.addChild(wrap);
     }
@@ -1112,7 +1169,7 @@ export class DraftScreen extends Container {
       this.positionTipAboveRow1(this.controlRowYs().row1Y);
       return;
     }
-    document.removeEventListener('pointerup', this.onDocPointerUp);
+    this.removeDocPointerEndListeners();
     this.draftFinishCommitted = true;
     this.draftExitRequested = true;
     if (isBotModeActive()) {

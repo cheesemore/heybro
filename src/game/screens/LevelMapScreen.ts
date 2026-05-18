@@ -32,7 +32,7 @@ type Handlers = {
   onCheatChapterClear?: (star: 1 | 2 | 3) => void;
 };
 
-/** 关卡地图节点坐标：16 关沿用 5+5+6；7 关为 4+3；13 关为 6+6+1 */
+/** 关卡地图节点坐标：16 关沿用 5+5+6；6 关为 3+3；13 关为 6+6+1 */
 function roundNodePosition(i: number, total: number): { cx: number; cy: number } {
   const colStep = Math.round(52 * LAYOUT_SCALE);
   const rowBaseY = Math.round(58 * LAYOUT_SCALE) + 50;
@@ -61,7 +61,7 @@ function roundNodePosition(i: number, total: number): { cx: number; cy: number }
   }
 
   const rowCounts =
-    total === 7 ? [4, 3] : total === 13 ? [6, 6, 1] : [Math.min(6, Math.max(1, total))];
+    total === 6 ? [3, 3] : total === 13 ? [6, 6, 1] : [Math.min(6, Math.max(1, total))];
   let acc = 0;
   for (let r = 0; r < rowCounts.length; r++) {
     const nInRow = rowCounts[r]!;
@@ -124,18 +124,21 @@ export class LevelMapScreen extends Container {
     const totalRounds = rounds.length;
 
     const hudRoundIdx = Math.min(curIdx, Math.max(0, totalRounds - 1));
-    const strength = new Text({
-      text: `强度 ${bookChapterRoundStrengthPercent(this.run.bookChapterId, hudRoundIdx)}%`,
-      style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
-        fontSize: Math.round(24 * LAYOUT_SCALE),
-        fill: 0x93c5fd,
-        fontWeight: '700',
-      },
-    });
-    strength.anchor.set(1, 0);
-    strength.position.set(GAME_WIDTH - pad, hudY);
-    this.addChild(strength);
+    const hudMeta = rounds[hudRoundIdx];
+    if (hudMeta && (hudMeta.kind === 'normal' || hudMeta.kind === 'boss')) {
+      const strength = new Text({
+        text: `强度 ${bookChapterRoundStrengthPercent(this.run.bookChapterId, hudRoundIdx)}%`,
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
+          fontSize: Math.round(24 * LAYOUT_SCALE),
+          fill: 0x93c5fd,
+          fontWeight: '700',
+        },
+      });
+      strength.anchor.set(1, 0);
+      strength.position.set(GAME_WIDTH - pad, hudY);
+      this.addChild(strength);
+    }
     for (let i = 0; i < totalRounds; i++) {
       const meta = rounds[i]!;
       const { cx, cy } = roundNodePosition(i, totalRounds);
@@ -175,19 +178,21 @@ export class LevelMapScreen extends Container {
       t.position.set(cx, cy);
       this.addChild(t);
 
-      const nodePct = bookChapterRoundStrengthPercent(this.run.bookChapterId, i);
-      const pctT = new Text({
-        text: `${nodePct}%`,
-        style: {
-          fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
-          fontSize: Math.round(13 * LAYOUT_SCALE),
-          fill: isCurrent ? 0xbfdbfe : 0x64748b,
-          fontWeight: '700',
-        },
-      });
-      pctT.anchor.set(0.5, 0);
-      pctT.position.set(cx, cy + nodeRadius + Math.round(6 * LAYOUT_SCALE));
-      this.addChild(pctT);
+      if (meta.kind === 'normal' || meta.kind === 'boss') {
+        const nodePct = bookChapterRoundStrengthPercent(this.run.bookChapterId, i);
+        const pctT = new Text({
+          text: `${nodePct}%`,
+          style: {
+            fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
+            fontSize: Math.round(13 * LAYOUT_SCALE),
+            fill: isCurrent ? 0xbfdbfe : 0x64748b,
+            fontWeight: '700',
+          },
+        });
+        pctT.anchor.set(0.5, 0);
+        pctT.position.set(cx, cy + nodeRadius + Math.round(6 * LAYOUT_SCALE));
+        this.addChild(pctT);
+      }
 
       const mark =
         meta.kind === 'boss' ? 'B' : meta.kind === 'strategy' ? '策' : meta.kind === 'reward' ? '奖' : '';
@@ -251,7 +256,7 @@ export class LevelMapScreen extends Container {
             : '选牌';
     const enterLabel =
       this.run.currentRoundIndex >= totalRounds
-        ? this.run.playerHp > 0 && !this.run.bookChapterRunFailed
+        ? this.run.isGameWon()
           ? '已通关本关'
           : '流程结束'
         : this.run.isGameLost()
@@ -402,12 +407,10 @@ export class LevelMapScreen extends Container {
     const base = rounds[idx]!;
     const meta = getResolvedRoundMeta(this.run, idx, base);
     const bookM = this.run.bookChapterStrengthMult();
-    const nodeStrengthPct = bookChapterRoundStrengthPercent(this.run.bookChapterId, idx);
-    pushText(`本节点强度 ${nodeStrengthPct}%`, leadStyle);
 
     if (meta.kind === 'strategy') {
       pushText(GAME_TERM_ZH.mapNodeStrategyHead(meta.label), headStyle);
-      pushText('该节点将从随机策略中进行三选一，选择后仅在本局内生效。', leadStyle);
+      pushText('该节点将从随机策略中进行三选一，选择后仅在整场对局内生效。', leadStyle);
       pushText(strategyChapterPreviewSummary(meta.chapter), bodyStyle);
       this.attachMapInfoPanelScroll(block, inner, innerPad, maskH, y);
       return block;
@@ -421,6 +424,8 @@ export class LevelMapScreen extends Container {
       return block;
     }
 
+    const nodeStrengthPct = bookChapterRoundStrengthPercent(this.run.bookChapterId, idx);
+    pushText(`本节点强度 ${nodeStrengthPct}%`, leadStyle);
     pushText(GAME_TERM_ZH.mapNodeEnemyIntelHead(meta.label, meta.kind === 'boss'), headStyle);
     const leg = legacyProgressRoundIndex(this.run.bookChapterId, idx);
     for (const w of meta.enemies) {

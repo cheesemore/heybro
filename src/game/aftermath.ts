@@ -9,12 +9,12 @@ export function imperfectClearExtraPenalty(legacyRoundIndex: number): number {
   return 5;
 }
 
-const BOSS_DEFEAT_FIXED_HP = 10;
+const BOSS_DEFEAT_FIXED_HP = 30;
 
 /**
  * @param legacyRoundIndex `legacyProgressRoundIndex(bookChapterId, localRoundIndex)`（0…15）
  * @param _perfectLegacy 已废弃；完美仅由「敌方是否全灭」判定，由调用方传入的 cleared 隐含
- * @param isBossRound 首领战未全歼：固定扣 10 + 首领余血百分比（点）
+ * @param isBossRound 首领战未全歼：固定扣 30 + 首领每余 1% 血再扣 1 点
  */
 export function resolveAftermath(
   legacyRoundIndex: number,

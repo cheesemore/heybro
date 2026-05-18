@@ -1,6 +1,7 @@
 import { mobIdsForBookChapter } from './bookChapterConfig';
 import type { RunState } from './runState';
 import type { BossId, RoundMeta } from './types';
+import { roundEnemyCountDelta } from './roundEnemyCountAdjust';
 import { legacyProgressRoundIndex, roundsForBookChapter } from './roundConfig';
 import { mulberry32 } from './seedRandom';
 import { getWowMob, wowFinalBossNameCn, wowMobEnemyPaint } from './wowBookData';
@@ -33,10 +34,13 @@ function resolveNormalEnemyTotal(
   bookChapterId: number,
   roundIndex: number,
   scaleRoundIndex: number,
+  nodeLabel: string,
 ): number {
   const base = normalEnemyTotal(scaleRoundIndex);
   const mult = normalEnemyCountMultiplierForRound(bookChapterId, roundIndex);
-  return mult === 1 ? base : Math.round(base * mult);
+  let total = mult === 1 ? base : Math.round(base * mult);
+  total += roundEnemyCountDelta(bookChapterId, nodeLabel);
+  return Math.max(1, total);
 }
 
 function pickThreeMobIdsFromPool(pool: readonly string[], rnd: () => number): [string, string, string] {
@@ -132,7 +136,7 @@ export function resolveCombatRoundEnemies(run: RunState, roundIndex: number, met
   const pool = effectiveMobPool(run.bookChapterId);
   const rnd = mulberry32(waveSeed(run.bookChapterId, roundIndex));
   const scaleRi = legacyProgressRoundIndex(run.bookChapterId, roundIndex);
-  const total = resolveNormalEnemyTotal(run.bookChapterId, roundIndex, scaleRi);
+  const total = resolveNormalEnemyTotal(run.bookChapterId, roundIndex, scaleRi, meta.label);
   return normalWaveFromWowMobPool(total, pool, rnd);
 }
 

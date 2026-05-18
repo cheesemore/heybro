@@ -24,7 +24,8 @@
     "enemy:portraits:batch": "python gptimage/batch_enemy_portraits.py",
     "enemy:portraits:publish": "python gptimage/publish_enemy_portraits_to_game.py",
     "preview": "vite preview",
-    "assets:backup-compress-resize": "node scripts/asset-backup-compress-resize.mjs"
+    "assets:backup-compress-resize": "node scripts/asset-backup-compress-resize.mjs",
+    "一键打包": "python scripts/一键打包.py"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",

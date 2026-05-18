@@ -11,9 +11,11 @@ export function publicAssetUrl(rel: string): string {
   const base = import.meta.env.BASE_URL ?? '/';
   const joined =
     !base || base === '/' ? `/${normalized}` : `${base}${normalized}`.replace(/\/{2,}/g, '/');
-  if (typeof window !== 'undefined' && window.location?.href) {
+  if (typeof document !== 'undefined') {
     try {
-      return new URL(joined, window.location.href).href;
+      // 使用 baseURI（含 <base href>），避免桶路径 /heybro 无尾斜杠时资源解析到 /assets
+      const base = document.baseURI || window.location?.href;
+      if (base) return new URL(joined, base).href;
     } catch {
       /* ignore */
     }

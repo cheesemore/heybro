@@ -10,6 +10,10 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+# 一键打包产物（scripts/一键打包.py 会写入）
+release/
+# RustFS / S3 密钥（见 scripts/credentials.example.json）
+scripts/credentials.json
 *.local
 
 # Editor directories and files

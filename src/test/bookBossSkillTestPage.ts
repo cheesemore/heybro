@@ -25,6 +25,7 @@ const PRESET_UI: { id: BossSkillTestPresetId; buttonId: string }[] = [
   { id: 'smite', buttonId: 'preset-smite' },
   { id: 'greenskin', buttonId: 'preset-greenskin' },
   { id: 'vancleef', buttonId: 'preset-vancleef' },
+  { id: 'archer_trap', buttonId: 'preset-archer-trap' },
 ];
 
 function boot(): void {

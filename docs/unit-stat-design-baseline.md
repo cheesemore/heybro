@@ -114,7 +114,7 @@
 
 **改数值的约定**：小怪只改 **`wowBookMonsters.json`**；不要在业务代码里用 `*1.2` 代替改表。
 
-**关底首领数值**：以 **`wowBookBosses.json` 对应当前章节 `chapterIndex` 那一行** 为表底；缺字段时用 **`WOW_BOOK_BOSS_TABLE_DEFAULT`**（`wowBookData.ts`，与生成脚本 `DEFAULT_BOOK_BOSS_COMBAT` 一致）。进场生命为 `baseMaxHp×10` 后再走 `scaledEnemyHp`；攻击表底 `baseAtk` 经 `GLOBAL_UNIT_ATK_MULT` 后与首领战缩放一致（**不分近战远程**，不加近战额外攻倍率）。`skillIds` 为空则白板仅普攻。
+**关底首领数值**：以 **`wowBookBosses.json` 对应当前章节 `chapterIndex` 那一行** 为表底；缺字段时用 **`WOW_BOOK_BOSS_TABLE_DEFAULT`**（`wowBookData.ts`，与生成脚本 `DEFAULT_BOOK_BOSS_COMBAT` 一致）。进场生命以 `baseMaxHp` 表底直接走 `scaledEnemyHp`（表内已含原×10 池化）；攻击表底 `baseAtk` 经 `GLOBAL_UNIT_ATK_MULT` 后与首领战缩放一致（**不分近战远程**，不加近战额外攻倍率）。`skillIds` 为空则白板仅普攻。
 
 重新生成（会覆盖上述 JSON）：`npm run gen:wow-book`
 

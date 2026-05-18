@@ -6,6 +6,7 @@ import {
   GOLDEN_PANEL_TITLE,
 } from '../ui/goldenSolidPanel';
 import { createStyledGameButton } from '../ui/gameButtons';
+import { SettlementStarRow } from '../ui/settlementStars';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { isBotModeActive } from '../bot/context';
 import { botRegisterScreen, botUnregisterScreen } from '../bot/registry';
@@ -36,7 +37,8 @@ export class ChapterRunSettlementScreen extends Container {
 
     const pad = Math.round(24 * LAYOUT_SCALE);
     const panelW = Math.min(Math.round(640 * LAYOUT_SCALE), GAME_WIDTH - pad * 2);
-    const panelH = Math.round(440 * LAYOUT_SCALE);
+    const panelH =
+      o.kind === 'success' ? Math.round(480 * LAYOUT_SCALE) : Math.round(440 * LAYOUT_SCALE);
     const px = (GAME_WIDTH - panelW) / 2;
     const py = Math.round(180 * LAYOUT_SCALE);
 
@@ -48,7 +50,7 @@ export class ChapterRunSettlementScreen extends Container {
     this.addChild(plate);
     this.addChild(frame);
 
-    const titleText = o.kind === 'success' ? '关卡通关' : '通关失败';
+    const titleText = o.kind === 'success' ? '通关成功' : '通关失败';
     const titleT = new Text({
       text: titleText,
       style: {
@@ -80,20 +82,22 @@ export class ChapterRunSettlementScreen extends Container {
       this.addChild(ch);
 
       const st = Math.max(0, Math.min(3, Math.floor(o.stars ?? 0)));
-      const starStr = `${'★'.repeat(st)}${'☆'.repeat(3 - st)}`;
-      const starT = new Text({
-        text: `本关评价：${starStr}`,
+      const starLabel = new Text({
+        text: '本关评价',
         style: {
           fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
-          fontSize: Math.round(34 * LAYOUT_SCALE),
-          fill: 0xfbbf24,
-          fontWeight: '800',
-          letterSpacing: Math.round(6 * LAYOUT_SCALE),
+          fontSize: Math.round(20 * LAYOUT_SCALE),
+          fill: 0xcbd5e1,
+          fontWeight: '600',
         },
       });
-      starT.anchor.set(0.5, 0);
-      starT.position.set(GAME_WIDTH / 2, subY + Math.round(48 * LAYOUT_SCALE));
-      this.addChild(starT);
+      starLabel.anchor.set(0.5, 0);
+      starLabel.position.set(GAME_WIDTH / 2, subY + Math.round(40 * LAYOUT_SCALE));
+      this.addChild(starLabel);
+
+      const starRow = new SettlementStarRow(st);
+      starRow.position.set(GAME_WIDTH / 2, subY + Math.round(108 * LAYOUT_SCALE));
+      this.addChild(starRow);
 
       if (o.successExtra?.trim()) {
         const ex = new Text({
@@ -109,7 +113,7 @@ export class ChapterRunSettlementScreen extends Container {
           },
         });
         ex.anchor.set(0.5, 0);
-        ex.position.set(GAME_WIDTH / 2, subY + Math.round(118 * LAYOUT_SCALE));
+        ex.position.set(GAME_WIDTH / 2, subY + Math.round(168 * LAYOUT_SCALE));
         this.addChild(ex);
       }
     } else {

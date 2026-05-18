@@ -12,13 +12,16 @@ export type ChapterProgressFileV1 = {
 export type ChapterProgressFileV2 = {
   version: 2;
   clearedChapterIds: number[];
-  /** 章节 id 字符串 -> 回合下标字符串 -> 该关历史最高星 1～3（仅 normal/boss） */
-  bestStarByChapterRound: Record<string, Record<string, number>>;
+  /** 章节 id -> 通关评价星 1～3（整章打完时按剩余生命记一次） */
+  bestStarByChapter: Record<string, number>;
+  /** @deprecated 旧版按战斗关记星；仅用于读档迁移，新进度不再写入 */
+  bestStarByChapterRound?: Record<string, Record<string, number>>;
 };
 
 const EMPTY_V2: ChapterProgressFileV2 = {
   version: 2,
   clearedChapterIds: [],
+  bestStarByChapter: {},
   bestStarByChapterRound: {},
 };
 
@@ -31,6 +34,7 @@ function migrateV1ToV2(v1: ChapterProgressFileV1): ChapterProgressFileV2 {
   return {
     version: 2,
     clearedChapterIds: [...v1.clearedChapterIds],
+    bestStarByChapter: {},
     bestStarByChapterRound: {},
   };
 }
@@ -53,6 +57,13 @@ function parseStored(raw: string | null): ChapterProgressFileV2 {
         typeof x === 'number' && Number.isInteger(x) && x >= 1 && x <= BOOK_CHAPTER_COUNT,
     );
     const unique = [...new Set(ids)].sort((a, b) => a - b);
+    const chapterStarRaw = o.bestStarByChapter;
+    const bestStarByChapter: Record<string, number> = {};
+    if (chapterStarRaw && typeof chapterStarRaw === 'object') {
+      for (const [ck, sv] of Object.entries(chapterStarRaw as Record<string, unknown>)) {
+        if (typeof sv === 'number' && sv >= 1 && sv <= 3) bestStarByChapter[ck] = Math.floor(sv);
+      }
+    }
     const starRaw = o.bestStarByChapterRound;
     const bestStarByChapterRound: Record<string, Record<string, number>> = {};
     if (starRaw && typeof starRaw === 'object') {
@@ -65,7 +76,7 @@ function parseStored(raw: string | null): ChapterProgressFileV2 {
         if (Object.keys(inner).length) bestStarByChapterRound[ck] = inner;
       }
     }
-    return { version: 2, clearedChapterIds: unique, bestStarByChapterRound };
+    return { version: 2, clearedChapterIds: unique, bestStarByChapter, bestStarByChapterRound };
   } catch {
     return { ...EMPTY_V2, clearedChapterIds: [] };
   }
@@ -120,59 +131,71 @@ export function combatRoundIndicesForChapter(chapterId: number): readonly number
 const MAX_STAR_PER_CHAPTER = 3;
 
 /**
- * 通关后按剩余生命记星（已 clamp 到上限）：
- * - 100 血 → 3 星
- * - ≥60 且 &lt;100 → 2 星
- * - &lt;60 → 1 星
+ * 整章通关时按剩余生命记星（与单场胜负、是否首领战无关）：
+ * - ≤0 → 未通关（0 星，不应写入 cleared）
+ * - 1～49 → 1 星
+ * - 50～99 → 2 星
+ * - ≥100 → 3 星
  */
-export function starsFromHpAfterBattle(hp: number): 1 | 2 | 3 {
+export function starsFromChapterClearHp(hp: number): 0 | 1 | 2 | 3 {
   const h = Math.floor(hp);
+  if (h <= 0) return 0;
   if (h >= 100) return 3;
-  if (h >= 60) return 2;
+  if (h >= 50) return 2;
   return 1;
 }
 
-/** 单关：与历史最高取 max；若星级提升，返回提升量（用于同步招募券额度，见 heroMetaStorage.syncLotteryTicketsFromChapterProgress） */
-export function recordCombatRoundBestStar(chapterId: number, roundIndex: number, hpAfterBattle: number): number {
-  const ch = Math.max(1, Math.min(BOOK_CHAPTER_COUNT, Math.floor(chapterId)));
-  const maxRi = Math.max(0, roundsForBookChapter(ch).length - 1);
-  const ri = Math.max(0, Math.min(maxRi, Math.floor(roundIndex)));
-  const star = starsFromHpAfterBattle(hpAfterBattle);
-  const cur = loadChapterProgress();
-  const ck = String(ch);
-  const rk = String(ri);
-  const byRound = { ...(cur.bestStarByChapterRound[ck] ?? {}) };
-  const prev = byRound[rk] ?? 0;
-  if (star <= prev) {
-    return 0;
+/** @deprecated 使用 `starsFromChapterClearHp` */
+export function starsFromHpAfterBattle(hp: number): 1 | 2 | 3 {
+  const s = starsFromChapterClearHp(hp);
+  return s === 0 ? 1 : s;
+}
+
+function legacyChapterStarFromRounds(
+  roundMap: Record<string, number> | undefined,
+  chapterId: number,
+): 0 | 1 | 2 | 3 {
+  if (!roundMap || !Object.keys(roundMap).length) return 0;
+  const combat = combatRoundIndicesForChapter(chapterId);
+  let minS = 3;
+  for (const ri of combat) {
+    const raw = roundMap[String(ri)];
+    if (raw == null || raw < 1 || raw > 3) return 0;
+    minS = Math.min(minS, raw);
   }
-  byRound[rk] = star;
+  return minS as 0 | 1 | 2 | 3;
+}
+
+/**
+ * 整章通关后写入评价星（仅当 hp&gt;0）；与历史最高取 max。
+ * 返回星级提升量（招募券同步用）。
+ */
+export function recordChapterClearStar(chapterId: number, hpAfterChapter: number): number {
+  const id = Math.max(1, Math.min(BOOK_CHAPTER_COUNT, Math.floor(chapterId)));
+  const star = starsFromChapterClearHp(hpAfterChapter);
+  if (star === 0) return 0;
+  const cur = loadChapterProgress();
+  const ck = String(id);
+  const prev = cur.bestStarByChapter[ck] ?? 0;
+  if (star <= prev) return 0;
   saveChapterProgress({
     ...cur,
-    bestStarByChapterRound: { ...cur.bestStarByChapterRound, [ck]: byRound },
+    bestStarByChapter: { ...cur.bestStarByChapter, [ck]: star },
   });
   return star - prev;
 }
 
 /**
- * 章节卡片上展示的「亮星」数量 0～3：
- * - 未完整通关该章 → 0（三颗空星）
- * - 已通关 → 各战斗关最高星中的**最低值**（短板决定章节评价）
+ * 章节卡片亮星 0～3：未通关为 0；已通关读整章评价星（旧存档回退为各战斗关最低星）。
  */
 export function getChapterStarFilledCount(chapterId: number): 0 | 1 | 2 | 3 {
   const id = Math.max(1, Math.min(BOOK_CHAPTER_COUNT, Math.floor(chapterId)));
   const cur = loadChapterProgress();
   if (!cur.clearedChapterIds.includes(id)) return 0;
   const ck = String(id);
-  const map = cur.bestStarByChapterRound[ck] ?? {};
-  const combat = combatRoundIndicesForChapter(id);
-  let minS = 3;
-  for (const ri of combat) {
-    const raw = map[String(ri)];
-    const s = raw != null && raw >= 1 && raw <= 3 ? raw : 3;
-    minS = Math.min(minS, s);
-  }
-  return minS as 0 | 1 | 2 | 3;
+  const direct = cur.bestStarByChapter[ck];
+  if (direct != null && direct >= 1 && direct <= 3) return direct as 1 | 2 | 3;
+  return legacyChapterStarFromRounds(cur.bestStarByChapterRound?.[ck], id);
 }
 
 /** 全书已获得的章节星之和（每章最多 3，共 BOOK_CHAPTER_COUNT 章） */
@@ -261,47 +284,21 @@ export function getCurrentChallengeChapterId(): number {
   return BOOK_CHAPTER_COUNT;
 }
 
-/** 测试：将指定章节记为已通关，且所有「战斗关」历史最高星一律设为 star（章节展示星 = 各战斗关最低星，故此时即为 star）。返回因星级提升而应折算的招募券额度差（见 heroMetaStorage）。 */
+/** 测试：将指定章节记为已通关，并写入整章评价星。返回因星级提升而应折算的招募券额度差。 */
 export function cheatChapterFullClearWithStar(chapterId: number, star: 1 | 2 | 3): number {
   const id = Math.max(1, Math.min(BOOK_CHAPTER_COUNT, Math.floor(chapterId)));
   const s = Math.max(1, Math.min(3, Math.floor(star))) as 1 | 2 | 3;
   const cur = loadChapterProgress();
   const ck = String(id);
-  const byRound = { ...(cur.bestStarByChapterRound[ck] ?? {}) };
-  let earned = 0;
-  for (const ri of combatRoundIndicesForChapter(id)) {
-    const rk = String(ri);
-    const prev = byRound[rk] ?? 0;
-    if (s > prev) earned += s - prev;
-    byRound[rk] = s;
-  }
+  const prev = cur.bestStarByChapter[ck] ?? 0;
+  const earned = s > prev ? s - prev : 0;
   const clearedChapterIds = cur.clearedChapterIds.includes(id)
     ? [...cur.clearedChapterIds]
     : [...cur.clearedChapterIds, id].sort((a, b) => a - b);
   saveChapterProgress({
     ...cur,
-    bestStarByChapterRound: { ...cur.bestStarByChapterRound, [ck]: byRound },
+    bestStarByChapter: { ...cur.bestStarByChapter, [ck]: s },
     clearedChapterIds,
-  });
-  return earned;
-}
-
-/** 测试/作弊：直接写入某战斗关的历史最高星（覆盖原记录，用于地图调试）。返回因星级提升而应折算的招募券额度差。 */
-export function cheatSetCombatRoundStar(chapterId: number, roundIndex: number, star: 1 | 2 | 3): number {
-  const ch = Math.max(1, Math.min(BOOK_CHAPTER_COUNT, Math.floor(chapterId)));
-  const maxRi = Math.max(0, roundsForBookChapter(ch).length - 1);
-  const ri = Math.max(0, Math.min(maxRi, Math.floor(roundIndex)));
-  const s = Math.max(1, Math.min(3, Math.floor(star))) as 1 | 2 | 3;
-  const cur = loadChapterProgress();
-  const ck = String(ch);
-  const rk = String(ri);
-  const byRound = { ...(cur.bestStarByChapterRound[ck] ?? {}) };
-  const prev = byRound[rk] ?? 0;
-  const earned = s > prev ? s - prev : 0;
-  byRound[rk] = s;
-  saveChapterProgress({
-    ...cur,
-    bestStarByChapterRound: { ...cur.bestStarByChapterRound, [ck]: byRound },
   });
   return earned;
 }

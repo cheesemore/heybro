@@ -99,11 +99,11 @@ export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string
   },
   c1_yuebao: {
     title: '余额宝',
-    desc: '本局计息按 80 金封顶，单回合利息最多 8；立刻 +5 金。',
+    desc: '本局计息按 80 金封顶，单回合利息最多 8；立刻 +15 金。',
   },
   c1_random_deploy: {
     title: '随机部署',
-    desc: '立刻随机获得 3 个不同兵种各 1 层。',
+    desc: '立刻随机获得 3 个不同兵种各 1 个。',
   },
   c1_head_start: {
     title: '占尽先机',
@@ -111,7 +111,7 @@ export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string
   },
   c1_lie_flat: {
     title: '躺平',
-    desc: '失去 30 生命；本局战斗失败时额外 +3 金（结算时）。',
+    desc: '失去 30 生命；本局战败时额外 +5 金（结算时）。',
   },
   c2_super_warrior: {
     title: '超级战士',
@@ -119,7 +119,7 @@ export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string
   },
   c2_super_mage: {
     title: '超级法师',
-    desc: '本局法师 30% 暴击（150% 伤害）；流星雨可暴击。',
+    desc: '本局法师 30% 暴击。',
   },
   c2_super_priest: {
     title: '超级牧师',
@@ -147,23 +147,23 @@ export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string
   },
   c2_time_master: {
     title: '时间管理大师',
-    desc: '本局战斗时间上限 +30 秒。',
+    desc: '本局战斗时间上限 +30 秒；立刻获得 20 金。',
   },
   c3_turn_tide: {
     title: '扭转乾坤',
-    desc: '恢复 50 生命并获得 30 金。',
+    desc: '恢复 30 生命并获得 20 金。',
   },
   c3_desperate: {
     title: '破釜沉舟',
-    desc: '生命变为 1，获得等同于本次损失生命数的金币。',
+    desc: '生命变为 1，获得 50 金。',
   },
   c3_random_enhance: {
     title: '随机强化',
-    desc: '立刻随机获得 5 个不同兵种各 1 层。',
+    desc: '立刻随机获得 5 个不同兵种各 1 个。',
   },
   c3_revenge_spirit: {
     title: '复仇之魂',
-    desc: '肉鸽界面获得可拖动的复仇之魂：相邻我方入场损失 20% 生命；每链接一格，敌方全体再损失 10% 当前生命（最多 4 次链接）。',
+    desc: '肉鸽界面获得可拖动的复仇之魂：相邻我方入场损失 20% 生命；每链接一格，敌方全体再减 6% 当前生命（最多 4 次链接）。',
   },
   c3_demon_contract: {
     title: '恶魔契约',
@@ -175,7 +175,7 @@ export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string
   },
   c3_super_double: {
     title: '超级加倍',
-    desc: '随机一个有兵的格子，该格兵种层数 ×2。',
+    desc: '随机一个有兵的格子，该格兵种个数 ×2（不能超过 30 个）。',
   },
   c3_glass_cannon: {
     title: '玻璃大炮',
@@ -243,8 +243,8 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
     case 'c1_yuebao':
       run.interestBankCapOverride = 80;
       run.interestMaxGoldOverride = 8;
-      run.gold += 5;
-      lines.push('余额宝：计息上限已提升，+5 金');
+      run.gold += 15;
+      lines.push('余额宝：计息上限已提升，+15 金');
       break;
     case 'c1_random_deploy':
       for (const k of randomDistinctClasses(3)) {
@@ -259,8 +259,8 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
       break;
     case 'c1_lie_flat':
       run.playerHp -= 30;
-      run.extraGoldOnBattleLoss += 3;
-      lines.push(`躺平：-30 生命（当前 ${run.playerHp}），失败额外金币已启用`);
+      run.extraGoldOnBattleLoss += 5;
+      lines.push(`躺平：-30 生命（当前 ${run.playerHp}），战败额外 +5 金已启用`);
       break;
 
     case 'c2_super_warrior':
@@ -299,22 +299,21 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
       break;
     case 'c2_time_master':
       run.battleTimeBonusSec += 30;
-      lines.push('时间管理大师：战斗时间 +30 秒');
+      run.gold += 20;
+      lines.push('时间管理大师：战斗时间 +30 秒，立刻获得 20 金');
       break;
 
     case 'c3_turn_tide':
-      run.playerHp += 50;
+      run.playerHp += 30;
       run.clampPlayerHpToMax();
-      run.gold += 30;
-      lines.push(`扭转乾坤：+50 生命（不超过上限，当前 ${run.playerHp}），+30 金`);
+      run.gold += 20;
+      lines.push(`扭转乾坤：+30 生命（不超过上限，当前 ${run.playerHp}），+20 金`);
       break;
-    case 'c3_desperate': {
-      const lost = Math.max(0, run.playerHp - 1);
+    case 'c3_desperate':
       run.playerHp = 1;
-      run.gold += lost;
-      lines.push(`破釜沉舟：生命置 1，获得 ${lost} 金`);
+      run.gold += 50;
+      lines.push('破釜沉舟：生命置 1，+50 金');
       break;
-    }
     case 'c3_random_enhance':
       for (const k of randomDistinctClasses(5)) {
         applyPick(run.board, run.artifactBySlot, k);
@@ -341,7 +340,7 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
         const pick = occ[Math.floor(Math.random() * occ.length)]!;
         const cell = run.board[pick]!;
         run.board[pick] = { kind: cell.kind, stacks: Math.min(BOARD_CELL_MAX_STACKS, cell.stacks * 2) };
-        lines.push(`超级加倍：${ALLY_DEFS[cell.kind].name} 层数 ×2`);
+        lines.push(`超级加倍：${ALLY_DEFS[cell.kind].name} 个数 ×2（上限 30）`);
       } else {
         lines.push('超级加倍：场上无兵，未生效');
       }

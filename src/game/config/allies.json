@@ -21,8 +21,8 @@
     "hitRadius": 36,
     "name": "牧师",
     "maxHp": 360,
-    "atk": 16,
-    "attackSpeed": 0.65,
+    "atk": 22,
+    "attackSpeed": 1,
     "range": 260,
     "moveSpeed": 500
   },
@@ -39,7 +39,7 @@
     "hitRadius": 36,
     "name": "骑士",
     "maxHp": 640,
-    "atk": 18,
+    "atk": 21,
     "attackSpeed": 0.7,
     "range": 10,
     "moveSpeed": 510

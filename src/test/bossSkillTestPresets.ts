@@ -7,7 +7,15 @@ import { wowFinalBossNameCn } from '../game/wowBookData';
 export const BOSS_SKILL_TEST_ALLY_HP_MULT = 3;
 export const BOSS_SKILL_TEST_BOSS_HP_MULT = 3;
 
-export type BossSkillTestPresetId = 'rhahk' | 'bazzalan' | 'sneed' | 'gilnid' | 'smite' | 'greenskin' | 'vancleef';
+export type BossSkillTestPresetId =
+  | 'rhahk'
+  | 'bazzalan'
+  | 'sneed'
+  | 'gilnid'
+  | 'smite'
+  | 'greenskin'
+  | 'vancleef'
+  | 'archer_trap';
 
 export type BossSkillTestPreset = {
   id: BossSkillTestPresetId;
@@ -15,7 +23,13 @@ export type BossSkillTestPreset = {
   bossNameCn: string;
   skillSummaryCn: string;
   heroDeploy: readonly [HeroId, HeroId, HeroId];
-  bondStacksBattleOverride: { warrior?: number; mage?: number; priest?: number; knight?: number };
+  bondStacksBattleOverride: {
+    warrior?: number;
+    mage?: number;
+    priest?: number;
+    archer?: number;
+    knight?: number;
+  };
   board: RunState['board'];
   statusLine: string;
   hudBlurb: string;
@@ -161,6 +175,30 @@ const GREENSKIN: BossSkillTestPreset = {
     '第 9 章关底首领「绿皮队长」（砰砰炸弹 / 喷气背包突击 / 导弹防卫系统）；备战弓/法/牧各 <strong>6</strong> 层，便于测炸弹与远程反击。',
 };
 
+const ARCHER_TRAP: BossSkillTestPreset = {
+  id: 'archer_trap',
+  bookChapterId: 5,
+  bossNameCn: '拉克佐',
+  skillSummaryCn: '诱捕陷阱（弓手）+ 猛击 / 顺劈 / 战吼',
+  heroDeploy: ['archer_01', 'archer_02', 'priest_02'],
+  bondStacksBattleOverride: { archer: 15, priest: 10 },
+  board: [
+    { kind: 'archer', stacks: 15 },
+    { kind: 'priest', stacks: 10 },
+    { kind: 'mage', stacks: 6 },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  statusLine:
+    '战斗中：第5章·拉克佐；弓15牧10；英雄 席拉拉/奇兰/紫牧；诱捕+首领技能；我方×3血；首领×3血。',
+  hudBlurb:
+    '第 5 章「拉克佐」+ <strong>诱捕陷阱</strong>：上阵 <strong>席拉拉 / 奇兰 / 紫牧师</strong>，备战弓 <strong>15</strong> 层（羁绊15 远程均获陷阱）、牧 <strong>10</strong> 层，便于测陷阱环与首领近战技能。',
+};
+
 const BAZZALAN: BossSkillTestPreset = {
   id: 'bazzalan',
   bookChapterId: 4,
@@ -193,6 +231,7 @@ export const BOSS_SKILL_TEST_PRESETS: Record<BossSkillTestPresetId, BossSkillTes
   smite: SMITE,
   greenskin: GREENSKIN,
   vancleef: VANCLEEF,
+  archer_trap: ARCHER_TRAP,
 };
 
 export const DEFAULT_BOSS_SKILL_TEST_PRESET_ID: BossSkillTestPresetId = 'rhahk';
@@ -207,6 +246,7 @@ export function bossSkillTestPresetFromSearch(search: string): BossSkillTestPres
   if (boss === 'smite' || boss === 'mr_smite' || boss === 'ch8') return SMITE;
   if (boss === 'greenskin' || boss === 'ch9') return GREENSKIN;
   if (boss === 'vancleef' || boss === 'edwin' || boss === 'ch10') return VANCLEEF;
+  if (boss === 'archer_trap' || boss === 'snare' || boss === 'archer') return ARCHER_TRAP;
   const chapter = Number(params.get('chapter'));
   if (chapter === 4) return BAZZALAN;
   if (chapter === 5) return RHAKH;

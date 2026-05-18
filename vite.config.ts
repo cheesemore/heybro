@@ -41,6 +41,21 @@ function bookBossSkillTestDevRewrite() {
   };
 }
 
+function classBalanceTestDevRewrite() {
+  return {
+    name: 'class-balance-test-dev-rewrite',
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        const p = req.url?.split('?')[0] ?? '';
+        if (p === '/class-balance-test' || p === '/class-balance-test/') {
+          req.url = '/class-balance-test.html';
+        }
+        next();
+      });
+    },
+  };
+}
+
 function botRunnerDevRewrite() {
   return {
     name: 'bot-runner-dev-rewrite',
@@ -60,7 +75,12 @@ export default defineConfig(({ command }) => ({
   base: command === 'build' ? './' : '/',
   plugins:
     command === 'serve'
-      ? [characterPromptsDevRewrite(), bookBossSkillTestDevRewrite(), botRunnerDevRewrite()]
+      ? [
+          characterPromptsDevRewrite(),
+          bookBossSkillTestDevRewrite(),
+          botRunnerDevRewrite(),
+          classBalanceTestDevRewrite(),
+        ]
       : [],
   build: {
     rollupOptions: {
@@ -68,6 +88,7 @@ export default defineConfig(({ command }) => ({
         main: path.resolve(__dirname, 'index.html'),
         bookBossSkillTest: path.resolve(__dirname, 'book-boss-skill-test.html'),
         botRunner: path.resolve(__dirname, 'bot-runner.html'),
+        classBalanceTest: path.resolve(__dirname, 'class-balance-test.html'),
       },
     },
   },

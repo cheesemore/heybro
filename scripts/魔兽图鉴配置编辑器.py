@@ -134,8 +134,8 @@ RANGED_BASELINE_HP_ATK_INTERVAL = (268, 14, 0.78)
 # 与 src/game/wowBookData.ts WOW_BOOK_BOSS_TABLE_DEFAULT、scripts/generate-wow-book-tables.mjs DEFAULT_BOOK_BOSS_COMBAT 一致
 BOOK_BOSS_TABLE_DEFAULT_COMBAT: Dict[str, Any] = {
     "hitRadius": 80,
-    "baseMaxHp": 1680,
-    "baseAtk": 27,
+    "baseMaxHp": 22740,
+    "baseAtk": 46,
     "attackSpeed": 0.65,
     "moveSpeed": 540,
 }
@@ -1314,7 +1314,7 @@ class WowBookConfigEditorApp(tk.Tk):
             ("role", "role", False),
             ("creatureType", "creatureType", False),
             ("hitRadius（碰撞/代币半径）", "hitRadius", False),
-            ("baseMaxHp（表底生命，进场×10）", "baseMaxHp", False),
+            ("baseMaxHp（表底生命，直接进场）", "baseMaxHp", False),
             ("baseAtk（表底攻击，战场再乘 GLOBAL）", "baseAtk", False),
             ("attackSpeed（秒/次）", "attackSpeed", False),
             ("range（设计射程 px）", "range", False),

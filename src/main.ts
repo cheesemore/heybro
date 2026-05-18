@@ -4,6 +4,7 @@ import './style.css';
 import { Application, Container } from 'pixi.js';
 import { GameRoot } from './game/GameRoot';
 import { layoutGameStage } from './game/layoutStage';
+import { getRendererResolution, syncRendererDensity } from './game/rendererDensity';
 import { AssetLoadingScreen } from './game/screens/AssetLoadingScreen';
 
 const mount = document.querySelector<HTMLDivElement>('#app');
@@ -22,7 +23,7 @@ async function bootstrap(): Promise<void> {
   await app.init({
     background: '#070b14',
     antialias: true,
-    resolution: Math.min(window.devicePixelRatio ?? 1, 2.5),
+    resolution: getRendererResolution(),
     autoDensity: true,
     resizeTo: window,
     preference: 'webgl',
@@ -60,19 +61,21 @@ async function bootstrap(): Promise<void> {
   const gameRoot = new GameRoot(app);
   stageRoot.addChild(gameRoot);
 
+  const onViewportChange = (): void => {
+    syncRendererDensity(app);
+    syncGameLayout();
+  };
+
   app.renderer.on('resize', syncGameLayout);
   syncGameLayout();
   requestAnimationFrame(() => {
-    app.resize();
-    syncGameLayout();
-    requestAnimationFrame(() => {
-      app.resize();
-      syncGameLayout();
-    });
+    onViewportChange();
+    requestAnimationFrame(onViewportChange);
   });
 
-  window.addEventListener('orientationchange', () => app.resize());
-  window.visualViewport?.addEventListener('resize', () => app.resize());
+  window.addEventListener('orientationchange', onViewportChange);
+  window.addEventListener('resize', onViewportChange);
+  window.visualViewport?.addEventListener('resize', onViewportChange);
 }
 
 bootstrap().catch((err) => {

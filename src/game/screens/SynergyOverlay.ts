@@ -608,7 +608,7 @@ export class SynergyOverlay extends Container {
       const picks = this.run.strategyPicks;
       if (!picks.length) {
         const t = new Text({
-          text: '本局尚未在节点策略抉择中选择策略。\n（在 1-3、2-3、3-3 节点的「策略抉择」三选一完成后，可在此查看已选说明。）',
+          text: '本局尚未在节点策略抉择中选择策略。\n（在 1-2、2-2、3-2 节点的「策略抉择」三选一完成后，可在此查看已选说明。）',
           style: {
             fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
             fontSize: fsSmall,

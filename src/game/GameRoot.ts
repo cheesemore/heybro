@@ -1,5 +1,5 @@
 import { Application, Container } from 'pixi.js';
-import { PLAYER_START_HP } from './constants';
+import { PLAYER_MAX_HP, PLAYER_START_HP } from './constants';
 import { layoutGameStage } from './layoutStage';
 import type { BattleOutcome } from './types';
 import { RunState } from './runState';
@@ -21,7 +21,7 @@ import {
   cheatChapterFullClearWithStar,
   getChapterStarFilledCount,
   markChapterFullyCleared,
-  recordCombatRoundBestStar,
+  recordChapterClearStar,
 } from './chapterProgressStorage';
 import { syncLotteryTicketsFromChapterProgress } from './heroMetaStorage';
 import { clearAllLocalGameSaveData } from './gameSaveClear';
@@ -53,7 +53,10 @@ export class GameRoot extends Container {
     super();
     this.app = app;
     this.modal = new ModalLayer();
+    this.sortableChildren = true;
+    this.layer.zIndex = 0;
     this.addChild(this.layer);
+    this.modal.zIndex = 1000;
     this.addChild(this.modal);
     if (opts?.skipTitle) {
       this.showChapterSelect(false);
@@ -193,6 +196,7 @@ export class GameRoot extends Container {
     void (async () => {
       await preloadAllyPortraitTextures();
       await preloadEnemyTextures();
+      this.run.chapterSelectBackToMap = fromMap;
       this.clearLayer();
       this.layer.addChild(
         new ChapterSelectScreen(
@@ -203,8 +207,12 @@ export class GameRoot extends Container {
             this.showLevelMap();
           },
           () => {
-            if (fromMap) this.showLevelMap();
-            else this.showTitle();
+            // 选关右上角「退出」= 回封面；勿回到关卡地图（易与「副本内」混淆，且放弃本章后 run 常已清空）
+            if (this.run.chapterSelectBackToMap) {
+              this.run.resetRun();
+            }
+            this.run.chapterSelectBackToMap = false;
+            this.showTitle();
           },
           () => this.showStrengthenScreen(fromMap),
           () => this.showGearFarmScreen(fromMap),
@@ -256,12 +264,16 @@ export class GameRoot extends Container {
       const map = new LevelMapScreen(this.run, {
         onEnterRound: () => this.enterCurrentRound(),
         onRequestExitChapter: () => {
-          this.modal.alert('确定要退出本关吗？\n\n未通关进度将不会保存（视为放弃挑战）。', () => {
-            this.modal.alert('请再次确认：是否退出到选关？', () => {
+          this.modal.confirmDestructive(
+            '确定要退出本关吗？\n\n未通关进度将不会保存（视为放弃挑战）。',
+            () => {
               this.run.resetRun();
-              this.showChapterSelect(true);
-            });
-          });
+              this.run.chapterSelectBackToMap = false;
+              this.showChapterSelect(false);
+            },
+            undefined,
+            { confirmText: '退出' },
+          );
         },
         onCheatChapterClear: (star) => {
           cheatChapterFullClearWithStar(this.run.bookChapterId, star);
@@ -293,11 +305,15 @@ export class GameRoot extends Container {
       return;
     }
     if (this.run.isGameWon()) {
+      markChapterFullyCleared(this.run.bookChapterId);
+      recordChapterClearStar(this.run.bookChapterId, this.run.playerHp);
+      syncLotteryTicketsFromChapterProgress();
       const st = getChapterStarFilledCount(this.run.bookChapterId);
       this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
         kind: 'success',
         stars: st,
-        successExtra: '本关已通关，进度已保存。',
+        successExtra:
+          '评价星按通关剩余生命结算（≤0 未通关，1–49 一星，50–99 二星，100 三星）。',
       });
       return;
     }
@@ -400,8 +416,6 @@ export class GameRoot extends Container {
       return;
     }
     const leg = legacyProgressRoundIndex(this.run.bookChapterId, idx);
-    const cleared = outcome.enemyHpRatioRemaining <= 0.0001;
-    const isCombat = metaDone.kind === 'normal' || metaDone.kind === 'boss';
 
     this.run.bossHpDerivedFinalAtkMult = 1;
     this.run.bossHpDerivedFinalHpMult = 1;
@@ -412,13 +426,33 @@ export class GameRoot extends Container {
       outcome.enemyHpRatioRemaining,
       metaDone.kind === 'boss',
     );
+    const hpBefore = this.run.playerHp;
     this.run.playerHp += res.playerHpDelta;
     this.run.clampPlayerHpToMax();
+    const hpAfter = this.run.playerHp;
+    const hpAnim = {
+      hpBefore,
+      hpAfter,
+      maxHp: PLAYER_MAX_HP,
+      hpDelta: res.playerHpDelta,
+    };
+
+    const showBattleSettlement = (detail: string, onClose: () => void): void => {
+      const openSettlement = (): void => {
+        this.clearLayer();
+        this.modal.alertBattleSettlement(detail, onClose);
+      };
+      if (res.playerHpDelta !== 0) {
+        this.modal.playNodeHpChangeThenBattleSettlement(hpAnim, openSettlement);
+      } else {
+        openSettlement();
+      }
+    };
 
     const tailBase = [...res.lines, `生命 ${this.run.playerHp}`].join('\n');
     if (this.run.playerHp <= 0) {
       const econ = this.run.grantRoundEndEconomy(metaDone, outcome, 'compact').join('\n');
-      this.modal.alertBattleSettlement(`${tailBase}\n${econ}\n生命耗尽 · 本关失败`, () =>
+      showBattleSettlement(`${tailBase}\n${econ}\n生命耗尽 · 本关失败`, () =>
         this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
           kind: 'fail',
           failMessage: '生命耗尽，本关失败。',
@@ -427,29 +461,30 @@ export class GameRoot extends Container {
       return;
     }
 
-    if (cleared && isCombat) {
-      recordCombatRoundBestStar(this.run.bookChapterId, idx, this.run.playerHp);
-      syncLotteryTicketsFromChapterProgress();
+    // 所有战斗（普通/首领）无论胜负都推进；战败仅扣血，走完节点且 hp>0 才通关。
+    if (metaDone.kind === 'normal' || metaDone.kind === 'boss') {
+      this.run.currentRoundIndex += 1;
     }
-    this.run.currentRoundIndex += 1;
     const tail = [...res.lines, `生命 ${this.run.playerHp}`].join('\n');
     const econ = this.run.grantRoundEndEconomy(metaDone, outcome, 'compact').join('\n');
     const detail = `${tail}\n${econ}`;
     if (this.run.isGameWon()) {
       markChapterFullyCleared(this.run.bookChapterId);
-      /** 须在本章写入 cleared 之后再同步：`getChapterStarFilledCount` 对未通关章恒为 0 */
+      recordChapterClearStar(this.run.bookChapterId, this.run.playerHp);
       syncLotteryTicketsFromChapterProgress();
       const st = getChapterStarFilledCount(this.run.bookChapterId);
-      this.modal.alertBattleSettlement(`${detail}\n本关通关 · 进度已保存`, () =>
+      const starLine =
+        st === 3 ? '评价 3 星' : st === 2 ? '评价 2 星' : st === 1 ? '评价 1 星' : '评价星已记录';
+      showBattleSettlement(`${detail}\n本关通关 · ${starLine} · 进度已保存`, () =>
         this.finishChapterRunWithSettlement(this.run.chapterSelectBackToMap, this.run.bookChapterId, {
           kind: 'success',
           stars: st,
-          successExtra: '评价星已折算为招募券（每星 5 张）。',
+          successExtra: '评价星按通关剩余生命结算（≤0 未通关，1–49 一星，50–99 二星，100 三星）。',
         }),
       );
       return;
     }
-    this.modal.alertBattleSettlement(detail, () => this.showLevelMap());
+    showBattleSettlement(detail, () => this.showLevelMap());
   }
 
   /**

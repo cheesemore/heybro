@@ -22,7 +22,9 @@ import {
   isRagefireChasmBookCleared,
   loadChapterProgress,
 } from '../chapterProgressStorage';
+import { gsCombatBonusPercentDisplay } from '../gearCombatBonus';
 import { getGearFarmStamina } from '../gearFarmStaminaStorage';
+import { sumEquippedGearGs } from '../playerGearStorage';
 import { GAME_TERM_ZH } from '../gameTerminology';
 import { bossDisplayName } from '../roundConfig';
 import type { RoundMeta } from '../types';
@@ -77,7 +79,7 @@ function chapterGearDropPreviews(chapterId: number): GearFarmSlotPreview[] {
 }
 
 /**
- * 选关入口：线性解锁，中央展示当前可挑战关；底部「副本刷装 | 进入本关 | 职业/英雄」。
+ * 选关入口：线性解锁，中央展示当前可挑战关；底部「副本刷装 | 进入本关 | 职业/英雄」；右上角「退出」回封面。
  */
 export class ChapterSelectScreen extends Container {
   private readonly onPickChapter: (chapterId: number) => void;
@@ -90,6 +92,8 @@ export class ChapterSelectScreen extends Container {
   private viewChapterId: number;
   private readonly bgLayer = new Container();
   private readonly boardLayer = new Container();
+  /** 全屏遮罩弹窗（查看详情等），须高于 boardLayer 与底部操作栏 */
+  private readonly overlayLayer = new Container();
   private dungeonBgGen = 0;
   private boardRebuildGen = 0;
   private detailLayer: Container | null = null;
@@ -132,6 +136,21 @@ export class ChapterSelectScreen extends Container {
     progressLine.position.set(pad, Math.round(28 * LAYOUT_SCALE));
     this.addChild(progressLine);
 
+    const equippedGs = sumEquippedGearGs();
+    if (equippedGs > 0) {
+      const gsLine = new Text({
+        text: `装备 GS ${equippedGs} · 生命与攻击 +${gsCombatBonusPercentDisplay(equippedGs)}%`,
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif',
+          fontSize: Math.round(17 * LAYOUT_SCALE),
+          fill: 0x86efac,
+          fontWeight: '600',
+        },
+      });
+      gsLine.position.set(pad, progressLine.y + progressLine.height + Math.round(4 * LAYOUT_SCALE));
+      this.addChild(gsLine);
+    }
+
     const backW = Math.round(160 * LAYOUT_SCALE);
     const backH = Math.round(50 * LAYOUT_SCALE);
     const backBtn = createStyledGameButton('cta', {
@@ -142,8 +161,10 @@ export class ChapterSelectScreen extends Container {
       onTap: () => this.onBack(),
     });
     backBtn.position.set(GAME_WIDTH - backW - pad, Math.round(26 * LAYOUT_SCALE));
+    backBtn.zIndex = 200;
     this.addChild(backBtn);
 
+    this.boardLayer.zIndex = 50;
     this.addChild(this.boardLayer);
     this.rebuildChapterBoard();
 
@@ -228,6 +249,11 @@ export class ChapterSelectScreen extends Container {
     });
     chBtn.position.set(rowX + sideW + btnGap, rowY);
     this.addChild(chBtn);
+
+    this.overlayLayer.zIndex = 500;
+    this.overlayLayer.eventMode = 'passive';
+    this.overlayLayer.sortableChildren = true;
+    this.addChild(this.overlayLayer);
 
     if (this.onDebugChapterClear) {
       this.keyHandler = (ev: KeyboardEvent): void => {
@@ -603,6 +629,7 @@ export class ChapterSelectScreen extends Container {
     if (this.cheatPanel) {
       this.cheatPanel.destroy({ children: true });
       this.cheatPanel = null;
+      if (!this.detailLayer) this.overlayLayer.eventMode = 'passive';
       return;
     }
     const root = new Container();
@@ -647,14 +674,16 @@ export class ChapterSelectScreen extends Container {
     mkBtn('3星通关本关', 3, y);
 
     this.cheatPanel = root;
-    this.addChild(root);
+    this.overlayLayer.addChild(root);
+    this.overlayLayer.eventMode = 'static';
   }
 
   private closeChapterDetailOverlay(): void {
     if (!this.detailLayer) return;
-    this.removeChild(this.detailLayer);
+    this.overlayLayer.removeChild(this.detailLayer);
     this.detailLayer.destroy({ children: true });
     this.detailLayer = null;
+    if (!this.cheatPanel) this.overlayLayer.eventMode = 'passive';
   }
 
   /**
@@ -902,7 +931,8 @@ export class ChapterSelectScreen extends Container {
     layer.addChild(closeBtn);
 
     attachScreenDebugLabel(layer, 'ChapterSelectScreen.detail');
-    this.addChild(layer);
+    this.overlayLayer.addChild(layer);
+    this.overlayLayer.eventMode = 'static';
   }
 
   override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
