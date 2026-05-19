@@ -27,10 +27,19 @@ import {
   tryDeployHero,
   undeployHeroById,
 } from '../heroMetaStorage';
-import { drawGoldenSolidPanel, GOLDEN_PANEL_ACCENT } from '../ui/goldenSolidPanel';
+import {
+  drawGoldenSolidPanel,
+  GOLDEN_PANEL_ACCENT,
+  GOLDEN_PANEL_BODY,
+  GOLDEN_PANEL_INSET,
+  GOLDEN_PANEL_LINE,
+  GOLDEN_PANEL_MUTED,
+  GOLDEN_PANEL_TITLE,
+} from '../ui/goldenSolidPanel';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { paintRedCountBadge } from '../ui/countBadge';
 import { createStyledGameButton, redrawGameButtonFromStyle, type GameButton, type GameButtonStyleKey } from '../ui/gameButtons';
+import { AllyBondDetailOverlay } from '../ui/AllyBondDetailOverlay';
 import { spawnFloatingGameTip } from '../ui/floatingGameTip';
 import type { ModalLayer } from './ModalLayer';
 import { allyBasicSkillDesc } from '../bondCopy';
@@ -38,13 +47,46 @@ import { createDraftAllyToken, createDraftHeroToken } from '../unitCircleTokens'
 import { ALLY_DEFS } from '../unitDefs';
 import { allyClassUnlockHint, isAllyClassUnlocked } from '../allyClassUnlock';
 import { ALLY_CLASSES } from '../constants';
+import type { AllyClass } from '../types';
 import { botAutoDeployPreferredHeroes } from '../bot/heroDeployPolicy';
 import { isBotModeActive } from '../bot/context';
 import { botRegisterScreen, botUnregisterScreen } from '../bot/registry';
 import { wowChapterStageTitle } from '../wowBookData';
 const PAD = Math.round(22 * LAYOUT_SCALE);
+/** 全屏底（与副本刷装、关卡详情遮罩同系） */
+const STRENGTHEN_SCREEN_BG = 0x0a0f1c;
+/** 列表/上阵区托底，与金色行卡区分 */
+const STRENGTHEN_CONTENT_WELL = 0x111827;
+const STRENGTHEN_CONTENT_WELL_LINE = 0x334155;
 /** 垂直位移超过此值才视为滚动，避免误吞卡片点击 */
 const HERO_SCROLL_SLOP_PX = 10;
+const STRENGTHEN_UI_FONT = 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif';
+
+function addContentWell(parent: Container, w: number, h: number): Graphics {
+  const well = new Graphics();
+  const rr = Math.round(12 * LAYOUT_SCALE);
+  well
+    .roundRect(0, 0, w, h, rr)
+    .fill(STRENGTHEN_CONTENT_WELL)
+    .stroke({
+      width: Math.max(1, Math.round(1.5 * LAYOUT_SCALE)),
+      color: STRENGTHEN_CONTENT_WELL_LINE,
+      alpha: 0.88,
+    });
+  well.eventMode = 'none';
+  parent.addChildAt(well, 0);
+  return well;
+}
+
+function addGoldenRowPanel(parent: Container, w: number, h: number): void {
+  const plate = new Graphics();
+  const frame = new Graphics();
+  drawGoldenSolidPanel(plate, frame, w, h, LAYOUT_SCALE);
+  plate.eventMode = 'none';
+  frame.eventMode = 'none';
+  parent.addChildAt(plate, 0);
+  parent.addChildAt(frame, 1);
+}
 
 function chapterLabelForSlot(slotIndex: number): string {
   const ch = HERO_DEPLOY_SLOT_CHAPTER[slotIndex];
@@ -118,6 +160,7 @@ export class StrengthenScreen extends Container {
   private blockNextHeroCardTap = false;
   private readonly boundDocPointerMove: (e: PointerEvent) => void;
   private readonly boundDocPointerUp: (e: PointerEvent) => void;
+  private bondDetailOverlay: Container | null = null;
 
   constructor(_app: Application, modal: ModalLayer, onBack: () => void) {
     super();
@@ -128,7 +171,7 @@ export class StrengthenScreen extends Container {
     this.boundDocPointerUp = this.onDocPointerUp.bind(this);
 
     const bg = new Graphics();
-    bg.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(0x0a0f1a);
+    bg.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(STRENGTHEN_SCREEN_BG);
     this.addChild(bg);
 
     const title = new Text({
@@ -162,7 +205,7 @@ export class StrengthenScreen extends Container {
     const tabFs = Math.round(20 * LAYOUT_SCALE);
     let tabX = PAD;
 
-    this.tabClassBtn = createStyledGameButton('strengthenTabOn', {
+    this.tabClassBtn = createStyledGameButton('synergyTabOn', {
       text: '职业强化',
       width: tabW,
       height: tabH,
@@ -173,7 +216,7 @@ export class StrengthenScreen extends Container {
     this.addChild(this.tabClassBtn);
     tabX += tabW + tabGap;
 
-    this.tabHeroBtn = createStyledGameButton('strengthenTabOff', {
+    this.tabHeroBtn = createStyledGameButton('synergyTabOff', {
       text: '英雄',
       width: tabW,
       height: tabH,
@@ -184,7 +227,7 @@ export class StrengthenScreen extends Container {
     this.addChild(this.tabHeroBtn);
     tabX += tabW + tabGap;
 
-    this.tabRecruitBtn = createStyledGameButton('strengthenTabOff', {
+    this.tabRecruitBtn = createStyledGameButton('synergyTabOff', {
       text: '招募',
       width: tabW,
       height: tabH,
@@ -202,13 +245,16 @@ export class StrengthenScreen extends Container {
     this.addChild(this.tabRecruitBadge);
 
     const heroAreaTop = tabY + tabH + Math.round(14 * LAYOUT_SCALE);
+    const contentWellW = GAME_WIDTH - PAD * 2;
+    const contentWellH = GAME_HEIGHT - heroAreaTop - Math.round(24 * LAYOUT_SCALE);
 
     this.classRoot.position.set(0, heroAreaTop);
     this.classRoot.visible = true;
     this.addChild(this.classRoot);
+    addContentWell(this.classRoot, contentWellW, contentWellH).position.set(PAD, 0);
 
     const classScrollTop = 0;
-    this.classScrollViewH = GAME_HEIGHT - heroAreaTop - Math.round(24 * LAYOUT_SCALE);
+    this.classScrollViewH = contentWellH;
     this.classScrollViewport.position.set(PAD, classScrollTop);
     this.classScrollViewport.eventMode = 'static';
     this.classScrollViewport.cursor = 'grab';
@@ -237,6 +283,7 @@ export class StrengthenScreen extends Container {
     this.heroRoot.position.set(0, heroAreaTop);
     this.heroRoot.visible = false;
     this.addChild(this.heroRoot);
+    addContentWell(this.heroRoot, contentWellW, contentWellH).position.set(PAD, 0);
 
     this.slotLayer.position.set(0, 0);
     this.heroRoot.addChild(this.slotLayer);
@@ -296,6 +343,7 @@ export class StrengthenScreen extends Container {
     this.recruitRoot.visible = false;
     this.recruitRoot.position.set(0, heroAreaTop);
     this.addChild(this.recruitRoot);
+    addContentWell(this.recruitRoot, contentWellW, contentWellH).position.set(PAD, 0);
 
     this.recruitHint = new Text({
       text:
@@ -447,7 +495,7 @@ export class StrengthenScreen extends Container {
     const heroBondFootnote = new Text({
       text: '英雄单位同样享有职业技能和职业羁绊，但是不提供职业羁绊人口',
       style: {
-        fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+        fontFamily: STRENGTHEN_UI_FONT,
         fontSize: footFs,
         fill: GOLDEN_PANEL_ACCENT,
         wordWrap: true,
@@ -479,9 +527,9 @@ export class StrengthenScreen extends Container {
       const nameT = new Text({
         text: ALLY_DEFS[cls].name,
         style: {
-          fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+          fontFamily: STRENGTHEN_UI_FONT,
           fontSize: Math.round(15 * LAYOUT_SCALE),
-          fill: 0xe2e8f0,
+          fill: GOLDEN_PANEL_TITLE,
           fontWeight: '700',
           align: 'center',
         },
@@ -495,25 +543,19 @@ export class StrengthenScreen extends Container {
           AVATAR_SHIFT_Y -
           Math.round(30 * LAYOUT_SCALE),
       );
-      if (locked) nameT.style.fill = 0x64748b;
+      if (locked) nameT.style.fill = GOLDEN_PANEL_MUTED;
       row.addChild(nameT);
 
       if (locked) {
         if (avWrap) avWrap.alpha = 0.4;
         const panelRowH = Math.round(140 * LAYOUT_SCALE);
-        const bg = new Graphics();
-        bg.eventMode = 'none';
-        bg.roundRect(0, 0, rowW, panelRowH, Math.round(16 * LAYOUT_SCALE)).fill(0x0a0f18).stroke({
-          width: Math.max(2, Math.round(2 * LAYOUT_SCALE)),
-          color: 0x1e293b,
-        });
-        row.addChildAt(bg, 0);
+        addGoldenRowPanel(row, rowW, panelRowH);
         const lockT = new Text({
           text: allyClassUnlockHint(cls),
           style: {
-            fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+            fontFamily: STRENGTHEN_UI_FONT,
             fontSize: Math.round(17 * LAYOUT_SCALE),
-            fill: 0x94a3b8,
+            fill: GOLDEN_PANEL_MUTED,
             fontWeight: '600',
             wordWrap: true,
             wordWrapWidth: rowW - leftW - Math.round(32 * LAYOUT_SCALE),
@@ -533,7 +575,7 @@ export class StrengthenScreen extends Container {
 
       const mFs = Math.round(17 * LAYOUT_SCALE);
       const mLh = Math.round(26 * LAYOUT_SCALE);
-      const mFf = 'system-ui, "Microsoft YaHei", sans-serif';
+      const mFf = STRENGTHEN_UI_FONT;
       const btnW = Math.round(168 * LAYOUT_SCALE);
       const btnH = Math.round(44 * LAYOUT_SCALE);
       const talentBtnH = Math.round(40 * LAYOUT_SCALE);
@@ -544,7 +586,14 @@ export class StrengthenScreen extends Container {
       const rx = rowW - rightW + Math.round(8 * LAYOUT_SCALE);
       const dividerX = rx - Math.round(12 * LAYOUT_SCALE);
       const skillPadX = midX;
-      const skillW = Math.max(Math.round(72 * LAYOUT_SCALE), dividerX - skillPadX - Math.round(8 * LAYOUT_SCALE));
+      const bondLinkFs = Math.round(14 * LAYOUT_SCALE);
+      const bondLinkReserve = Math.round(76 * LAYOUT_SCALE);
+      const bondLinkGap = Math.round(6 * LAYOUT_SCALE);
+      const bondLinkRightX = dividerX - Math.round(4 * LAYOUT_SCALE);
+      const skillW = Math.max(
+        Math.round(72 * LAYOUT_SCALE),
+        bondLinkRightX - bondLinkReserve - bondLinkGap - skillPadX,
+      );
       const skillGap = Math.round(4 * LAYOUT_SCALE);
       const skillBottomPad = Math.round(12 * LAYOUT_SCALE);
       const skillMidGap = Math.round(14 * LAYOUT_SCALE);
@@ -554,7 +603,7 @@ export class StrengthenScreen extends Container {
         style: {
           fontFamily: mFf,
           fontSize: mFs,
-          fill: 0xcbd5e1,
+          fill: GOLDEN_PANEL_MUTED,
           fontWeight: '600',
         },
       });
@@ -563,7 +612,7 @@ export class StrengthenScreen extends Container {
         style: {
           fontFamily: mFf,
           fontSize: mFs,
-          fill: 0xcbd5e1,
+          fill: GOLDEN_PANEL_BODY,
           wordWrap: true,
           wordWrapWidth: skillW,
           lineHeight: mLh,
@@ -585,13 +634,7 @@ export class StrengthenScreen extends Container {
         ) + panelRowHExtra;
       const skillY = panelRowH - skillBottomPad - skillBlockH;
 
-      const bg = new Graphics();
-      bg.eventMode = 'none';
-      bg.roundRect(0, 0, rowW, panelRowH, Math.round(16 * LAYOUT_SCALE)).fill(0x111827).stroke({
-        width: Math.max(2, Math.round(2 * LAYOUT_SCALE)),
-        color: 0x334155,
-      });
-      row.addChildAt(bg, 0);
+      addGoldenRowPanel(row, rowW, panelRowH);
 
       const midBlock = new Container();
       midBlock.position.set(midX, midTopY);
@@ -614,31 +657,31 @@ export class StrengthenScreen extends Container {
         }
         mLy += mLh;
       };
-      pushParts([{ t: `等级 ${st.level}`, c: 0xcbd5e1, w: '600' }]);
+      pushParts([{ t: `等级 ${st.level}`, c: GOLDEN_PANEL_MUTED, w: '600' }]);
       if (st.atCap) {
         pushParts([
-          { t: '生命', c: 0xcbd5e1 },
-          { t: String(st.maxHp), c: 0xf1f5f9, w: '700' },
-          { t: '（已满）', c: 0x64748b },
-          { t: '  攻击 ', c: 0xcbd5e1 },
-          { t: String(st.atk), c: 0xf1f5f9, w: '700' },
-          { t: '（已满）', c: 0x64748b },
+          { t: '生命', c: GOLDEN_PANEL_MUTED },
+          { t: String(st.maxHp), c: GOLDEN_PANEL_TITLE, w: '700' },
+          { t: '（已满）', c: GOLDEN_PANEL_MUTED },
+          { t: '  攻击 ', c: GOLDEN_PANEL_MUTED },
+          { t: String(st.atk), c: GOLDEN_PANEL_TITLE, w: '700' },
+          { t: '（已满）', c: GOLDEN_PANEL_MUTED },
         ]);
       } else {
         pushParts([
-          { t: '生命', c: 0xcbd5e1 },
-          { t: String(st.maxHp), c: 0xf1f5f9, w: '700' },
-          { t: `（+${st.deltaHp}）`, c: 0x22c55e, w: '700' },
-          { t: '  攻击 ', c: 0xcbd5e1 },
-          { t: String(st.atk), c: 0xf1f5f9, w: '700' },
-          { t: `（+${st.deltaAtk}）`, c: 0x22c55e, w: '700' },
+          { t: '生命', c: GOLDEN_PANEL_MUTED },
+          { t: String(st.maxHp), c: GOLDEN_PANEL_TITLE, w: '700' },
+          { t: `（+${st.deltaHp}）`, c: GOLDEN_PANEL_ACCENT, w: '700' },
+          { t: '  攻击 ', c: GOLDEN_PANEL_MUTED },
+          { t: String(st.atk), c: GOLDEN_PANEL_TITLE, w: '700' },
+          { t: `（+${st.deltaAtk}）`, c: GOLDEN_PANEL_ACCENT, w: '700' },
         ]);
       }
       const secPerHit = ALLY_DEFS[cls].attackSpeed;
       const dps = st.atk / secPerHit;
       const secStr = Number(secPerHit.toFixed(2)).toString();
       const dpsStr = (Math.round(dps * 10) / 10).toFixed(1);
-      pushParts([{ t: `攻速${secStr}秒/每下（${dpsStr}秒伤）`, c: 0x93c5fd }]);
+      pushParts([{ t: `攻速${secStr}秒/每下（${dpsStr}秒伤）`, c: GOLDEN_PANEL_MUTED }]);
       row.addChild(midBlock);
 
       const dividerLine = new Graphics();
@@ -647,13 +690,13 @@ export class StrengthenScreen extends Container {
       dividerLine
         .moveTo(dividerX, lineTop)
         .lineTo(dividerX, lineBot)
-        .stroke({ width: Math.max(1, Math.round(2 * LAYOUT_SCALE)), color: 0x475569, alpha: 0.85 });
+        .stroke({ width: Math.max(1, Math.round(2 * LAYOUT_SCALE)), color: GOLDEN_PANEL_LINE, alpha: 0.85 });
       row.addChild(dividerLine);
 
       const barW = btnW;
       const barY = rightTopY;
       const barBg = new Graphics();
-      barBg.roundRect(rx, barY, barW, barH, Math.round(8 * LAYOUT_SCALE)).fill(0x0f172a);
+      barBg.roundRect(rx, barY, barW, barH, Math.round(8 * LAYOUT_SCALE)).fill(GOLDEN_PANEL_INSET);
       row.addChild(barBg);
       const ratio = need != null && need > 0 ? Math.max(0, Math.min(1, frag / need)) : st.level >= 999 ? 1 : 0;
       const barFill = new Graphics();
@@ -719,6 +762,44 @@ export class StrengthenScreen extends Container {
       row.addChild(skillLabel);
       skillBody.position.set(skillPadX, skillY + skillLabel.height + skillGap);
       row.addChild(skillBody);
+
+      if (!locked) {
+        const bondLinkColor = 0x7ec8ff;
+        const bondLink = new Text({
+          text: '[查看羁绊]',
+          style: {
+            fontFamily: mFf,
+            fontSize: bondLinkFs,
+            fill: bondLinkColor,
+            fontWeight: '600',
+          },
+        });
+        bondLink.anchor.set(1, 0);
+        const bondLinkWrap = new Container();
+        bondLinkWrap.addChild(bondLink);
+        const bondUl = new Graphics();
+        const ulY = bondLink.height + Math.round(1 * LAYOUT_SCALE);
+        bondUl
+          .moveTo(-bondLink.width, ulY)
+          .lineTo(0, ulY)
+          .stroke({ width: Math.max(1, Math.round(1 * LAYOUT_SCALE)), color: bondLinkColor, alpha: 0.9 });
+        bondLinkWrap.addChild(bondUl);
+        bondLinkWrap.position.set(bondLinkRightX, skillY);
+        bondLinkWrap.eventMode = 'static';
+        bondLinkWrap.cursor = 'pointer';
+        const hitPad = Math.round(4 * LAYOUT_SCALE);
+        bondLinkWrap.hitArea = new Rectangle(
+          -bondLink.width - hitPad,
+          -hitPad,
+          bondLink.width + hitPad * 2,
+          bondLink.height + hitPad * 2,
+        );
+        bondLinkWrap.on('pointertap', (e) => {
+          e.stopPropagation();
+          this.openBondDetail(cls);
+        });
+        row.addChild(bondLinkWrap);
+      }
 
       this.classScrollContent.addChild(row);
       y += panelRowH + rowGap;
@@ -812,10 +893,26 @@ export class StrengthenScreen extends Container {
     }
   }
 
+  private closeBondDetail(): void {
+    if (!this.bondDetailOverlay) return;
+    this.removeChild(this.bondDetailOverlay);
+    this.bondDetailOverlay.destroy({ children: true });
+    this.bondDetailOverlay = null;
+  }
+
+  private openBondDetail(kind: AllyClass): void {
+    this.closeBondDetail();
+    const ov = new AllyBondDetailOverlay(kind, 0, () => this.closeBondDetail());
+    ov.zIndex = 8200;
+    this.bondDetailOverlay = ov;
+    this.addChild(ov);
+  }
+
   override destroy(options?: boolean | import('pixi.js').DestroyOptions): void {
     botUnregisterScreen('strengthen');
     this.endPanelScrollDrag();
     this.closeHeroSheet();
+    this.closeBondDetail();
     super.destroy(options);
   }
 
@@ -823,19 +920,19 @@ export class StrengthenScreen extends Container {
     const tabW = Math.round(168 * LAYOUT_SCALE);
     const tabH = Math.round(44 * LAYOUT_SCALE);
     const tabFs = Math.round(20 * LAYOUT_SCALE);
-    redrawGameButtonFromStyle(this.tabClassBtn, this.tab === 'class' ? 'strengthenTabOn' : 'strengthenTabOff', {
+    redrawGameButtonFromStyle(this.tabClassBtn, this.tab === 'class' ? 'synergyTabOn' : 'synergyTabOff', {
       text: '职业强化',
       width: tabW,
       height: tabH,
       fontSize: tabFs,
     });
-    redrawGameButtonFromStyle(this.tabHeroBtn, this.tab === 'hero' ? 'strengthenTabOn' : 'strengthenTabOff', {
+    redrawGameButtonFromStyle(this.tabHeroBtn, this.tab === 'hero' ? 'synergyTabOn' : 'synergyTabOff', {
       text: '英雄',
       width: tabW,
       height: tabH,
       fontSize: tabFs,
     });
-    redrawGameButtonFromStyle(this.tabRecruitBtn, this.tab === 'recruit' ? 'strengthenTabOn' : 'strengthenTabOff', {
+    redrawGameButtonFromStyle(this.tabRecruitBtn, this.tab === 'recruit' ? 'synergyTabOn' : 'synergyTabOff', {
       text: '招募',
       width: tabW,
       height: tabH,
@@ -943,26 +1040,22 @@ export class StrengthenScreen extends Container {
       const x = startX + s * (slotW + gap);
       const hid = dep[s];
 
-      const g = new Graphics();
-      g.roundRect(0, 0, slotW, slotH, Math.round(14 * LAYOUT_SCALE)).fill(locked ? 0x0f172a : 0x111827);
-      g.stroke({
-        width: Math.max(2, Math.round(2 * LAYOUT_SCALE)),
-        color: locked ? 0x1e293b : 0x475569,
-      });
-      g.position.set(x, 0);
-      this.slotLayer.addChild(g);
+      const slotWrap = new Container();
+      slotWrap.position.set(x, 0);
+      addGoldenRowPanel(slotWrap, slotW, slotH);
+      this.slotLayer.addChild(slotWrap);
 
       if (locked) {
         const lock = new Graphics();
-        drawPadlock(lock, slotW / 2, slotH * 0.38, Math.round(52 * LAYOUT_SCALE), 0x64748b);
+        drawPadlock(lock, slotW / 2, slotH * 0.38, Math.round(52 * LAYOUT_SCALE), GOLDEN_PANEL_MUTED);
         lock.position.set(x, 0);
         this.slotLayer.addChild(lock);
         const lockLab = new Text({
           text: chapterLabelForSlot(s),
           style: {
-            fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+            fontFamily: STRENGTHEN_UI_FONT,
             fontSize: Math.round(14 * LAYOUT_SCALE),
-            fill: 0x64748b,
+            fill: GOLDEN_PANEL_MUTED,
             align: 'center',
             wordWrap: true,
             wordWrapWidth: slotW - Math.round(12 * LAYOUT_SCALE),
@@ -988,7 +1081,7 @@ export class StrengthenScreen extends Container {
           const nm = new Text({
             text: `${def.name}`,
             style: {
-              fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+              fontFamily: STRENGTHEN_UI_FONT,
               fontSize: Math.round(13 * LAYOUT_SCALE),
               fill: heroQualityAccent(def.quality),
               align: 'center',
@@ -1003,9 +1096,9 @@ export class StrengthenScreen extends Container {
         const t = new Text({
           text: '空栏位',
           style: {
-            fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+            fontFamily: STRENGTHEN_UI_FONT,
             fontSize: Math.round(16 * LAYOUT_SCALE),
-            fill: 0x475569,
+            fill: GOLDEN_PANEL_MUTED,
             fontWeight: '600',
           },
         });
@@ -1067,18 +1160,20 @@ export class StrengthenScreen extends Container {
         this.openHeroSheet(h.id);
       });
 
-      const bg = new Graphics();
-      bg.eventMode = 'none';
-      const strokeColor = deployed ? heroQualityAccent(h.quality) : unlocked ? 0x334155 : 0x1e293b;
-      const strokeW = deployed ? Math.max(3, Math.round(3 * LAYOUT_SCALE)) : Math.max(1, Math.round(1.5 * LAYOUT_SCALE));
-      bg
-        .roundRect(0, 0, cellW, cellH, Math.round(14 * LAYOUT_SCALE))
-        .fill(unlocked ? 0x111827 : 0x0c1222)
-        .stroke({
-          width: strokeW,
-          color: strokeColor,
-        });
-      wrap.addChild(bg);
+      const cellR = Math.round(14 * LAYOUT_SCALE);
+      addGoldenRowPanel(wrap, cellW, cellH);
+      if (deployed) {
+        const depRing = new Graphics();
+        depRing.eventMode = 'none';
+        depRing
+          .roundRect(0, 0, cellW, cellH, cellR)
+          .stroke({
+            width: Math.max(3, Math.round(3 * LAYOUT_SCALE)),
+            color: heroQualityAccent(h.quality),
+            alpha: 0.95,
+          });
+        wrap.addChild(depRing);
+      }
 
       const avatarWrap = new Container();
       avatarWrap.position.set(cellW / 2, avatarBottomY);
@@ -1092,7 +1187,7 @@ export class StrengthenScreen extends Container {
       const nameT = new Text({
         text: unlocked ? h.name : '???',
         style: {
-          fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+          fontFamily: STRENGTHEN_UI_FONT,
           fontSize: Math.round(16 * LAYOUT_SCALE),
           fill: heroQualityAccent(h.quality),
           fontWeight: '700',
@@ -1107,9 +1202,9 @@ export class StrengthenScreen extends Container {
       const classT = new Text({
         text: ALLY_DEFS[h.allyClass].name,
         style: {
-          fontFamily: 'system-ui, "Microsoft YaHei", sans-serif',
+          fontFamily: STRENGTHEN_UI_FONT,
           fontSize: Math.round(14 * LAYOUT_SCALE),
-          fill: unlocked ? 0x94a3b8 : 0x475569,
+          fill: unlocked ? GOLDEN_PANEL_MUTED : GOLDEN_PANEL_MUTED,
           align: 'center',
         },
       });
@@ -1134,7 +1229,7 @@ export class StrengthenScreen extends Container {
       const barX = (cellW - barW) / 2;
       const barBg = new Graphics();
       barBg.eventMode = 'none';
-      barBg.roundRect(barX, barY, barW, barH, Math.round(8 * LAYOUT_SCALE)).fill(0x0f172a);
+      barBg.roundRect(barX, barY, barW, barH, Math.round(8 * LAYOUT_SCALE)).fill(GOLDEN_PANEL_INSET);
       wrap.addChild(barBg);
       const ratio =
         need != null && need > 0 ? Math.max(0, Math.min(1, dup / need)) : stars >= 5 ? 1 : 0;

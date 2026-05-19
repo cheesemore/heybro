@@ -4,7 +4,7 @@ import { GAME_HEIGHT, GAME_WIDTH, LAYOUT_SCALE } from '../constants';
 import { clientToGameLogical } from '../layoutStage';
 import { attachScreenDebugLabel } from '../ui/screenDebugLabel';
 import { allBondStacks } from '../battleBonds';
-import { recruitCardBondedStats } from '../recruitCardBondStats';
+import { bondTiersNewlyAchieved } from '../bondCopy';
 import { ALLY_CLASSES } from '../constants';
 import { applyPick, boardHasAnyUnit, canAcceptPick, randomThreeDraftChoices } from '../draftLogic';
 import { botDraftClassPriority } from '../bot/draftPickPolicy';
@@ -26,11 +26,23 @@ import { getHeroDef, heroDisplayNameWithSkillTier, heroQualityAccent, type HeroI
 import { mountHeroInfoPanelContent } from '../ui/heroInfoPanel';
 import { SynergyOverlay } from './SynergyOverlay';
 import { PARCHMENT_BTN_TEXT, drawParchmentCardTopBottomRules } from '../ui/parchmentButtonFill';
+import { BondAchievedBannerHost, BOND_ACHIEVED_BANNER_Z } from '../ui/bondAchievedBanner';
 import { spawnFloatingGameTip } from '../ui/floatingGameTip';
 import { createStyledGameButton } from '../ui/gameButtons';
 import { drawGoldenSolidPanel } from '../ui/goldenSolidPanel';
+import type { ModalLayer } from './ModalLayer';
 
 const PAD_X = Math.round(20 * LAYOUT_SCALE);
+
+/** 竞技场选阵：复用招募 UI，保存时由宿主锁定阵容与英雄栏 */
+export type ArenaDraftConfig = {
+  picksThisRound: number;
+  setPicksThisRound: (n: number) => void;
+  onPersistDraft: (run: RunState) => void;
+  onBack: () => void;
+  onSaveLock: (run: RunState) => void;
+  modal: ModalLayer;
+};
 /** 选牌页右侧英雄竖条宽度（与九宫格并排） */
 const HERO_RAIL_W = Math.round(128 * LAYOUT_SCALE);
 const HERO_RAIL_GAP = Math.round(18 * LAYOUT_SCALE);
@@ -38,8 +50,19 @@ const HERO_RAIL_GAP = Math.round(18 * LAYOUT_SCALE);
 const TEXT_INSET = Math.round(14 * LAYOUT_SCALE);
 const HEADER_Y = Math.round(20 * LAYOUT_SCALE);
 const TRIO_CARD_H = Math.round(278 * LAYOUT_SCALE);
-/** 三选一卡顶「N 金」与底部职业特性同色 */
+/** 三选一卡顶职业名强调色 */
 const DRAFT_CARD_GOLD_ACCENT = 0xa16207;
+/** 招募价：≤10 金（含免费）绿；11–20 金黄；>20 金红 */
+const DRAFT_RECRUIT_PRICE_GREEN = 0x166534;
+const DRAFT_RECRUIT_PRICE_YELLOW = DRAFT_CARD_GOLD_ACCENT;
+const DRAFT_RECRUIT_PRICE_RED = 0xb91c1c;
+const DRAFT_RECRUIT_FREE_STROKE = 0xeab308;
+
+function draftRecruitPriceFill(goldCost: number): number {
+  if (goldCost <= 10) return DRAFT_RECRUIT_PRICE_GREEN;
+  if (goldCost <= 20) return DRAFT_RECRUIT_PRICE_YELLOW;
+  return DRAFT_RECRUIT_PRICE_RED;
+}
 
 /** 招募卡第三行：职业特性（不再显示移速） */
 function allyRecruitTraitText(kind: AllyClass): string {
@@ -144,6 +167,7 @@ export class DraftScreen extends Container {
   private readonly app: Application;
   private readonly run: RunState;
   private readonly onFinished: () => void;
+  private readonly arenaCfg?: ArenaDraftConfig;
   private readonly roundMeta: RoundMeta;
   private choices: AllyClass[] = [];
   private picksThisRound = 0;
@@ -166,6 +190,7 @@ export class DraftScreen extends Container {
   private heroIntroPanelDispose: (() => void) | null = null;
   /** 招募页英雄头像全介绍浮层 */
   private heroIntroLayer: Container | null = null;
+  private bondAchievedBanner?: BondAchievedBannerHost;
 
   private readonly onDocPointerEnd = (ev: PointerEvent): void => {
     this.finishSlotDragFromClient(ev.clientX, ev.clientY);
@@ -202,18 +227,25 @@ export class DraftScreen extends Container {
     this.dragFromSlot = null;
     this.removeDocPointerEndListeners();
     this.drawBoard();
+    if (this.arenaCfg) this.arenaCfg.onPersistDraft(this.run);
   }
 
-  constructor(app: Application, run: RunState, onFinished: () => void) {
+  constructor(app: Application, run: RunState, onFinished: () => void, arenaCfg?: ArenaDraftConfig) {
     super();
     this.sortableChildren = true;
     this.app = app;
     this.run = run;
     this.onFinished = onFinished;
-    const ri = run.currentRoundIndex;
-    const base = roundsForBookChapter(run.bookChapterId)[ri];
-    if (!base) throw new Error('[DraftScreen] round index out of range');
-    this.roundMeta = getResolvedRoundMeta(run, ri, base);
+    this.arenaCfg = arenaCfg;
+    if (arenaCfg) {
+      this.picksThisRound = arenaCfg.picksThisRound;
+      this.roundMeta = { label: '竞技场', chapter: 1, sub: 0, kind: 'normal', enemies: [] };
+    } else {
+      const ri = run.currentRoundIndex;
+      const base = roundsForBookChapter(run.bookChapterId)[ri];
+      if (!base) throw new Error('[DraftScreen] round index out of range');
+      this.roundMeta = getResolvedRoundMeta(run, ri, base);
+    }
 
     /** 旧版允许同格叠神器+兵；新版互斥，迁入最近的双空格 */
     for (let i = 0; i < 9; i++) {
@@ -232,7 +264,8 @@ export class DraftScreen extends Container {
       }
     }
 
-    mountStretchedDungeonBackground(this, dungeonIdForBookChapter(this.run.bookChapterId), { dimAlpha: 0.38 });
+    const bgChapter = this.arenaCfg ? 1 : this.run.bookChapterId;
+    mountStretchedDungeonBackground(this, dungeonIdForBookChapter(bgChapter), { dimAlpha: 0.38 });
 
     const stars = new Graphics();
     for (let i = 0; i < 56; i++) {
@@ -249,10 +282,11 @@ export class DraftScreen extends Container {
     this.addChild(band);
 
     const meta = this.roundMeta;
+    const isArena = !!this.arenaCfg;
     const bondW = Math.round(248 * LAYOUT_SCALE);
     const headerWrap = GAME_WIDTH - PAD_X * 2 - bondW - Math.round(12 * LAYOUT_SCALE);
     const header = new Text({
-      text: `回合 ${meta.label} · 肉鸽选牌`,
+      text: isArena ? '竞技场 · 配置阵容' : `回合 ${meta.label} · 肉鸽选牌`,
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(34 * LAYOUT_SCALE),
@@ -282,10 +316,19 @@ export class DraftScreen extends Container {
         this.removeChild(ov);
         ov.destroy({ children: true });
       });
+      ov.zIndex = BOND_ACHIEVED_BANNER_Z;
       this.addChild(ov);
     });
     this.addChild(bondBtn);
     this.bondBtnRoot = bondBtn;
+
+    this.bondAchievedBanner = new BondAchievedBannerHost(this, {
+      flyTargetX: GAME_WIDTH - PAD_X - bondW / 2,
+      flyTargetY: HEADER_Y + bondH / 2,
+      bottomInset: Math.round(220 * LAYOUT_SCALE),
+      zIndex: BOND_ACHIEVED_BANNER_Z,
+    });
+    this.addScreenTicker((ticker) => this.bondAchievedBanner?.update(ticker.deltaMS / 1000));
 
     this.hpText = new Text({
       text: '',
@@ -311,7 +354,9 @@ export class DraftScreen extends Container {
 
     const wrapW = GAME_WIDTH - PAD_X * 2 - TEXT_INSET;
     const shortRule = new Text({
-      text: '相同卡牌达到3/6/10/15/21时会激活强力羁绊。',
+      text: isArena
+        ? '竞技场：无装备 GS、兵种养成无效；英雄按 1 星计入（保存阵容时锁定英雄栏）。'
+        : '相同卡牌达到3/6/10/15/21时会激活强力羁绊。',
       style: {
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         fontSize: Math.round(19 * LAYOUT_SCALE),
@@ -374,9 +419,9 @@ export class DraftScreen extends Container {
     this.boardDragOutline.visible = false;
     this.addChild(this.boardDragOutline);
 
-    attachScreenDebugLabel(this, 'DraftScreen');
+    attachScreenDebugLabel(this, isArena ? 'ArenaDraft' : 'DraftScreen');
 
-    if (isBotModeActive()) {
+    if (isBotModeActive() && !this.arenaCfg) {
       botRegisterScreen({
         kind: 'draft',
         draft: {
@@ -462,6 +507,8 @@ export class DraftScreen extends Container {
 
   override destroy(): void {
     this.clearScreenTickers();
+    this.bondAchievedBanner?.destroy();
+    this.bondAchievedBanner = undefined;
     this.botResetSubmit();
     botUnregisterScreen('draft');
     this.removeDocPointerEndListeners();
@@ -552,12 +599,20 @@ export class DraftScreen extends Container {
   }
 
   private refreshHud(): void {
-    this.hpText.text = `★生命：${this.run.playerHp}`;
-    this.goldText.text = `金币：${this.run.gold}`;
     const hudY = Math.round(82 * LAYOUT_SCALE);
-    this.hpText.position.set(PAD_X, hudY);
-    this.goldText.position.set(PAD_X + this.hpText.width + Math.round(28 * LAYOUT_SCALE), hudY);
-    this.pickHint.text = GAME_TERM_ZH.draftFirstCardFreeHint;
+    if (this.arenaCfg) {
+      this.hpText.visible = false;
+      this.goldText.text = `金币：${this.run.gold}`;
+      this.goldText.position.set(PAD_X, hudY);
+      this.pickHint.text = '保存阵容时锁定棋盘与英雄栏；对战内装备 GS 与兵种升级不生效。';
+    } else {
+      this.hpText.visible = true;
+      this.hpText.text = `★生命：${this.run.playerHp}`;
+      this.goldText.text = `金币：${this.run.gold}`;
+      this.hpText.position.set(PAD_X, hudY);
+      this.goldText.position.set(PAD_X + this.hpText.width + Math.round(28 * LAYOUT_SCALE), hudY);
+      this.pickHint.text = GAME_TERM_ZH.draftFirstCardFreeHint;
+    }
   }
 
   private rollChoices(): void {
@@ -588,18 +643,18 @@ export class DraftScreen extends Container {
       card.addChild(rules);
 
       const goldCost = roguePickGoldCost(this.run, kind, this.picksThisRound);
-      const priceLab = new Text({
-        text: goldCost === 0 ? '免费' : `${goldCost} 金`,
+      const classNameLab = new Text({
+        text: ALLY_DEFS[kind].name,
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: Math.round(19 * LAYOUT_SCALE),
-          fill: goldCost === 0 ? 0x166534 : DRAFT_CARD_GOLD_ACCENT,
-          fontWeight: '700',
+          fontSize: Math.round(30 * LAYOUT_SCALE),
+          fill: DRAFT_CARD_GOLD_ACCENT,
+          fontWeight: '800',
         },
       });
-      priceLab.anchor.set(0.5, 0);
-      priceLab.position.set(cardW / 2, Math.round(8 * LAYOUT_SCALE));
-      card.addChild(priceLab);
+      classNameLab.anchor.set(0.5, 0);
+      classNameLab.position.set(cardW / 2, Math.round(8 * LAYOUT_SCALE));
+      card.addChild(classNameLab);
 
       const portraitDiameter = Math.min(cardW * 0.72, Math.round(168 * LAYOUT_SCALE));
       const portrait = createDraftAllyToken(kind, portraitDiameter);
@@ -620,43 +675,51 @@ export class DraftScreen extends Container {
       }
 
       const padX = Math.round(10 * LAYOUT_SCALE);
-      const statFs = Math.round(17 * LAYOUT_SCALE);
+      const priceFs = Math.round(19 * LAYOUT_SCALE);
       const traitFs = Math.round(15 * LAYOUT_SCALE);
       const wrapCard = Math.max(40, cardW - padX * 2);
-      const bonded = recruitCardBondedStats(this.run.board, kind);
-      const statLine = new Text({
-        text: `生命${bonded.hp} 攻击${bonded.atk}`,
+      const isFreeRecruit = goldCost === 0;
+      const priceLine = new Text({
+        text: isFreeRecruit ? '免费' : `${goldCost} 金`,
         style: {
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: statFs,
+          fontSize: priceFs,
+          fill: draftRecruitPriceFill(goldCost),
+          align: 'center',
+          lineHeight: Math.round(24 * LAYOUT_SCALE),
+          fontWeight: '700',
+          wordWrap: true,
+          wordWrapWidth: wrapCard,
+          breakWords: true,
+          ...(isFreeRecruit
+            ? {
+                stroke: {
+                  color: DRAFT_RECRUIT_FREE_STROKE,
+                  width: Math.max(2, Math.round(2.5 * LAYOUT_SCALE)),
+                },
+              }
+            : {}),
+        },
+      });
+      priceLine.anchor.set(0.5, 0);
+      const traitLine = new Text({
+        text: allyRecruitTraitText(kind),
+        style: {
+          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontSize: traitFs,
           fill: PARCHMENT_BTN_TEXT,
           align: 'center',
-          lineHeight: Math.round(22 * LAYOUT_SCALE),
+          lineHeight: Math.round(20 * LAYOUT_SCALE),
           fontWeight: '600',
           wordWrap: true,
           wordWrapWidth: wrapCard,
           breakWords: true,
         },
       });
-      statLine.anchor.set(0.5, 0);
-      const traitLine = new Text({
-        text: allyRecruitTraitText(kind),
-        style: {
-          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-          fontSize: traitFs,
-          fill: DRAFT_CARD_GOLD_ACCENT,
-          align: 'center',
-          lineHeight: Math.round(20 * LAYOUT_SCALE),
-          fontWeight: '700',
-          wordWrap: true,
-          wordWrapWidth: wrapCard,
-          breakWords: true,
-        },
-      });
       traitLine.anchor.set(0.5, 0);
-      traitLine.position.set(0, statLine.height + Math.round(6 * LAYOUT_SCALE));
+      traitLine.position.set(0, priceLine.height + Math.round(6 * LAYOUT_SCALE));
       const textBlock = new Container();
-      textBlock.addChild(statLine);
+      textBlock.addChild(priceLine);
       textBlock.addChild(traitLine);
       const blockH = traitLine.y + traitLine.height;
       textBlock.pivot.set(0, blockH);
@@ -677,11 +740,16 @@ export class DraftScreen extends Container {
       spawnFloatingGameTip(this, `金币不足，需要 ${cost} 金才能选这张牌。`);
       return;
     }
+    const stacksBefore = allBondStacks(this.run.board);
     const slot = applyPick(this.run.board, this.run.artifactBySlot, kind);
     if (slot === null) {
       this.tip.text = '备战区已满且没有该兵种空位，无法上场新兵种。';
       this.positionTipAboveRow1(this.controlRowYs().row1Y);
       return;
+    }
+    const stacksAfter = allBondStacks(this.run.board);
+    for (const tier of bondTiersNewlyAchieved(stacksBefore[kind], stacksAfter[kind])) {
+      this.bondAchievedBanner?.enqueue(kind, tier);
     }
     const { cardW, cardH, originX } = this.cardMetrics();
     const fromX = originX + index * (cardW + CARD_GAP) + cardW / 2;
@@ -692,6 +760,10 @@ export class DraftScreen extends Container {
     this.playPickToBoardParticles(fromX, fromY, toX, toY);
     if (cost > 0) this.run.gold -= cost;
     this.picksThisRound += 1;
+    if (this.arenaCfg) {
+      this.arenaCfg.setPicksThisRound(this.picksThisRound);
+      this.arenaCfg.onPersistDraft(this.run);
+    }
     this.rollChoices();
     this.refreshHud();
     this.drawTrio();
@@ -1110,7 +1182,7 @@ export class DraftScreen extends Container {
       if ((c as { userData?: string }).userData === 'ctrl') c.destroy();
     }
     const { row1Y, row2Y, btnH } = this.controlRowYs();
-    type BtnKind = 'refresh' | 'finish';
+    type BtnKind = 'refresh' | 'finish' | 'back' | 'save';
     const mkBtn = (
       label: string,
       x: number,
@@ -1122,7 +1194,15 @@ export class DraftScreen extends Container {
       onDisabledTap?: () => void,
     ): void => {
       const styleKey =
-        kind === 'refresh' ? (enabled ? 'draftRefresh' : 'draftRefreshDisabled') : 'danger';
+        kind === 'refresh'
+          ? enabled
+            ? 'draftRefresh'
+            : 'draftRefreshDisabled'
+          : kind === 'back'
+            ? 'classic'
+            : kind === 'save'
+              ? 'cta'
+              : 'danger';
       const btn = createStyledGameButton(styleKey, {
         text: label,
         width: w,
@@ -1152,6 +1232,7 @@ export class DraftScreen extends Container {
       () => {
         if (this.run.gold < refreshCost) return;
         this.run.gold -= refreshCost;
+        if (this.arenaCfg) this.arenaCfg.onPersistDraft(this.run);
         this.rollChoices();
         this.refreshHud();
         this.drawTrio();
@@ -1164,9 +1245,34 @@ export class DraftScreen extends Container {
           },
     );
 
-    mkBtn('开始战斗', PAD_X, row2Y, btnW, true, 'finish', () => this.tryFinish());
+    if (this.arenaCfg) {
+      const halfW = (btnW - Math.round(12 * LAYOUT_SCALE)) / 2;
+      mkBtn('返回', PAD_X, row2Y, halfW, true, 'back', () => this.arenaCfg!.onBack());
+      mkBtn(
+        '保存并锁定',
+        PAD_X + halfW + Math.round(12 * LAYOUT_SCALE),
+        row2Y,
+        halfW,
+        true,
+        'save',
+        () => this.tryArenaSaveLock(),
+      );
+    } else {
+      mkBtn('开始战斗', PAD_X, row2Y, btnW, true, 'finish', () => this.tryFinish());
+    }
 
     this.positionTipAboveRow1(row1Y);
+  }
+
+  private tryArenaSaveLock(): void {
+    this.tip.text = '';
+    if (!boardHasAnyUnit(this.run.board)) {
+      this.tip.text = '请至少布置一个兵种后再保存阵容。';
+      this.positionTipAboveRow1(this.controlRowYs().row1Y);
+      return;
+    }
+    this.removeDocPointerEndListeners();
+    this.arenaCfg!.onSaveLock(this.run);
   }
 
   private tryFinish(): void {

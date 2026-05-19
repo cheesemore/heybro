@@ -3,7 +3,7 @@
     "hitRadius": 36,
     "name": "战士",
     "maxHp": 520,
-    "atk": 15,
+    "atk": 36,
     "attackSpeed": 0.55,
     "range": 10,
     "moveSpeed": 560
@@ -12,7 +12,7 @@
     "hitRadius": 36,
     "name": "法师",
     "maxHp": 196,
-    "atk": 38,
+    "atk": 76,
     "attackSpeed": 0.9,
     "range": 330,
     "moveSpeed": 480
@@ -21,7 +21,7 @@
     "hitRadius": 36,
     "name": "牧师",
     "maxHp": 360,
-    "atk": 22,
+    "atk": 44,
     "attackSpeed": 1,
     "range": 260,
     "moveSpeed": 500
@@ -30,7 +30,7 @@
     "hitRadius": 36,
     "name": "射手",
     "maxHp": 224,
-    "atk": 30,
+    "atk": 60,
     "attackSpeed": 0.75,
     "range": 390,
     "moveSpeed": 520
@@ -39,7 +39,7 @@
     "hitRadius": 36,
     "name": "骑士",
     "maxHp": 640,
-    "atk": 21,
+    "atk": 50,
     "attackSpeed": 0.7,
     "range": 10,
     "moveSpeed": 510
@@ -48,7 +48,7 @@
     "hitRadius": 36,
     "name": "术士",
     "maxHp": 396,
-    "atk": 18,
+    "atk": 61,
     "attackSpeed": 0.9,
     "range": 330,
     "moveSpeed": 480
@@ -57,7 +57,7 @@
     "hitRadius": 36,
     "name": "萨满",
     "maxHp": 350,
-    "atk": 25,
+    "atk": 50,
     "attackSpeed": 0.8,
     "range": 260,
     "moveSpeed": 500
@@ -66,7 +66,7 @@
     "hitRadius": 36,
     "name": "刺客",
     "maxHp": 424,
-    "atk": 15,
+    "atk": 41,
     "attackSpeed": 0.5,
     "range": 10,
     "moveSpeed": 520
@@ -75,8 +75,8 @@
     "hitRadius": 36,
     "name": "德鲁伊",
     "maxHp": 490,
-    "atk": 30,
-    "attackSpeed": 0.65,
+    "atk": 45,
+    "attackSpeed": 0.8,
     "range": 10,
     "moveSpeed": 560
   }

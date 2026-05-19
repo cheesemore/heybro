@@ -188,7 +188,7 @@ export type AllyDebuffPurgeTarget = {
   poisonStrikeTickAcc?: number;
   rfc3CorrosionRemainSec?: number;
   rfc3CorrosionDps?: number;
-  rfc3CorrosionFrac?: number;
+  rfc3CorrosionTickAcc?: number;
 };
 
 /** 驱散时可写的敌方单位状态切片 */
@@ -279,7 +279,7 @@ export function purgeAllyDebuffsGreen(u: AllyDebuffPurgeTarget): PurgeAllyGreenR
   if ((u.rfc3CorrosionRemainSec ?? 0) > 0) {
     u.rfc3CorrosionRemainSec = undefined;
     u.rfc3CorrosionDps = undefined;
-    u.rfc3CorrosionFrac = undefined;
+    u.rfc3CorrosionTickAcc = undefined;
     cleared.push('rfc3_corrosion');
   }
 

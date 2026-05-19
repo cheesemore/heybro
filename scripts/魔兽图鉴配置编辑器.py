@@ -128,14 +128,14 @@ def format_skill_id_list_json(skills: Any) -> str:
 
 # 与 docs/unit-stat-design-baseline.md 第一节、第二节及 src/game/battleBonds.ts 对齐
 RANGED_ATTACK_RANGE_THRESHOLD = 100
-MELEE_BASELINE_HP_ATK_INTERVAL = (270, 11, 0.62)
-RANGED_BASELINE_HP_ATK_INTERVAL = (268, 14, 0.78)
+MELEE_BASELINE_HP_ATK_INTERVAL = (270, 26, 0.62)
+RANGED_BASELINE_HP_ATK_INTERVAL = (268, 28, 0.78)
 
 # 与 src/game/wowBookData.ts WOW_BOOK_BOSS_TABLE_DEFAULT、scripts/generate-wow-book-tables.mjs DEFAULT_BOOK_BOSS_COMBAT 一致
 BOOK_BOSS_TABLE_DEFAULT_COMBAT: Dict[str, Any] = {
     "hitRadius": 80,
     "baseMaxHp": 22740,
-    "baseAtk": 46,
+    "baseAtk": 92,
     "attackSpeed": 0.65,
     "moveSpeed": 540,
 }
@@ -1315,7 +1315,7 @@ class WowBookConfigEditorApp(tk.Tk):
             ("creatureType", "creatureType", False),
             ("hitRadius（碰撞/代币半径）", "hitRadius", False),
             ("baseMaxHp（表底生命，直接进场）", "baseMaxHp", False),
-            ("baseAtk（表底攻击，战场再乘 GLOBAL）", "baseAtk", False),
+            ("baseAtk（表底攻击，战场直接使用）", "baseAtk", False),
             ("attackSpeed（秒/次）", "attackSpeed", False),
             ("range（设计射程 px）", "range", False),
             ("moveSpeed", "moveSpeed", False),

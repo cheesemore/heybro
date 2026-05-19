@@ -1,3 +1,4 @@
+import { notifyAllyClassUnlocksAfterChapterProgress } from './allyClassUnlockCelebration';
 import { BOOK_CHAPTER_COUNT } from './bookChapterConfig';
 import { roundsForBookChapter } from './roundConfig';
 import { getWowBookDungeonById } from './wowBookRegistry';
@@ -300,6 +301,7 @@ export function cheatChapterFullClearWithStar(chapterId: number, star: 1 | 2 | 3
     bestStarByChapter: { ...cur.bestStarByChapter, [ck]: s },
     clearedChapterIds,
   });
+  notifyAllyClassUnlocksAfterChapterProgress();
   return earned;
 }
 
@@ -310,4 +312,5 @@ export function markChapterFullyCleared(chapterId: number): void {
   if (cur.clearedChapterIds.includes(id)) return;
   const clearedChapterIds = [...cur.clearedChapterIds, id].sort((a, b) => a - b);
   saveChapterProgress({ ...cur, clearedChapterIds });
+  notifyAllyClassUnlocksAfterChapterProgress();
 }

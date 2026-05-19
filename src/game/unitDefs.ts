@@ -4,8 +4,7 @@
  * 敌方小怪与 `grunt` 对齐的配表口径见 `constants.ts` 中 `ENEMY_CLASSES` 注释：
  * `baseMaxHp × baseAtk ÷ attackInterval`（`attackInterval` ← `wowBookMonsters.json` 的 `attackSpeed`，单位秒/次）。
  */
-import { ALLY_CLASSES, ENEMY_CLASSES, GLOBAL_UNIT_ATK_MULT } from './constants';
-import { RANGED_ATTACK_RANGE_THRESHOLD } from './battleBonds';
+import { ALLY_CLASSES, ENEMY_CLASSES } from './constants';
 import alliesJson from './config/allies.json';
 import wowBookMonstersDoc from './config/wowBookMonsters.json';
 import scalingJson from './config/scaling.json';
@@ -124,45 +123,12 @@ for (const k of ENEMY_CLASSES) {
   }
 }
 
-{
-  const m = GLOBAL_UNIT_ATK_MULT;
-  for (const k of ALLY_CLASSES) {
-    const d = ALLY_DEFS[k];
-    d.atk = Math.max(1, Math.round(d.atk * m));
-  }
-  for (const k of ENEMY_CLASSES) {
-    const d = ENEMY_DEFS[k];
-    d.baseAtk = Math.max(1, Math.round(d.baseAtk * m));
-  }
-}
-
-/** 敌我近战（射程 < 远程阈值）非首领：在表值与全局倍率之后再 ×1.2 基础攻击 */
-const MELEE_BASE_ATK_BONUS = 1.2;
-{
-  for (const k of ALLY_CLASSES) {
-    const d = ALLY_DEFS[k];
-    if (d.range < RANGED_ATTACK_RANGE_THRESHOLD) {
-      d.atk = Math.max(1, Math.round(d.atk * MELEE_BASE_ATK_BONUS));
-    }
-  }
-  for (const k of ENEMY_CLASSES) {
-    const d = ENEMY_DEFS[k];
-    if (d.range < RANGED_ATTACK_RANGE_THRESHOLD) {
-      d.baseAtk = Math.max(1, Math.round(d.baseAtk * MELEE_BASE_ATK_BONUS));
-    }
-  }
-}
-
 /**
- * 将「表底攻击力」转为与 `ENEMY_DEFS` 一致的战场基准：先乘 `GLOBAL_UNIT_ATK_MULT`，近战再乘 `MELEE_BASE_ATK_BONUS`。
- * 用于 `wowBookMonsters` 等未在加载阶段写入 `ENEMY_DEFS` 的怪。
+ * 书本小怪 `baseAtk` 与 `ENEMY_DEFS` 一致，均为战场直接使用的表底攻击（已含近战/远程差异，无运行时全局倍率）。
+ * `range` 参数保留供调用方表达远程/近战语境，当前不参与换算。
  */
-export function enemyCombatBaseAtkFromTable(baseAtkRaw: number, range: number): number {
-  let a = Math.max(1, Math.round(baseAtkRaw * GLOBAL_UNIT_ATK_MULT));
-  if (range < RANGED_ATTACK_RANGE_THRESHOLD) {
-    a = Math.max(1, Math.round(a * MELEE_BASE_ATK_BONUS));
-  }
-  return a;
+export function enemyCombatBaseAtkFromTable(baseAtkRaw: number, _range?: number): number {
+  return Math.max(1, Math.round(baseAtkRaw));
 }
 
 type ChapterMult = { hp: number; atk: number };

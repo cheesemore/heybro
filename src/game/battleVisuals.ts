@@ -502,6 +502,53 @@ export function tickHolySanctionStrikes(list: HolySanctionStrikeFx[], dt: number
   }
 }
 
+/** 德鲁伊十五羁绊战斗复活：大型绿色光柱 */
+export type DruidBattleRevivePillarFx = { g: Graphics; t: number; max: number };
+
+export function spawnDruidBattleRevivePillar(
+  layer: Container,
+  x: number,
+  centerY: number,
+  hitRadiusPx: number,
+): DruidBattleRevivePillarFx {
+  const g = new Graphics();
+  const scale = Math.max(1, Math.min(3.2, hitRadiusPx / Math.max(1, 34 * LAYOUT_SCALE)));
+  const beamW = Math.round((32 + 36 * scale) * LAYOUT_SCALE);
+  const beamH = Math.round((520 + 280 * scale) * LAYOUT_SCALE);
+  const rx = hitRadiusPx * (1.25 + 0.62 * scale);
+  const ry = hitRadiusPx * 0.52;
+  g.position.set(x, centerY);
+  g.roundRect(-beamW * 0.5, -beamH, beamW, beamH, Math.round(12 * LAYOUT_SCALE)).fill({
+    color: 0x16a34a,
+    alpha: 0.38,
+  });
+  g.roundRect(-beamW * 0.34, -beamH * 0.94, beamW * 0.68, beamH * 0.94, Math.round(8 * LAYOUT_SCALE)).fill({
+    color: 0x4ade80,
+    alpha: 0.5,
+  });
+  g.ellipse(0, 0, rx, ry)
+    .fill({ color: 0x22c55e, alpha: 0.78 })
+    .stroke({ width: Math.max(2, 3.2 * LAYOUT_SCALE), color: 0xbbf7d0, alpha: 0.62 });
+  g.ellipse(0, 0, rx * 0.42, ry * 0.4).fill({ color: 0xffffff, alpha: 0.42 });
+  layer.addChild(g);
+  return { g, t: 0, max: 0.58 };
+}
+
+export function tickDruidBattleRevivePillars(list: DruidBattleRevivePillarFx[], dt: number): void {
+  for (let i = list.length - 1; i >= 0; i--) {
+    const s = list[i]!;
+    s.t += dt;
+    const k = Math.min(1, s.t / s.max);
+    s.g.alpha = Math.max(0, 1 - k * k * 0.92);
+    const sc = 1 + k * 0.12;
+    s.g.scale.set(sc, sc);
+    if (s.t >= s.max) {
+      s.g.destroy();
+      list.splice(i, 1);
+    }
+  }
+}
+
 export type MeteorAnim = {
   streak: Graphics;
   boom: Graphics;
@@ -1051,7 +1098,7 @@ export function attachAllyBondBloodlustGlow(body: Container, innerRadiusPx: numb
   const outline = Math.max(1.5, ir * 0.06);
   const rFill = Math.max(2, ir - outline);
   const side = rFill * 0.48;
-  const glowR = Math.max(5, rFill * 0.22);
+  const glowR = Math.max(5, rFill * 0.22 * 1.5);
   for (const sign of [-1, 1] as const) {
     const g = new Graphics();
     g.eventMode = 'none';

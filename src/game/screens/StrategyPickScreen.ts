@@ -8,8 +8,15 @@ import { mountStretchedDungeonBackground } from '../dungeonBackground';
 import { dungeonIdForBookChapter } from '../wowBookData';
 import { isBotModeActive } from '../bot/context';
 import { botRegisterScreen, botUnregisterScreen } from '../bot/registry';
+import {
+  PARCHMENT_BTN_TEXT,
+  PARCHMENT_BTN_TEXT_DIM,
+  drawParchmentCardTopBottomRules,
+} from '../ui/parchmentButtonFill';
 
 const PAD_X = Math.round(20 * LAYOUT_SCALE);
+const STRATEGY_CARD_TITLE_ACCENT = 0xa16207;
+const STRATEGY_UI_FONT = 'system-ui, Segoe UI, Roboto, "Microsoft YaHei", sans-serif';
 
 export class StrategyPickScreen extends Container {
   private readonly run: RunState;
@@ -31,9 +38,9 @@ export class StrategyPickScreen extends Container {
     const header = new Text({
       text: `${label} · 策略抉择（三选一）`,
       style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontFamily: STRATEGY_UI_FONT,
         fontSize: Math.round(36 * LAYOUT_SCALE),
-        fill: 0xf8fafc,
+        fill: PARCHMENT_BTN_TEXT,
         fontWeight: '700',
         wordWrap: true,
         wordWrapWidth: GAME_WIDTH - PAD_X * 2,
@@ -45,9 +52,9 @@ export class StrategyPickScreen extends Container {
     const sub = new Text({
       text: '以下 3 个策略随机抽取，请选择其一',
       style: {
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+        fontFamily: STRATEGY_UI_FONT,
         fontSize: Math.round(22 * LAYOUT_SCALE),
-        fill: 0x94a3b8,
+        fill: PARCHMENT_BTN_TEXT_DIM,
       },
     });
     sub.position.set(PAD_X, Math.round(92 * LAYOUT_SCALE));
@@ -66,18 +73,19 @@ export class StrategyPickScreen extends Container {
       wrap.cursor = 'pointer';
       wrap.hitArea = new Rectangle(0, 0, cardW, cardH);
 
-      const bg = new Graphics();
-      bg.roundRect(0, 0, cardW, cardH, Math.round(18 * LAYOUT_SCALE))
-        .fill(0x111827)
-        .stroke({ width: Math.max(2, Math.round(2 * LAYOUT_SCALE)), color: 0x4f46e5, alpha: 0.85 });
-      wrap.addChild(bg);
+      const cardR = Math.round(18 * LAYOUT_SCALE);
+      const plate = new Graphics();
+      const rules = new Graphics();
+      drawParchmentCardTopBottomRules(plate, rules, cardW, cardH, cardR, LAYOUT_SCALE, false);
+      wrap.addChild(plate);
+      wrap.addChild(rules);
 
       const t1 = new Text({
         text: opt.title,
         style: {
-          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontFamily: STRATEGY_UI_FONT,
           fontSize: Math.round(30 * LAYOUT_SCALE),
-          fill: 0xe0e7ff,
+          fill: STRATEGY_CARD_TITLE_ACCENT,
           fontWeight: '700',
         },
       });
@@ -87,9 +95,9 @@ export class StrategyPickScreen extends Container {
       const t2 = new Text({
         text: opt.desc,
         style: {
-          fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
+          fontFamily: STRATEGY_UI_FONT,
           fontSize: Math.round(22 * LAYOUT_SCALE),
-          fill: 0xcbd5e1,
+          fill: PARCHMENT_BTN_TEXT,
           lineHeight: Math.round(30 * LAYOUT_SCALE),
           wordWrap: true,
           wordWrapWidth: cardW - Math.round(40 * LAYOUT_SCALE),

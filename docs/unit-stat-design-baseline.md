@@ -16,13 +16,13 @@
 |------|------|------|
 | 碰撞半径（设计像素） | 44 | 战场代币 / 碰撞用 |
 | 生命 | 270 | |
-| 攻击 | 11 | 单次普攻 |
+| 攻击 | 26 | 单次普攻（表底=战场值；近战基准） |
 | 攻击间隔（秒/次） | 0.62 | 数值越小出手越快；与战场 `attackInterval` 同义 |
 | 射程 | 10 | 低于 `RANGED_ATTACK_RANGE_THRESHOLD`（100）视为近战 |
 | 移速 | 505 | |
 
 **基础篇乘积**：`生命 × 攻击 ÷ 攻击间隔`  
-本快照：`270 × 11 ÷ 0.62 ≈ 4785`（取整仅作对比用）。
+本快照：`270 × 26 ÷ 0.62 ≈ 11323`（取整仅作对比用）。
 
 ---
 
@@ -34,12 +34,12 @@
 |------|------|------|
 | 碰撞半径（设计像素） | 44 | |
 | 生命 | 268 | |
-| 攻击 | 14 | 单次普攻 |
+| 攻击 | 28 | 单次普攻（表底=战场值；远程基准） |
 | 攻击间隔（秒/次） | 0.78 | |
 | 射程 | 235 | 高于「远程阈值」100 时按远程规则讨论 trade-off |
 | 移速 | 488 | |
 
-**基础篇乘积**：`268 × 14 ÷ 0.78 ≈ 4805`（取整仅作对比用）。
+**基础篇乘积**：`268 × 28 ÷ 0.78 ≈ 9621`（取整仅作对比用）。
 
 ---
 
@@ -112,9 +112,9 @@
 
 **立绘文件**：用书怪可选 PNG 路径为 `public/assets/wow-mobs/<与 monsters[].id 完全相同>.png`；详见 `public/assets/wow-mobs/README.txt`。未放置时仍用 `public/assets/enemies/<enemyPaint>.png` 模板图。
 
-**改数值的约定**：小怪只改 **`wowBookMonsters.json`**；不要在业务代码里用 `*1.2` 代替改表。
+**改数值的约定**：小怪只改 **`wowBookMonsters.json`**；`baseAtk` 即战场攻击，**不要**在业务代码里再乘全局攻或近战攻倍率。
 
-**关底首领数值**：以 **`wowBookBosses.json` 对应当前章节 `chapterIndex` 那一行** 为表底；缺字段时用 **`WOW_BOOK_BOSS_TABLE_DEFAULT`**（`wowBookData.ts`，与生成脚本 `DEFAULT_BOOK_BOSS_COMBAT` 一致）。进场生命以 `baseMaxHp` 表底直接走 `scaledEnemyHp`（表内已含原×10 池化）；攻击表底 `baseAtk` 经 `GLOBAL_UNIT_ATK_MULT` 后与首领战缩放一致（**不分近战远程**，不加近战额外攻倍率）。`skillIds` 为空则白板仅普攻。
+**关底首领数值**：以 **`wowBookBosses.json` 对应当前章节 `chapterIndex` 那一行** 为表底；缺字段时用 **`WOW_BOOK_BOSS_TABLE_DEFAULT`**（`wowBookData.ts`，与生成脚本 `DEFAULT_BOOK_BOSS_COMBAT` 一致）。进场生命以 `baseMaxHp` 表底直接走 `scaledEnemyHp`（表内已含原×10 池化）；攻击表底 `baseAtk` **直接**作为首领战缩放基准（无运行时攻击倍率）。`skillIds` 为空则白板仅普攻。
 
 重新生成（会覆盖上述 JSON）：`npm run gen:wow-book`
 

@@ -56,17 +56,66 @@ export function distinctAllyClassesOnBoard(board: BoardCell[]): Set<AllyClass> {
   return s;
 }
 
+/** 策略/奖励关发兵、三选一：达 5 兵种上限后仅含已在场职业；否则含可新入场的已解锁职业 */
+export function allyClassesEligibleForGrant(
+  board: BoardCell[],
+  artifactBySlot: readonly (ArtifactKind | null)[],
+): AllyClass[] {
+  const onBoard = distinctAllyClassesOnBoard(board);
+  const atClassCap = onBoard.size >= MAX_DISTINCT_ALLY_CLASSES_ON_BOARD;
+  return getUnlockedAllyClasses().filter((k) => {
+    if (onBoard.has(k)) return true;
+    if (atClassCap) return false;
+    return canAcceptPick(board, artifactBySlot, k);
+  });
+}
+
+/**
+ * 奖励关等：随机一个可获得的职业（达上限时只从场上已有职业中抽，可叠层）。
+ */
+export function randomAllyClassForGrant(
+  board: BoardCell[],
+  artifactBySlot: readonly (ArtifactKind | null)[],
+): AllyClass | null {
+  const pool = allyClassesEligibleForGrant(board, artifactBySlot);
+  if (!pool.length) return null;
+  return pool[Math.floor(Math.random() * pool.length)]!;
+}
+
+/**
+ * 策略「随机获得若干不同兵种」：一次至多 n 个**不同**职业，且不会让场上职业种类超过 5。
+ */
+export function randomDistinctAllyClassesForGrant(
+  board: BoardCell[],
+  artifactBySlot: readonly (ArtifactKind | null)[],
+  n: number,
+): AllyClass[] {
+  const simulated = distinctAllyClassesOnBoard(board);
+  const picked: AllyClass[] = [];
+  let pool = allyClassesEligibleForGrant(board, artifactBySlot);
+  shuffleInPlace(pool);
+  for (const k of pool) {
+    if (picked.length >= n) break;
+    if (picked.includes(k)) continue;
+    if (!simulated.has(k) && simulated.size >= MAX_DISTINCT_ALLY_CLASSES_ON_BOARD) continue;
+    picked.push(k);
+    simulated.add(k);
+  }
+  return picked;
+}
+
+/** 超级加倍等：从场上已有兵种中随机选一个职业 */
+export function randomAllyClassOnBoard(board: BoardCell[]): AllyClass | null {
+  const kinds = [...distinctAllyClassesOnBoard(board)];
+  if (!kinds.length) return null;
+  return kinds[Math.floor(Math.random() * kinds.length)]!;
+}
+
 function buildDraftChoicePool(
   board: BoardCell[],
   artifactBySlot: readonly (ArtifactKind | null)[],
 ): AllyClass[] {
-  const unlocked = getUnlockedAllyClasses();
-  const onBoard = distinctAllyClassesOnBoard(board);
-  const atClassCap = onBoard.size >= MAX_DISTINCT_ALLY_CLASSES_ON_BOARD;
-  return unlocked.filter((k) => {
-    if (atClassCap && !onBoard.has(k)) return false;
-    return canAcceptPick(board, artifactBySlot, k) || onBoard.has(k);
-  });
+  return allyClassesEligibleForGrant(board, artifactBySlot);
 }
 
 /**
@@ -78,11 +127,8 @@ export function randomThreeDraftChoices(
 ): AllyClass[] {
   let pool = buildDraftChoicePool(board, artifactBySlot);
   if (pool.length < 3) {
-    pool = getUnlockedAllyClasses().filter(
-      (k) => canAcceptPick(board, artifactBySlot, k) || distinctAllyClassesOnBoard(board).has(k),
-    );
+    pool = allyClassesEligibleForGrant(board, artifactBySlot);
   }
-  if (!pool.length) pool = [...getUnlockedAllyClasses()];
   shuffleInPlace(pool);
   return pool.slice(0, Math.min(3, pool.length));
 }

@@ -73,6 +73,15 @@ function botRunnerDevRewrite() {
 
 export default defineConfig(({ command }) => ({
   base: command === 'build' ? './' : '/',
+  server: {
+    proxy: {
+      '/heybro/back': {
+        target: 'https://game.immortalis.cn',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
   plugins:
     command === 'serve'
       ? [

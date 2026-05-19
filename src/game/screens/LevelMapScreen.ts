@@ -410,7 +410,7 @@ export class LevelMapScreen extends Container {
 
     if (meta.kind === 'strategy') {
       pushText(GAME_TERM_ZH.mapNodeStrategyHead(meta.label), headStyle);
-      pushText('该节点将从随机策略中进行三选一，选择后仅在整场对局内生效。', leadStyle);
+      pushText('该节点将从随机策略中进行三选一，选择后仅在本次副本挑战内生效。', leadStyle);
       pushText(strategyChapterPreviewSummary(meta.chapter), bodyStyle);
       this.attachMapInfoPanelScroll(block, inner, innerPad, maskH, y);
       return block;

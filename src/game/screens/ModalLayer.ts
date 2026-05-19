@@ -147,6 +147,92 @@ export class ModalLayer extends Container {
   }
 
   /**
+   * 竞技场匹配中：仅「取消」；可更新文案；关闭时调用 onCancel。
+   */
+  arenaMatching(
+    message: string,
+    onCancel: () => void,
+  ): { close: () => void; setMessage: (text: string) => void } {
+    this.removeChildren();
+    this.visible = true;
+    this.eventMode = 'static';
+
+    const dim = new Graphics();
+    dim.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill({ color: 0x0b1020, alpha: 0.72 });
+    dim.eventMode = 'static';
+    this.addChild(dim);
+
+    const pw = Math.round(560 * LAYOUT_SCALE);
+    const padTop = Math.round(36 * LAYOUT_SCALE);
+    const padBottom = Math.round(32 * LAYOUT_SCALE);
+    const wrapW = Math.round(500 * LAYOUT_SCALE);
+    const fontSize = Math.round(24 * LAYOUT_SCALE);
+    const lineHeight = Math.round(32 * LAYOUT_SCALE);
+
+    const cancelW = Math.round(220 * LAYOUT_SCALE);
+    const cancelH = Math.round(58 * LAYOUT_SCALE);
+    const ph = Math.round(380 * LAYOUT_SCALE);
+    const panelY = (GAME_HEIGHT - ph) / 2;
+
+    const panelPlate = new Graphics();
+    const panelFrame = new Graphics();
+    drawGoldenSolidPanel(panelPlate, panelFrame, pw, ph, LAYOUT_SCALE);
+    panelPlate.position.set((GAME_WIDTH - pw) / 2, panelY);
+    panelFrame.position.set((GAME_WIDTH - pw) / 2, panelY);
+    this.addChild(panelPlate);
+    this.addChild(panelFrame);
+
+    const body = new Text({
+      text: message,
+      style: {
+        fontFamily: 'system-ui, Segoe UI, Roboto, "PingFang SC", "Microsoft YaHei", sans-serif',
+        fontSize,
+        fill: GOLDEN_PANEL_BODY,
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: wrapW,
+        lineHeight,
+      },
+    });
+    body.anchor.set(0.5, 0);
+    body.position.set(GAME_WIDTH / 2, panelY + padTop);
+    this.addChild(body);
+
+    const dismiss = (): void => {
+      this.visible = false;
+      this.eventMode = 'none';
+      this.removeChildren();
+      this.clearBotPrimaryDismiss();
+      onCancel();
+    };
+
+    const cancelBtn = createStyledGameButton('classic', {
+      text: '取消',
+      width: cancelW,
+      height: cancelH,
+      fontSize: Math.round(26 * LAYOUT_SCALE),
+      onTap: dismiss,
+    });
+    cancelBtn.position.set((GAME_WIDTH - cancelW) / 2, panelY + ph - padBottom - cancelH);
+    this.addChild(cancelBtn);
+    this.setBotPrimaryDismiss(dismiss);
+
+    attachScreenDebugLabel(this, 'ModalLayer.arenaMatching');
+    return {
+      close: () => {
+        if (!this.visible) return;
+        this.visible = false;
+        this.eventMode = 'none';
+        this.removeChildren();
+        this.clearBotPrimaryDismiss();
+      },
+      setMessage: (text: string) => {
+        body.text = text;
+      },
+    };
+  }
+
+  /**
    * 危险操作：双按钮「取消 / 确定」；点击遮罩不关闭（须点按钮）。
    */
   confirmDestructive(

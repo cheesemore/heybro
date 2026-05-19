@@ -485,8 +485,8 @@
       "limit": "boss",
       "powerTag": "strong",
       "codeStatus": "written",
-      "descriptionCn": "冷却 20 秒（开场 5 秒后可施放）。获得最大生命值 10% 的护盾后原地引导，脚下显示红色爆炸范围警示；护盾存在时免疫控制。引导结束引发范围爆炸（攻击力 250%），命中我方眩晕 8 秒；护盾被击破则晕眩 3 秒并中断。",
-      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=引导秒，[3]=爆炸伤害系数%，[4]=爆炸半径设计像素。成功爆炸命中我方眩晕 8 秒写死在 BattleScreen（OVERLOAD_EXPLOSION_HIT_STUN_SEC）；护盾击破晕眩 3 秒同理。发动时获得最大生命10%护盾；引导期范围警示圈；护盾>0免疫硬控；护盾归零中断。",
+      "descriptionCn": "冷却 20 秒（开场 5 秒后可施放）。获得最大生命值 15% 的护盾后原地引导，脚下显示红色爆炸范围警示；护盾存在时免疫控制。引导结束引发范围爆炸（攻击力 250%），命中我方眩晕 8 秒；护盾被击破则晕眩 5 秒并中断。",
+      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=引导秒，[3]=爆炸伤害系数%，[4]=爆炸半径设计像素。成功爆炸命中我方眩晕 8 秒写死在 BattleScreen（OVERLOAD_EXPLOSION_HIT_STUN_SEC）；护盾击破晕眩 5 秒同理。发动时获得最大生命15%护盾；引导期范围警示圈；护盾>0免疫硬控；护盾归零中断。",
       "params": [
         20,
         5,
@@ -520,11 +520,11 @@
       "limit": "any",
       "powerTag": "medium",
       "codeStatus": "written",
-      "descriptionCn": "被动：生命值首次低于 15% 时，获得最大生命值 10% 的护盾，并立即可再次使用所有主动技能（每场战斗仅触发 1 次）。",
+      "descriptionCn": "被动：生命值首次低于 15% 时，获得最大生命值 15% 的护盾，并立即可再次使用所有主动技能（每场战斗仅触发 1 次）。",
       "logicEffectCn": "params[0]=生命比例阈值%，[1]=护盾为最大生命%。单场一次；刷新本单位已配置主动技能的冷却。",
       "params": [
         15,
-        10
+        15
       ],
       "launchSfx": "",
       "hitSfx": ""
@@ -585,8 +585,8 @@
       "limit": "boss",
       "powerTag": "strong",
       "codeStatus": "written",
-      "descriptionCn": "冷却 6 秒（开场 3 秒后可施放）。锁定当前血量最低我方：1.5 秒内不透明度降至 0 并维持 0.5 秒（期间无敌、原位不移动），随后瞬移至其背后发动伏击，造成 350% 攻击力伤害；远程目标必定暴击。命中时推开周围其他我方并结束无敌。",
-      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=伤害系数%。表外：淡出 1.5s→alpha0 维持 0.5s→伏击瞬移背后 100 设计像素；350% 攻；远程必暴；150 设计像素推开其他友方。",
+      "descriptionCn": "冷却 6 秒（开场 3 秒后可放）。对血量最低我方伏击，造成 350% 攻击伤害（远程必暴）。若击杀，立即对下一名我方再伏击，单次最多连续 3 次。",
+      "logicEffectCn": "params[0]=冷却，[1]=初冷却，[2]=伤害系数%。击杀连锁瞬移伏击，单次最多 3 次（表外 VANISH_AMBUSH_MAX_CHAIN）；其余表现时长/推开距离见 BattleScreen。",
       "params": [
         6,
         3,
@@ -797,7 +797,7 @@
       "limit": "boss",
       "codeStatus": "written",
       "descriptionCn": "仅装配于怒焰裂谷第三关首领：对一名尚未被腐蚀的我方施加腐蚀，每秒受到相当于首领攻击力 50% 的魔法伤害，持续 24 秒；目标身上呈绿色中毒色调。",
-      "logicEffectCn": "BattleScreen.tickRfc3Ch3BossExclusiveSkills：params[0]=冷却秒（默认 3），params[1]=开场初始冷却秒（默认 0 即开场可放），params[2]=每秒伤害为施放时首领 atk×该值/100（默认 50），params[3]=持续秒数（默认 24）。tickAllyRfc3CorrosionDot 结算 DoT；随机挑选无 rfc3CorrosionRemainSec 的存活我方。眩晕中不施放腐蚀术但 DoT 仍跳。",
+      "logicEffectCn": "BattleScreen.tickRfc3Ch3BossExclusiveSkills：params[0]=冷却秒（默认 3），params[1]=开场初始冷却秒（默认 0 即开场可放），params[2]=每秒伤害为施放时首领 atk×该值/100（默认 50），params[3]=持续秒数（默认 24）。tickAllyRfc3CorrosionDot 每秒跳伤一次（rfc3CorrosionTickAcc）；随机挑选无 rfc3CorrosionRemainSec 的存活我方。眩晕中不施放腐蚀术但 DoT 仍跳。",
       "params": [
         3,
         0,
@@ -848,12 +848,12 @@
       "limit": "minion",
       "powerTag": "weak",
       "codeStatus": "written",
-      "descriptionCn": "生命值低于40%时，会边撤离战场边给自己打绷带，每秒恢复6%最大血量，持续10秒。每个迪菲亚成员只有一根绷带！",
+      "descriptionCn": "生命值低于40%时，会边撤离战场边给自己打绷带，每秒恢复10%最大血量，持续6秒。每个迪菲亚成员只有一根绷带！",
       "logicEffectCn": "生命值低于params[0]%时进行引导技能，每秒恢复params[1]%生命值，引导params[2]秒。引导期间单位会不自主的向最近的战场边缘移动，引导期间无法攻击。如果已经到达战场边缘就会停下来。引导被打断则技能解除。这个技能只会发动一次。",
       "params": [
         40,
-        6,
-        10
+        10,
+        6
       ]
     },
     {

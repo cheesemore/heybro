@@ -93,6 +93,22 @@ export function allAllyClassesOrdered(): readonly AllyClass[] {
   return ALLY_CLASSES;
 }
 
+/** 层数从 prev 增至 next 时新达成的羁绊档位（按 3→6→10→15→21 顺序） */
+export function bondTiersNewlyAchieved(prevStacks: number, nextStacks: number): BondTierThreshold[] {
+  const out: BondTierThreshold[] = [];
+  for (const t of BOND_TIER_THRESHOLDS) {
+    if (nextStacks >= t && prevStacks < t) out.push(t);
+  }
+  return out;
+}
+
+/** 战斗内羁绊达成横幅右侧文案 */
+export function bondAchievedBannerLine(kind: AllyClass, tier: BondTierThreshold): string {
+  const raw = bondTierFullDesc(kind, tier);
+  const body = raw.replace(/^【[^】]+】\s*/, '').trim();
+  return `羁绊${tier}：${body}`;
+}
+
 /** 羁绊列表：当前棋盘层数多的职业靠前（同层数保持 `ALLY_CLASSES` 顺序） */
 export function allyClassesOrderedByBondStacks(board: readonly BoardSlot[]): AllyClass[] {
   const stacks = allBondStacks(board);

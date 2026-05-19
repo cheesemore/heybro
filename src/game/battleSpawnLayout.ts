@@ -128,3 +128,43 @@ export function enemyMinionSpawnXY(
 export function heroDeployBattleSlot(deploySlotIndex: number): number {
   return 6 + Math.min(2, Math.max(0, deploySlotIndex));
 }
+
+/** 备战九宫格关于中场水平轴镜像：row0↔row2，列不变（slot 0↔6, 1↔7, 2↔8） */
+export function mirrorBoardSlot(slot: number): number {
+  const col = slot % 3;
+  const row = Math.floor(slot / 3);
+  return (2 - row) * 3 + col;
+}
+
+/**
+ * 防守方九宫格左上角：落在敌占区（y < 中线），几何中心与半场中心对齐。
+ */
+export function defenderBattleGridOrigin(): { originX: number; originY: number } {
+  const { gridW, gridH } = boardGridSpan();
+  const m = battleArenaMetrics();
+  const originX = (GAME_WIDTH - gridW) / 2;
+  const defenderTop = m.playfieldTop;
+  const defenderBottom = m.midY - m.halfGap;
+  const defenderCenterY = (defenderTop + defenderBottom) * 0.5;
+  let originY = defenderCenterY - gridH * 0.5;
+  originY = Math.max(defenderTop, Math.min(defenderBottom - gridH, originY));
+  return { originX, originY };
+}
+
+/**
+ * 防守方单位落点：`sourceSlot` 为阵容表索引，战场位置按 `mirrorBoardSlot` 翻转后排布。
+ */
+export function defenderBattleSlotCenter(sourceSlot: number): { x: number; y: number } {
+  const spawnSlot = mirrorBoardSlot(sourceSlot);
+  const col = spawnSlot % 3;
+  const row = Math.floor(spawnSlot / 3);
+  const { originX, originY } = defenderBattleGridOrigin();
+  const x = originX + col * (BOARD_GRID_CELL + BOARD_GRID_GAP) + BOARD_GRID_CELL / 2;
+  const y = originY + row * (BOARD_GRID_CELL + BOARD_GRID_GAP) + BOARD_GRID_CELL / 2;
+  return clampBattleSpawnXY(x, y);
+}
+
+/** 防守方英雄栏 → 镜像后的前排格心 */
+export function defenderHeroDeployBattleSlot(deploySlotIndex: number): number {
+  return mirrorBoardSlot(heroDeployBattleSlot(deploySlotIndex));
+}

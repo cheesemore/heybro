@@ -1,14 +1,18 @@
-import { getUnlockedAllyClasses, rogueRefreshTrioBaseCost } from './allyClassUnlock';
-import { distinctAllyClassesOnBoard } from './draftLogic';
+import { isAllyClassUnlocked, rogueRefreshTrioBaseCost } from './allyClassUnlock';
+import {
+  applyPick,
+  randomAllyClassForGrant,
+  randomAllyClassOnBoard,
+  randomDistinctAllyClassesForGrant,
+} from './draftLogic';
 import { BOARD_CELL_MAX_STACKS, ROGUE_PICK_AFTER_FIRST_COST } from './constants';
 import { stacksOnBoard } from './battleBonds';
-import { applyPick } from './draftLogic';
 import type { RunState } from './runState';
 import { ALLY_DEFS } from './unitDefs';
 import type { AllyClass } from './types';
 import type { ArtifactKind, StrategyC1Id, StrategyC2Id, StrategyC3Id } from './strategyTypes';
 
-export const STRATEGY_POOL_C1: StrategyC1Id[] = [
+const STRATEGY_POOL_C1_BASE: StrategyC1Id[] = [
   'c1_warrior_first',
   'c1_mage_first',
   'c1_priest_first',
@@ -19,6 +23,25 @@ export const STRATEGY_POOL_C1: StrategyC1Id[] = [
   'c1_head_start',
   'c1_lie_flat',
 ];
+
+const STRATEGY_C1_EXTENDED_FIRST: readonly { id: StrategyC1Id; cls: AllyClass }[] = [
+  { id: 'c1_shaman_first', cls: 'shaman' },
+  { id: 'c1_druid_first', cls: 'druid' },
+  { id: 'c1_warlock_first', cls: 'warlock' },
+  { id: 'c1_assassin_first', cls: 'assassin' },
+];
+
+/** 第 1 篇策略池：扩展职业「优先」仅在该职业已解锁时加入随机池 */
+export function strategyPoolC1(): StrategyC1Id[] {
+  const pool = [...STRATEGY_POOL_C1_BASE];
+  for (const { id, cls } of STRATEGY_C1_EXTENDED_FIRST) {
+    if (isAllyClassUnlocked(cls)) pool.push(id);
+  }
+  return pool;
+}
+
+/** @deprecated 使用 strategyPoolC1() */
+export const STRATEGY_POOL_C1: StrategyC1Id[] = STRATEGY_POOL_C1_BASE;
 
 export const STRATEGY_POOL_C2: StrategyC2Id[] = [
   'c2_super_warrior',
@@ -57,7 +80,7 @@ function shuffleInPlace<T>(arr: T[]): void {
 
 export function pickThreeStrategies(chapter: 1 | 2 | 3): StrategyPickOption[] {
   if (chapter === 1) {
-    const pool = [...STRATEGY_POOL_C1];
+    const pool = strategyPoolC1();
     shuffleInPlace(pool);
     return pool.slice(0, 3).map((id) => strategyOptionMeta(id));
   }
@@ -77,31 +100,50 @@ function strategyOptionMeta(id: string): StrategyPickOption {
   return { id, title: m.title, desc: m.desc };
 }
 
+/** 策略持续范围措辞（玩家可见） */
+const RUN = '本次副本挑战';
+
 /** 策略卡标题与说明（抉择界面与备战/战斗内「策略」页共用） */
 export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string }> = {
   c1_warrior_first: {
     title: '战士优先',
-    desc: '立刻获得 1 名战士；本局选战士牌费用 -2 金。',
+    desc: `立刻获得 1 名战士；${RUN}选战士牌费用 -2 金。`,
   },
   c1_mage_first: {
     title: '法师优先',
-    desc: '立刻获得 1 名法师；本局选法师牌费用 -2 金。',
+    desc: `立刻获得 1 名法师；${RUN}选法师牌费用 -2 金。`,
   },
   c1_priest_first: {
     title: '牧师优先',
-    desc: '立刻获得 1 名牧师；本局选牧师牌费用 -2 金。',
+    desc: `立刻获得 1 名牧师；${RUN}选牧师牌费用 -2 金。`,
   },
   c1_archer_first: {
     title: '射手优先',
-    desc: '立刻获得 1 名射手；本局选射手牌费用 -2 金。',
+    desc: `立刻获得 1 名射手；${RUN}选射手牌费用 -2 金。`,
   },
   c1_knight_first: {
     title: '骑士优先',
-    desc: '立刻获得 1 名骑士；本局选骑士牌费用 -2 金。',
+    desc: `立刻获得 1 名骑士；${RUN}选骑士牌费用 -2 金。`,
+  },
+  c1_shaman_first: {
+    title: '萨满优先',
+    desc: `立刻获得 1 名萨满；${RUN}选萨满牌费用 -2 金。`,
+  },
+  c1_druid_first: {
+    title: '德鲁伊优先',
+    desc: `立刻获得 1 名德鲁伊；${RUN}选德鲁伊牌费用 -2 金。`,
+  },
+  c1_warlock_first: {
+    title: '术士优先',
+    desc: `立刻获得 1 名术士；${RUN}选术士牌费用 -2 金。`,
+  },
+  c1_assassin_first: {
+    title: '刺客优先',
+    desc: `立刻获得 1 名刺客；${RUN}选刺客牌费用 -2 金。`,
   },
   c1_yuebao: {
     title: '余额宝',
-    desc: '本局计息按 80 金封顶，单回合利息最多 8；立刻 +15 金。',
+    desc: `${RUN}计息按 80 金封顶，单回合利息最多 8；立刻 +15 金。`,
   },
   c1_random_deploy: {
     title: '随机部署',
@@ -109,19 +151,19 @@ export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string
   },
   c1_head_start: {
     title: '占尽先机',
-    desc: '立刻 +10 金；本局每次战斗胜利额外 +1 金（结算时）。',
+    desc: `立刻 +10 金；${RUN}每次战斗胜利额外 +3 金（结算时）。`,
   },
   c1_lie_flat: {
     title: '躺平',
-    desc: '失去 30 生命；本局战败时额外 +5 金（结算时）。',
+    desc: `失去 30 生命；${RUN}战败时额外 +5 金（结算时）。`,
   },
   c2_super_warrior: {
     title: '超级战士',
-    desc: '本局战士受到敌方伤害时由存活战士均摊。',
+    desc: `${RUN}战士受到敌方伤害时由存活战士均摊。`,
   },
   c2_super_mage: {
     title: '超级法师',
-    desc: '本局法师 30% 暴击。',
+    desc: `${RUN}法师 30% 暴击。`,
   },
   c2_super_priest: {
     title: '超级牧师',
@@ -129,11 +171,11 @@ export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string
   },
   c2_super_archer: {
     title: '超级射手',
-    desc: '本局射手 20% 暴击，暴击伤害 200%。',
+    desc: `${RUN}射手 20% 暴击，暴击伤害 200%。`,
   },
   c2_super_knight: {
     title: '超级骑士',
-    desc: '本局骑士对首领造成双倍伤害。',
+    desc: `${RUN}骑士对首领造成双倍伤害。`,
   },
   c2_holy_grail: {
     title: '圣杯',
@@ -149,7 +191,7 @@ export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string
   },
   c2_time_master: {
     title: '时间管理大师',
-    desc: '本局战斗时间上限 +30 秒；立刻获得 20 金。',
+    desc: `${RUN}战斗时间上限 +30 秒；立刻获得 20 金。`,
   },
   c3_turn_tide: {
     title: '扭转乾坤',
@@ -181,11 +223,11 @@ export const STRATEGY_DESCRIPTIONS: Record<string, { title: string; desc: string
   },
   c3_glass_cannon: {
     title: '玻璃大炮',
-    desc: '本局我方造成伤害 +40%，受到伤害 +20%。',
+    desc: `${RUN}我方造成伤害 +40%，受到伤害 +20%。`,
   },
   c3_chaotic: {
     title: '绝命乱斗',
-    desc: '本局敌我登场位置随机；我方额外 +20% 暴击率。',
+    desc: `${RUN}敌我登场位置随机；我方额外 +20% 暴击率。`,
   },
 };
 
@@ -205,15 +247,6 @@ function placeArtifact(run: RunState, kind: ArtifactKind): void {
 
 function randomIntInclusive(lo: number, hi: number): number {
   return lo + Math.floor(Math.random() * (hi - lo + 1));
-}
-
-function randomDistinctClasses(n: number, run: RunState): AllyClass[] {
-  const unlocked = getUnlockedAllyClasses();
-  const onBoard = distinctAllyClassesOnBoard(run.board);
-  const atCap = onBoard.size >= 5;
-  const pool = unlocked.filter((k) => !atCap || onBoard.has(k));
-  shuffleInPlace(pool);
-  return pool.slice(0, Math.min(n, pool.length));
 }
 
 /** 应用抉择并返回展示用摘要行 */
@@ -245,6 +278,26 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
       run.allyPickDiscountGold.knight = (run.allyPickDiscountGold.knight ?? 0) + 2;
       lines.push('已获得骑士，骑士选牌 -2 金');
       break;
+    case 'c1_shaman_first':
+      applyPick(run.board, run.artifactBySlot, 'shaman');
+      run.allyPickDiscountGold.shaman = (run.allyPickDiscountGold.shaman ?? 0) + 2;
+      lines.push('已获得萨满，萨满选牌 -2 金');
+      break;
+    case 'c1_druid_first':
+      applyPick(run.board, run.artifactBySlot, 'druid');
+      run.allyPickDiscountGold.druid = (run.allyPickDiscountGold.druid ?? 0) + 2;
+      lines.push('已获得德鲁伊，德鲁伊选牌 -2 金');
+      break;
+    case 'c1_warlock_first':
+      applyPick(run.board, run.artifactBySlot, 'warlock');
+      run.allyPickDiscountGold.warlock = (run.allyPickDiscountGold.warlock ?? 0) + 2;
+      lines.push('已获得术士，术士选牌 -2 金');
+      break;
+    case 'c1_assassin_first':
+      applyPick(run.board, run.artifactBySlot, 'assassin');
+      run.allyPickDiscountGold.assassin = (run.allyPickDiscountGold.assassin ?? 0) + 2;
+      lines.push('已获得刺客，刺客选牌 -2 金');
+      break;
     case 'c1_yuebao':
       run.interestBankCapOverride = 80;
       run.interestMaxGoldOverride = 8;
@@ -252,15 +305,15 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
       lines.push('余额宝：计息上限已提升，+15 金');
       break;
     case 'c1_random_deploy':
-      for (const k of randomDistinctClasses(3, run)) {
+      for (const k of randomDistinctAllyClassesForGrant(run.board, run.artifactBySlot, 3)) {
         applyPick(run.board, run.artifactBySlot, k);
         lines.push(`部署 ${ALLY_DEFS[k].name}`);
       }
       break;
     case 'c1_head_start':
       run.gold += 10;
-      run.extraGoldOnBattleWin += 1;
-      lines.push('占尽先机：+10 金，战斗胜利额外收入已启用');
+      run.extraGoldOnBattleWin += 3;
+      lines.push('占尽先机：+10 金，每次战斗胜利额外 +3 金已启用');
       break;
     case 'c1_lie_flat':
       run.playerHp -= 30;
@@ -320,7 +373,7 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
       lines.push('破釜沉舟：生命置 1，+50 金');
       break;
     case 'c3_random_enhance':
-      for (const k of randomDistinctClasses(5, run)) {
+      for (const k of randomDistinctAllyClassesForGrant(run.board, run.artifactBySlot, 5)) {
         applyPick(run.board, run.artifactBySlot, k);
         lines.push(`获得 ${ALLY_DEFS[k].name}`);
       }
@@ -338,17 +391,18 @@ export function applyChosenStrategy(id: string, run: RunState): string[] {
       lines.push('首领特攻：对本关首领 +30% 伤害');
       break;
     case 'c3_super_double': {
-      const occ = run.board
-        .map((c, i) => (c !== null ? i : -1))
-        .filter((i): i is number => i >= 0);
-      if (occ.length) {
-        const pick = occ[Math.floor(Math.random() * occ.length)]!;
-        const cell = run.board[pick]!;
-        run.board[pick] = { kind: cell.kind, stacks: Math.min(BOARD_CELL_MAX_STACKS, cell.stacks * 2) };
-        lines.push(`超级加倍：${ALLY_DEFS[cell.kind].name} 个数 ×2（上限 30）`);
-      } else {
+      const kind = randomAllyClassOnBoard(run.board);
+      if (!kind) {
         lines.push('超级加倍：场上无兵，未生效');
+        break;
       }
+      const slots = run.board
+        .map((c, i) => (c?.kind === kind ? i : -1))
+        .filter((i): i is number => i >= 0);
+      const pick = slots[Math.floor(Math.random() * slots.length)]!;
+      const cell = run.board[pick]!;
+      run.board[pick] = { kind: cell.kind, stacks: Math.min(BOARD_CELL_MAX_STACKS, cell.stacks * 2) };
+      lines.push(`超级加倍：${ALLY_DEFS[kind].name} 个数 ×2（上限 30）`);
       break;
     }
     case 'c3_glass_cannon':
@@ -381,7 +435,7 @@ export function rewardChapterPreviewSummary(chapter: 1 | 2 | 3): string {
 /** 地图「下一关」预览：策略关说明 */
 export function strategyChapterPreviewSummary(chapter: 1 | 2 | 3): string {
   if (chapter === 1) {
-    return '策略抉择（第 1 篇）：随机抽取 3 张第一章策略，三选一；立即生效并影响整局经济与兵种偏好等。';
+    return '策略抉择（第 1 篇）：随机抽取 3 张第一章策略，三选一；立即生效并影响本次副本挑战的经济与兵种偏好等。';
   }
   if (chapter === 2) {
     return '策略抉择（第 2 篇）：随机 3 张第二章策略，三选一；多为羁绊、神器与战斗时长类加成。';
@@ -416,10 +470,10 @@ export function applyRewardChapter(run: RunState, chapter: 1 | 2 | 3): string[] 
   run.gold += g;
   lines.push(`奖励：+${g} 金`);
   const n = randomIntInclusive(uLo, uHi);
-  const unlocked = getUnlockedAllyClasses();
   for (let i = 0; i < n; i++) {
-    const k = unlocked[Math.floor(Math.random() * unlocked.length)]!;
-    applyPick(run.board, run.artifactBySlot, k);
+    const k = randomAllyClassForGrant(run.board, run.artifactBySlot);
+    if (!k) break;
+    if (applyPick(run.board, run.artifactBySlot, k) === null) continue;
     lines.push(`随机角色：${ALLY_DEFS[k].name}`);
   }
   return lines;

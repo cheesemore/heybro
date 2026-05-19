@@ -17,11 +17,11 @@ const OUT_CH = path.join(root, 'src/game/config/wowBookChapters.json');
 const OUT_BOSS = path.join(root, 'src/game/config/wowBookBosses.json');
 const OUT_REGISTRY = path.join(root, 'src/game/config/wowBookRegistry.json');
 
-/** 与 `wowBookData.WOW_BOOK_BOSS_TABLE_DEFAULT` / 原用书白板首领表底一致；首领不分近战远程，不加近战额外攻倍率（由运行时 GLOBAL 乘 atk） */
+/** 与 `wowBookData.WOW_BOOK_BOSS_TABLE_DEFAULT` 一致；`baseAtk` 为战场直接使用的表底攻击 */
 const DEFAULT_BOOK_BOSS_COMBAT = {
   hitRadius: 80,
   baseMaxHp: 22740,
-  baseAtk: 46,
+  baseAtk: 92,
   attackSpeed: 0.65,
   range: 10,
   moveSpeed: 540,
@@ -32,18 +32,18 @@ const DEFAULT_BOOK_BOSS_COMBAT = {
  * 原 `enemies.json` 十二兵种：id 与 `ENEMY_CLASSES` 一致，并入单表。
  */
 const LEGACY_ENEMY_ROWS = [
-  { id: 'grunt', nameCn: '兽人步兵', nameEn: 'Grunt', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 270, baseAtk: 11, attackSpeed: 0.62, range: 10, moveSpeed: 505 },
-  { id: 'dread_warrior', nameCn: '亡灵勇士', nameEn: 'Dread Warrior', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 223, baseAtk: 11, attackSpeed: 0.64, range: 10, moveSpeed: 488 },
-  { id: 'raider', nameCn: '狼骑兵', nameEn: 'Raider', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 202, baseAtk: 11, attackSpeed: 0.58, range: 10, moveSpeed: 590 },
-  { id: 'beserker', nameCn: '狂战士', nameEn: 'Beserker', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 250, baseAtk: 9, attackSpeed: 0.54, range: 10, moveSpeed: 525 },
-  { id: 'kodo', nameCn: '科多兽', nameEn: 'Kodo', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 321, baseAtk: 15, attackSpeed: 1.02, range: 10, moveSpeed: 285 },
-  { id: 'ultralisk', nameCn: '雷兽', nameEn: 'Ultralisk', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 408, baseAtk: 13, attackSpeed: 0.86, range: 10, moveSpeed: 315 },
-  { id: 'abomination', nameCn: '憎恶', nameEn: 'Abomination', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 317, baseAtk: 10, attackSpeed: 0.84, range: 10, moveSpeed: 355 },
-  { id: 'headhunter', nameCn: '兽人猎头者', nameEn: 'Headhunter', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '远程', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 268, baseAtk: 14, attackSpeed: 0.78, range: 235, moveSpeed: 488 },
-  { id: 'darkspear', nameCn: '暗矛猎手', nameEn: 'Darkspear', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '远程', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 262, baseAtk: 12, attackSpeed: 0.74, range: 248, moveSpeed: 498 },
-  { id: 'shaman', nameCn: '萨满祭司', nameEn: 'Shaman', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '远程', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 212, baseAtk: 17, attackSpeed: 0.98, range: 218, moveSpeed: 420 },
-  { id: 'batrider', nameCn: '蝙蝠骑士', nameEn: 'Batrider', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '远程', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 222, baseAtk: 13, attackSpeed: 0.68, range: 228, moveSpeed: 550 },
-  { id: 'catapult', nameCn: '投石车', nameEn: 'Catapult', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '远程', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 233, baseAtk: 24, attackSpeed: 1.52, range: 295, moveSpeed: 265 },
+  { id: 'grunt', nameCn: '兽人步兵', nameEn: 'Grunt', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 270, baseAtk: 26, attackSpeed: 0.62, range: 10, moveSpeed: 505 },
+  { id: 'dread_warrior', nameCn: '亡灵勇士', nameEn: 'Dread Warrior', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 223, baseAtk: 26, attackSpeed: 0.64, range: 10, moveSpeed: 488 },
+  { id: 'raider', nameCn: '狼骑兵', nameEn: 'Raider', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 202, baseAtk: 26, attackSpeed: 0.58, range: 10, moveSpeed: 590 },
+  { id: 'beserker', nameCn: '狂战士', nameEn: 'Beserker', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 250, baseAtk: 22, attackSpeed: 0.54, range: 10, moveSpeed: 525 },
+  { id: 'kodo', nameCn: '科多兽', nameEn: 'Kodo', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 321, baseAtk: 36, attackSpeed: 1.02, range: 10, moveSpeed: 285 },
+  { id: 'ultralisk', nameCn: '雷兽', nameEn: 'Ultralisk', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 408, baseAtk: 31, attackSpeed: 0.86, range: 10, moveSpeed: 315 },
+  { id: 'abomination', nameCn: '憎恶', nameEn: 'Abomination', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '近战', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 317, baseAtk: 24, attackSpeed: 0.84, range: 10, moveSpeed: 355 },
+  { id: 'headhunter', nameCn: '兽人猎头者', nameEn: 'Headhunter', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '远程', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 268, baseAtk: 28, attackSpeed: 0.78, range: 235, moveSpeed: 488 },
+  { id: 'darkspear', nameCn: '暗矛猎手', nameEn: 'Darkspear', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '远程', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 262, baseAtk: 24, attackSpeed: 0.74, range: 248, moveSpeed: 498 },
+  { id: 'shaman', nameCn: '萨满祭司', nameEn: 'Shaman', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '远程', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 212, baseAtk: 34, attackSpeed: 0.98, range: 218, moveSpeed: 420 },
+  { id: 'batrider', nameCn: '蝙蝠骑士', nameEn: 'Batrider', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '远程', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 222, baseAtk: 26, attackSpeed: 0.68, range: 228, moveSpeed: 550 },
+  { id: 'catapult', nameCn: '投石车', nameEn: 'Catapult', dungeonId: 'legacy', dungeonNameCn: '模板兵种', attackType: '远程', role: '输出', creatureType: '', traits: [], hitRadius: 36, baseMaxHp: 233, baseAtk: 48, attackSpeed: 1.52, range: 295, moveSpeed: 265 },
 ];
 
 function mergeLegacyEnemyRows(monsters) {
@@ -140,8 +140,9 @@ function assignBossUids(bossRows) {
   }
 }
 
-const MELEE = { hitRadius: 36, maxHp: 270, atk: 11, attackInterval: 0.62, range: 10, moveSpeed: 505 };
-const RANGED = { hitRadius: 36, maxHp: 268, atk: 14, attackInterval: 0.78, range: 235, moveSpeed: 488 };
+/** 表底攻击为战场直接使用值：近战≈旧设计 11×2×1.2，远程≈14×2（与 `unitDefs` / 文档基准一致） */
+const MELEE = { hitRadius: 36, maxHp: 270, atk: 26, attackInterval: 0.62, range: 10, moveSpeed: 505 };
+const RANGED = { hitRadius: 36, maxHp: 268, atk: 28, attackInterval: 0.78, range: 235, moveSpeed: 488 };
 
 function slug(s) {
   return String(s || 'unknown')

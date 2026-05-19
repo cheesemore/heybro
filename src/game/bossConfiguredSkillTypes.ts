@@ -162,7 +162,7 @@ export type BossJetpackAssaultState = {
   hitAllyIds: Set<number>;
 };
 
-/** 消失·伏击：1.5s 淡出 + 0.5s 透明维持，伏击瞬间再位移 */
+/** 消失·伏击：1.5s 淡出 + 0.5s 透明维持，伏击瞬间再位移；击杀可瞬移连锁（表外最多 3 次） */
 export type BossVanishAmbushState = {
   kind: 'vanish_ambush';
   skillId: 'skill_vanish_ambush';
@@ -172,6 +172,10 @@ export type BossVanishAmbushState = {
   coeff: number;
   pushR: number;
   backDist: number;
+  /** 本次施放已作为伏击主目标的我方 */
+  hitTargetIds: Set<number>;
+  /** 已完成的伏击次数 */
+  ambushStrikesDone: number;
   invulnFx?: VanishInvulnRingFx;
   ambushFx?: import('./vancleefSkillFx').VanishAmbushStrikeFx;
   ringSpin: number;

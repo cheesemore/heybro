@@ -1,4 +1,3 @@
-import { GLOBAL_UNIT_ATK_MULT } from './constants';
 import { RANGED_ATTACK_RANGE_THRESHOLD } from './battleBonds';
 import chaptersDoc from './config/wowBookChapters.json';
 import bossesDoc from './config/wowBookBosses.json';
@@ -98,7 +97,7 @@ export function getWowBookBossByChapter(chapterId: number): WowBookBossRow | und
 export const WOW_BOOK_BOSS_TABLE_DEFAULT = {
   hitRadius: 80,
   baseMaxHp: 22740,
-  baseAtk: 46,
+  baseAtk: 92,
   attackSpeed: 0.65,
   range: 10,
   moveSpeed: 540,
@@ -118,8 +117,8 @@ function mergeWowBookBossCombatFromRow(row: WowBookBossRow | undefined): {
   const baseMaxHpTable = typeof row?.baseMaxHp === 'number' ? row.baseMaxHp : t.baseMaxHp;
   const combatBaseAtk =
     typeof row?.baseAtk === 'number'
-      ? Math.max(1, Math.round(row.baseAtk * GLOBAL_UNIT_ATK_MULT))
-      : Math.max(1, Math.round(t.baseAtk * GLOBAL_UNIT_ATK_MULT));
+      ? Math.max(1, Math.round(row.baseAtk))
+      : Math.max(1, Math.round(t.baseAtk));
   const attackSpeed = typeof row?.attackSpeed === 'number' ? row.attackSpeed : t.attackSpeed;
   const range = typeof row?.range === 'number' ? row.range : t.range;
   const moveSpeed = typeof row?.moveSpeed === 'number' ? row.moveSpeed : t.moveSpeed;
@@ -132,7 +131,7 @@ function mergeWowBookBossCombatFromRow(row: WowBookBossRow | undefined): {
 
 /**
  * 首领战数值：仅来自 `wowBookBosses.json` 对应该章行 + 上表缺省，不读 `bosses.json`。
- * 返回的 `combatBaseAtk` 已乘 `GLOBAL_UNIT_ATK_MULT`（首领不吃近战额外攻倍率）。
+ * 返回的 `combatBaseAtk` 与 `wowBookBosses.json` 表底 `baseAtk` 一致（战场直接使用，无运行时攻击倍率）。
  */
 export function resolveWowBookBossCombat(chapterId: number): {
   hitRadiusDesign: number;

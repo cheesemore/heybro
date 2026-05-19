@@ -32,9 +32,9 @@ export function classBondHpAtkMultiplier(count: number): number {
 /** 牧师：全队生命与攻击加成，阈值 3/6/10 */
 export function priestBondTeamMultiplier(priestCount: number): number {
   let m = 1;
-  if (priestCount >= 3) m += 0.15;
-  if (priestCount >= 6) m += 0.25;
-  if (priestCount >= 10) m += 0.35;
+  if (priestCount >= 3) m += 0.1;
+  if (priestCount >= 6) m += 0.2;
+  if (priestCount >= 10) m += 0.3;
   return m;
 }
 
@@ -111,8 +111,11 @@ export function archerBondFocusCap(archerStacks: number): number {
 
 /** 六羁绊射程加成（设计像素） */
 export function archerBondRangeBonusDesign(archerStacks: number): number {
-  return archerStacks >= 6 ? 200 : 0;
+  return archerStacks >= 6 ? 100 : 0;
 }
+
+/** 十羁绊：距离小于「表射程 − 该值」时持续后退（设计像素） */
+export const ARCHER_BOND10_KITE_RETREAT_MARGIN_DESIGN = 50;
 
 /** 十五羁绊追加箭概率 */
 export function archerBondDoubleShotChance(archerStacks: number): number {
@@ -124,10 +127,14 @@ export const KNIGHT_CHARGE_MIN_DIST_DESIGN = 120;
 
 export const KNIGHT_CHARGE_COOLDOWN_SEC = 5;
 
-/** 骑士冲锋伤害倍率（三羁绊 300%） */
-export function knightBondChargeDamageMult(knightStacks: number): number {
-  return knightStacks >= 3 ? 3 : 2;
-}
+/** 骑士冲锋命中伤害倍率（相对攻击力） */
+export const KNIGHT_CHARGE_HIT_DAMAGE_MULT = 2;
+
+/** 三羁绊：冲锋中受到伤害保留比例（减伤 75%） */
+export const KNIGHT_BOND3_CHARGE_DAMAGE_RETAIN = 0.25;
+
+/** 冲锋结束后仍保留上述减伤的秒数（不写进羁绊说明） */
+export const KNIGHT_BOND3_CHARGE_DR_TAIL_SEC = 0.4;
 
 /** 六羁绊：冲锋命中眩晕非首领（秒） */
 export const KNIGHT_BOND_CHARGE_STUN_SEC = 2;
@@ -156,8 +163,8 @@ export function warlockBondLifestealRatio(warlockStacks: number): number {
 /** 十五羁绊灵魂之火：生命高于该比例才可施放 */
 export const WARLOCK_SOUL_FIRE_HP_ABOVE_RATIO = 0.5;
 
-/** 十五羁绊灵魂之火伤害倍率、自损最大生命比例、冷却（秒） */
-export const WARLOCK_SOUL_FIRE_DAMAGE_MULT = 3;
+/** 十五羁绊灵魂之火伤害倍率（攻击力 × 2 = 200%）、自损最大生命比例、冷却（秒） */
+export const WARLOCK_SOUL_FIRE_DAMAGE_MULT = 2;
 export const WARLOCK_SOUL_FIRE_SELF_COST_MAX_HP_RATIO = 0.15;
 export const WARLOCK_SOUL_FIRE_CD_SEC = 2;
 
@@ -179,16 +186,19 @@ export function shamanBondHealWaveTargets(shamanStacks: number): number {
   return shamanStacks >= 3 ? 3 : 2;
 }
 
-/** 萨满羁绊嗜血：攻速倍率、持续秒（十五羁绊 24 秒） */
+/** 六羁绊入场嗜血：开战倒计时结束后延迟（秒）再施放 */
+export const SHAMAN_BOND_OPENING_BLOODLUST_DELAY_SEC = 2;
+
+/** 萨满羁绊嗜血：攻速倍率、持续秒（十五羁绊 18 秒） */
 export function shamanBondBloodlustAtkSpeedMult(_shamanStacks: number): number {
   return 1.5;
 }
 export function shamanBondBloodlustDurationSec(shamanStacks: number): number {
-  return shamanStacks >= 15 ? 24 : 8;
+  return shamanStacks >= 15 ? 18 : 6;
 }
 
 /** 萨满治疗波：每名目标恢复 = 萨满攻击力 × 此系数 */
-export const SHAMAN_HEAL_WAVE_ATK_MULT = 0.5;
+export const SHAMAN_HEAL_WAVE_ATK_MULT = 0.25;
 /** 萨满闪电箭伤害倍率 */
 export const SHAMAN_LIGHTNING_BOLT_ATK_MULT = 1.5;
 
@@ -198,7 +208,9 @@ export function shamanBondWindfuryChance(shamanStacks: number): number {
   if (shamanStacks >= 10) return 0.1;
   return 0;
 }
+/** 风怒：首击后额外连击次数（共 3 次命中） */
 export const SHAMAN_WINDFURY_EXTRA_HITS = 2;
+/** 风怒连击间隔：2 帧（60fps 逻辑步） */
 export const SHAMAN_WINDFURY_HIT_GAP_SEC = 2 / 60;
 
 /** 德鲁伊远程形态射程（设计像素） */
@@ -213,6 +225,9 @@ export const DRUID_REJUV_HEAL_MAX_HP_RATIO_PER_SEC = 0.02;
 export const DRUID_REJUV_DURATION_SEC = 10;
 export const DRUID_REJUV_COOLDOWN_SEC = 2;
 
+/** 十五羁绊：战斗复活恢复生命比例 */
+export const DRUID_BOND15_BATTLE_REVIVE_HP_RATIO = 0.65;
+
 /** 刺客三羁绊额外暴击率 */
 export const ASSASSIN_BOND3_CRIT_BONUS = 0.1;
 /** 六羁绊开场闪避 */
@@ -220,6 +235,8 @@ export const ASSASSIN_BOND6_DODGE_CHANCE = 0.7;
 export const ASSASSIN_BOND6_DODGE_DURATION_SEC = 3;
 /** 十羁绊：闪现后下一击眩晕（秒，非首领） */
 export const ASSASSIN_BOND10_BLINK_STUN_SEC = 3;
+/** 刺客闪现突袭内置冷却（秒） */
+export const ASSASSIN_BLINK_CD_SEC = 3;
 /** 十五羁绊消失 */
 export const ASSASSIN_VANISH_HP_THRESHOLD = 0.2;
 export const ASSASSIN_VANISH_HEAL_MAX_HP_PER_SEC = 0.1;

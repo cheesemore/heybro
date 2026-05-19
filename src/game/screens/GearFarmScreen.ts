@@ -29,7 +29,16 @@ import { mountGearSlotLevelBadge } from '../ui/gearSlotLevelBadge';
 import { GEAR_EQUIPMENT_SLOTS, type GearSlotDef, type GearSlotKind } from '../gearSlots';
 import type { ModalLayer } from './ModalLayer';
 import { GAME_TERM_ZH } from '../gameTerminology';
-import { drawGoldenSolidPanel, GOLDEN_PANEL_TITLE } from '../ui/goldenSolidPanel';
+import {
+  drawGoldenSolidPanel,
+  GOLDEN_PANEL_ACCENT,
+  GOLDEN_PANEL_BODY,
+  GOLDEN_PANEL_INSET,
+  GOLDEN_PANEL_INSET_STROKE,
+  GOLDEN_PANEL_LINE,
+  GOLDEN_PANEL_MUTED,
+  GOLDEN_PANEL_TITLE,
+} from '../ui/goldenSolidPanel';
 import { createStyledGameButton, redrawGameButtonFromStyle, type GameButton } from '../ui/gameButtons';
 import { gearSlotLocalCenter } from '../gearSlotLayout';
 import { playGearReplaceFx } from '../ui/gearEquipReplaceFx';
@@ -119,11 +128,11 @@ function drawGearSlot(
   slot.position.set(x, y);
 
   const qColor = equipped ? GEAR_QUALITY_COLORS[equipped.quality] : null;
-  const strokeColor = qColor ?? (large ? 0x94a3b8 : 0x475569);
+  const strokeColor = qColor ?? GOLDEN_PANEL_LINE;
 
   const bg = new Graphics();
   const r = Math.round(12 * LAYOUT_SCALE);
-  bg.roundRect(-size / 2, -size / 2, size, size, r).fill(0x1e293b).stroke({
+  bg.roundRect(-size / 2, -size / 2, size, size, r).fill(GOLDEN_PANEL_INSET).stroke({
     width: Math.max(2, Math.round(2 * LAYOUT_SCALE)),
     color: strokeColor,
   });
@@ -136,7 +145,7 @@ function drawGearSlot(
   const iconPlaceholder = new Graphics();
   iconPlaceholder
     .roundRect(-inner / 2, -inner / 2, inner, inner, Math.round(8 * LAYOUT_SCALE))
-    .fill(equipped ? { color: qColor!, alpha: 0.35 } : 0x334155);
+    .fill(equipped ? { color: qColor!, alpha: 0.35 } : GOLDEN_PANEL_INSET_STROKE);
   iconHost.addChild(iconPlaceholder);
 
   if (equipped) {
@@ -165,7 +174,7 @@ function drawGearSlot(
       style: {
         fontFamily: FF,
         fontSize: Math.round((large ? 30 : 24) * LAYOUT_SCALE),
-        fill: 0xf1f5f9,
+        fill: GOLDEN_PANEL_TITLE,
         fontWeight: '800',
       },
     });
@@ -178,7 +187,7 @@ function drawGearSlot(
     style: {
       fontFamily: FF,
       fontSize: Math.round((large ? 13 : 11) * LAYOUT_SCALE),
-      fill: equipped ? (qColor ?? 0xe2e8f0) : 0x94a3b8,
+      fill: equipped ? (qColor ?? GOLDEN_PANEL_BODY) : GOLDEN_PANEL_MUTED,
       fontWeight: '600',
       align: 'center',
       wordWrap: true,
@@ -226,16 +235,17 @@ export class GearFarmScreen extends Container {
     this.farmDungeonId = gearFarmDungeonIdForProgress();
     this.sortableChildren = true;
 
-    const bg = new Graphics();
-    bg.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(0x0f172a);
-    this.addChild(bg);
+    /** 全屏深色底（与关卡详情遮罩、职业强化页一致），与中部金色内容板区分 */
+    const screenBg = new Graphics();
+    screenBg.rect(0, 0, GAME_WIDTH, GAME_HEIGHT).fill(0x0a0f1c);
+    this.addChild(screenBg);
 
     const titleT = new Text({
       text: GAME_TERM_ZH.farmDungeonButton,
       style: {
         fontFamily: FF,
         fontSize: Math.round(34 * LAYOUT_SCALE),
-        fill: 0xf8fafc,
+        fill: GOLDEN_PANEL_TITLE,
         fontWeight: '800',
       },
     });
@@ -263,7 +273,7 @@ export class GearFarmScreen extends Container {
       style: {
         fontFamily: FF,
         fontSize: Math.round(16 * LAYOUT_SCALE),
-        fill: 0x94a3b8,
+        fill: GOLDEN_PANEL_MUTED,
         fontWeight: '600',
         align: 'right',
       },
@@ -306,7 +316,7 @@ export class GearFarmScreen extends Container {
       style: {
         fontFamily: FF,
         fontSize: Math.round(30 * LAYOUT_SCALE),
-        fill: 0xfbbf24,
+        fill: GOLDEN_PANEL_ACCENT,
         fontWeight: '900',
       },
     });
@@ -316,7 +326,7 @@ export class GearFarmScreen extends Container {
       style: {
         fontFamily: FF,
         fontSize: Math.round(15 * LAYOUT_SCALE),
-        fill: 0x94a3b8,
+        fill: GOLDEN_PANEL_MUTED,
         fontWeight: '600',
         align: 'center',
         wordWrap: true,

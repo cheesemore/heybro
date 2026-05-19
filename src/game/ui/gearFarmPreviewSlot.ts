@@ -5,6 +5,11 @@ import type { GearFarmSlotPreview } from '../gearFarmProgress';
 import { highestGearQuality } from '../gearItems';
 import { loadGearIconTexture } from '../gearIconAssets';
 import { mountGearSlotLevelBadge } from './gearSlotLevelBadge';
+import {
+  GOLDEN_PANEL_INSET,
+  GOLDEN_PANEL_INSET_STROKE,
+  GOLDEN_PANEL_MUTED,
+} from './goldenSolidPanel';
 
 const FF = 'system-ui, "Microsoft YaHei", Segoe UI, sans-serif';
 
@@ -50,14 +55,14 @@ export function drawGearFarmPreviewSlot(
   const gear = preview.farmGear;
   const hasGear = gear != null;
   const maxQuality = hasGear ? highestGearQuality(gear.qualities) : null;
-  const qColor = maxQuality ? GEAR_QUALITY_COLORS[maxQuality] : 0x4a3d2e;
+  const qColor = maxQuality ? GEAR_QUALITY_COLORS[maxQuality] : GOLDEN_PANEL_INSET_STROKE;
   const maxLevel = hasGear ? gear.levelMax : null;
 
   const bg = new Graphics();
   const r = Math.round(10 * LAYOUT_SCALE);
-  bg.roundRect(-iconSize / 2, -iconSize / 2, iconSize, iconSize, r).fill(0x2a2218).stroke({
+  bg.roundRect(-iconSize / 2, -iconSize / 2, iconSize, iconSize, r).fill(GOLDEN_PANEL_INSET).stroke({
     width: Math.max(2, Math.round(2.5 * LAYOUT_SCALE)),
-    color: hasGear ? qColor : 0x4a3d2e,
+    color: hasGear ? qColor : GOLDEN_PANEL_INSET_STROKE,
   });
   slot.addChild(bg);
 
@@ -68,7 +73,7 @@ export function drawGearFarmPreviewSlot(
   const iconPlaceholder = new Graphics();
   iconPlaceholder
     .roundRect(-inner / 2, -inner / 2, inner, inner, Math.round(8 * LAYOUT_SCALE))
-    .fill(hasGear ? { color: qColor, alpha: 0.28 } : 0x3d3024);
+    .fill(hasGear ? { color: qColor, alpha: 0.28 } : GOLDEN_PANEL_INSET_STROKE);
   iconHost.addChild(iconPlaceholder);
 
   if (hasGear) {
@@ -92,7 +97,7 @@ export function drawGearFarmPreviewSlot(
     style: {
       fontFamily: FF,
       fontSize: Math.round(13 * LAYOUT_SCALE),
-      fill: hasGear ? qColor : 0x64748b,
+      fill: hasGear ? qColor : GOLDEN_PANEL_MUTED,
       fontWeight: '700',
       align: 'center',
       wordWrap: true,

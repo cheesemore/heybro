@@ -86,6 +86,7 @@ export class ChapterSelectScreen extends Container {
   private readonly onBack: () => void;
   private readonly onStrengthen?: () => void;
   private readonly onGearFarm?: () => void;
+  private readonly onArena?: () => void;
   /** 隐藏测试：整章按指定星级记入通关（当前界面中央章节） */
   private readonly onDebugChapterClear?: (chapterId: number, star: 1 | 2 | 3) => void;
   /** 当前预览的书本章节（1…BOOK_CHAPTER_COUNT），可与中央「进入本章」一致或经左右箭头切换 */
@@ -106,6 +107,7 @@ export class ChapterSelectScreen extends Container {
     onBack: () => void,
     onStrengthen?: () => void,
     onGearFarm?: () => void,
+    onArena?: () => void,
     onDebugChapterClear?: (chapterId: number, star: 1 | 2 | 3) => void,
   ) {
     super();
@@ -113,6 +115,7 @@ export class ChapterSelectScreen extends Container {
     this.onBack = onBack;
     this.onStrengthen = onStrengthen;
     this.onGearFarm = onGearFarm;
+    this.onArena = onArena;
     this.onDebugChapterClear = onDebugChapterClear;
     this.viewChapterId = getCurrentChallengeChapterId();
     this.sortableChildren = true;
@@ -181,6 +184,23 @@ export class ChapterSelectScreen extends Container {
 
     const patrolBtnY = rowY + (midH - sideH) / 2;
     const patrolUnlocked = isRagefireChasmBookCleared();
+    const patrolHintExtra = patrolUnlocked ? 0 : Math.round(34 * LAYOUT_SCALE);
+    const arenaBtnY = patrolBtnY - sideH - Math.round(12 * LAYOUT_SCALE) - patrolHintExtra;
+
+    const arenaBtn = createStyledGameButton(patrolUnlocked ? 'accent' : 'classicMuted', {
+      text: '竞技场',
+      width: sideW,
+      height: sideH,
+      fontSize: Math.round(22 * LAYOUT_SCALE),
+      onTap: patrolUnlocked ? () => this.onArena?.() : undefined,
+    });
+    arenaBtn.position.set(rowX, arenaBtnY);
+    if (!patrolUnlocked) {
+      arenaBtn.eventMode = 'passive';
+      arenaBtn.cursor = 'default';
+    }
+    this.addChild(arenaBtn);
+
     if (!patrolUnlocked) {
       const patrolHint = new Text({
         text: '通关怒焰裂谷副本后解锁',
@@ -687,7 +707,7 @@ export class ChapterSelectScreen extends Container {
   }
 
   /**
-   * 展示本章敌种池（以首关数值为参考）与 3-6 首领的立绘与完整数值说明。
+   * 展示关底首领与本章敌种池（以首关数值为参考）的立绘与完整数值说明；首领在上、小怪在下。
    * 中间区域可滚轮 / 拖拽滚动，避免内容超高时超框。
    */
   private openChapterDetailOverlay(): void {
@@ -834,21 +854,6 @@ export class ChapterSelectScreen extends Container {
     };
 
     pushMutedLine(`本关强度：${bookChapterStrengthPercent(cid)}%（敌方数值按此缩放）`);
-    pushSectionTitle('普通小怪：');
-    pushMutedLine('各兵种以「首节点 1-1」进度估算数值；实战中随节点推进会变强。');
-
-    for (const w of poolMeta.enemies) {
-      const parts = getChapterIntelMobCardParts(w, 1, 0, bookM, cid);
-      localY = appendChapterIntelUnitCardRow(scrollContent, {
-        parts,
-        singleEnemyMeta: { ...poolMeta, enemies: [w] },
-        bookChapterId: cid,
-        originX: innerPad,
-        topY: localY,
-        rowW: wrapW,
-      });
-    }
-
     pushSectionTitle('首领：');
 
     {
@@ -857,6 +862,21 @@ export class ChapterSelectScreen extends Container {
       localY = appendChapterIntelUnitCardRow(scrollContent, {
         parts,
         singleEnemyMeta: bossMeta,
+        bookChapterId: cid,
+        originX: innerPad,
+        topY: localY,
+        rowW: wrapW,
+      });
+    }
+
+    pushSectionTitle('普通小怪：');
+    pushMutedLine('各兵种以「首节点 1-1」进度估算数值；实战中随节点推进会变强。');
+
+    for (const w of poolMeta.enemies) {
+      const parts = getChapterIntelMobCardParts(w, 1, 0, bookM, cid);
+      localY = appendChapterIntelUnitCardRow(scrollContent, {
+        parts,
+        singleEnemyMeta: { ...poolMeta, enemies: [w] },
         bookChapterId: cid,
         originX: innerPad,
         topY: localY,

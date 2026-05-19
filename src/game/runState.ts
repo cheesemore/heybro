@@ -1,3 +1,4 @@
+import type { ArenaLineupSnapshot } from './arenaStorage';
 import type { AllyClass, BattleOutcome, BoardCell, RoundMeta } from './types';
 import type { ArtifactKind } from './strategyTypes';
 import type { HeroId } from './heroRegistry';
@@ -115,6 +116,16 @@ export class RunState {
 
   /** 见 `RunDevBattleHooks` */
   devBattleHooks?: RunDevBattleHooks;
+
+  /** 竞技场 PvP：进攻方规则 + 防守方阵容 */
+  arenaBattleRules?: {
+    heroDeploy: readonly (HeroId | null)[];
+    defenderLineup: ArenaLineupSnapshot;
+    /** 本场战斗 RNG 种子（正式对战为对手 timestamp） */
+    battleSeed: number;
+    /** 镜像测试：不记胜败，仅本地验证 */
+    mirrorTest?: boolean;
+  };
 
   /**
    * 仅独立测试页：右下「开发战斗日志」面板（与 `[battle-skill]` 等共用）。
